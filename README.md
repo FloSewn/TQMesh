@@ -212,6 +212,14 @@ the test functions `run_qtree_tests()` and `run_mesh_tests()`.
 
 <img src="doc/BenchmarkPlot_QTree.png" alt="TQMesh-QTree-Benchmark" width="400"/> <img src="doc/BenchmarkPlot_Mesh.png" alt="TQMesh-Mesh-Benchmark" width="400"/>
 
+## To Do's
+* Boundary elements (e.g. circle, triangle, rectangle) for an easier definition of domain boundaries
+* Delaunay refinement for bad / highly skewed elements
+* Export to different mesh output formats
+* Improved documentation / testing
+
+Feel free to contribute!
+
 ## Libraries used
 * [exprtk.h - C++ Mathematical Expression Toolkit Library](http://www.partow.net/programming/exprtk/index.html)
 
