@@ -1,0 +1,4 @@
+build
+bin
+scripts/*.dat
+doc/*.pdf
