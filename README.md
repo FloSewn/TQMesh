@@ -229,7 +229,6 @@ Feel free to contribute!
 * [Jonathan R. Shewchuk's free course material on Mesh Generation and Geometry Processing in Graphics, Engineering, and Modeling ](https://people.eecs.berkeley.edu/~jrs/mesh/)
 * Lo, Daniel SH. Finite element mesh generation. CRC Press, 2014
 * Blazek, Jiri. Computational fluid dynamics: principles and applications. Butterworth-Heinemann, 2015
-* Zed A. Shaw, Learn C the Hard Way (this is where the testing structure and the list functions are coming from)
 * [Zhou and Shimada, An Angle-Based Approach to Two-Dimensional Mesh Smoothing, IMR 2000, 373-384, 2000](https://www.researchgate.net/profile/Kenji-Shimada-2/publication/221561796_An_Angle-Based_Approach_to_Two-Dimensional_Mesh_Smoothing/links/0deec53988e9f560ec000000/An-Angle-Based-Approach-to-Two-Dimensional-Mesh-Smoothing.pdf) 
 
 ## Licences
