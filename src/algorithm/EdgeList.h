@@ -142,6 +142,20 @@ public:
   bool remove(Edge& edge) { return edges_.remove( edge ); }
 
   /*------------------------------------------------------------------
+  | Clear all edges and eventually the associated vertices
+  ------------------------------------------------------------------*/
+  void clear_edges()
+  {
+    size_t n_edges = edges_.size();
+
+    for ( size_t i = 0; i < n_edges; ++i )
+      remove( edges_[0] );
+
+    edges_.clear_waste();
+
+  } // EdgeList::clear_edges();
+
+  /*------------------------------------------------------------------
   | Split a given edge. The value <s> must be in the interval (0,1)
   | and controls where the edge will be split
   | * s -> 0 ---> split near vertex v1
