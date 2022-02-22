@@ -23,6 +23,8 @@ using namespace TQUtils;
 
 /*********************************************************************
 * This class represents a directed list of edges
+*
+*
 *********************************************************************/
 class EdgeList
 {
@@ -109,10 +111,30 @@ public:
   /*------------------------------------------------------------------
   | Push a new edge back to the edge list
   | By default, all edges get colored by the interior edge marker.
+  |
+  | > EdgeLists with clockwise / counter-clockwise orientation must 
+  |   be closed and must be made up of a single edge path (each 
+  |   vertex is connected to a maximum of two edges from such a list) 
+  | 
+  | > EdgeList with NONE orientation can be open, vertices can be 
+  |   connected to more than two edges of this list type
   ------------------------------------------------------------------*/
   Edge& add_edge(Vertex& v1, Vertex& v2, 
                  int marker=TQ_INTR_EDGE_MARKER)
-  { return insert_edge( edges_.end(), v1, v2, marker ); } 
+  { 
+    if ( orient_ == TQGeom::Orientation::NONE || edges_.size() < 1 )
+      return insert_edge( edges_.end(), v1, v2, marker ); 
+
+    // Check that the new edge is connected to the last edge
+    const Vertex& v_last = edges_.back().v2();
+
+    if ( v1 != v_last )
+      throw std::runtime_error(
+          "Failed to add an Edge to EdgeList. The new edge to add "
+          "is not connected to the last Edge in the EdgeList.");
+
+    return insert_edge( edges_.end(), v1, v2, marker ); 
+  } 
 
   /*------------------------------------------------------------------
   | Remove an edge from the edge list
