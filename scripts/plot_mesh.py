@@ -62,6 +62,7 @@ def io_read_boundary(lines, vertices):
     ''' Read boundary edges from the input string
     '''
     edges = []
+    bdry_elements = []
     markers = []
     start, n_edge = 0, 0
 
@@ -74,13 +75,14 @@ def io_read_boundary(lines, vertices):
 
     for i in range(start, start+n_edge):
         line = lines[i]
-        (v1,v2,m) = ( int(s) for s in line.split(',') )
+        (v1,v2,e,m) = ( int(s) for s in line.split(',') )
         (x1, y1) = vertices[v1]
         (x2, y2) = vertices[v2]
         edges.append( [(x1,y1),(x2,y2)] )
+        bdry_elements.append( e )
         markers.append( m )
 
-    return edges, markers
+    return edges, bdry_elements, markers
 
 
 def io_read_triangles(lines, vertices):
@@ -204,7 +206,7 @@ def main():
     io_clear_comments( lines )
     vertices = np.array( io_read_vertices( lines ) )
     front, front_markers = io_read_front( lines, vertices )
-    boundary, boundary_markers = io_read_boundary( lines, vertices )
+    boundary, boundary_elements, boundary_markers = io_read_boundary( lines, vertices )
     triangles = io_read_triangles( lines, vertices )
     quads = io_read_quads( lines, vertices )
     qtree = io_read_qtree( lines )
