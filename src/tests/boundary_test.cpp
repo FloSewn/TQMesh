@@ -185,12 +185,36 @@ void Test_Boundary_clear_edges()
 
   // Assert that no vertex is connected to any edge
   for ( auto& v : vertices )
+  {
     ASSERT( (v->edges().size() == 0),
           "Boundary::clear_edges() failed." );
+    (void) v;
+  }
 
   DBG_MSG("Tests for Boundary::clear_edges() succeeded");
 
 } // Test_Boundary_clear_edges()
+
+
+/*********************************************************************
+* Test boundary shapes
+*
+*   x---x---x
+*   |       |
+*   x---x---x
+*
+*********************************************************************/
+void Test_Boundary_shapes()
+{
+  Container<Vertex> vertices { };
+
+  // Define exterior boundary with rectangular shape 
+  Boundary extr_bdry { BdryType::EXTERIOR };
+
+  // Define interior boundary with rectangular shape 
+  Boundary intr_bdry { BdryType::INTERIOR };
+
+} // Test_Boundary_shapes()
 
 
 } // namespace BoundaryTests
@@ -205,5 +229,6 @@ void run_boundary_tests()
   BoundaryTests::Test_Boundary_interior_exterior();
   BoundaryTests::Test_Domain_is_inside();
   BoundaryTests::Test_Boundary_clear_edges();
+  BoundaryTests::Test_Boundary_shapes();
 
 } // run_boundary_tests()

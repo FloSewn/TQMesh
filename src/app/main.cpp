@@ -47,15 +47,21 @@ int main(int argc, char* argv[])
       "Element type:");
   auto para_quad_layers = reader.new_double_list_parameter(
       "Add quad layers:");
-  auto para_vertices = reader.new_double_list_parameter(
-      "Define vertices", "End vertices");
-  auto para_extr_bdry = reader.new_int_list_parameter(
-      "Define exterior boundary", "End exterior boundary");
-  auto para_intr_bdry = reader.new_int_list_parameter(
-      "Define interior boundary", "End interior boundary");
-  auto para_fixed_vertices = reader.new_double_list_parameter(
-      "Define fixed vertices", "End fixed vertices");
 
+  auto para_vertices = reader.new_double_list_parameter(
+      "Define vertices:", "End vertices");
+  auto para_fixed_vertices = reader.new_double_list_parameter(
+      "Define fixed vertices:", "End fixed vertices");
+
+  auto para_extr_bdry = reader.new_int_list_parameter(
+      "Define exterior boundary:", "End exterior boundary");
+  auto para_intr_bdry = reader.new_int_list_parameter(
+      "Define interior boundary:", "End interior boundary");
+
+  auto para_intr_rect_bdry = reader.new_double_list_parameter(
+      "Define interior rectangular boundary:");
+  auto para_intr_circ_bdry = reader.new_double_list_parameter(
+      "Define interior circular boundary:");
 
   /*------------------------------------------------------------------
   | Query element size & initialize domain
@@ -106,25 +112,11 @@ int main(int argc, char* argv[])
   const double dy = xy_max.y - xy_min.y;
   const double domain_size = ABS(10.0 * MAX(dx, dy));
 
-
-  /*------------------------------------------------------------------
-  | Query exterior boundary definition
-  ------------------------------------------------------------------*/
-  reader.query( para_extr_bdry );
-
-  if ( !para_extr_bdry.found() )
-  {
-    MSG("Invalid exterior boundary definition.");
-    return EXIT_SUCCESS;
-  }
-
-
   /*------------------------------------------------------------------
   | Initialize vertices and exterior boundary
   ------------------------------------------------------------------*/
   Vertices  vertices { domain_size };
   Domain    domain   { vertices, size_fun };
-  Boundary& b_ext = domain.add_boundary( BdryType::EXTERIOR );
 
   // init vertices
   for ( size_t i = 0; i < para_vertices.rows(); ++i )
@@ -137,19 +129,46 @@ int main(int argc, char* argv[])
     vertices.push_back(x,y,s,r);
   }
 
-  // init exterior boundary
-  for ( size_t i = 0; i < para_extr_bdry.rows(); ++i )
+  /*------------------------------------------------------------------
+  | Query exterior boundary definitions
+  ------------------------------------------------------------------*/
+  int n_extr_bdry = 0;
+
+  while( reader.query( para_extr_bdry ) )
   {
-    size_t i1 = para_extr_bdry.value(3*i);
-    size_t i2 = para_extr_bdry.value(3*i + 1);
-    int m  = para_extr_bdry.value(3*i + 2);
+    ++n_extr_bdry;
+    Boundary& b_ext = domain.add_boundary( BdryType::EXTERIOR );
 
-    DBG_MSG("ADD EDGE: ("<< i1 << "," << i2 << ") -> MARKER " << m );
+    for ( size_t i = 0; i < para_extr_bdry.rows(); ++i )
+    {
+      size_t i1 = para_extr_bdry.value(3*i);
+      size_t i2 = para_extr_bdry.value(3*i + 1);
+      int    m  = para_extr_bdry.value(3*i + 2);
 
-    Vertex& v1 = vertices[i1];
-    Vertex& v2 = vertices[i2];
+      DBG_MSG("ADD EDGE: ("<< i1 << "," << i2 << ") -> MARKER " << m );
 
-    b_ext.add_edge( v1, v2, m );
+      Vertex& v1 = vertices[i1];
+      Vertex& v2 = vertices[i2];
+
+      b_ext.add_edge( v1, v2, m );
+    }
+  }
+
+  /*------------------------------------------------------------------
+  | Stop proceeding in case of bad exterior boundaries
+  | (currently only a single exterior boundary can be handled)
+  ------------------------------------------------------------------*/
+  if ( n_extr_bdry != 1 )
+  {
+    MSG("ERROR");
+    MSG("--------------------------------------------------------");
+    MSG("Invalid exterior boundary definition.");
+    MSG("Either no or too many exterior boundaries are defined.");
+    MSG("Currently, only one single exterior boundary definition ");
+    MSG("is provided in TQMesh.");
+    MSG("");
+    MSG("Defined exterior boundaries: " << n_extr_bdry);
+    return EXIT_SUCCESS;
   }
 
   /*------------------------------------------------------------------
@@ -170,6 +189,32 @@ int main(int argc, char* argv[])
 
       b_int.add_edge( v1, v2, m );
     }
+  }
+
+  while( reader.query( para_intr_rect_bdry ) )
+  {
+    Boundary& b_int = domain.add_boundary( BdryType::INTERIOR );
+
+    int    m = static_cast<int>( para_intr_rect_bdry.value(0) );
+    double x = para_intr_rect_bdry.value(1);
+    double y = para_intr_rect_bdry.value(2);
+    double w = para_intr_rect_bdry.value(3);
+    double h = para_intr_rect_bdry.value(4);
+
+    b_int.set_shape_rectangle( vertices, m, {x,y}, w, h );
+  }
+
+  while( reader.query( para_intr_circ_bdry ) )
+  {
+    Boundary& b_int = domain.add_boundary( BdryType::INTERIOR );
+
+    int    m = static_cast<int>( para_intr_circ_bdry.value(0) );
+    double x = para_intr_circ_bdry.value(1);
+    double y = para_intr_circ_bdry.value(2);
+    double r = para_intr_circ_bdry.value(3);
+    double n = static_cast<int>( para_intr_circ_bdry.value(4) );
+
+    b_int.set_shape_circle( vertices, m, {x,y}, r, n );
   }
 
   /*------------------------------------------------------------------

@@ -141,13 +141,28 @@ End fixed vertices
 ``` 
 <img src="doc/RectangleMesh_FixedVertex.png" alt="TQMesh-Grid-FixedVertex" width="750"/>
 
-
 Of course, we can also discretize the domain with Quadrilateral elements. 
 Simply change the element type in the input file to:
 ``` sh
 Element type: Quadrilateral 
 ``` 
-<img src="doc/RectangleMesh_Quad.png" alt="TQMesh-Grid-Qua-Quadd" width="750"/>
+<img src="doc/RectangleMesh_Quad.png" alt="TQMesh-Grid-Quad" width="750"/>
+
+It is possible to define interior boundaries in terms of predefined 
+shapes, such as rectangles or circles:
+``` sh
+#-----------------------------------------------------------
+# Arguments for circular interior boundary: 
+#   (marker, x-center, y-center, radius, no. of vertices)
+#
+# Arguments for rectangular interior boundary:
+#   (marker, x-center, y-center, width, height)
+#-----------------------------------------------------------
+Define interior circular boundary:    2, 1.0, 0.7, 0.15, 40
+Define interior rectangular boundary: 3, 1.5, 1.0, 0.30, 0.30
+Define interior circular boundary:    4, 1.0, 1.3, 0.15, 40
+``` 
+<img src="doc/BoundaryShapes.png" alt="TQMesh-Interior-Boundary-Shapes" width="750"/>
 
 ## Output format
 Currently, **TQMesh** only features a simple output format,
@@ -158,11 +173,12 @@ VERTICES 5741            # The total number of mesh vertices
 -22.00000, 9.43624       # Coordinates of vertex 2
 ...
 INTERIOREDGES 13575      # The total number of interior mesh edges
-976, 43, -1              # The edge connects vertex 976 & 43 and has marker -1
+976, 43, 63, 67          # The edge connects vertex 976 & 43 and has the adjacent 
+...                      # elements (63,67) to the left and right of it
 ...
 BOUNDARYEDGES 975        # The total number of boundary mesh edges
-41, 42, 1                # The edge connects vertex 41 & 42 and has marker 1
-733, 734, 2              # The edge connects vertex 733 & 734 and has marker 2
+41, 42, 80, 1            # The edge connects vertex 41 & 42, is 
+...                      # adjacent to element 80 and has marker 1
 ...
 FRONT 0                  # Remaining advancing front edges after a failed meshing attempt
 QUADS 1700               # The total number of quadrilateral elements
