@@ -782,6 +782,58 @@ void Test_Mesh_vortex_shedding(bool export_mesh)
 } // Test_Mesh_vortex_shedding() */
 
 /*********************************************************************
+* Test: Create mesh for a vortex shedding test case
+*********************************************************************/
+void Test_Mesh_create_bdry_shape_mesh(bool export_mesh)
+{
+  // Define a variable size function
+  UserSizeFunction f = [](const Vec2d& p) 
+  { 
+    return 0.25;
+  };
+
+  Vertices         vertices { 50.0 };
+  Domain           domain   { vertices, f };
+
+  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
+  Boundary&  b_shape_1 = domain.add_boundary( BdryType::INTERIOR );
+  Boundary&  b_shape_2 = domain.add_boundary( BdryType::INTERIOR );
+  Boundary&  b_shape_3 = domain.add_boundary( BdryType::INTERIOR );
+
+  b_ext.set_shape_rectangle( vertices, 1, {6.0,1.0}, 16.0, 8.0 );
+  b_shape_1.set_shape_circle( vertices, 2, {1.0,1.0}, 0.5, 30 );
+  b_shape_2.set_shape_square( vertices, 3, {2.0,1.5}, 0.75);
+  b_shape_3.set_shape_triangle( vertices, 4, {2.0,0.5}, 0.75 );
+
+
+  // Create the mesh
+  Mesh mesh { domain, 40.0 };
+
+  //mesh.create_quad_layers(v1, v2, 2, 0.05, 1.0);
+  //mesh.create_quad_layers(v3, v4, 2, 0.05, 1.0);
+  //mesh.create_quad_layers(v5, v5, 2, 0.01, 1.0);
+
+  mesh.triangulate();
+  //mesh.pave();
+  //mesh.merge_triangles_to_quads();
+  mesh.smoothing(4, 0.9);
+
+  // Export the mesh
+  if (export_mesh)
+  {
+    // Make sure that all vertex / element indices are assigned
+    mesh.assign_mesh_indices();
+
+    std::cout << mesh;
+    domain.export_size_function({0.0,0.0}, {5.0,5.0}, 100, 100);
+  }
+
+  DBG_MSG("Tests for Mesh::triangulate() succeeded");
+
+} // Test_Mesh_create_bdry_shape_mesh()
+
+
+/*********************************************************************
 * Test: Benchmark the meshing process
 *********************************************************************/
 void Test_Mesh_benchmark(double h, double L, 
@@ -1068,11 +1120,13 @@ void run_mesh_tests(bool benchmark)
   //MeshTests::Test_Mesh_advance_front_quad(true);
   //MeshTests::Test_Mesh_add_quad_layer_step(true);
   //MeshTests::Test_Mesh_wedge(true);
-  MeshTests::Test_Mesh_banner(true);
-  //
+  //MeshTests::Test_Mesh_banner(true);
+    
   //MeshTests::Test_Mesh_create_simple_hex_layers(true);
   //MeshTests::Test_Mesh_vortex_shedding(true);
-  //
+    
+  MeshTests::Test_Mesh_create_bdry_shape_mesh(true);
+
   //MeshTests::Test_Mesh_add_quad_layer(true);
 
   if ( benchmark )

@@ -148,6 +148,74 @@ void Test_Boundary_interior_exterior()
 
 } // Test_Boundary_interior_exterior()
 
+/*********************************************************************
+* Test clearing of all boundary edges
+*
+*   x---x---x
+*   |       |
+*   x---x---x
+*
+*********************************************************************/
+void Test_Boundary_clear_edges()
+{
+  Container<Vertex> vertices { };
+
+  Vertex& v1 = vertices.push_back( 1.0, 1.0 );
+  Vertex& v2 = vertices.push_back( 2.0, 1.0 );
+  Vertex& v3 = vertices.push_back( 3.0, 1.0 );
+  Vertex& v4 = vertices.push_back( 3.0, 2.0 );
+  Vertex& v5 = vertices.push_back( 2.0, 2.0 );
+  Vertex& v6 = vertices.push_back( 1.0, 2.0 );
+
+  // Exterior boundaries are defined CCW
+  Boundary extr_bdry { BdryType::EXTERIOR };
+
+  extr_bdry.add_edge(v1,v2,1);
+  extr_bdry.add_edge(v2,v3,1);
+  extr_bdry.add_edge(v3,v4,2);
+  extr_bdry.add_edge(v4,v5,3);
+  extr_bdry.add_edge(v5,v6,3);
+  extr_bdry.add_edge(v6,v1,4);
+
+  extr_bdry.clear_edges();
+
+  // Assert that all edges are cleared
+  ASSERT( (extr_bdry.size() == 0) , 
+          "Boundary::clear_edges() failed." );
+
+  // Assert that no vertex is connected to any edge
+  for ( auto& v : vertices )
+  {
+    ASSERT( (v->edges().size() == 0),
+          "Boundary::clear_edges() failed." );
+    (void) v;
+  }
+
+  DBG_MSG("Tests for Boundary::clear_edges() succeeded");
+
+} // Test_Boundary_clear_edges()
+
+
+/*********************************************************************
+* Test boundary shapes
+*
+*   x---x---x
+*   |       |
+*   x---x---x
+*
+*********************************************************************/
+void Test_Boundary_shapes()
+{
+  Container<Vertex> vertices { };
+
+  // Define exterior boundary with rectangular shape 
+  Boundary extr_bdry { BdryType::EXTERIOR };
+
+  // Define interior boundary with rectangular shape 
+  Boundary intr_bdry { BdryType::INTERIOR };
+
+} // Test_Boundary_shapes()
+
 
 } // namespace BoundaryTests
 
@@ -160,5 +228,7 @@ void run_boundary_tests()
   
   BoundaryTests::Test_Boundary_interior_exterior();
   BoundaryTests::Test_Domain_is_inside();
+  BoundaryTests::Test_Boundary_clear_edges();
+  BoundaryTests::Test_Boundary_shapes();
 
 } // run_boundary_tests()

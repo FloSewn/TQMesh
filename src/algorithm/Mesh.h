@@ -1070,6 +1070,7 @@ private:
     Facet* f1 = nullptr;
     Facet* f2 = nullptr;
     
+    // Setup connectivity for interor edges
     for ( const auto& e_ptr : intr_edges_ )
     {
       const Vertex& v1 = e_ptr->v1();
@@ -1112,6 +1113,27 @@ private:
         e_ptr->facet_l( f2 );
         e_ptr->facet_r( f1 );
       }
+    }
+
+    // Setup connectivity for boundary edges
+    for ( const auto& e_ptr : bdry_edges_ )
+    {
+      const Vertex& v1 = e_ptr->v1();
+      const Vertex& v2 = e_ptr->v2();
+
+      for ( auto f : v1.facets() )
+      {
+        int idx = f->get_edge_index(v1, v2);
+
+        if ( idx < 0 ) continue;
+
+        f1 = f;
+        break;
+      }
+
+      // Setup connectivity between internal edge and facets
+      if ( TQGeom::is_left( v1.xy(), v2.xy(), f1->xy() ) )
+        e_ptr->facet_l( f1 );
 
     }
     
@@ -2056,13 +2078,15 @@ static inline std::ostream& operator<<(std::ostream& os,
     os << std::setprecision(0) << std::fixed 
       << std::setw(4) << e_ptr->v1().index() << "," 
       << std::setw(4) << e_ptr->v2().index() << ","
-      << std::setw(4) << e_ptr->marker() << "\n";
+      << std::setw(4) << e_ptr->facet_l()->index() << ","
+      << std::setw(4) << e_ptr->facet_r()->index() << "\n";
 
   os << "BOUNDARYEDGES " << mesh.boundary_edges().size() << "\n";
   for ( const auto& e_ptr : mesh.boundary_edges() )
     os << std::setprecision(0) << std::fixed 
       << std::setw(4) << e_ptr->v1().index() << "," 
       << std::setw(4) << e_ptr->v2().index() << ","
+      << std::setw(4) << e_ptr->facet_l()->index() << ","
       << std::setw(4) << e_ptr->marker() << "\n";
 
   os << "FRONT " << mesh.front().size() << "\n";
