@@ -162,7 +162,7 @@ Define interior circular boundary:    2, 1.0, 0.7, 0.15, 40
 Define interior rectangular boundary: 3, 1.5, 1.0, 0.30, 0.30
 Define interior circular boundary:    4, 1.0, 1.3, 0.15, 40
 ``` 
-<img src="doc/BoundaryShapes.png" alt="TQMesh-Interior-Boundary-Shapes" width="350"/>
+<img src="doc/BoundaryShapes.png" alt="TQMesh-Interior-Boundary-Shapes" width="500"/>
 
 ## Output format
 Currently, **TQMesh** only features a simple output format,
