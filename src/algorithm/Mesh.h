@@ -203,6 +203,7 @@ public:
     }
 
     MSG("DONE!");
+    return true;
 
   } // smoothing() 
 
@@ -291,6 +292,8 @@ public:
 
     // Initialize facet-to-facet connectivity
     setup_facet_connectivity();
+
+    return true;
 
   } // Mesh::triangulate()
 
@@ -382,6 +385,8 @@ public:
 
     // Merge remaining triangles to quads
     merge_triangles_to_quads();
+
+    return true;
 
   } // Mesh::pave()
 
@@ -1960,6 +1965,8 @@ private:
       eps *= -decay;
     }
 
+    return true;
+
   } // Mesh::smoothing_torsion()
 
   /*------------------------------------------------------------------
@@ -2005,6 +2012,8 @@ private:
       eps *= -decay;
 
     }
+
+    return true;
 
   } // smoothing_laplace()
 

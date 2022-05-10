@@ -9,10 +9,10 @@ project(TQMesh
 # Set C++ flags
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-#set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wunused-variable -std=c++17 -O3 -DNDEBUG -pg")
-set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wunused-variable -std=c++17 -O3 -DNDEBUG")
-#set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -std=c++17 -O0 -g -pg")
-#set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wunused-variable -std=c++17 -O0 -g")
+#set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wunused-variable -std=c++17 -O3 -DNDEBUG -pg -fconcepts")
+set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wunused-variable -std=c++17 -O3 -DNDEBUG -fconcepts")
+#set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -std=c++17 -O0 -g -pg -fconcepts")
+#set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wunused-variable -std=c++17 -O0 -g -fconcepts")
 
 
 set( BIN ${CMAKE_SOURCE_DIR}/bin )

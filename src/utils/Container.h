@@ -134,7 +134,15 @@ public:
     iterator iter = items_.insert( pos, std::move(u_ptr) );
     ptr->pos_          = iter;
     ptr->in_container_ = true;
-    qtree_.add( ptr );
+    bool in_qtree = qtree_.add( ptr );
+
+    // Failed to add element to qtree -> cleanup
+    if (!in_qtree)
+    {
+      MSG("[WARNING]: Failed to add element to the quad tree. "
+          "Maybe the element is outside of the defined domain.");
+    }
+    
     return *ptr;
   }
 
@@ -153,8 +161,6 @@ public:
   { 
     if ( qtree_.remove( &item ) )
     {
-      //--> old approach: items_.erase( item.pos_ ); 
-        
       // Move item to waste list
       waste_.splice(waste_.end(), items_, item.pos_);
       // Call the item container destructor
@@ -171,7 +177,7 @@ public:
   | Function to finally remove all items in the container garbage 
   | collector 
   ------------------------------------------------------------------*/
-  bool clear_waste() { waste_.clear(); }
+  void clear_waste() { waste_.clear(); }
 
   /*------------------------------------------------------------------
   | Access operator
