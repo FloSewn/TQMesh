@@ -63,7 +63,8 @@ void Test_Front_initialization(bool export_data)
   b_int.add_edge( v8, v5, 2 );
 
   // Create advancing front
-  Front front { domain, vertices };
+  Front front { }; 
+  front.init_front_edges( domain, vertices );
   
   ASSERT( EQ(front.area(), domain.area()),
       "Front initialization failed.");
@@ -138,7 +139,8 @@ void Test_Front_sort_edges()
   b_int.add_edge( v8, v5, 2 );
 
   // Create advancing front
-  Front front { domain, vertices };
+  Front front { };
+  front.init_front_edges( domain, vertices );
 
   // Sort edges in ascending order
   front.sort_edges();

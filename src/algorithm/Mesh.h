@@ -50,14 +50,28 @@ public:
        size_t    qtree_items=TQ_QTREE_ITEMS, 
        size_t    qtree_depth=TQ_QTREE_DEPTH)
   : domain_ { &domain }
-  , verts_  { &domain.vertices() }
+  , verts_  { qtree_scale, qtree_items, qtree_depth }
   , tris_   { qtree_scale, qtree_items, qtree_depth }
   , quads_  { qtree_scale, qtree_items, qtree_depth }
-  , front_  { domain, domain.vertices() }
+  , front_  { }
   {
+    // Copy vertices from domain
+    for ( const auto& v_ptr : domain.vertices() )
+    {
+      Vertex& v = verts_.push_back( v_ptr->xy(), 
+                                    v_ptr->sizing(), 
+                                    v_ptr->range() );
+      v.on_front( v_ptr->on_front() );
+      v.on_boundary( v_ptr->on_boundary() );
+      v.is_fixed( v_ptr->is_fixed() );
+    }
+
+    // Initialize edges in the advancing front
+    front_.init_front_edges(domain, verts_);
+
     // Setup initial vertex indices
     unsigned int v_index = 0; 
-    for ( const auto& v_ptr : *verts_ )
+    for ( const auto& v_ptr : verts_ )
       v_ptr->index( v_index++ );
 
     // Setup boundary edges from the initial advancing front
@@ -71,7 +85,7 @@ public:
   ------------------------------------------------------------------*/
   void clear_waste()
   {
-    verts_->clear_waste();
+    verts_.clear_waste();
     tris_.clear_waste();
     quads_.clear_waste();
     front_.clear_waste();
@@ -91,8 +105,8 @@ public:
   const Quads& quads() const { return quads_; }
   Quads& quads() { return quads_; }
 
-  const Vertices& vertices() const { return *verts_; }
-  Vertices& vertices() { return *verts_; }
+  const Vertices& vertices() const { return verts_; }
+  Vertices& vertices() { return verts_; }
 
   const EdgeList& interior_edges() const { return intr_edges_; }
   EdgeList& interior_edges() { return intr_edges_; }
@@ -114,7 +128,7 @@ public:
     unsigned int e_index = 0;
 
     // Vertices 
-    for ( const auto& v_ptr : *verts_ )
+    for ( const auto& v_ptr : verts_ )
       v_ptr->index( v_index++ );
 
     // Quads
@@ -450,7 +464,7 @@ public:
     // No triangle has been found yet -> create new one
     if ( !t1 )
     {
-      Vertex&   v_new = verts_->push_back( p1 );
+      Vertex&   v_new = verts_.push_back( p1 );
       Triangle& t_new = tris_.push_back(b1, b2, v_new);
 
       // Algorithm fails if new vertex or new triangle is invalid
@@ -495,7 +509,7 @@ public:
     // No triangle has been found yet -> create new one
     if ( !t2 )
     {
-      Vertex&   v_new = verts_->push_back( p2 );
+      Vertex&   v_new = verts_.push_back( p2 );
       Triangle& t_new = tris_.push_back(d1, d2, v_new);
 
       // Algorithm fails if new vertex or new triangle is invalid
@@ -739,7 +753,7 @@ private:
       dist *= TQ_WIDE_SEARCH_FACTOR;
 
     // Get vertices in vicinity of xy  
-    VertexVector vertex_candidates = verts_->get_items(xy, dist);
+    VertexVector vertex_candidates = verts_.get_items(xy, dist);
 
     // Sort vertices in ascending order towards xy
     std::sort( vertex_candidates.begin(), vertex_candidates.end(), 
@@ -847,7 +861,7 @@ private:
       return false;
     }
 
-    if ( tri.intersects_vertex( *verts_, range ) )
+    if ( tri.intersects_vertex( verts_, range ) )
     {
       DBG_MSG("  > VERTEX INTERSECTION");
       return false;
@@ -922,7 +936,7 @@ private:
     // Coordinate of new vertex 
     Vec2d xy = base.xy() + base.normal() * rho;
 
-    return verts_->push_back( xy.x, xy.y );
+    return verts_.push_back( xy.x, xy.y );
 
   } // get_base_vertex() 
 
@@ -1025,7 +1039,7 @@ private:
   void setup_vertex_connectivity()
   {
     // Remove all current vertex-to-vertex connectivities
-    for ( auto& v_ptr : *verts_ )
+    for ( auto& v_ptr : verts_ )
       v_ptr->vertices().clear();
 
     // Get vertex-to-vertex connectivity from interior edges
@@ -1049,7 +1063,7 @@ private:
     }
 
     // Sort local vertex connectivities by ascending angle
-    for ( auto& v_ptr : *verts_ )
+    for ( auto& v_ptr : verts_ )
     {
       const Vec2d xy = v_ptr->xy();
 
@@ -1522,7 +1536,7 @@ private:
     // coordinates
     QuadLayer quad_layer { e_start, e_end, is_closed, height };
     quad_layer.smooth_heights( *domain_ );
-    quad_layer.setup_vertex_projection( *verts_, front_, bdry_edges_ );
+    quad_layer.setup_vertex_projection( verts_, front_, bdry_edges_ );
 
     // For each base edge in the quad layer, try to create a quad
     // element with its given projected coordinates
@@ -1674,7 +1688,7 @@ private:
     // with this new vertex
     if ( !tri )
     {
-      Vertex& v_new = verts_->push_back( xy );
+      Vertex& v_new = verts_.push_back( xy );
       tri = &( tris_.push_back(v1, v2, v_new) );
 
       // If the created entities are invalid, clean up
@@ -1756,7 +1770,7 @@ private:
       {
         const Vec2d v_xy = b.xy() + l1 + l2;
 
-        Vertex& v_new = verts_->push_back( v_xy );
+        Vertex& v_new = verts_.push_back( v_xy );
 
         Triangle* t1_new = &( tris_.push_back(a, b, v_new) );
         Triangle* t2_new = &( tris_.push_back(b, c, v_new) );
@@ -1844,7 +1858,7 @@ private:
         if ( delta <= h )
         {
           const Vec2d v_xy = 0.5 * (p1.xy() + p2.xy());
-          Vertex& v_new = verts_->push_back( v_xy );
+          Vertex& v_new = verts_.push_back( v_xy );
 
           Triangle& t1_new = tris_.push_back(p1, c, v_new);
           Triangle& t2_new = tris_.push_back(c, p2, v_new);
@@ -1909,7 +1923,7 @@ private:
     for (int iter = 0; iter < iterations; ++iter)
     {
 
-      for ( const auto& v : *verts_ )
+      for ( const auto& v : verts_ )
       {
         if ( v->is_fixed() || v->on_boundary() )
           continue;
@@ -1978,7 +1992,7 @@ private:
   {
     for (int iter = 0; iter < iterations; ++iter)
     {
-      for ( const auto& v : *verts_ )
+      for ( const auto& v : verts_ )
       {
         if ( v->is_fixed() || v->on_boundary() )
           continue;
@@ -2023,7 +2037,7 @@ private:
   ------------------------------------------------------------------*/
   inline void check_remove_vertex(Vertex& v)
   {
-    bool removed = verts_->remove( v );
+    bool removed = verts_.remove( v );
     ASSERT( removed, "Failed to remove vertex.");
     (void) removed;
   }
@@ -2054,8 +2068,8 @@ private:
   | Attributes
   ------------------------------------------------------------------*/
   Domain*    domain_ {nullptr};
-  Vertices*  verts_  {nullptr};
 
+  Vertices   verts_;
   Triangles  tris_;
   Quads      quads_;
   Front      front_;

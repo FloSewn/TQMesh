@@ -38,37 +38,101 @@ class Front : public EdgeList
 public:
 
   /*------------------------------------------------------------------
-  | Constructor: Initialize the advancing front from an existing
-  | domain
+  | Constructor
   ------------------------------------------------------------------*/
-  Front( const Domain& domain, Vertices &vertices ) 
-  : EdgeList( TQGeom::Orientation::NONE )
+  Front() : EdgeList( TQGeom::Orientation::NONE )
+  {}
+
+  /*------------------------------------------------------------------
+  | Init the front edges from a domain and refine them
+  | Since the advancing front is part if the mesh, this function
+  | requires the mesh's vertices to setup the edges
+  ------------------------------------------------------------------*/
+  void init_front_edges(const Domain& domain, Vertices &mesh_vertices)
   {
-    // Initialize the advancing front from all boundaries
-    // --> Advancing front gets marker "0"
+    // Check for correct number of vertices of domain and mesh
+    ASSERT( domain.vertices().size() == mesh_vertices.size(), 
+        "Domain and mesh vertex numbers differ." );
+
+    // Initialize indices of original domain vertices
+    size_t v_index = 0; 
+    for ( const auto& v_ptr : domain.vertices() )
+      v_ptr->index( v_index++ );
+
+
+    // Initialize array with pointers to the mesh vertices
+    std::vector<Vertex*> v_ptrs {};
+
+    for ( const auto& v_ptr : mesh_vertices )
+      v_ptrs.push_back( v_ptr.get() );
+
+
+    // Create list edge-vertex-connectivity given in the domain
+    std::vector<std::vector<std::pair<size_t,size_t>>> connectivity {};
+
+    size_t i_bdry = 0;
     for ( const auto& boundary : domain )
+    {
+      connectivity.push_back( {} );
+
       for ( const auto& e : boundary.get()->edges() )
       {
-        // We fix the position of all initial boundary vertices,
-        // such that they won't be shifted during the grid 
-        // smoothing process
-        e->v1().is_fixed(true);
+        connectivity[i_bdry].push_back( 
+            {e->v1().index(), e->v2().index()} 
+        );
+      }
+
+      // Counter for boundaries
+      ++i_bdry;
+    }
+
+
+    // Initialize the advancing front edges
+    i_bdry = 0;
+
+    for ( const auto& boundary : domain )
+    {
+      size_t i_edge = 0;
+
+      for ( const auto& e : boundary.get()->edges() )
+      {
+        // Get mesh vertices of current edge
+        size_t i1 = connectivity[i_bdry][i_edge].first;
+        size_t i2 = connectivity[i_bdry][i_edge].second;
+
+        Vertex* v1 = v_ptrs[i1];
+        Vertex* v2 = v_ptrs[i2];
 
         // All advancing front edges are assigned to a specified 
         // edge marker
-        Edge& e_new = this->add_edge( e->v1(), e->v2(), e->marker() );
+        Edge& e_new = this->add_edge( *v1, *v2, e->marker() );
+
+        // We fix the position of all initial boundary vertices,
+        // such that they won't be shifted during the grid 
+        // smoothing process
+        v1->is_fixed(true);
+        v2->is_fixed(true);
 
         // Keep track of the original domain boundary
-        e_new.v1().on_boundary( true );
-        e_new.v2().on_boundary( true );
+        v1->on_boundary( true );
+        v2->on_boundary( true );
+
+        // Counter for boundary edges
+        ++i_edge;
       }
+
+      // Counter for boundaries
+      ++i_bdry;
+    }
+
 
     // Check for correct orientation
     ASSERT( check_orientation(), "Invalid edge list orientation." );
 
     // Refine the front based on the underlying size function
-    this->refine(domain, vertices);
-  }
+    this->refine(domain, mesh_vertices);
+
+  } // init_front_edges()
 
   /*------------------------------------------------------------------
   | Getters
