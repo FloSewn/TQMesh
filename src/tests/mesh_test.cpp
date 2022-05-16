@@ -56,8 +56,8 @@ void Test_Mesh_initialization()
 
   Domain           domain   { f, 10.0 };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
-  Boundary&  b_int = domain.add_boundary( BdryType::INTERIOR );
+  Boundary&  b_ext = domain.add_exterior_boundary();
+  Boundary&  b_int = domain.add_interior_boundary();
 
   // Build exterior boundary
   Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
@@ -105,7 +105,7 @@ void Test_Mesh_triangulate(bool export_mesh)
 
   Domain domain   { f, 20.0 };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
+  Boundary&  b_ext = domain.add_exterior_boundary();
 
   // Build exterior boundary
   Vertex& v1 = domain.add_vertex(  0.0,  0.0, 0.9 );
@@ -159,7 +159,7 @@ void Test_Mesh_pave(bool export_mesh)
 
   Domain domain   { f, 20.0 };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
+  Boundary&  b_ext = domain.add_exterior_boundary();
 
   // Build exterior boundary
   Vertex& v1 = domain.add_vertex(  0.0,  0.0, 0.9 );
@@ -214,7 +214,7 @@ void Test_Mesh_triangulate_quad_layer(bool export_mesh)
 
   Domain domain   { f, 20.0 };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
+  Boundary&  b_ext = domain.add_exterior_boundary();
 
   // Build exterior boundary
   Vertex& v1 = domain.add_vertex(  0.0,  0.0, 0.9 );
@@ -267,8 +267,8 @@ void Test_Mesh_advance_front_quad(bool export_mesh)
 
   Domain domain   { f, 50.0 };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
-  Boundary&  b_int = domain.add_boundary( BdryType::INTERIOR );
+  Boundary&  b_ext = domain.add_exterior_boundary();
+  Boundary&  b_int = domain.add_interior_boundary();
 
   // Build exterior boundary
   Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
@@ -328,7 +328,7 @@ void Test_Mesh_create_simple_hex_layers(bool export_mesh)
 
   Domain domain   { f, 150.0 };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
+  Boundary&  b_ext = domain.add_exterior_boundary();
 
   // Build exterior boundary
   Vertex& v1 = domain.add_vertex(  2.0,  0.0, 1.0, 1.0 );
@@ -386,7 +386,7 @@ void Test_Mesh_add_quad_layer(bool export_mesh)
 
   Domain domain   { f, 50.0 };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
+  Boundary&  b_ext = domain.add_exterior_boundary();
 
   // Build exterior boundary
   Vertex& v1 = domain.add_vertex(  0.0,  0.0, 1.0, 0.5 );
@@ -438,7 +438,7 @@ void Test_Mesh_add_quad_layer_step(bool export_mesh)
 
   Domain domain   { f, 50.0 };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
+  Boundary&  b_ext = domain.add_exterior_boundary();
 
   // Build exterior boundary
   Vertex& v1 = domain.add_vertex(  0.0,  0.0, 1.0 );
@@ -491,7 +491,7 @@ void Test_Mesh_wedge(bool export_mesh)
 
   Domain domain   { f, 2000.0 };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
+  Boundary&  b_ext = domain.add_exterior_boundary();
 
   // Build exterior boundary
   Vertex& v0  = domain.add_vertex(   0.0,   0.00,  1.0,  1.0 );
@@ -579,10 +579,10 @@ void Test_Mesh_banner(bool export_mesh)
 
   Domain domain   { f, 60.0 };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
-  Boundary&  b_T   = domain.add_boundary( BdryType::INTERIOR );
-  Boundary&  b_Q   = domain.add_boundary( BdryType::INTERIOR );
-  Boundary&  b_M   = domain.add_boundary( BdryType::INTERIOR );
+  Boundary&  b_ext = domain.add_exterior_boundary();
+  Boundary&  b_T   = domain.add_interior_boundary();
+  Boundary&  b_Q   = domain.add_interior_boundary();
+  Boundary&  b_M   = domain.add_interior_boundary();
 
   // Vertices for exterior boundary
   Vertex& b0  = domain.add_vertex( -22.0, -10.00,  0.5,  2.0 );
@@ -718,8 +718,8 @@ void Test_Mesh_vortex_shedding(bool export_mesh)
 
   Domain domain   { f, 50.0 };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
-  Boundary&  b_int = domain.add_boundary( BdryType::INTERIOR );
+  Boundary&  b_ext = domain.add_exterior_boundary();
+  Boundary&  b_int = domain.add_interior_boundary();
 
   // Build exterior boundary
   Vertex& v1 = domain.add_vertex(  0.0,  0.0, 1.0, 1.0 );
@@ -783,10 +783,10 @@ void Test_Mesh_create_bdry_shape_mesh(bool export_mesh)
 
   Domain domain   { f, 50.0 };
 
-  Boundary&  b_ext     = domain.add_boundary( BdryType::EXTERIOR );
-  Boundary&  b_shape_1 = domain.add_boundary( BdryType::INTERIOR );
-  Boundary&  b_shape_2 = domain.add_boundary( BdryType::INTERIOR );
-  Boundary&  b_shape_3 = domain.add_boundary( BdryType::INTERIOR );
+  Boundary&  b_ext     = domain.add_exterior_boundary();
+  Boundary&  b_shape_1 = domain.add_interior_boundary();
+  Boundary&  b_shape_2 = domain.add_interior_boundary();
+  Boundary&  b_shape_3 = domain.add_interior_boundary();
 
   b_ext.set_shape_rectangle( domain.vertices(), 1, {6.0,1.0}, 16.0, 8.0 );
   b_shape_1.set_shape_circle( domain.vertices(), 2, {1.0,1.0}, 0.5, 30 );
@@ -801,8 +801,8 @@ void Test_Mesh_create_bdry_shape_mesh(bool export_mesh)
   //mesh.create_quad_layers(v3, v4, 2, 0.05, 1.0);
   //mesh.create_quad_layers(v5, v5, 2, 0.01, 1.0);
 
-  mesh.triangulate();
-  //mesh.pave();
+  //mesh.triangulate();
+  mesh.pave();
   //mesh.merge_triangles_to_quads();
   mesh.smoothing(4, 0.9);
 
@@ -837,8 +837,8 @@ void Test_Mesh_benchmark(double h, double L,
   Timer            timer {};
   Domain           domain   { f, 50.0*L };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
-  Boundary&  b_int = domain.add_boundary( BdryType::INTERIOR );
+  Boundary&  b_ext = domain.add_exterior_boundary();
+  Boundary&  b_int = domain.add_interior_boundary();
 
   // Build exterior boundary
   Vertex& v1 = domain.add_vertex(  2.0*L,  0.0*L, 1.0, 1.0 );
@@ -976,7 +976,7 @@ void Test_Mesh_benchmark_TMesh(double h, double L,
   Timer            timer {};
   Domain           domain   { f, 20.0*L };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
+  Boundary&  b_ext = domain.add_exterior_boundary();
 
   // Build exterior boundary
   Vertex& v1 = domain.add_vertex(  0.0*L,  0.0*L, 1.0, 1.0 );

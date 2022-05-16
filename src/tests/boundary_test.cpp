@@ -42,8 +42,8 @@ void Test_Domain_is_inside()
 {
   Domain     domain {};
 
-  Boundary& b_ext = domain.add_boundary( BdryType::EXTERIOR );
-  Boundary& b_int = domain.add_boundary( BdryType::INTERIOR );
+  Boundary& b_ext = domain.add_exterior_boundary();
+  Boundary& b_int = domain.add_interior_boundary();
 
   // Built exterior boundary
   Vertex& v1 = domain.add_vertex(  0.0,  0.0 );

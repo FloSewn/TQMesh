@@ -36,8 +36,8 @@ void Test_SizeFunction_evaluation(bool export_sizefun)
 
   Domain           domain   { f };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
-  Boundary&  b_int = domain.add_boundary( BdryType::INTERIOR );
+  Boundary&  b_ext = domain.add_exterior_boundary();
+  Boundary&  b_int = domain.add_interior_boundary();
 
   // Build exterior boundary
   Vertex& v1 = domain.add_vertex(  0.0,  0.0 );

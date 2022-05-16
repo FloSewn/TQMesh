@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
   while( reader.query( para_extr_bdry ) )
   {
     ++n_extr_bdry;
-    Boundary& b_ext = domain.add_boundary( BdryType::EXTERIOR );
+    Boundary& b_ext = domain.add_exterior_boundary();
 
     for ( size_t i = 0; i < para_extr_bdry.rows(); ++i )
     {
@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
   ------------------------------------------------------------------*/
   while( reader.query( para_intr_bdry ) )
   {
-    Boundary& b_int = domain.add_boundary( BdryType::INTERIOR );
+    Boundary& b_int = domain.add_interior_boundary();
 
     for ( size_t i = 0; i < para_intr_bdry.rows(); ++i )
     {
@@ -193,7 +193,7 @@ int main(int argc, char* argv[])
 
   while( reader.query( para_intr_rect_bdry ) )
   {
-    Boundary& b_int = domain.add_boundary( BdryType::INTERIOR );
+    Boundary& b_int = domain.add_interior_boundary();
 
     int    m = static_cast<int>( para_intr_rect_bdry.value(0) );
     double x = para_intr_rect_bdry.value(1);
@@ -206,7 +206,7 @@ int main(int argc, char* argv[])
 
   while( reader.query( para_intr_circ_bdry ) )
   {
-    Boundary& b_int = domain.add_boundary( BdryType::INTERIOR );
+    Boundary& b_int = domain.add_interior_boundary();
 
     int    m = static_cast<int>( para_intr_circ_bdry.value(0) );
     double x = para_intr_circ_bdry.value(1);
