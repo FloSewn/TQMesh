@@ -33,17 +33,16 @@ void Test_Front_initialization(bool export_data)
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) { return 1.0 + 0.15*sqrt(p.x*p.y); };
 
-  Vertices         vertices { 10.0 };
-  Domain           domain   { vertices, f };
+  Domain           domain   { f, 10.0 };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
   Boundary&  b_int = domain.add_boundary( BdryType::INTERIOR );
 
   // Build exterior boundary
-  Vertex& v1 = vertices.push_back(  0.0,  0.0 );
-  Vertex& v2 = vertices.push_back(  5.0,  0.0 );
-  Vertex& v3 = vertices.push_back(  5.0,  5.0 );
-  Vertex& v4 = vertices.push_back(  0.0,  5.0 );
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0 );
+  Vertex& v3 = domain.add_vertex(  5.0,  5.0 );
+  Vertex& v4 = domain.add_vertex(  0.0,  5.0 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 1 );
@@ -52,16 +51,22 @@ void Test_Front_initialization(bool export_data)
 
 
   // Build interior boundary
-  Vertex& v5 = vertices.push_back(  2.5,  2.0, 0.2);
-  Vertex& v6 = vertices.push_back(  2.0,  3.5 );
-  Vertex& v7 = vertices.push_back(  3.0,  2.5 );
-  Vertex& v8 = vertices.push_back(  3.0,  2.0 );
+  Vertex& v5 = domain.add_vertex(  2.5,  2.0, 0.2);
+  Vertex& v6 = domain.add_vertex(  2.0,  3.5 );
+  Vertex& v7 = domain.add_vertex(  3.0,  2.5 );
+  Vertex& v8 = domain.add_vertex(  3.0,  2.0 );
 
   b_int.add_edge( v5, v6, 2 );
   b_int.add_edge( v6, v7, 2 );
   b_int.add_edge( v7, v8, 2 );
   b_int.add_edge( v8, v5, 2 );
 
+  // Advancing front requires initialized vertex container
+  Vertices vertices { 10.0 };
+
+  for ( const auto& v_ptr : domain.vertices() )
+    vertices.push_back( v_ptr->xy(), v_ptr->sizing(), v_ptr->range() );
+    
   // Create advancing front
   Front front { }; 
   front.init_front_edges( domain, vertices );
@@ -109,17 +114,16 @@ void Test_Front_sort_edges()
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) { return 1.0 + 0.15*sqrt(p.x*p.y); };
 
-  Vertices         vertices { 10.0 };
-  Domain           domain   { vertices, f };
+  Domain           domain   { f, 10.0 };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
   Boundary&  b_int = domain.add_boundary( BdryType::INTERIOR );
 
   // Build exterior boundary
-  Vertex& v1 = vertices.push_back(  0.0,  0.0 );
-  Vertex& v2 = vertices.push_back(  5.0,  0.0 );
-  Vertex& v3 = vertices.push_back(  5.0,  5.0 );
-  Vertex& v4 = vertices.push_back(  0.0,  5.0 );
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0 );
+  Vertex& v3 = domain.add_vertex(  5.0,  5.0 );
+  Vertex& v4 = domain.add_vertex(  0.0,  5.0 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 1 );
@@ -128,15 +132,21 @@ void Test_Front_sort_edges()
 
 
   // Build interior boundary
-  Vertex& v5 = vertices.push_back(  2.5,  2.0, 0.2);
-  Vertex& v6 = vertices.push_back(  2.0,  3.5 );
-  Vertex& v7 = vertices.push_back(  3.0,  2.5 );
-  Vertex& v8 = vertices.push_back(  3.0,  2.0 );
+  Vertex& v5 = domain.add_vertex(  2.5,  2.0, 0.2);
+  Vertex& v6 = domain.add_vertex(  2.0,  3.5 );
+  Vertex& v7 = domain.add_vertex(  3.0,  2.5 );
+  Vertex& v8 = domain.add_vertex(  3.0,  2.0 );
 
   b_int.add_edge( v5, v6, 2 );
   b_int.add_edge( v6, v7, 2 );
   b_int.add_edge( v7, v8, 2 );
   b_int.add_edge( v8, v5, 2 );
+
+  // Advancing front requires initialized vertex container
+  Vertices vertices { 10.0 };
+
+  for ( const auto& v_ptr : domain.vertices() )
+    vertices.push_back( v_ptr->xy(), v_ptr->sizing(), v_ptr->range() );
 
   // Create advancing front
   Front front { };

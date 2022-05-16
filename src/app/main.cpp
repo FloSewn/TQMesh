@@ -115,8 +115,7 @@ int main(int argc, char* argv[])
   /*------------------------------------------------------------------
   | Initialize vertices and exterior boundary
   ------------------------------------------------------------------*/
-  Vertices  vertices { domain_size };
-  Domain    domain   { vertices, size_fun };
+  Domain domain { size_fun, domain_size };
 
   // init vertices
   for ( size_t i = 0; i < para_vertices.rows(); ++i )
@@ -126,13 +125,14 @@ int main(int argc, char* argv[])
     const double s = para_vertices.value(4*i + 2);
     const double r = para_vertices.value(4*i + 3);
 
-    vertices.push_back(x,y,s,r);
+    domain.add_vertex(x,y,s,r);
   }
 
   /*------------------------------------------------------------------
   | Query exterior boundary definitions
   ------------------------------------------------------------------*/
   int n_extr_bdry = 0;
+  Vertices& vertices = domain.vertices();
 
   while( reader.query( para_extr_bdry ) )
   {

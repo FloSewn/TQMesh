@@ -54,17 +54,16 @@ void Test_Mesh_initialization()
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) { return 1.0 + 0.15*sqrt(p.x*p.y); };
 
-  Vertices         vertices { 10.0 };
-  Domain           domain   { vertices, f };
+  Domain           domain   { f, 10.0 };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
   Boundary&  b_int = domain.add_boundary( BdryType::INTERIOR );
 
   // Build exterior boundary
-  Vertex& v1 = vertices.push_back(  0.0,  0.0 );
-  Vertex& v2 = vertices.push_back(  5.0,  0.0 );
-  Vertex& v3 = vertices.push_back(  5.0,  5.0 );
-  Vertex& v4 = vertices.push_back(  0.0,  5.0 );
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0 );
+  Vertex& v3 = domain.add_vertex(  5.0,  5.0 );
+  Vertex& v4 = domain.add_vertex(  0.0,  5.0 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 1 );
@@ -73,10 +72,10 @@ void Test_Mesh_initialization()
 
 
   // Build interior boundary
-  Vertex& v5 = vertices.push_back(  2.5,  2.0, 0.2);
-  Vertex& v6 = vertices.push_back(  2.0,  3.5 );
-  Vertex& v7 = vertices.push_back(  3.0,  2.5 );
-  Vertex& v8 = vertices.push_back(  3.0,  2.0 );
+  Vertex& v5 = domain.add_vertex(  2.5,  2.0, 0.2);
+  Vertex& v6 = domain.add_vertex(  2.0,  3.5 );
+  Vertex& v7 = domain.add_vertex(  3.0,  2.5 );
+  Vertex& v8 = domain.add_vertex(  3.0,  2.0 );
 
   b_int.add_edge( v5, v6, 2 );
   b_int.add_edge( v6, v7, 2 );
@@ -104,18 +103,17 @@ void Test_Mesh_triangulate(bool export_mesh)
     return 2.5; 
   };
 
-  Vertices         vertices { 20.0 };
-  Domain           domain   { vertices, f };
+  Domain domain   { f, 20.0 };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
 
   // Build exterior boundary
-  Vertex& v1 = vertices.push_back(  0.0,  0.0, 0.9 );
-  Vertex& v2 = vertices.push_back(  5.0,  0.0, 0.9 );
-  Vertex& v3 = vertices.push_back(  5.0,  5.0, 0.9 );
-  Vertex& v4 = vertices.push_back( 10.0,  5.0, 0.9 );
-  Vertex& v5 = vertices.push_back( 10.0, 10.0, 0.9 );
-  Vertex& v6 = vertices.push_back(  0.0,  5.0, 0.9 );
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0, 0.9 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0, 0.9 );
+  Vertex& v3 = domain.add_vertex(  5.0,  5.0, 0.9 );
+  Vertex& v4 = domain.add_vertex( 10.0,  5.0, 0.9 );
+  Vertex& v5 = domain.add_vertex( 10.0, 10.0, 0.9 );
+  Vertex& v6 = domain.add_vertex(  0.0,  5.0, 0.9 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 1 );
@@ -159,18 +157,17 @@ void Test_Mesh_pave(bool export_mesh)
     return 0.5; 
   };
 
-  Vertices         vertices { 20.0 };
-  Domain           domain   { vertices, f };
+  Domain domain   { f, 20.0 };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
 
   // Build exterior boundary
-  Vertex& v1 = vertices.push_back(  0.0,  0.0, 0.9 );
-  Vertex& v2 = vertices.push_back(  5.0,  0.0, 0.9 );
-  Vertex& v3 = vertices.push_back(  5.0,  5.0, 0.9 );
-  Vertex& v4 = vertices.push_back( 10.0,  5.0, 0.9 );
-  Vertex& v5 = vertices.push_back( 10.0, 10.0, 0.9 );
-  Vertex& v6 = vertices.push_back(  0.0,  5.0, 0.9 );
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0, 0.9 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0, 0.9 );
+  Vertex& v3 = domain.add_vertex(  5.0,  5.0, 0.9 );
+  Vertex& v4 = domain.add_vertex( 10.0,  5.0, 0.9 );
+  Vertex& v5 = domain.add_vertex( 10.0, 10.0, 0.9 );
+  Vertex& v6 = domain.add_vertex(  0.0,  5.0, 0.9 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 1 );
@@ -215,18 +212,17 @@ void Test_Mesh_triangulate_quad_layer(bool export_mesh)
     return 2.5; 
   };
 
-  Vertices         vertices { 20.0 };
-  Domain           domain   { vertices, f };
+  Domain domain   { f, 20.0 };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
 
   // Build exterior boundary
-  Vertex& v1 = vertices.push_back(  0.0,  0.0, 0.9 );
-  Vertex& v2 = vertices.push_back(  5.0,  0.0, 0.9 );
-  Vertex& v3 = vertices.push_back(  5.0,  5.0, 0.9 );
-  Vertex& v4 = vertices.push_back( 10.0,  5.0, 0.9 );
-  Vertex& v5 = vertices.push_back( 10.0, 10.0, 0.9 );
-  Vertex& v6 = vertices.push_back(  0.0,  9.0, 0.9 );
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0, 0.9 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0, 0.9 );
+  Vertex& v3 = domain.add_vertex(  5.0,  5.0, 0.9 );
+  Vertex& v4 = domain.add_vertex( 10.0,  5.0, 0.9 );
+  Vertex& v5 = domain.add_vertex( 10.0, 10.0, 0.9 );
+  Vertex& v6 = domain.add_vertex(  0.0,  9.0, 0.9 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 2 );
@@ -269,17 +265,16 @@ void Test_Mesh_advance_front_quad(bool export_mesh)
     return 0.35;
   };
 
-  Vertices         vertices { 50.0 };
-  Domain           domain   { vertices, f };
+  Domain domain   { f, 50.0 };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
   Boundary&  b_int = domain.add_boundary( BdryType::INTERIOR );
 
   // Build exterior boundary
-  Vertex& v1 = vertices.push_back(  0.0,  0.0 );
-  Vertex& v2 = vertices.push_back(  5.0,  0.0 );
-  Vertex& v3 = vertices.push_back(  5.0,  5.0 );
-  Vertex& v4 = vertices.push_back(  0.0,  5.0 );
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0 );
+  Vertex& v3 = domain.add_vertex(  5.0,  5.0 );
+  Vertex& v4 = domain.add_vertex(  0.0,  5.0 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 1 );
@@ -287,9 +282,9 @@ void Test_Mesh_advance_front_quad(bool export_mesh)
   b_ext.add_edge( v4, v1, 1 );
 
   // Build interior boundary
-  Vertex& v5 = vertices.push_back(  1.5,  1.5, 0.6, 0.8 );
-  Vertex& v6 = vertices.push_back(  1.5,  3.5 );
-  Vertex& v7 = vertices.push_back(  3.5,  3.5 );
+  Vertex& v5 = domain.add_vertex(  1.5,  1.5, 0.6, 0.8 );
+  Vertex& v6 = domain.add_vertex(  1.5,  3.5 );
+  Vertex& v7 = domain.add_vertex(  3.5,  3.5 );
 
   b_int.add_edge( v5, v6, 2 );
   b_int.add_edge( v6, v7, 2 );
@@ -331,18 +326,17 @@ void Test_Mesh_create_simple_hex_layers(bool export_mesh)
     //return 0.5; 
   };
 
-  Vertices         vertices { 150.0 };
-  Domain           domain   { vertices, f };
+  Domain domain   { f, 150.0 };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
 
   // Build exterior boundary
-  Vertex& v1 = vertices.push_back(  2.0,  0.0, 1.0, 1.0 );
-  Vertex& v2 = vertices.push_back(  5.0,  0.0, 1.0, 1.0 );
-  Vertex& v3 = vertices.push_back(  5.0,  6.0, 1.0, 1.0 );
-  Vertex& v4 = vertices.push_back(  8.0,  4.0, 1.0, 1.0 );
-  Vertex& v5 = vertices.push_back( 14.0, 10.0, 1.0, 4.0 );
-  Vertex& v6 = vertices.push_back(  0.0,  8.0, 1.0, 1.0 );
+  Vertex& v1 = domain.add_vertex(  2.0,  0.0, 1.0, 1.0 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0, 1.0, 1.0 );
+  Vertex& v3 = domain.add_vertex(  5.0,  6.0, 1.0, 1.0 );
+  Vertex& v4 = domain.add_vertex(  8.0,  4.0, 1.0, 1.0 );
+  Vertex& v5 = domain.add_vertex( 14.0, 10.0, 1.0, 4.0 );
+  Vertex& v6 = domain.add_vertex(  0.0,  8.0, 1.0, 1.0 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 2 );
@@ -390,16 +384,15 @@ void Test_Mesh_add_quad_layer(bool export_mesh)
     return 1.0; 
   };
 
-  Vertices         vertices { 50.0 };
-  Domain           domain   { vertices, f };
+  Domain domain   { f, 50.0 };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
 
   // Build exterior boundary
-  Vertex& v1 = vertices.push_back(  0.0,  0.0, 1.0, 0.5 );
-  Vertex& v2 = vertices.push_back(  5.0,  0.0, 1.0, 0.5 );
-  Vertex& v3 = vertices.push_back(  5.0,  5.0, 1.0, 0.5 );
-  Vertex& v4 = vertices.push_back(  0.0,  5.0, 1.0, 0.5 );
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0, 1.0, 0.5 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0, 1.0, 0.5 );
+  Vertex& v3 = domain.add_vertex(  5.0,  5.0, 1.0, 0.5 );
+  Vertex& v4 = domain.add_vertex(  0.0,  5.0, 1.0, 0.5 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 1 );
@@ -443,18 +436,17 @@ void Test_Mesh_add_quad_layer_step(bool export_mesh)
     return 1.5; 
   };
 
-  Vertices         vertices { 50.0 };
-  Domain           domain   { vertices, f };
+  Domain domain   { f, 50.0 };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
 
   // Build exterior boundary
-  Vertex& v1 = vertices.push_back(  0.0,  0.0, 1.0 );
-  Vertex& v2 = vertices.push_back(  5.0,  0.0, 1.0 );
-  Vertex& v3 = vertices.push_back(  5.0,  2.5, 1.0 );
-  Vertex& v4 = vertices.push_back(  7.5,  2.5, 1.0 );
-  Vertex& v5 = vertices.push_back(  7.5,  5.0, 1.0 );
-  Vertex& v6 = vertices.push_back(  0.0,  5.0, 1.0 );
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0, 1.0 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0, 1.0 );
+  Vertex& v3 = domain.add_vertex(  5.0,  2.5, 1.0 );
+  Vertex& v4 = domain.add_vertex(  7.5,  2.5, 1.0 );
+  Vertex& v5 = domain.add_vertex(  7.5,  5.0, 1.0 );
+  Vertex& v6 = domain.add_vertex(  0.0,  5.0, 1.0 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 1 );
@@ -497,24 +489,23 @@ void Test_Mesh_wedge(bool export_mesh)
     return (p.x < 300) ? 1.5 : 3.0; 
   };
 
-  Vertices         vertices { 2000.0 };
-  Domain           domain   { vertices, f };
+  Domain domain   { f, 2000.0 };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
 
   // Build exterior boundary
-  Vertex& v0  = vertices.push_back(   0.0,   0.00,  1.0,  1.0 );
-  Vertex& v1  = vertices.push_back( 300.0,   0.00,  1.0,  1.0 );
-  Vertex& v2  = vertices.push_back( 600.0,   0.00,  1.0,  1.0 );
-  Vertex& v3  = vertices.push_back( 600.0,  25.40,  1.0,  1.0 );
-  Vertex& v4  = vertices.push_back( 300.0,  25.40,  1.0,  1.0 );
-  Vertex& v5  = vertices.push_back(   0.0,  25.40,  1.0,  1.0 );
-  Vertex& v6  = vertices.push_back(-150.0,  25.40,  1.0,  1.0 );
-  Vertex& v7  = vertices.push_back(-150.0,   6.60,  1.0,  1.0 );
-  Vertex& v8  = vertices.push_back(  -1.0,   6.60,  1.0,  1.0 );
-  Vertex& v9  = vertices.push_back(   0.0,   6.35,  1.0,  1.0 );
-  Vertex& v10 = vertices.push_back(-150.0,   6.35,  1.0,  1.0 );
-  Vertex& v11 = vertices.push_back(-150.0,   0.00,  1.0,  1.0 );
+  Vertex& v0  = domain.add_vertex(   0.0,   0.00,  1.0,  1.0 );
+  Vertex& v1  = domain.add_vertex( 300.0,   0.00,  1.0,  1.0 );
+  Vertex& v2  = domain.add_vertex( 600.0,   0.00,  1.0,  1.0 );
+  Vertex& v3  = domain.add_vertex( 600.0,  25.40,  1.0,  1.0 );
+  Vertex& v4  = domain.add_vertex( 300.0,  25.40,  1.0,  1.0 );
+  Vertex& v5  = domain.add_vertex(   0.0,  25.40,  1.0,  1.0 );
+  Vertex& v6  = domain.add_vertex(-150.0,  25.40,  1.0,  1.0 );
+  Vertex& v7  = domain.add_vertex(-150.0,   6.60,  1.0,  1.0 );
+  Vertex& v8  = domain.add_vertex(  -1.0,   6.60,  1.0,  1.0 );
+  Vertex& v9  = domain.add_vertex(   0.0,   6.35,  1.0,  1.0 );
+  Vertex& v10 = domain.add_vertex(-150.0,   6.35,  1.0,  1.0 );
+  Vertex& v11 = domain.add_vertex(-150.0,   0.00,  1.0,  1.0 );
 
   b_ext.add_edge(  v0,  v1, 1 );
   b_ext.add_edge(  v1,  v2, 1 );
@@ -586,8 +577,7 @@ void Test_Mesh_banner(bool export_mesh)
     return rho;
   };
 
-  Vertices         vertices { 60.0 };
-  Domain           domain   { vertices, f };
+  Domain domain   { f, 60.0 };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
   Boundary&  b_T   = domain.add_boundary( BdryType::INTERIOR );
@@ -595,51 +585,51 @@ void Test_Mesh_banner(bool export_mesh)
   Boundary&  b_M   = domain.add_boundary( BdryType::INTERIOR );
 
   // Vertices for exterior boundary
-  Vertex& b0  = vertices.push_back( -22.0, -10.00,  0.5,  2.0 );
-  Vertex& b1  = vertices.push_back(  22.0, -10.00,  0.5,  2.0 );
-  Vertex& b2  = vertices.push_back(  22.0,  10.00,  0.5,  2.0 );
-  Vertex& b3  = vertices.push_back( -22.0,  10.00,  0.5,  2.0 );
+  Vertex& b0  = domain.add_vertex( -22.0, -10.00,  0.5,  2.0 );
+  Vertex& b1  = domain.add_vertex(  22.0, -10.00,  0.5,  2.0 );
+  Vertex& b2  = domain.add_vertex(  22.0,  10.00,  0.5,  2.0 );
+  Vertex& b3  = domain.add_vertex( -22.0,  10.00,  0.5,  2.0 );
 
   // Vertices for letter "T"
-  Vertex& T0  = vertices.push_back( -14.0,  -6.00,  1.0,  1.0 );
-  Vertex& T1  = vertices.push_back( -14.0,   3.00,  0.7,  2.0 );
-  Vertex& T2  = vertices.push_back( -18.0,   3.00,  1.0,  1.0 );
-  Vertex& T3  = vertices.push_back( -18.0,   6.00,  1.0,  1.0 );
-  Vertex& T4  = vertices.push_back(  -7.0,   6.00,  0.7,  2.0 );
-  Vertex& T5  = vertices.push_back(  -7.0,   3.00,  0.7,  2.0 );
-  Vertex& T6  = vertices.push_back( -11.0,   3.00,  1.0,  1.0 );
-  Vertex& T7  = vertices.push_back( -11.0,  -6.00,  1.0,  1.0 );
+  Vertex& T0  = domain.add_vertex( -14.0,  -6.00,  1.0,  1.0 );
+  Vertex& T1  = domain.add_vertex( -14.0,   3.00,  0.7,  2.0 );
+  Vertex& T2  = domain.add_vertex( -18.0,   3.00,  1.0,  1.0 );
+  Vertex& T3  = domain.add_vertex( -18.0,   6.00,  1.0,  1.0 );
+  Vertex& T4  = domain.add_vertex(  -7.0,   6.00,  0.7,  2.0 );
+  Vertex& T5  = domain.add_vertex(  -7.0,   3.00,  0.7,  2.0 );
+  Vertex& T6  = domain.add_vertex( -11.0,   3.00,  1.0,  1.0 );
+  Vertex& T7  = domain.add_vertex( -11.0,  -6.00,  1.0,  1.0 );
 
   // Vertices for letter "Q"
-  Vertex& Q0  = vertices.push_back(  -3.0,  -6.00,  1.0,  1.0 );
-  Vertex& Q1  = vertices.push_back(  -5.0,  -5.00,  1.0,  1.0 );
-  Vertex& Q2  = vertices.push_back(  -5.0,   4.00,  1.0,  1.0 );
-  Vertex& Q3  = vertices.push_back(  -3.0,   6.00,  1.0,  1.0 );
-  Vertex& Q4  = vertices.push_back(   3.0,   6.00,  1.0,  1.0 );
-  Vertex& Q5  = vertices.push_back(   5.0,   4.00,  1.0,  1.0 );
-  Vertex& Q6  = vertices.push_back(   5.0,  -4.00,  1.0,  1.0 );
-  Vertex& Q7  = vertices.push_back(   2.0,   0.00,  1.0,  1.0 );
-  Vertex& Q8  = vertices.push_back(   2.0,   3.00,  1.0,  1.0 );
-  Vertex& Q9  = vertices.push_back(  -2.0,   3.00,  1.0,  1.0 );
-  Vertex& Q10 = vertices.push_back(  -2.0,  -3.00,  1.0,  1.0 );
-  Vertex& Q11 = vertices.push_back(   2.0,  -3.00,  0.7,  2.0 );
-  Vertex& Q12 = vertices.push_back(   4.0,  -6.00,  1.0,  1.0 );
+  Vertex& Q0  = domain.add_vertex(  -3.0,  -6.00,  1.0,  1.0 );
+  Vertex& Q1  = domain.add_vertex(  -5.0,  -5.00,  1.0,  1.0 );
+  Vertex& Q2  = domain.add_vertex(  -5.0,   4.00,  1.0,  1.0 );
+  Vertex& Q3  = domain.add_vertex(  -3.0,   6.00,  1.0,  1.0 );
+  Vertex& Q4  = domain.add_vertex(   3.0,   6.00,  1.0,  1.0 );
+  Vertex& Q5  = domain.add_vertex(   5.0,   4.00,  1.0,  1.0 );
+  Vertex& Q6  = domain.add_vertex(   5.0,  -4.00,  1.0,  1.0 );
+  Vertex& Q7  = domain.add_vertex(   2.0,   0.00,  1.0,  1.0 );
+  Vertex& Q8  = domain.add_vertex(   2.0,   3.00,  1.0,  1.0 );
+  Vertex& Q9  = domain.add_vertex(  -2.0,   3.00,  1.0,  1.0 );
+  Vertex& Q10 = domain.add_vertex(  -2.0,  -3.00,  1.0,  1.0 );
+  Vertex& Q11 = domain.add_vertex(   2.0,  -3.00,  0.7,  2.0 );
+  Vertex& Q12 = domain.add_vertex(   4.0,  -6.00,  1.0,  1.0 );
 
   // Vertices for letter "M"
-  Vertex& M0  = vertices.push_back(   7.0,  -6.00,  1.0,  1.0 );
-  Vertex& M1  = vertices.push_back(   7.0,   6.00,  1.0,  1.0 );
-  Vertex& M2  = vertices.push_back(  10.0,   6.00,  1.0,  1.0 );
-  Vertex& M3  = vertices.push_back(  12.0,   3.00,  1.0,  1.0 );
-  Vertex& M4  = vertices.push_back(  14.0,   3.00,  1.0,  1.0 );
-  Vertex& M5  = vertices.push_back(  16.0,   6.00,  1.0,  1.0 );
-  Vertex& M6  = vertices.push_back(  19.0,   6.00,  1.0,  1.0 );
-  Vertex& M7  = vertices.push_back(  19.0,  -6.00,  1.0,  1.0 );
-  Vertex& M8  = vertices.push_back(  16.0,  -6.00,  1.0,  1.0 );
-  Vertex& M9  = vertices.push_back(  16.0,   1.00,  0.7,  2.0 );
-  Vertex& M10 = vertices.push_back(  14.0,  -1.00,  1.0,  1.0 );
-  Vertex& M11 = vertices.push_back(  12.0,  -1.00,  1.0,  1.0 );
-  Vertex& M12 = vertices.push_back(  10.0,   1.00,  0.7,  2.0 );
-  Vertex& M13 = vertices.push_back(  10.0,  -6.00,  1.0,  1.0 );
+  Vertex& M0  = domain.add_vertex(   7.0,  -6.00,  1.0,  1.0 );
+  Vertex& M1  = domain.add_vertex(   7.0,   6.00,  1.0,  1.0 );
+  Vertex& M2  = domain.add_vertex(  10.0,   6.00,  1.0,  1.0 );
+  Vertex& M3  = domain.add_vertex(  12.0,   3.00,  1.0,  1.0 );
+  Vertex& M4  = domain.add_vertex(  14.0,   3.00,  1.0,  1.0 );
+  Vertex& M5  = domain.add_vertex(  16.0,   6.00,  1.0,  1.0 );
+  Vertex& M6  = domain.add_vertex(  19.0,   6.00,  1.0,  1.0 );
+  Vertex& M7  = domain.add_vertex(  19.0,  -6.00,  1.0,  1.0 );
+  Vertex& M8  = domain.add_vertex(  16.0,  -6.00,  1.0,  1.0 );
+  Vertex& M9  = domain.add_vertex(  16.0,   1.00,  0.7,  2.0 );
+  Vertex& M10 = domain.add_vertex(  14.0,  -1.00,  1.0,  1.0 );
+  Vertex& M11 = domain.add_vertex(  12.0,  -1.00,  1.0,  1.0 );
+  Vertex& M12 = domain.add_vertex(  10.0,   1.00,  0.7,  2.0 );
+  Vertex& M13 = domain.add_vertex(  10.0,  -6.00,  1.0,  1.0 );
 
   b_ext.add_edge( b0, b1, 1 );
   b_ext.add_edge( b1, b2, 1 );
@@ -726,22 +716,21 @@ void Test_Mesh_vortex_shedding(bool export_mesh)
     return 0.1;
   };
 
-  Vertices         vertices { 50.0 };
-  Domain           domain   { vertices, f };
+  Domain domain   { f, 50.0 };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
   Boundary&  b_int = domain.add_boundary( BdryType::INTERIOR );
 
   // Build exterior boundary
-  Vertex& v1 = vertices.push_back(  0.0,  0.0, 1.0, 1.0 );
-  Vertex& v2 = vertices.push_back(  4.0,  0.0, 1.0, 1.0 );
-  Vertex& v3 = vertices.push_back(  4.0,  1.0, 1.0, 1.0 );
-  Vertex& v4 = vertices.push_back(  0.0,  1.0, 1.0, 1.0 );
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0, 1.0, 1.0 );
+  Vertex& v2 = domain.add_vertex(  4.0,  0.0, 1.0, 1.0 );
+  Vertex& v3 = domain.add_vertex(  4.0,  1.0, 1.0, 1.0 );
+  Vertex& v4 = domain.add_vertex(  0.0,  1.0, 1.0, 1.0 );
 
-  Vertex& v5 = vertices.push_back( 0.35, 0.35, 0.8, 1.3 );
-  Vertex& v6 = vertices.push_back( 0.35, 0.65, 0.8, 1.3 );
-  Vertex& v7 = vertices.push_back( 0.65, 0.65, 0.8, 1.3 );
-  Vertex& v8 = vertices.push_back( 0.65, 0.35, 0.8, 1.3 );
+  Vertex& v5 = domain.add_vertex( 0.35, 0.35, 0.8, 1.3 );
+  Vertex& v6 = domain.add_vertex( 0.35, 0.65, 0.8, 1.3 );
+  Vertex& v7 = domain.add_vertex( 0.65, 0.65, 0.8, 1.3 );
+  Vertex& v8 = domain.add_vertex( 0.65, 0.35, 0.8, 1.3 );
 
   b_ext.add_edge( v1, v2, 2 );
   b_ext.add_edge( v2, v3, 3 );
@@ -792,18 +781,17 @@ void Test_Mesh_create_bdry_shape_mesh(bool export_mesh)
     return 0.25;
   };
 
-  Vertices         vertices { 50.0 };
-  Domain           domain   { vertices, f };
+  Domain domain   { f, 50.0 };
 
-  Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
+  Boundary&  b_ext     = domain.add_boundary( BdryType::EXTERIOR );
   Boundary&  b_shape_1 = domain.add_boundary( BdryType::INTERIOR );
   Boundary&  b_shape_2 = domain.add_boundary( BdryType::INTERIOR );
   Boundary&  b_shape_3 = domain.add_boundary( BdryType::INTERIOR );
 
-  b_ext.set_shape_rectangle( vertices, 1, {6.0,1.0}, 16.0, 8.0 );
-  b_shape_1.set_shape_circle( vertices, 2, {1.0,1.0}, 0.5, 30 );
-  b_shape_2.set_shape_square( vertices, 3, {2.0,1.5}, 0.75);
-  b_shape_3.set_shape_triangle( vertices, 4, {2.0,0.5}, 0.75 );
+  b_ext.set_shape_rectangle( domain.vertices(), 1, {6.0,1.0}, 16.0, 8.0 );
+  b_shape_1.set_shape_circle( domain.vertices(), 2, {1.0,1.0}, 0.5, 30 );
+  b_shape_2.set_shape_square( domain.vertices(), 3, {2.0,1.5}, 0.75);
+  b_shape_3.set_shape_triangle( domain.vertices(), 4, {2.0,0.5}, 0.75 );
 
 
   // Create the mesh
@@ -847,19 +835,18 @@ void Test_Mesh_benchmark(double h, double L,
   }; 
 
   Timer            timer {};
-  Vertices         vertices { 50.0*L };
-  Domain           domain   { vertices, f };
+  Domain           domain   { f, 50.0*L };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
   Boundary&  b_int = domain.add_boundary( BdryType::INTERIOR );
 
   // Build exterior boundary
-  Vertex& v1 = vertices.push_back(  2.0*L,  0.0*L, 1.0, 1.0 );
-  Vertex& v2 = vertices.push_back(  5.0*L,  0.0*L, 1.0, 1.0 );
-  Vertex& v3 = vertices.push_back(  5.0*L,  6.0*L, 1.0, 1.0 );
-  Vertex& v4 = vertices.push_back(  8.0*L,  4.0*L, 1.0, 1.0 );
-  Vertex& v5 = vertices.push_back( 14.0*L, 10.0*L, 1.0, 4.0 );
-  Vertex& v6 = vertices.push_back(  0.0*L,  8.0*L, 1.0, 1.0 );
+  Vertex& v1 = domain.add_vertex(  2.0*L,  0.0*L, 1.0, 1.0 );
+  Vertex& v2 = domain.add_vertex(  5.0*L,  0.0*L, 1.0, 1.0 );
+  Vertex& v3 = domain.add_vertex(  5.0*L,  6.0*L, 1.0, 1.0 );
+  Vertex& v4 = domain.add_vertex(  8.0*L,  4.0*L, 1.0, 1.0 );
+  Vertex& v5 = domain.add_vertex( 14.0*L, 10.0*L, 1.0, 4.0 );
+  Vertex& v6 = domain.add_vertex(  0.0*L,  8.0*L, 1.0, 1.0 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 2 );
@@ -869,9 +856,9 @@ void Test_Mesh_benchmark(double h, double L,
   b_ext.add_edge( v6, v1, 6 );
 
   // Build interior boundary
-  Vertex& v7 = vertices.push_back(  2.0*L,  6.0*L, 1.0, 1.0 );
-  Vertex& v8 = vertices.push_back(  3.0*L,  6.0*L, 1.0, 1.0 );
-  Vertex& v9 = vertices.push_back(  3.0*L,  3.0*L, 1.0, 1.0 );
+  Vertex& v7 = domain.add_vertex(  2.0*L,  6.0*L, 1.0, 1.0 );
+  Vertex& v8 = domain.add_vertex(  3.0*L,  6.0*L, 1.0, 1.0 );
+  Vertex& v9 = domain.add_vertex(  3.0*L,  3.0*L, 1.0, 1.0 );
 
   b_int.add_edge( v7, v8, 1 );
   b_int.add_edge( v8, v9, 1 );
@@ -987,21 +974,20 @@ void Test_Mesh_benchmark_TMesh(double h, double L,
   };
 
   Timer            timer {};
-  Vertices         vertices { 20.0*L };
-  Domain           domain   { vertices, f };
+  Domain           domain   { f, 20.0*L };
 
   Boundary&  b_ext = domain.add_boundary( BdryType::EXTERIOR );
 
   // Build exterior boundary
-  Vertex& v1 = vertices.push_back(  0.0*L,  0.0*L, 1.0, 1.0 );
-  Vertex& v2 = vertices.push_back(  6.0*L,  0.0*L, 1.0, 1.0 );
-  Vertex& v3 = vertices.push_back(  8.0*L,  3.0*L, 1.0, 1.0 );
-  Vertex& v4 = vertices.push_back(  8.0*L,  6.0*L, 1.0, 1.0 );
-  Vertex& v5 = vertices.push_back(  8.0*L,  9.0*L, 1.0, 1.0 );
-  Vertex& v6 = vertices.push_back(  3.0*L,  9.0*L, 1.0, 1.0 );
-  Vertex& v7 = vertices.push_back( -1.0*L,  9.0*L, 1.0, 1.0 );
-  Vertex& v8 = vertices.push_back(  1.0*L,  3.0*L, 1.0, 1.0 );
-  Vertex& v9 = vertices.push_back( -3.0*L,  6.0*L, 1.0, 1.0 );
+  Vertex& v1 = domain.add_vertex(  0.0*L,  0.0*L, 1.0, 1.0 );
+  Vertex& v2 = domain.add_vertex(  6.0*L,  0.0*L, 1.0, 1.0 );
+  Vertex& v3 = domain.add_vertex(  8.0*L,  3.0*L, 1.0, 1.0 );
+  Vertex& v4 = domain.add_vertex(  8.0*L,  6.0*L, 1.0, 1.0 );
+  Vertex& v5 = domain.add_vertex(  8.0*L,  9.0*L, 1.0, 1.0 );
+  Vertex& v6 = domain.add_vertex(  3.0*L,  9.0*L, 1.0, 1.0 );
+  Vertex& v7 = domain.add_vertex( -1.0*L,  9.0*L, 1.0, 1.0 );
+  Vertex& v8 = domain.add_vertex(  1.0*L,  3.0*L, 1.0, 1.0 );
+  Vertex& v9 = domain.add_vertex( -3.0*L,  6.0*L, 1.0, 1.0 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 1 );

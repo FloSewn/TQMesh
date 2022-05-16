@@ -133,18 +133,17 @@ void Test_Triangle_intersects_vertex()
 *********************************************************************/
 void Test_Triangle_intersects_domain()
 {
-  Vertices   vertices {};
   Triangles  triangles {};
-  Domain     domain { vertices };
+  Domain     domain {};
 
   Boundary& b_ext = domain.add_boundary( BdryType::EXTERIOR );
   Boundary& b_int = domain.add_boundary( BdryType::INTERIOR );
 
   // Built exterior boundary
-  Vertex& v1 = vertices.push_back(  0.0,  0.0 );
-  Vertex& v2 = vertices.push_back(  8.0,  0.0 );
-  Vertex& v3 = vertices.push_back(  8.0,  4.0 );
-  Vertex& v4 = vertices.push_back(  0.0,  4.0 );
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
+  Vertex& v2 = domain.add_vertex(  8.0,  0.0 );
+  Vertex& v3 = domain.add_vertex(  8.0,  4.0 );
+  Vertex& v4 = domain.add_vertex(  0.0,  4.0 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 1 );
@@ -152,10 +151,10 @@ void Test_Triangle_intersects_domain()
   b_ext.add_edge( v4, v1, 1 );
 
   // Built interior boundary
-  Vertex& v5 = vertices.push_back(  6.0,  1.0 );
-  Vertex& v6 = vertices.push_back(  6.0,  2.0 );
-  Vertex& v7 = vertices.push_back(  7.0,  2.0 );
-  Vertex& v8 = vertices.push_back(  7.0,  1.0 );
+  Vertex& v5 = domain.add_vertex(  6.0,  1.0 );
+  Vertex& v6 = domain.add_vertex(  6.0,  2.0 );
+  Vertex& v7 = domain.add_vertex(  7.0,  2.0 );
+  Vertex& v8 = domain.add_vertex(  7.0,  1.0 );
 
   b_int.add_edge( v5, v6, 2 );
   b_int.add_edge( v6, v7, 2 );
@@ -164,24 +163,24 @@ void Test_Triangle_intersects_domain()
 
 
   // Built triangles
-  Vertex& v_t11 = vertices.push_back(  1.0,  1.0 );
-  Vertex& v_t12 = vertices.push_back(  3.0,  2.0 );
-  Vertex& v_t13 = vertices.push_back(  1.0,  2.0 );
+  Vertex& v_t11 = domain.add_vertex(  1.0,  1.0 );
+  Vertex& v_t12 = domain.add_vertex(  3.0,  2.0 );
+  Vertex& v_t13 = domain.add_vertex(  1.0,  2.0 );
   Triangle& t1 = triangles.push_back( v_t11, v_t12, v_t13);
 
-  Vertex& v_t21 = vertices.push_back(  2.0, -1.0 );
-  Vertex& v_t22 = vertices.push_back(  4.0, -1.0 );
-  Vertex& v_t23 = vertices.push_back(  3.0,  1.0 );
+  Vertex& v_t21 = domain.add_vertex(  2.0, -1.0 );
+  Vertex& v_t22 = domain.add_vertex(  4.0, -1.0 );
+  Vertex& v_t23 = domain.add_vertex(  3.0,  1.0 );
   Triangle& t2 = triangles.push_back( v_t21, v_t22, v_t23);
 
-  Vertex& v_t31 = vertices.push_back(  5.0,  1.0 );
-  Vertex& v_t32 = vertices.push_back(  7.0,  3.0 );
-  Vertex& v_t33 = vertices.push_back(  5.0,  3.0 );
+  Vertex& v_t31 = domain.add_vertex(  5.0,  1.0 );
+  Vertex& v_t32 = domain.add_vertex(  7.0,  3.0 );
+  Vertex& v_t33 = domain.add_vertex(  5.0,  3.0 );
   Triangle& t3 = triangles.push_back( v_t31, v_t32, v_t33);
 
-  Vertex& v_t41 = vertices.push_back(  3.0,  4.0 );
-  Vertex& v_t42 = vertices.push_back(  4.0,  3.0 );
-  Vertex& v_t43 = vertices.push_back(  4.0,  4.0 );
+  Vertex& v_t41 = domain.add_vertex(  3.0,  4.0 );
+  Vertex& v_t42 = domain.add_vertex(  4.0,  3.0 );
+  Vertex& v_t43 = domain.add_vertex(  4.0,  4.0 );
   Triangle& t4 = triangles.push_back( v_t41, v_t42, v_t43);
 
 

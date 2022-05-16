@@ -26,27 +26,6 @@ using namespace TQUtils;
 *********************************************************************/
 using UserSizeFunction = std::function<double(const Vec2d& xy)>;
 
-/*
-template<typename L>
-class UserSizeFunction
-{
-public:
-  UserSizeFunction(L l) : lambda_{l} {}
-  void eval(const Vec2d& p) const { return lambda_(p); }
-private:
-  L lambda_;
-
-}; // UserSizeFunction
-
-template<typename L>
-UserSizeFunction<L> make_user_size_function(L l) { return {l}; }
-*/
-
-//typedef double (*UserSizeFunction)(const Vec2d& p);
-
-// Check this out: 
-// https://stackoverflow.com/questions/19040481/lambda-expression-as-a-class-attribute
-
 /*********************************************************************
 * This class is a simple container for boundaries
 *********************************************************************/
@@ -70,12 +49,14 @@ public:
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  Domain( Vertices& vertices,
-          UserSizeFunction f = [](const Vec2d& p){return 1.0;},
-          double min_size = TQ_DOMAIN_MIN_ELEMSIZE,
+  Domain( UserSizeFunction f = [](const Vec2d& p){return 1.0;},
+          double qtree_scale = TQ_QTREE_SCALE,
+          size_t qtree_items = TQ_QTREE_ITEMS, 
+          size_t qtree_depth = TQ_QTREE_DEPTH,
+          double min_size    = TQ_DOMAIN_MIN_ELEMSIZE,
           double min_scaling = TQ_DOMAIN_MIN_SCALING )
-  : verts_ { &vertices }
-  , f_ { f }
+  : f_ { f }
+  , verts_ { qtree_scale, qtree_items, qtree_depth }
   , min_size_ { min_size }
   , min_scaling_ { min_scaling }
   { }
@@ -88,8 +69,8 @@ public:
   /*------------------------------------------------------------------
   | Getter
   ------------------------------------------------------------------*/
-  const Vertices& vertices() const { return *verts_; }
-  Vertices& vertices() { return *verts_; }
+  const Vertices& vertices() const { return verts_; }
+  Vertices& vertices() { return verts_; }
 
   /*------------------------------------------------------------------
   | Insert any boundary through constructor behind 
@@ -109,17 +90,28 @@ public:
   }
 
   /*------------------------------------------------------------------
-  | Add a boundary through constructor to the end of 
-  | the vector
+  | Add a boundary through constructor to the end of the vector
   ------------------------------------------------------------------*/
   template <typename... Args>
   Boundary& add_boundary( Args&&... args )
   { return insert_boundary( boundaries_.end(), args... ); }
 
   /*------------------------------------------------------------------
-  | Function to remove an object from this container
+  | Add an exterior boundary 
   ------------------------------------------------------------------*/
-  void remove(size_t pos) 
+  Boundary& add_exterior_boundary()
+  { return add_boundary( BdryType::EXTERIOR ); }
+
+  /*------------------------------------------------------------------
+  | Add an interior boundary 
+  ------------------------------------------------------------------*/
+  Boundary& add_interior_boundary()
+  { return add_boundary( BdryType::INTERIOR ); }
+
+  /*------------------------------------------------------------------
+  | Remove a boundary from the domain
+  ------------------------------------------------------------------*/
+  void remove_boundary(size_t pos) 
   { boundaries_.erase( boundaries_.begin()+pos ); }
 
   /*------------------------------------------------------------------
@@ -203,13 +195,37 @@ public:
   }
 
   /*------------------------------------------------------------------
+  | Add a vertex to the domain
+  ------------------------------------------------------------------*/
+  template <typename... Args>
+  Vertex& add_vertex( Args&&... args )
+  {
+    Vertex& v_new = verts_.push_back( args... );
+    v_new.is_fixed( false );
+    v_new.on_front( true );
+    v_new.on_boundary( false );
+
+    return v_new;
+  } // Domain::add_vertex() 
+
+  /*------------------------------------------------------------------
+  | Remove a vertex from the domain
+  ------------------------------------------------------------------*/
+  void remove_vertex(Vertex& v) 
+  { 
+    verts_.remove( v );
+
+  } // Domain::remove_vertex()
+
+
+  /*------------------------------------------------------------------
   | Add a fixed vertex, which will be incorporated in the meshing
   | process
   ------------------------------------------------------------------*/
   template <typename... Args>
   Vertex& add_fixed_vertex( Args&&... args )
   {
-    Vertex& v_new = verts_->push_back( args... );
+    Vertex& v_new = verts_.push_back( args... );
     v_new.is_fixed( true );
     v_new.on_front( true );
     v_new.on_boundary( false );
@@ -232,7 +248,7 @@ public:
 
     fixed_verts_.erase( itr, fixed_verts_.end() );
 
-    verts_->remove( v );
+    verts_.remove( v );
 
   } // Domain::remove_fixed_vertex()
 
@@ -313,8 +329,8 @@ public:
 private:
   Vector           boundaries_;
 
-  Vertices*        verts_       {nullptr};
   UserSizeFunction f_;
+  Vertices         verts_;
   double           min_size_    { 0.0 };
   double           min_scaling_ { 0.0 };
 

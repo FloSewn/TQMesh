@@ -40,20 +40,19 @@ using namespace TQMesh::TQAlgorithm;
 *********************************************************************/
 void Test_Domain_is_inside()
 {
-  Vertices   vertices {};
-  Domain     domain { vertices };
+  Domain     domain {};
 
   Boundary& b_ext = domain.add_boundary( BdryType::EXTERIOR );
   Boundary& b_int = domain.add_boundary( BdryType::INTERIOR );
 
   // Built exterior boundary
-  Vertex& v1 = vertices.push_back(  0.0,  0.0 );
-  Vertex& v2 = vertices.push_back(  8.0,  0.0 );
-  Vertex& v3 = vertices.push_back( 16.0,  0.0 );
-  Vertex& v4 = vertices.push_back( 16.0,  6.0 );
-  Vertex& v5 = vertices.push_back( 16.0, 12.0 );
-  Vertex& v6 = vertices.push_back(  8.0, 12.0 );
-  Vertex& v7 = vertices.push_back(  0.0,  6.0 );
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
+  Vertex& v2 = domain.add_vertex(  8.0,  0.0 );
+  Vertex& v3 = domain.add_vertex( 16.0,  0.0 );
+  Vertex& v4 = domain.add_vertex( 16.0,  6.0 );
+  Vertex& v5 = domain.add_vertex( 16.0, 12.0 );
+  Vertex& v6 = domain.add_vertex(  8.0, 12.0 );
+  Vertex& v7 = domain.add_vertex(  0.0,  6.0 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 1 );
@@ -65,10 +64,10 @@ void Test_Domain_is_inside()
 
 
   // Built interior boundary
-  Vertex& v8  = vertices.push_back(  6.0,  4.0 );
-  Vertex& v9  = vertices.push_back(  6.0,  8.0 );
-  Vertex& v10 = vertices.push_back( 10.0,  8.0 );
-  Vertex& v11 = vertices.push_back( 10.0,  4.0 );
+  Vertex& v8  = domain.add_vertex(  6.0,  4.0 );
+  Vertex& v9  = domain.add_vertex(  6.0,  8.0 );
+  Vertex& v10 = domain.add_vertex( 10.0,  8.0 );
+  Vertex& v11 = domain.add_vertex( 10.0,  4.0 );
 
   b_int.add_edge( v8,  v9,  2 );
   b_int.add_edge( v9,  v10, 2 );
@@ -77,9 +76,9 @@ void Test_Domain_is_inside()
 
 
   // Test if vertices are inside the domain
-  Vertex& v_in    = vertices.push_back( 3.0, 2.0 );
-  Vertex& v_out_1 = vertices.push_back( 8.0, 6.0 );
-  Vertex& v_out_2 = vertices.push_back(-8.0, 6.0 );
+  Vertex& v_in    = domain.add_vertex( 3.0, 2.0 );
+  Vertex& v_out_1 = domain.add_vertex( 8.0, 6.0 );
+  Vertex& v_out_2 = domain.add_vertex(-8.0, 6.0 );
 
   ASSERT( domain.is_inside( v_in ), 
           "Domain::is_inside() failed." );

@@ -105,7 +105,7 @@ public:
 
         // All advancing front edges are assigned to a specified 
         // edge marker
-        Edge& e_new = this->add_edge( *v1, *v2, e->marker() );
+        this->add_edge( *v1, *v2, e->marker() );
 
         // We fix the position of all initial boundary vertices,
         // such that they won't be shifted during the grid 
