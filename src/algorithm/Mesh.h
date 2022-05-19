@@ -27,6 +27,49 @@ namespace TQAlgorithm {
 using namespace TQUtils;
 
 
+/*********************************************************************
+* Search for an edge that connects two given vertices v1 and v2.
+* If <dir> is set to true, the edge direction v1->v2 is also 
+* considered in the search.
+*
+* In contrast to the function get_edge() that is defined within the 
+* EdgeList-class, this function does not check, if the returned 
+* edge is part of a specific EdgeList.
+*********************************************************************/
+static inline Edge* get_edge_from_vertices(const Vertex& v1, 
+                                           const Vertex& v2, 
+                                           bool dir=false)
+{
+  // Consider edge direction
+  if (dir)
+  {
+    for ( const auto& e : v1.edges() )
+    {
+      if ( (e->v1() == v1 && e->v2() == v2) )
+      {
+        return e;
+      }
+    }
+  }
+  else
+  {
+    MSG("Vertex " << v1);
+    for ( const auto& e : v1.edges() )
+    {
+      MSG("Check edge: " << *e );
+
+      if (e->v1() == v1 && e->v2() == v2) 
+        return e;
+
+      if (e->v1() == v2 && e->v2() == v1) 
+        return e;
+    }
+  }
+
+  return nullptr;
+
+} // get_edge_from_vertices()
+
 
 /*********************************************************************
 * The mesh 
@@ -35,6 +78,7 @@ class Mesh
 {
   using EdgePair       = std::pair<const Edge*,const Edge*>;
   using EdgePairVector = std::vector<EdgePair>;
+  using EdgeVector     = std::vector<Edge*>;
   using VertexVector   = std::vector<const Vertex*>;
   using TriVector      = std::vector<Triangle*>;
   using QuadVector     = std::vector<Quad*>;
@@ -48,13 +92,18 @@ public:
   Mesh(Domain&   domain,
        double    qtree_scale=TQ_QTREE_SCALE,
        size_t    qtree_items=TQ_QTREE_ITEMS, 
-       size_t    qtree_depth=TQ_QTREE_DEPTH)
+       size_t    qtree_depth=TQ_QTREE_DEPTH,
+       bool      init_structure=true)
   : domain_ { &domain }
   , verts_  { qtree_scale, qtree_items, qtree_depth }
   , tris_   { qtree_scale, qtree_items, qtree_depth }
   , quads_  { qtree_scale, qtree_items, qtree_depth }
   , front_  { }
   {
+    // Return if vertices & front should not be initialized
+    if (!init_structure)
+      return;
+
     // Copy vertices from domain
     for ( const auto& v_ptr : domain.vertices() )
     {
@@ -78,7 +127,7 @@ public:
     for ( auto& e : front_ )
       bdry_edges_.add_edge( e->v1(), e->v2(), e->marker() );
 
-  }
+  } // Mesh::Constructor()
 
   /*------------------------------------------------------------------
   | This function takes care of the garbage collection 
@@ -141,6 +190,380 @@ public:
 
   } // assign_mesh_indices()
 
+
+  /*------------------------------------------------------------------
+  | Every triangle is refined into three quads and every 
+  | quads is refined into four quads.
+  | This results in an all-quad mesh.
+  |
+  |                        
+  |          (v7)         (v6)      (v5)      qi... sub-quads 
+  |             o<--------o---------o         vi... vertices
+  |             |         |         ^
+  |             |  [q4]   |   [q3]  |
+  |             |         |         |
+  |             |         |(v9)     |  
+  |         (v8)o---------o---------o(v4) 
+  |             |         |         |
+  |             |         |         |
+  |             |  [q1]   |   [q2]  |
+  |             v         |         |
+  |             o---------o-------->o
+  |          (v1)        (v2)       (v3)
+  |                         
+  |                         
+  |                        (v5)                 
+  |                         o                   
+  |                       /   \
+  |                     / [q3]  \
+  |                   /           \
+  |           (v6)  /      (v7)     \  (v4)
+  |               o---------o---------o
+  |             /           |           \
+  |           /             |             \
+  |         /     [q1]      |      [q2]     \
+  |       /                 |                 \
+  |     o-------------------o-------------------o
+  |    (v1)                (v2)                 (v3)
+  |
+  ------------------------------------------------------------------*/
+  bool refine_to_quads()
+  {
+
+    // Gather all coarse edges
+    EdgeVector coarse_intr_edges {};
+    EdgeVector coarse_bdry_edges {};
+
+    for ( const auto& e : intr_edges_ )
+      coarse_intr_edges.push_back( e.get() );
+
+    for ( const auto& e : bdry_edges_ )
+      coarse_bdry_edges.push_back( e.get() );
+
+    // Gather all coarse quads & tris
+    TriVector  coarse_tris {};
+    QuadVector coarse_quads {};
+
+    for ( const auto& t_ptr : tris_ )
+      coarse_tris.push_back( t_ptr.get() );
+
+    for ( const auto& q_ptr : quads_ )
+      coarse_quads.push_back( q_ptr.get() );
+
+    // Refine interior edges
+    for ( auto e : coarse_intr_edges )
+    {
+      Vertex& v  = verts_.push_back( e->xy() );
+      Edge&   e1 = intr_edges_.add_edge( e->v1(), v );
+      Edge&   e2 = intr_edges_.add_edge( v, e->v2() );
+
+      e->is_refined( true );
+      e->sub_vertex( &v );
+      e->sub_edges( 0, &e1 );
+      e->sub_edges( 1, &e2 );
+    }
+
+    // Refine boundary edges
+    for ( auto e : coarse_bdry_edges )
+    {
+      Vertex& v  = verts_.push_back( e->xy() );
+      Edge&   e1 = bdry_edges_.add_edge( e->v1(), v, e->marker() );
+      Edge&   e2 = bdry_edges_.add_edge( v, e->v2(), e->marker() );
+
+      e->is_refined( true );
+      e->sub_vertex( &v );
+      e->sub_edges( 0, &e1 );
+      e->sub_edges( 1, &e2 );
+    }
+
+    // Refine all triangle elements
+    for ( auto t : coarse_tris )
+    {
+      Vertex& v1 = t->v1();
+      Vertex& v3 = t->v2();
+      Vertex& v5 = t->v3();
+
+      MSG("t: " << *t );
+
+      Edge* e13 = get_edge_from_vertices( v1, v3 );
+      MSG("EDGE " << *e13);
+      Edge* e35 = get_edge_from_vertices( v3, v5 );
+      MSG("EDGE " << *e35);
+      Edge* e51 = get_edge_from_vertices( v5, v1 );
+      MSG("EDGE " << *e51);
+
+      //ASSERT( (e13 != nullptr), "Data structure is corrupt" );
+      //ASSERT( (e35 != nullptr), "Data structure is corrupt" );
+      //ASSERT( (e51 != nullptr), "Data structure is corrupt" );
+
+      //ASSERT( (e13->is_refined()), "Data structure is corrupt" );
+      //ASSERT( (e35->is_refined()), "Data structure is corrupt" );
+      //ASSERT( (e51->is_refined()), "Data structure is corrupt" );
+
+      Vertex* v2 = e13->sub_vertex();
+      Vertex* v4 = e35->sub_vertex();
+      Vertex* v6 = e51->sub_vertex();
+
+      //ASSERT( v2, "Data structure is corrput");
+      //ASSERT( v4, "Data structure is corrput");
+      //ASSERT( v6, "Data structure is corrput");
+
+      // Create new vertex at center of quad
+      Vertex& v7 = verts_.push_back( t->xy() );
+
+      // Create new sub-quads 
+      Quad& q1 = quads_.push_back( v1, *v2, v7, *v6 );
+      Quad& q2 = quads_.push_back( v3, *v4, v7, *v2 );
+      Quad& q3 = quads_.push_back( v5, *v6, v7, *v4 );
+
+      // Connect quad to its sub-quads
+      t->sub_vertex( &v7 );
+      t->sub_quad(0, &q1);
+      t->sub_quad(1, &q2);
+      t->sub_quad(2, &q3);
+      t->is_refined( true );
+
+      // Create new interior edges
+      Edge& e27 = intr_edges_.add_edge( *v2, v7 );
+      e27.facet_l( &q1 );
+      e27.facet_r( &q2 );
+
+      Edge& e47 = intr_edges_.add_edge( *v4, v7 );
+      e47.facet_l( &q2 );
+      e47.facet_r( &q3 );
+
+      Edge& e67 = intr_edges_.add_edge( *v6, v7 );
+      e67.facet_l( &q3 );
+      e67.facet_r( &q1 );
+
+    }
+
+    // Refine all quad elements
+    for ( auto q : coarse_quads )
+    {
+      Vertex& v1 = q->v1();
+      Vertex& v3 = q->v2();
+      Vertex& v5 = q->v3();
+      Vertex& v7 = q->v4();
+
+      Edge* e13 = get_edge_from_vertices( v1, v3 );
+      Edge* e35 = get_edge_from_vertices( v3, v5 );
+      Edge* e57 = get_edge_from_vertices( v5, v7 );
+      Edge* e71 = get_edge_from_vertices( v7, v1 );
+
+      ASSERT( (e13 && e13->is_refined()), "Data structure is corrupt" );
+      ASSERT( (e35 && e35->is_refined()), "Data structure is corrupt" );
+      ASSERT( (e57 && e57->is_refined()), "Data structure is corrupt" );
+      ASSERT( (e71 && e71->is_refined()), "Data structure is corrupt" );
+
+      Vertex* v2 = e13->sub_vertex();
+      Vertex* v4 = e35->sub_vertex();
+      Vertex* v6 = e57->sub_vertex();
+      Vertex* v8 = e71->sub_vertex();
+
+      ASSERT( v2, "Data structure is corrput");
+      ASSERT( v4, "Data structure is corrput");
+      ASSERT( v6, "Data structure is corrput");
+      ASSERT( v8, "Data structure is corrput");
+
+      // Create new vertex at center of quad
+      Vertex& v9 = verts_.push_back( q->xy() );
+
+      // Create new sub-quads 
+      Quad& q1 = quads_.push_back( v1, *v2, v9, *v8 );
+      Quad& q2 = quads_.push_back( v3, *v4, v9, *v2 );
+      Quad& q3 = quads_.push_back( v5, *v6, v9, *v4 );
+      Quad& q4 = quads_.push_back( v7, *v8, v9, *v6 );
+
+      // Connect quad to its sub-quads
+      q->sub_vertex( &v9 );
+      q->sub_quad(0, &q1);
+      q->sub_quad(1, &q2);
+      q->sub_quad(2, &q3);
+      q->sub_quad(3, &q4);
+      q->is_refined( true );
+
+      // Create new interior edges
+      Edge& e29 = intr_edges_.add_edge( *v2, v9 );
+      //e29.facet_l( &q1 );
+      //e29.facet_r( &q2 );
+
+      Edge& e49 = intr_edges_.add_edge( *v4, v9 );
+      //e49.facet_l( &q2 );
+      //e49.facet_r( &q3 );
+
+      Edge& e69 = intr_edges_.add_edge( *v6, v9 );
+      //e69.facet_l( &q3 );
+      //e69.facet_r( &q4 );
+
+      Edge& e89 = intr_edges_.add_edge( *v8, v9 );
+      //e89.facet_l( &q4 );
+      //e89.facet_r( &q1 );
+
+    }
+
+    // Remove old entitires
+    for ( auto e : coarse_intr_edges )
+      check_remove_interior_edge( *e );
+      
+    for ( auto e : coarse_bdry_edges )
+      check_remove_boundary_edge( *e );
+
+    for ( auto t : coarse_tris )
+      check_remove_triangle( *t );
+
+    for ( auto q : coarse_quads )
+      check_remove_quad( *q );
+
+
+    // Update connectivity between elements and edges
+    setup_facet_connectivity();
+
+
+    /*
+    // Loop over all interior edges to initialize 
+    // element-to-edge connectivity of sub-elements
+    // to sub-edges
+    for ( auto e : coarse_intr_edges )
+    {
+      Edge* e1_sub = e->sub_edges( 0 );
+      Edge* e2_sub = e->sub_edges( 1 );
+
+      Facet* f_l = e->facet_l();
+      Facet* f_r = e->facet_r();
+
+
+      // Left facet adjacency
+      if ( f_l )
+      {
+        int i = f_l->get_edge_index( e->v1(), e->v2() );
+
+        int n_vertices = static_cast<int>( f_l->n_vertices() );
+
+        int ielem_1 = MOD(i+1, n_vertices);
+        int ielem_2 = MOD(i+2, n_vertices);
+
+        Vertex& v1 = f_l->vertex(ielem_1);
+
+        Facet* elem_1 = f_l->sub_quad(ielem_1);
+        Facet* elem_2 = f_l->sub_quad(ielem_2);
+
+        if ( v1 == e->v1() )
+        {
+          e1_sub->facet_l( elem_1 );
+          e2_sub->facet_l( elem_2 );
+        }
+        else
+        {
+          e1_sub->facet_l( elem_2 );
+          e2_sub->facet_l( elem_1 );
+        }
+
+      }
+
+      // Right facet adjacency
+      if ( f_r )
+      {
+        int i = f_r->get_edge_index( e->v1(), e->v2() );
+
+        int n_vertices = static_cast<int>( f_r->n_vertices() );
+
+        int ielem_1 = MOD(i+1, n_vertices);
+        int ielem_2 = MOD(i+2, n_vertices);
+
+        Vertex& v1 = f_r->vertex(ielem_1);
+
+        Facet* elem_1 = f_r->sub_quad(ielem_1);
+        Facet* elem_2 = f_r->sub_quad(ielem_2);
+
+        if ( v1 == e->v1() )
+        {
+          e1_sub->facet_r( elem_1 );
+          e2_sub->facet_r( elem_2 );
+        }
+        else
+        {
+          e1_sub->facet_r( elem_2 );
+          e2_sub->facet_r( elem_1 );
+        }
+      }
+
+    }
+
+    */
+
+
+
+
+    /*
+    // Loop over all quads generate sub-quads for new container
+    for ( const auto& q_ptr : quads_ )
+    {
+      // Existing vertices
+      Vertex& v1 = q_ptr->v1();
+      Vertex& v3 = q_ptr->v2();
+      Vertex& v5 = q_ptr->v3();
+      Vertex& v7 = q_ptr->v4();
+
+      // Existing (old) edges 
+      Edge* e13 = get_edge_from_vertices(v1, v3);
+      ASSERT( e13, "Connectivity between verticees and edges "
+                   "seems to be corrupted." );
+
+      Vertex* v2 = nullptr;
+      Edge* e12  = nullptr;
+      Edge* e23  = nullptr;
+
+      // Refine edge if not yet done
+      if ( e13->is_refined() )
+      {
+        v2  = e13->sub_vertex();
+        e12 = e13->sub_edges(0);
+        e23 = e13->sub_edges(1);
+      }
+      else
+      {
+      }
+
+
+
+
+      Edge* e35 = get_edge_from_vertices(v3, v5);
+      Edge* e57 = get_edge_from_vertices(v5, v7);
+      Edge* e71 = get_edge_from_vertices(v7, v1);
+
+      // New vertices at edge centroids
+      Vertex& v2 = verts_.push_back( 0.5*(v1->xy() + v3->xy()) );
+      Vertex& v4 = verts_.push_back( 0.5*(v3->xy() + v5->xy()) );
+      Vertex& v6 = verts_.push_back( 0.5*(v5->xy() + v7->xy()) );
+      Vertex& v8 = verts_.push_back( 0.5*(v7->xy() + v1->xy()) );
+
+      // Create new vertex at center of quad
+      Vertex& v9 = verts_.push_back( q_ptr->xy() );
+
+      // Create new quads -> let them inactive for now
+      Quad& q1 = quads_.push_back( v1, v2, v9, v8 );
+      Quad& q2 = quads_.push_back( v3, v4, v9, v2 );
+      Quad& q3 = quads_.push_back( v5, v6, v9, v4 );
+      Quad& q4 = quads_.push_back( v7, v8, v9, v6 );
+
+
+      // Generate new edges
+
+
+      // Set new quads as active -> used for intersection check
+      q1.is_active( true );
+      q1.is_active( true );
+      q1.is_active( true );
+      q1.is_active( true );
+
+
+    }
+    */
+      
+    return true;
+      
+  } // Mesh::refine_to_quads()
 
   /*------------------------------------------------------------------
   | Algorithm to create a single quad layer for a connected list of
@@ -1480,8 +1903,33 @@ private:
   | Algorithm to create a single quad layer for a connected list of
   | advancing front edges that start with v_start and end with v_end
   ------------------------------------------------------------------*/
-  bool add_quad_layer(Vertex*& v_start, Vertex*& v_end, double height)
+  bool add_quad_layer(Vertex*& v_start_in, Vertex*& v_end_in, 
+                      double height)
   {
+    // Find closest vertices to given input vertices
+    Vertex* v_start = nullptr;
+    Vertex* v_end = nullptr;
+    double d2_start_min = 1.0E+10;
+    double d2_end_min = 1.0E+10;
+
+    for ( const auto& v : verts_ )
+    {
+      double d2_start = (v_start_in->xy() - v->xy()).length_squared();
+      double d2_end   = (v_end_in->xy() - v->xy()).length_squared();
+
+      if (d2_start < d2_start_min)
+      {
+        v_start = v.get();
+        d2_start_min = d2_start;
+      }
+
+      if (d2_end < d2_end_min)
+      {
+        v_end = v.get();
+        d2_end_min = d2_end;
+      }
+    }
+
     if (!v_start || !v_end)
     {
       MSG("[ERROR]: Failed to create quad layer. "
@@ -1555,16 +2003,16 @@ private:
 
     do 
     {
-      v_start = quad_layer.p1()[i];
+      v_start_in = quad_layer.p1()[i];
 
       if ( is_closed )
-        v_end = v_start;
+        v_end_in = v_start_in;
       else
-        v_end = quad_layer.p2()[MOD(i-1,n)]; 
+        v_end_in = quad_layer.p2()[MOD(i-1,n)]; 
 
       ++i;
 
-    } while ( !(v_start->on_front()) && !(v_end->on_front()) );
+    } while ( !(v_start_in->on_front()) && !(v_end_in->on_front()) );
 
     return true;
 
@@ -2059,6 +2507,13 @@ private:
   inline void check_remove_interior_edge(Edge& e)
   {
     bool removed = intr_edges_.remove( e );
+    ASSERT( removed, "Failed to remove interior edge.");
+    (void) removed;
+  }
+
+  inline void check_remove_boundary_edge(Edge& e)
+  {
+    bool removed = bdry_edges_.remove( e );
     ASSERT( removed, "Failed to remove interior edge.");
     (void) removed;
   }

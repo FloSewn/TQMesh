@@ -28,6 +28,42 @@ using namespace TQUtils;
 
 /*********************************************************************
 * A simple triangle - Must be defined CCW
+* =======================================
+*
+*  Arrangement of tri neighbors:
+*  -----------------------------
+*
+*                       v2                  v1... vertices
+*                       o                   ei... edges
+*                     /   \                 fi... neighboring 
+*                   /       \                     facets
+*            f1   /           \   f0
+*               / e1         e0 \
+*             /                   \
+*           /                       \
+*         /            e2             \
+*       o-------------------------------o
+*     v0                                 v1
+*                      f2
+*
+*
+*  Splitting into sub-quads:
+*  -------------------------
+*
+*                       v2                  
+*                       o                   
+*                     /   \
+*                   /  q2   \
+*            e1   /           \   e0
+*               o-------o-------o
+*             /         |         \
+*           /    q0     |    q1     \
+*         /             |             \
+*       o---------------o---------------o
+*     v0                                 v1
+*                      e2
+*
+*
 *********************************************************************/
 class Triangle : public Facet
 {
@@ -120,6 +156,10 @@ public:
   double edgelength(unsigned int i) const { return edge_len_[i]; }
   double angle(unsigned int i) const { return angles_[i]; }
 
+  bool is_refined() const { return is_refined_; }
+  Facet* sub_quad(size_t i) const { return sub_quads_[i]; }
+  Vertex* sub_vertex() const { return sub_vertex_; }
+
   /*------------------------------------------------------------------
   | Setters
   ------------------------------------------------------------------*/
@@ -131,6 +171,10 @@ public:
   void index(int i) { index_ = i; }
   void is_active(bool a) { active_ = a; }
   void color(int c){ color_ = c; }
+
+  void is_refined(bool r) { is_refined_ = r; }
+  void sub_quad(size_t i, Facet* q) { sub_quads_[i] = q; }
+  void sub_vertex(Vertex* v) { sub_vertex_ = v; }
 
   /*------------------------------------------------------------------
   | Returns true if the triangle is valid
@@ -505,6 +549,10 @@ private:
  
   DoubleArray          edge_len_     {0.0};
   DoubleArray          angles_       {0.0};
+
+  bool                 is_refined_    {false};
+  FacetArray           sub_quads_     {nullptr};
+  Vertex*              sub_vertex_    {nullptr};
 
   ContainerIterator    pos_;
   bool                 in_container_;

@@ -217,27 +217,25 @@ void Test_Mesh_triangulate_quad_layer(bool export_mesh)
   Boundary&  b_ext = domain.add_exterior_boundary();
 
   // Build exterior boundary
-  Vertex& v1 = domain.add_vertex(  0.0,  0.0, 0.9 );
-  Vertex& v2 = domain.add_vertex(  5.0,  0.0, 0.9 );
-  Vertex& v3 = domain.add_vertex(  5.0,  5.0, 0.9 );
-  Vertex& v4 = domain.add_vertex( 10.0,  5.0, 0.9 );
-  Vertex& v5 = domain.add_vertex( 10.0, 10.0, 0.9 );
-  Vertex& v6 = domain.add_vertex(  0.0,  9.0, 0.9 );
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0, 1.0 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0, 1.0 );
+  Vertex& v3 = domain.add_vertex(  5.0,  5.0, 1.0 );
+  Vertex& v4 = domain.add_vertex(  0.0,  5.0, 1.0 );
 
   b_ext.add_edge( v1, v2, 1 );
   b_ext.add_edge( v2, v3, 2 );
   b_ext.add_edge( v3, v4, 3 );
-  b_ext.add_edge( v4, v5, 4 );
-  b_ext.add_edge( v5, v6, 5 );
-  b_ext.add_edge( v6, v1, 6 );
+  b_ext.add_edge( v4, v1, 4 );
 
   // Create the mesh
   Mesh mesh { domain, 50.0 };
 
-  mesh.create_quad_layers(v1, v2, 1, 0.25, 1.5);
+  //mesh.create_quad_layers(v1, v2, 1, 0.25, 1.5);
 
   mesh.triangulate();
   mesh.smoothing(4, 0.9);
+
+  //mesh.refine_to_quads();
 
   // Export the mesh
   if (export_mesh)
@@ -1102,7 +1100,7 @@ void run_mesh_tests(bool benchmark)
   //MeshTests::Test_Mesh_initialization();
   //MeshTests::Test_Mesh_triangulate(false);
   //MeshTests::Test_Mesh_pave(false);
-  //MeshTests::Test_Mesh_triangulate_quad_layer(false);
+  MeshTests::Test_Mesh_triangulate_quad_layer(true);
   //MeshTests::Test_Mesh_advance_front_quad(true);
   //MeshTests::Test_Mesh_add_quad_layer_step(true);
   //MeshTests::Test_Mesh_wedge(true);
@@ -1111,7 +1109,7 @@ void run_mesh_tests(bool benchmark)
   //MeshTests::Test_Mesh_create_simple_hex_layers(true);
   //MeshTests::Test_Mesh_vortex_shedding(true);
     
-  MeshTests::Test_Mesh_create_bdry_shape_mesh(true);
+  //MeshTests::Test_Mesh_create_bdry_shape_mesh(true);
 
   //MeshTests::Test_Mesh_add_quad_layer(true);
 

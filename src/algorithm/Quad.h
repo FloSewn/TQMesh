@@ -28,6 +28,48 @@ using namespace TQUtils;
 
 /*********************************************************************
 * A simple quadrilateral - Must be defined CCW
+* ============================================
+*
+*  Arrangement of quad neighbors:
+*  ------------------------------
+*
+*                      f1
+*           v3                     v2       vi... vertices
+*             o<------------------o         ei... edges
+*             |        e1         ^         fi... neighboring 
+*             |                   |               facets
+*             |                   |
+*             |                   |
+*         f2  | e2             e0 |  f0
+*             |                   |
+*             |                   |
+*             |                   |
+*             v         e3        |
+*             o------------------>o
+*           v0                     v1
+*                       f3
+*
+*
+*  Splitting into sub-quads:
+*  -------------------------
+*
+*                      e1
+*           v3                     v2       qi... sub-quads 
+*             o<--------o---------o
+*             |         |         ^
+*             |         |         |
+*             |   q3    |   q2    |
+*             |         |         |
+*         e2  o---------o---------o  e0
+*             |         |         |
+*             |   q0    |   q1    |
+*             |         |         |
+*             v         |         |
+*             o---------o-------->o
+*           v0                     v1
+*                       e3
+*
+*
 *********************************************************************/
 class Quad : public Facet
 {
@@ -107,6 +149,10 @@ public:
   double min_edge_length() const { return min_edge_len_; }
   double max_edge_length() const { return max_edge_len_; }
 
+  bool is_refined() const { return is_refined_; }
+  Facet* sub_quad(size_t i) const { return sub_quads_[i]; }
+  Vertex* sub_vertex() const { return sub_vertex_; }
+
   /*------------------------------------------------------------------
   | Setters
   ------------------------------------------------------------------*/
@@ -119,6 +165,10 @@ public:
   void index(int i) { index_ = i; }
   void is_active(bool a) { active_ = a; }
   void color(int c){ color_ = c; }
+
+  void is_refined(bool r) { is_refined_ = r; }
+  void sub_quad(size_t i, Facet* q) { sub_quads_[i] = q; }
+  void sub_vertex(Vertex* v) { sub_vertex_ = v; }
 
   /*------------------------------------------------------------------
   | Returns true if the quad is valid
@@ -324,6 +374,7 @@ public:
   ------------------------------------------------------------------*/
   bool in_container() const { return in_container_; }
 
+
 private:
 
   /*------------------------------------------------------------------
@@ -442,28 +493,31 @@ private:
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  VertexArray          v_ { nullptr };
-  FacetArray           f_ { nullptr };
+  VertexArray          v_             { nullptr };
+  FacetArray           f_             { nullptr };
 
+  Vec2d                xy_            {0.0, 0.0};
+  Vec2d                circ_centr_    {0.0,0.0};
 
-  Vec2d                xy_           {0.0, 0.0};
-  Vec2d                circ_centr_   {0.0,0.0};
+  int                  index_         {-1};
+  bool                 active_        {false};
+  int                  color_         {0};
 
-  int                  index_        {-1};
-  bool                 active_       {false};
-  int                  color_        {0};
+  double               area_          {0.0};
+  double               circ_radius_   {0.0};
+  double               min_angle_     {0.0};
+  double               max_angle_     {0.0};
+  double               shape_fac_     {0.0};
+  double               quality_       {0.0};
+  double               min_edge_len_  {0.0};
+  double               max_edge_len_  {0.0};
 
-  double               area_         {0.0};
-  double               circ_radius_  {0.0};
-  double               min_angle_    {0.0};
-  double               max_angle_    {0.0};
-  double               shape_fac_    {0.0};
-  double               quality_      {0.0};
-  double               min_edge_len_ {0.0};
-  double               max_edge_len_ {0.0};
+  DoubleArray          edge_len_      {0.0};
+  DoubleArray          angles_        {0.0};
 
-  DoubleArray          edge_len_     {0.0};
-  DoubleArray          angles_       {0.0};
+  bool                 is_refined_    {false};
+  FacetArray           sub_quads_     {nullptr};
+  Vertex*              sub_vertex_    {nullptr};
 
   ContainerIterator    pos_;
   bool                 in_container_;
