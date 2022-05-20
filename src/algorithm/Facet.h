@@ -43,9 +43,6 @@ class Facet
   virtual int index() const = 0;
   virtual bool is_active() const = 0;
   virtual int color() const = 0;
-  virtual bool is_refined() const = 0;
-  virtual Facet* sub_quad(size_t i) const = 0;
-  virtual Vertex* sub_vertex() const = 0; 
 
   /*------------------------------------------------------------------
   | Setters 
@@ -53,9 +50,6 @@ class Facet
   virtual void index(int i) = 0;
   virtual void is_active(bool a) = 0;
   virtual void color(int c) = 0;
-  virtual void is_refined(bool r) = 0;
-  virtual void sub_quad(size_t i, Facet* q) = 0;
-  virtual void sub_vertex(Vertex* v) = 0;
 
   /*------------------------------------------------------------------
   | Functions to return indices of vertices, edges...

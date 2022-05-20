@@ -31,7 +31,7 @@ public:
   using WasteVector    = std::vector<std::unique_ptr<T>>;
   using size_type      = typename List::size_type;
   using value_type     = std::unique_ptr<T>;
-  using Vector         = std::vector<const T*>;
+  using Vector         = std::vector<T*>;
   using iterator       = typename List::iterator;
   using const_iterator = typename List::const_iterator;
 

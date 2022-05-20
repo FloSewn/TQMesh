@@ -204,7 +204,7 @@ void Test_Mesh_pave(bool export_mesh)
 /*********************************************************************
 * Test Mesh::triangulate_quad_layer()
 *********************************************************************/
-void Test_Mesh_triangulate_quad_layer(bool export_mesh)
+void Test_Mesh_refine_to_quads(bool export_mesh)
 {
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
@@ -212,7 +212,7 @@ void Test_Mesh_triangulate_quad_layer(bool export_mesh)
     return 2.5; 
   };
 
-  Domain domain   { f, 20.0 };
+  Domain domain   { f, 50.0 };
 
   Boundary&  b_ext = domain.add_exterior_boundary();
 
@@ -230,12 +230,14 @@ void Test_Mesh_triangulate_quad_layer(bool export_mesh)
   // Create the mesh
   Mesh mesh { domain, 50.0 };
 
-  //mesh.create_quad_layers(v1, v2, 1, 0.25, 1.5);
+  mesh.create_quad_layers(v1, v1, 1, 1.0, 1.5);
 
-  mesh.triangulate();
-  mesh.smoothing(4, 0.9);
+  mesh.pave();
 
-  //mesh.refine_to_quads();
+  //MSG("============== REFINE ==============");
+  mesh.refine_to_quads();
+  mesh.refine_to_quads();
+  mesh.refine_to_quads();
 
   // Export the mesh
   if (export_mesh)
@@ -249,7 +251,7 @@ void Test_Mesh_triangulate_quad_layer(bool export_mesh)
 
   DBG_MSG("Tests for Mesh::triangulate_quad_layer() succeeded");
 
-} // Test_Mesh_triangulate_quad_layer() */
+} // Test_Mesh_refine_to_quads() */
 
 
 /*********************************************************************
@@ -351,10 +353,11 @@ void Test_Mesh_create_simple_hex_layers(bool export_mesh)
   // Create quad layers
   mesh.create_quad_layers(v1, v6, 3, 0.1, 1.2);
 
-  mesh.triangulate();
-  //mesh.pave();
-  //mesh.merge_triangles_to_quads();
+  //mesh.triangulate();
+  mesh.pave();
+  mesh.merge_triangles_to_quads();
   mesh.smoothing(4, 0.9);
+  mesh.refine_to_quads();
 
   // Export the mesh
   if (export_mesh)
@@ -748,10 +751,11 @@ void Test_Mesh_vortex_shedding(bool export_mesh)
   mesh.create_quad_layers(v3, v4, 2, 0.05, 1.0);
   mesh.create_quad_layers(v5, v5, 2, 0.01, 1.0);
 
-  mesh.triangulate();
-  //mesh.pave();
+  //mesh.triangulate();
+  mesh.pave();
   //mesh.merge_triangles_to_quads();
   mesh.smoothing(4, 0.9);
+  //mesh.refine_to_quads();
 
   // Export the mesh
   if (export_mesh)
@@ -776,7 +780,7 @@ void Test_Mesh_create_bdry_shape_mesh(bool export_mesh)
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
   { 
-    return 0.25;
+    return 0.5;
   };
 
   Domain domain   { f, 50.0 };
@@ -799,10 +803,12 @@ void Test_Mesh_create_bdry_shape_mesh(bool export_mesh)
   //mesh.create_quad_layers(v3, v4, 2, 0.05, 1.0);
   //mesh.create_quad_layers(v5, v5, 2, 0.01, 1.0);
 
-  //mesh.triangulate();
-  mesh.pave();
+  mesh.triangulate();
+  //mesh.pave();
   //mesh.merge_triangles_to_quads();
   mesh.smoothing(4, 0.9);
+
+  mesh.refine_to_quads();
 
   // Export the mesh
   if (export_mesh)
@@ -1097,10 +1103,10 @@ void run_mesh_tests(bool benchmark)
 {
   MSG("\n#===== Mesh tests =====");
 
-  //MeshTests::Test_Mesh_initialization();
+  MeshTests::Test_Mesh_initialization();
   //MeshTests::Test_Mesh_triangulate(false);
   //MeshTests::Test_Mesh_pave(false);
-  MeshTests::Test_Mesh_triangulate_quad_layer(true);
+  MeshTests::Test_Mesh_refine_to_quads(true);
   //MeshTests::Test_Mesh_advance_front_quad(true);
   //MeshTests::Test_Mesh_add_quad_layer_step(true);
   //MeshTests::Test_Mesh_wedge(true);

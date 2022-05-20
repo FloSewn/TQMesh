@@ -101,8 +101,6 @@ public:
   Facet* facet_l() { return face_l_; }
   Facet* facet_r() { return face_r_; }
 
-  bool is_refined() const { return is_refined_; }
-  Edge* sub_edges(size_t i) const { return sub_edges_[i]; }
   Vertex* sub_vertex() const { return sub_vertex_; }
 
   /*------------------------------------------------------------------
@@ -111,8 +109,6 @@ public:
   void facet_l(Facet* f) { face_l_ = f; }
   void facet_r(Facet* f) { face_r_ = f; }
 
-  void is_refined(bool r) { is_refined_ = r; }
-  void sub_edges(size_t i, Edge* e) { sub_edges_[i] = e; }
   void sub_vertex(Vertex* v) { sub_vertex_ = v; }
 
   /*------------------------------------------------------------------
@@ -211,9 +207,7 @@ private:
   Facet*              face_l_ {nullptr};
   Facet*              face_r_ {nullptr};
 
-  bool                 is_refined_    {false};
-  EdgeArray            sub_edges_     {nullptr};
-  Vertex*              sub_vertex_    {nullptr};
+  Vertex*             sub_vertex_    {nullptr};
 
   // Mandatory container attributes
   ContainerIterator   pos_;

@@ -57,7 +57,7 @@ class QTree
 public:
   using List   = std::list<T*>;
   using Array  = std::array<QTree<T,V>*,4>; 
-  using Vector = std::vector<const T*>;
+  using Vector = std::vector<T*>;
   using ListIterator = typename List::iterator;
 
   /*------------------------------------------------------------------ 

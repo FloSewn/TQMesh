@@ -137,7 +137,7 @@ void QTree_benchmark(int n, int r, size_t imax, size_t dmax,
     const double t = t0 + i*dt;
     fun.eval( t, x, y );
 
-    vector<const Vertex*> items {};
+    vector<Vertex*> items {};
     qtree.get_items( {x-dx,y-dy}, {x+dx,y+dy}, items );
 
     item_count_qt += items.size();
@@ -212,7 +212,7 @@ void QTree_benchmark(int n, int r, size_t imax, size_t dmax,
       const double t = t0 + i*dt;
       fun.eval( t, x, y );
 
-      std::vector<const Vertex*> items {};
+      std::vector<Vertex*> items {};
       qtree.get_items( {x-dx,y-dy}, {x+dx,y+dy}, items );
 
       item_count_qt += items.size();
@@ -579,7 +579,7 @@ void Test_QTree_get_items(bool export_qtree=false)
   /*------------------------------------------------------------------
   | Get items in rectangle
   ------------------------------------------------------------------*/
-  vector<const Vertex*> r_found {};
+  vector<Vertex*> r_found {};
   
   size_t n_r = qtree.get_items( {-0.25,-0.25}, {0.25,0.25}, r_found );
 
@@ -591,7 +591,7 @@ void Test_QTree_get_items(bool export_qtree=false)
   /*------------------------------------------------------------------
   | Get items in circle
   ------------------------------------------------------------------*/
-  vector<const Vertex*> c_found {};
+  vector<Vertex*> c_found {};
   
   size_t n_c = qtree.get_items( {0.25,0.25}, 0.25, c_found );
 
