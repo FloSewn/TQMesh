@@ -113,9 +113,12 @@ public:
 
   /*------------------------------------------------------------------
   | Function returns, if edges is located on a boundary
+  | or if it is in the interior of the domain
   ------------------------------------------------------------------*/
   bool on_boundary() const 
-  { return ( v1_->on_boundary() && v2_->on_boundary() ); }
+  { return ( marker_ != TQ_INTR_EDGE_MARKER ); }
+  bool is_interior() const
+  { return !on_boundary(); }
 
   /*------------------------------------------------------------------
   | Get the next edge, that is connected to the ending vertex of  

@@ -93,9 +93,12 @@ public:
 
   /*------------------------------------------------------------------
   | Insert a new edge to the list at a specified position
+  | By default, edges get the TQ_INTR_EDGE_MARKER, which is used to 
+  | identify interior edges of the mesh. 
+  | Boundary edges are assumed to be defined with a marker > 0
   ------------------------------------------------------------------*/
-  Edge& insert_edge(auto pos, Vertex& v1, Vertex& v2, 
-                    int marker=TQ_INTR_EDGE_MARKER)
+  virtual Edge& insert_edge(const_iterator pos, Vertex& v1, Vertex& v2, 
+                            int marker=TQ_INTR_EDGE_MARKER)
   {
     Edge& e = edges_.insert(pos, v1, v2, *this, marker);
     if ( orient_ != TQGeom::Orientation::NONE )
@@ -119,8 +122,8 @@ public:
   | > EdgeList with NONE orientation can be open, vertices can be 
   |   connected to more than two edges of this list type
   ------------------------------------------------------------------*/
-  Edge& add_edge(Vertex& v1, Vertex& v2, 
-                 int marker=TQ_INTR_EDGE_MARKER)
+  virtual Edge& add_edge(Vertex& v1, Vertex& v2, 
+                         int marker=TQ_INTR_EDGE_MARKER)
   { 
     if ( orient_ == TQGeom::Orientation::NONE || edges_.size() < 1 )
       return insert_edge( edges_.end(), v1, v2, marker ); 

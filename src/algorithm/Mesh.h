@@ -1127,9 +1127,9 @@ private:
       base.v2().on_front( false );
       v_new.on_front( false );
 
-      if ( e1->marker() == TQ_INTR_EDGE_MARKER )
+      if ( e1->is_interior() )
         intr_edges_.add_edge(e1->v1(), e1->v2());
-      if ( e2->marker() == TQ_INTR_EDGE_MARKER )
+      if ( e2->is_interior() )
         intr_edges_.add_edge(e2->v1(), e2->v2());
 
       front_.remove( *e1 );
@@ -1145,7 +1145,7 @@ private:
 
       base.v1().on_front( false );
 
-      if ( e1->marker() == TQ_INTR_EDGE_MARKER )
+      if ( e1->is_interior() )
         intr_edges_.add_edge(e1->v1(), e1->v2());
 
       front_.remove( *e1 );
@@ -1161,7 +1161,7 @@ private:
 
       base.v2().on_front( false );
 
-      if ( e2->marker() == TQ_INTR_EDGE_MARKER )
+      if ( e2->is_interior() )
         intr_edges_.add_edge(e2->v1(), e2->v2());
 
       front_.remove( *e2 );
@@ -1179,7 +1179,7 @@ private:
 
     // If current base is not at the boundary, add it to the 
     // interior edge list
-    if ( base.marker() == TQ_INTR_EDGE_MARKER )
+    if ( base.is_interior() )
       intr_edges_.add_edge(base.v1(), base.v2());
 
     // Remove base edge

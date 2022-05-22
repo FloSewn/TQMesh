@@ -57,6 +57,31 @@ public:
   { return (btype_ == BdryType::INTERIOR); }
 
   /*------------------------------------------------------------------
+  | Override insert_edge() method of parent EdgeList, since all 
+  | boundary edges must be defined with an appropriate boundary 
+  | marker (integers > 0)
+  ------------------------------------------------------------------*/
+  Edge& insert_edge(auto pos, Vertex& v1, Vertex& v2, 
+                    int marker)
+  { 
+    ASSERT( (marker >= 0), 
+            "Boundary markers must be greater than zero");
+    return EdgeList::insert_edge(pos, v1, v2, marker); 
+  }
+
+  /*------------------------------------------------------------------
+  | Override add_edge() method of parent EdgeList, since all 
+  | boundary edges must be defined with an appropriate boundary 
+  | marker (integers > 0)
+  ------------------------------------------------------------------*/
+  Edge& add_edge(Vertex& v1, Vertex& v2, int marker)
+  { 
+    ASSERT( (marker >= 0), 
+            "Boundary markers must be greater than zero");
+    return EdgeList::add_edge(v1, v2, marker); 
+  }
+
+  /*------------------------------------------------------------------
   | Set the boundary to square shape
   ------------------------------------------------------------------*/
   void set_shape_square(Vertices& vertices, int marker, 
