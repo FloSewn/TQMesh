@@ -45,6 +45,8 @@ int main(int argc, char* argv[])
       "Element size:");
   auto para_element_type = reader.new_string_parameter(
       "Element type:");
+  auto para_all_quad_mesh = reader.new_bool_parameter(
+      "All quad mesh:");
   auto para_quad_layers = reader.new_double_list_parameter(
       "Add quad layers:");
 
@@ -298,8 +300,17 @@ int main(int argc, char* argv[])
     mesh.triangulate();
   }
 
+  /*------------------------------------------------------------------
+  | In case of all quad meshes -> refined to quads
+  ------------------------------------------------------------------*/
+  reader.query( para_all_quad_mesh );
+  if ( para_all_quad_mesh.found() && para_all_quad_mesh.value() )
+    mesh.refine_to_quads();
+  
+
   // Smooth the grid
   mesh.smoothing(4, 0.9);
+
 
   /*------------------------------------------------------------------
   | Export meshing
