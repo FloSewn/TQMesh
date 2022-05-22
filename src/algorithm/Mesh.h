@@ -178,6 +178,7 @@ public:
   ------------------------------------------------------------------*/
   bool refine_to_quads()
   {
+    MSG("START MESH REFINEMENT");
     clear_waste();
 
     // Gather all coarse edges, quads and tris
@@ -214,6 +215,7 @@ public:
       bdry_edges_.add_edge( e->v1(), v, e->marker() );
       bdry_edges_.add_edge( v, e->v2(), e->marker() );
       e->sub_vertex( &v );
+      v.on_boundary( true );
     }
 
     // Refine all triangle elements
@@ -294,8 +296,14 @@ public:
     for ( auto q : coarse_quads )
       check_remove_quad( *q );
 
+
+    // Re-initialize vertex-to-vertex connectivity
+    setup_vertex_connectivity();
+
     // Update connectivity between elements and edges
     setup_facet_connectivity();
+
+    MSG("DONE!");
       
     return true;
       
@@ -332,53 +340,6 @@ public:
     return true;
 
   } // Mesh::create_quad_layers()
-
-  /*------------------------------------------------------------------
-  | Mesh smoothing: 
-  | This algorithm applies two consecutive smoothing strategies
-  ------------------------------------------------------------------*/
-  bool smoothing(int iterations, double eps=0.75, double decay=1.0)
-  {
-    MSG("START MESH SMOOTHING");
-
-    // Unfix vertices of bad elements
-    const double max_tri_angle = M_PI * (150.0) / 180.0;
-    const double min_quad_angle = M_PI * (10.0) / 180.0;
-
-    for ( const auto& t_ptr : tris_ )
-    {
-      if ( t_ptr->max_angle() > max_tri_angle )
-      {
-        t_ptr->v1().is_fixed( false );
-        t_ptr->v2().is_fixed( false );
-        t_ptr->v3().is_fixed( false );
-      }
-    }
-
-    for ( const auto& q_ptr : quads_ )
-    {
-      if ( q_ptr->min_angle() < min_quad_angle )
-      {
-        q_ptr->v1().is_fixed( false );
-        q_ptr->v2().is_fixed( false );
-        q_ptr->v3().is_fixed( false );
-        q_ptr->v4().is_fixed( false );
-      }
-    }
-
-    // Apply smoothing
-    for (int i = 0; i < iterations; ++i)
-    {
-      smoothing_torsion(2, eps, decay);
-      smoothing_laplace(2, eps, decay);
-
-      eps *= decay;
-    }
-
-    MSG("DONE!");
-    return true;
-
-  } // smoothing() 
 
   /*------------------------------------------------------------------
   | Create a triangular mesh using the advancing front algorithm
@@ -2096,130 +2057,6 @@ private:
     e_end   = e_last->get_prev_edge();
 
   } // Mesh::prepare_quad_layer_front()
-
-  /*------------------------------------------------------------------
-  | Smooth the grid according to the torsion spring approach 
-  | described by: 
-  | 
-  | Zhou and Shimada, An angle-based approach to two-dimensional 
-  | mesh smoothing, 
-  | IMR 2000 (2000), 373-384
-  | 
-  ------------------------------------------------------------------*/
-  bool smoothing_torsion(int    iterations, 
-                         double eps=0.75, 
-                         double decay=1.0)
-  {
-    for (int iter = 0; iter < iterations; ++iter)
-    {
-
-      for ( const auto& v : verts_ )
-      {
-        if ( v->is_fixed() || v->on_boundary() )
-          continue;
-
-        Vertex::VertexVector& nbrs = v->vertices();
-
-        int nv = static_cast<int>(nbrs.size());
-
-        Vec2d xy_m { 0.0, 0.0 };
-
-        for ( int j = 0; j < nv; ++j )
-        {
-          int i = MOD(j-1, nv);
-          int k = MOD(j+1, nv);
-
-          const Vec2d vi = v->xy() - nbrs[i]->xy();
-          const Vec2d vj = v->xy() - nbrs[j]->xy();
-          const Vec2d vk = v->xy() - nbrs[k]->xy();
-
-          const double a1 = angle( vj, vk );
-          const double a2 = angle( vj, vi );
-
-          const double b = 0.5 * (a2 - a1);
-
-          const double sin_b = sin( b );
-          const double cos_b = cos( b );
-
-          const double xj = nbrs[j]->xy().x;
-          const double yj = nbrs[j]->xy().y;
-
-          xy_m.x += xj + cos_b * vj.x - sin_b * vj.y;
-          xy_m.y += yj + sin_b * vj.x + cos_b * vj.y;
-
-        }
-
-        xy_m /= static_cast<double>( nv );
-
-        const Vec2d xy_old = v->xy();
-        const Vec2d d_xy   = xy_m - xy_old;
-        const Vec2d xy_n   = xy_old + eps * d_xy;
-
-        v->xy( xy_n );
-
-        const double rho = domain_->size_function( xy_n );
-        const double range = 2.0 * rho;
-
-        if (  v->intersects_facet(tris_, range)
-           || v->intersects_facet(quads_, range) 
-           || !domain_->is_inside( *v ) )
-          v->xy( xy_old );
-      }
-
-      eps *= -decay;
-    }
-
-    return true;
-
-  } // Mesh::smoothing_torsion()
-
-  /*------------------------------------------------------------------
-  | Simple laplacian smoothing algorithm
-  ------------------------------------------------------------------*/
-  bool smoothing_laplace(int    iterations, 
-                         double eps=0.75, 
-                         double decay=1.0)
-  {
-    for (int iter = 0; iter < iterations; ++iter)
-    {
-      for ( const auto& v : verts_ )
-      {
-        if ( v->is_fixed() || v->on_boundary() )
-          continue;
-
-        Vertex::VertexVector nbrs = v->vertices();
-        int nv = static_cast<int>(nbrs.size());
-
-        Vec2d xy_m { 0.0, 0.0 };
-
-        for ( int j = 0; j < nv; ++j )
-          xy_m += nbrs[j]->xy();
-
-        xy_m /= static_cast<double>( nv );
-
-        const Vec2d xy_old = v->xy();
-
-        const Vec2d d_xy   = xy_m - xy_old;
-        const Vec2d xy_n   = xy_old + eps * d_xy;
-
-        v->xy( xy_n );
-
-        const double rho = domain_->size_function( xy_n );
-        const double range = 2.0 * rho;
-
-        if (  v->intersects_facet(tris_, range)
-           || v->intersects_facet(quads_, range) 
-           || !domain_->is_inside( *v ) )
-          v->xy( xy_old );
-      }
-
-      eps *= -decay;
-
-    }
-
-    return true;
-
-  } // smoothing_laplace()
 
   /*------------------------------------------------------------------
   | Get edge 

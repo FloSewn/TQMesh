@@ -12,3 +12,4 @@ void run_front_tests();
 void run_triangle_tests();
 void run_quad_tests();
 void run_mesh_tests(bool benchmark);
+void run_smoother_tests();

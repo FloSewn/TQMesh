@@ -126,7 +126,6 @@ void Test_Mesh_triangulate(bool export_mesh)
   Mesh mesh { domain, 50.0 };
 
   mesh.triangulate();
-  mesh.smoothing(4, 0.9);
 
   // Assertions
   ASSERT( EQ(mesh.area(), domain.area()),
@@ -180,7 +179,6 @@ void Test_Mesh_pave(bool export_mesh)
   Mesh mesh { domain, 50.0 };
 
   mesh.pave();
-  mesh.smoothing(4, 0.9);
 
   // Assertions
   ASSERT( EQ(mesh.area(), domain.area()),
@@ -295,7 +293,6 @@ void Test_Mesh_advance_front_quad(bool export_mesh)
 
   mesh.pave();
   //mesh.triangulate();
-  mesh.smoothing(4, 0.9);
   mesh.merge_triangles_to_quads();
 
   // Export the mesh
@@ -356,7 +353,6 @@ void Test_Mesh_create_simple_hex_layers(bool export_mesh)
   //mesh.triangulate();
   mesh.pave();
   mesh.merge_triangles_to_quads();
-  mesh.smoothing(4, 0.9);
   mesh.refine_to_quads();
 
   // Export the mesh
@@ -408,7 +404,6 @@ void Test_Mesh_add_quad_layer(bool export_mesh)
   //mesh.triangulate();
   //mesh.pave();
   //mesh.merge_triangles_to_quads();
-  mesh.smoothing(4, 0.9);
 
   // Export the mesh
   if (export_mesh)
@@ -461,7 +456,6 @@ void Test_Mesh_add_quad_layer_step(bool export_mesh)
 
   //mesh.triangulate();
   //mesh.pave();
-  mesh.smoothing(4, 0.9);
 
   // Export the mesh
   if (export_mesh)
@@ -525,7 +519,6 @@ void Test_Mesh_wedge(bool export_mesh)
   Mesh mesh { domain, 2000.0 };
 
   mesh.triangulate();
-  mesh.smoothing(8, 0.9);
 
   // Export the mesh
   if (export_mesh)
@@ -688,7 +681,6 @@ void Test_Mesh_banner(bool export_mesh)
   //mesh.pave();
   mesh.triangulate();
   //mesh.merge_triangles_to_quads();
-  mesh.smoothing(8, 0.9);
 
   // Export the mesh
   if (export_mesh)
@@ -754,7 +746,6 @@ void Test_Mesh_vortex_shedding(bool export_mesh)
   //mesh.triangulate();
   mesh.pave();
   //mesh.merge_triangles_to_quads();
-  mesh.smoothing(4, 0.9);
   //mesh.refine_to_quads();
 
   // Export the mesh
@@ -806,7 +797,6 @@ void Test_Mesh_create_bdry_shape_mesh(bool export_mesh)
   mesh.triangulate();
   //mesh.pave();
   //mesh.merge_triangles_to_quads();
-  mesh.smoothing(4, 0.9);
 
   mesh.refine_to_quads();
 
@@ -896,8 +886,6 @@ void Test_Mesh_benchmark(double h, double L,
   | Smoothing
   ------------------------------------------------------------------*/
   timer.count();
-
-  mesh.smoothing(4, 0.9);
 
   /*------------------------------------------------------------------
   | Finalize benchmark - output times to user
@@ -1027,8 +1015,6 @@ void Test_Mesh_benchmark_TMesh(double h, double L,
   //------------------------------------------------------------------
   timer.count();
 
-  mesh.smoothing(4, 0.9);
-
   //------------------------------------------------------------------
   // Finalize benchmark - output times to user
   //------------------------------------------------------------------
@@ -1106,7 +1092,7 @@ void run_mesh_tests(bool benchmark)
   MeshTests::Test_Mesh_initialization();
   //MeshTests::Test_Mesh_triangulate(false);
   //MeshTests::Test_Mesh_pave(false);
-  MeshTests::Test_Mesh_refine_to_quads(true);
+  //MeshTests::Test_Mesh_refine_to_quads(true);
   //MeshTests::Test_Mesh_advance_front_quad(true);
   //MeshTests::Test_Mesh_add_quad_layer_step(true);
   //MeshTests::Test_Mesh_wedge(true);

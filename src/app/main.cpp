@@ -17,6 +17,7 @@
 #include "Boundary.h"
 #include "Domain.h"
 #include "Mesh.h"
+#include "Smoother.h"
 
 #include "ParaReader.h"
 #include "size_function.h"
@@ -307,10 +308,11 @@ int main(int argc, char* argv[])
   if ( para_all_quad_mesh.found() && para_all_quad_mesh.value() )
     mesh.refine_to_quads();
   
-
-  // Smooth the grid
-  mesh.smoothing(4, 0.9);
-
+  /*------------------------------------------------------------------
+  | Grid smoothing
+  ------------------------------------------------------------------*/
+  Smoother smoother {};
+  smoother.smooth( domain, mesh, 6, 0.5, 0.75, 0.95 );
 
   /*------------------------------------------------------------------
   | Export meshing

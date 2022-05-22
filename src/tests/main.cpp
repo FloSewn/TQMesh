@@ -20,6 +20,7 @@ int main()
   run_triangle_tests();
   run_quad_tests();
   run_mesh_tests(false);
+  run_smoother_tests();
 
   return EXIT_SUCCESS;
 }

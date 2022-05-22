@@ -12,6 +12,7 @@ add_executable( ${TESTS}
   triangle_test.cpp
   quad_test.cpp
   mesh_test.cpp
+  smoother_test.cpp
   main.cpp
 )
 
