@@ -44,10 +44,10 @@ int main(int argc, char* argv[])
 
   auto para_size_fun = reader.new_string_parameter(
       "Element size:");
-  auto para_element_type = reader.new_string_parameter(
-      "Element type:");
-  auto para_all_quad_mesh = reader.new_bool_parameter(
-      "All quad mesh:");
+  auto para_meshing_algorithm = reader.new_string_parameter(
+      "Algorithm:");
+  auto para_quad_refinements = reader.new_int_parameter(
+      "Quad-refinements:");
   auto para_quad_layers = reader.new_double_list_parameter(
       "Add quad layers:");
 
@@ -280,18 +280,18 @@ int main(int argc, char* argv[])
 
 
   // Pick element type - use triangles by default
-  std::string element_type = "Triangle";
+  std::string meshing_type = "Triangulation";
 
-  reader.query( para_element_type );
+  reader.query( para_meshing_algorithm );
 
-  if ( para_element_type.found() )
-    element_type = para_element_type.value();
+  if ( para_meshing_algorithm.found() )
+    meshing_type = para_meshing_algorithm.value();
 
-  if ( element_type == "Quadrilateral" )
+  if ( meshing_type == "Paving" )
   {
     mesh.pave();
   }
-  else if ( element_type == "Tri->Quad")
+  else if ( meshing_type == "Tri-to-Quad")
   {
     mesh.triangulate();
     mesh.merge_triangles_to_quads();
@@ -302,14 +302,20 @@ int main(int argc, char* argv[])
   }
 
   /*------------------------------------------------------------------
-  | In case of all quad meshes -> refined to quads
+  | Mesh refinements
   ------------------------------------------------------------------*/
-  reader.query( para_all_quad_mesh );
-  if ( para_all_quad_mesh.found() && para_all_quad_mesh.value() )
-    mesh.refine_to_quads();
+  reader.query( para_quad_refinements );
+
+  if ( para_quad_refinements.found() )
+  {
+    int n_refinements = para_quad_refinements.value();
+
+    for ( int i = 0; i < n_refinements; ++i )
+      mesh.refine_to_quads();
+  }
   
   /*------------------------------------------------------------------
-  | Grid smoothing
+  | Mesh smoothing
   ------------------------------------------------------------------*/
   Smoother smoother {};
   smoother.smooth( domain, mesh, 6, 0.5, 0.75, 0.95 );

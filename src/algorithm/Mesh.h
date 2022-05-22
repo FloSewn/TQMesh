@@ -206,6 +206,9 @@ public:
       intr_edges_.add_edge( e->v1(), v );
       intr_edges_.add_edge( v, e->v2() );
       e->sub_vertex( &v );
+
+      if ( e->v1().is_fixed() && e->v2().is_fixed() )
+        v.is_fixed( true );
     }
 
     // Refine boundary edges
@@ -216,6 +219,9 @@ public:
       bdry_edges_.add_edge( v, e->v2(), e->marker() );
       e->sub_vertex( &v );
       v.on_boundary( true );
+
+      if ( e->v1().is_fixed() && e->v2().is_fixed() )
+        v.is_fixed( true );
     }
 
     // Refine all triangle elements
