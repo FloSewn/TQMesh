@@ -1,5 +1,5 @@
 /*
-* This source file is part of the tqmesh library.  
+* This file is part of the CppUtils library.  
 * This code was written by Florian Setzwein in 2022, 
 * and is covered under the MIT License
 * Refer to the accompanying documentation for details
@@ -13,27 +13,55 @@
 #include <sstream>
 #include <algorithm>
 #include <cctype>
+#include <memory>
+#include <map>
 
+
+namespace CppUtils {
 
 /*--------------------------------------------------------------------
-| A scalar parameter (defined in a single line)
+| Some local typedefs
 --------------------------------------------------------------------*/
-template <class T>
-class ScalarParameter
+using string        = std::string;
+using ofstream      = std::ofstream;
+using ifstream      = std::ifstream;
+using strVec        = std::vector<string>;
+using istringstream = std::istringstream;
+
+/*--------------------------------------------------------------------
+| The default parameter parent class 
+--------------------------------------------------------------------*/
+class ParameterBase
 {
-  using string = std::string;
-
 public:
-  ScalarParameter(const string& key) 
-    : key_{key}, line_start_{0}, found_{false} {}
+  ParameterBase(const string& key)
+  : single_key_ { key }
+  , start_key_ { "" }
+  , end_key_ { "" }
+  , line_start_ { 0 }
+  , found_ { false } 
+  , multi_lines_ { false }
+  {}
 
-  const T& value() const { return value_; }
-  T& value() { return value_; }
+  ParameterBase(const string& start, const string& end)
+  : single_key_ { "" }
+  , start_key_ { start }
+  , end_key_ { end }
+  , line_start_ { 0 }
+  , found_ { false } 
+  , multi_lines_ { true }
+  {}
 
-  const string& key() const { return key_;   }
-  string& key() { return key_;   }
+  virtual ~ParameterBase() = default;
 
-  void value(T val) { value_ = val; };
+  const string& single_key() const { return single_key_;   }
+  string& single_key() { return single_key_;   }
+
+  const string& start_key() const { return start_key_; }
+  string& start_key() { return start_key_; }
+
+  const string& end_key() const { return end_key_; }
+  string& end_key() { return end_key_; }
 
   int line_to_start() const { return line_start_; }
   void line_to_start(int l) { line_start_ = l; }
@@ -41,77 +69,114 @@ public:
   bool found() const { return found_; }
   void found(bool f) { found_ = f; }
 
-private:
-  string key_;
-  size_t line_start_;
-  bool found_;
-
-  T value_;
-};
-
-/*--------------------------------------------------------------------
-| A list parameter (may be defined over multiple lines)
---------------------------------------------------------------------*/
-template <class T>
-class ListParameter
-{
-  using string = std::string;
-
-public:
-  ListParameter(const string& start, const string& end) 
-    : start_{start}, end_{end}, key_ {""}
-    , line_start_ {0}, found_{false}
-  { multi_lines_ = true; }
-
-  ListParameter(const string& key) 
-    : start_{""}, end_{""}, key_{key}
-    , line_start_ {0}, found_{false}
-  { multi_lines_ = false; }
-
-  const T& value(size_t i) const { return values_[i]; }
-  T& value(size_t i) { return values_[i]; }
-
-  void values(std::vector<T> v) { values_ = std::move(v); }
-  void add_value(T val) { values_.push_back( val ); }
-
-  const string& start() const { return start_; }
-  string& start() { return start_; }
-
-  const string& end() const { return end_; }
-  string& end() { return end_; }
-
-  const string& key() const { return key_;   }
-  string& key() { return key_;   }
-
-  void columns(size_t i) { ncol_ = i; }
-  size_t columns() const { return ncol_; }
-
-  void rows(size_t i) { nrow_ = i; }
-  size_t rows() const { return nrow_; }
-
-  bool multiple_lines() const { return multi_lines_; }
-
-  int line_to_start() const { return line_start_; }
-  void line_to_start(int l) { line_start_ = l; }
-
-  bool found() const { return found_; }
-  void found(bool f) { found_ = f; }
+  bool multi_line_definition() const { return multi_lines_; }
 
 private:
-  string start_;
-  string end_;
-  string key_;
+  string single_key_;
+  string start_key_;
+  string end_key_;
+
   size_t line_start_;
   bool   found_;
+  bool   multi_lines_ {false};
+}; 
 
+/*--------------------------------------------------------------------
+| The derived template class for a specified parameter
+--------------------------------------------------------------------*/
+template <class T>
+class Parameter : public ParameterBase
+{
+public:
+  /*------------------------------------------------------------------
+  | This constructor is used to create parameters that are defined
+  | in a single line.
+  | These parameters are queried with a given <key>, which is given
+  | via the constructor. 
+  | Additionally, the number <n> of parameters that must be given 
+  | behind the query key, is set via the constructor.
+  ------------------------------------------------------------------*/
+  Parameter(const string& key, size_t n) 
+    : ParameterBase(key)
+    , ncol_{n}
+    , nrow_{1}
+    , values_(n,T{})
+  {}
+
+  /*------------------------------------------------------------------
+  | This constructor is used to create parameter that are defined
+  | over multiple lines
+  | These parameters are queried with a given <start> and <end>
+  | key, which is given via the constructor. 
+  | Additionally, the number <n> of parameters that must be given 
+  | in every line between the start and ending query keas 
+  | are set via the constructor.
+  ------------------------------------------------------------------*/
+  Parameter(const string& start, const string& end, size_t n) 
+    : ParameterBase(start, end)
+    , ncol_{n}
+    , nrow_{1}
+    , values_(n,T{})
+  {}
+
+  /*------------------------------------------------------------------
+  | Getters
+  ------------------------------------------------------------------*/
+  T get_value(size_t i) 
+  { 
+    if ( i >= ncol_*nrow_ )
+      return values_[0];
+    return values_[i]; 
+  }
+
+  T get_value(size_t i, size_t j) 
+  { 
+    size_t index = j * ncol_ + i;
+    if ( index >= ncol_*nrow_ )
+      return values_[0];
+    return values_[index]; 
+  }
+
+  size_t columns() const { return ncol_; }
+  size_t rows() const { return nrow_; }
+
+  /*------------------------------------------------------------------
+  | Setters
+  ------------------------------------------------------------------*/
+  void set_value(size_t i, T val) 
+  { 
+    if ( i >= ncol_*nrow_ ) 
+      return;
+
+    values_[i] = val; 
+  }
+
+  void set_value(size_t i, size_t j, T val) 
+  { 
+    if ( i >= ncol_ || j >= nrow_) 
+      return;
+
+    size_t index = i + j * ncol_;
+    values_[index] = val; 
+  }
+
+  void add_row()
+  {
+    ++nrow_;
+    for( size_t i = 0; i < ncol_; i++ )
+      values_.push_back( T{} );
+  }
+
+private:
+  // The dataset
   std::vector<T> values_;
 
   // Dimension of dataset
-  bool   multi_lines_ {false};
-  size_t ncol_        { 0 };
-  size_t nrow_        { 0 };
+  size_t ncol_;
+  size_t nrow_;
 
-};
+}; // Parameter
+
 
 
 /*--------------------------------------------------------------------
@@ -119,20 +184,12 @@ private:
 --------------------------------------------------------------------*/
 class ParaReader
 {
-  /*------------------------------------------------------------------
-  | Some local typedefs
-  ------------------------------------------------------------------*/
-  using string        = std::string;
-  using ofstream      = std::ofstream;
-  using ifstream      = std::ifstream;
-  using strVec        = std::vector<string>;
-  using istringstream = std::istringstream;
-
+  using ParameterList = std::vector<std::unique_ptr<ParameterBase>>; 
+  using ParameterMap  = std::map<std::string, size_t>;
 
 public:
-
   /*------------------------------------------------------------------
-  | Error handling
+  | Class for error handling
   ------------------------------------------------------------------*/
   class Invalid
   {
@@ -143,9 +200,9 @@ public:
     string error_message;
   };
 
-  /*--------------------------------------------------------
+  /*------------------------------------------------------------------
   | Function for error handling
-  --------------------------------------------------------*/
+  ------------------------------------------------------------------*/
   void error(string msg) { throw Invalid{msg}; }
 
   /*------------------------------------------------------------------
@@ -161,7 +218,7 @@ public:
     delimiter_   = ',';
 
     ifstream ifs {file_path_};
-    if (!ifs) error("Can't open output file: " + file_path);
+    if (!ifs) error("Can't open file: " + file_path);
 
     // General throw for bad reading of file
     ifs.exceptions(ifs.exceptions() | std::ios_base::badbit);
@@ -185,104 +242,223 @@ public:
       error("Failed to read entire file - "
             "Stopped reading in line " + 
             std::to_string(file_content_.size()));
-  }
+
+  } // ParaReader::Constructor() 
 
   /*------------------------------------------------------------------
   | Create new scalar parameters to search for in a file
+  | 
+  | Arguments:
+  | ----------
+  |   name: The parameter name, under which it can be found in the
+  |         ParaReader structure
+  |   key: The parameter key, which is used to query the parameter
+  |        in the input file
   ------------------------------------------------------------------*/
-  ScalarParameter<bool>& 
-  new_bool_parameter(const string& key)
+  template <typename T>
+  void new_scalar_parameter(const string& name, const string& key)
   {
-    ScalarParameter<bool> parameter {key};
-    scalar_bool_params_.push_back(parameter);
-    return scalar_bool_params_[scalar_bool_params_.size()-1];
-  }
+    // Check that parameter map does not yet contain given name
+    if ( param_map_.count(name) )
+      error("Multiple definitions for parmeter name \"" + name + "\"."); 
 
-  ScalarParameter<int>& 
-  new_int_parameter(const string& key)
-  {
-    ScalarParameter<int> parameter {key};
-    scalar_int_params_.push_back(parameter);
-    return scalar_int_params_[scalar_int_params_.size()-1];
-  }
+    // Empty parameter keys are not allowed
+    if ( key.size() < 1 )
+      error("Empty parameter queries are not allowed. Parameter: " + name);
 
-  ScalarParameter<double>& 
-  new_double_parameter(const string& key)
-  {
-    ScalarParameter<double> parameter {key};
-    scalar_dbl_params_.push_back(parameter);
-    return scalar_dbl_params_[scalar_dbl_params_.size()-1];
-  }
+    // Update parameter list
+    param_list_.push_back( 
+        std::make_unique<Parameter<T>>( key, 1 ) 
+    );
 
-  ScalarParameter<string>& 
-  new_string_parameter(const string& key)
-  {
-    ScalarParameter<string> parameter {key};
-    scalar_str_params_.push_back(parameter);
-    return scalar_str_params_[scalar_str_params_.size()-1];
+    // Update parameter map
+    param_map_[name] = param_list_.size() - 1;
   }
 
   /*------------------------------------------------------------------
   | Create new list parameters to search for in a file
+  |
+  | Arguments:
+  | ----------
+  |   name: The parameter name, under which it can be found in the
+  |         ParaReader structure
+  |   key: The parameter key, which is used to query the parameter
+  |        in the input file
+  |   n: The number of parameters that must be provided
   ------------------------------------------------------------------*/
-  ListParameter<int>& 
-  new_int_list_parameter(const string& key)
+  template <typename T>
+  void new_list_parameter(const string& name, 
+                          const string& key, size_t n)
   {
-    ListParameter<int> parameter {key};
-    list_int_params_.push_back(parameter);
-    return list_int_params_[list_int_params_.size()-1];
-  }
+    // Check that parameter map does not yet contain given name
+    if ( param_map_.count(name) )
+      error("Multiple definitions for parmeter name \"" + name + "\"."); 
 
-  ListParameter<int>& 
-  new_int_list_parameter(const string& start, const string& end)
-  {
-    ListParameter<int> parameter {start, end};
-    list_int_params_.push_back(parameter);
-    return list_int_params_[list_int_params_.size()-1];
-  }
+    // Empty parameter keys are not allowed
+    if ( key.size() < 1 )
+      error("Empty parameter queries are not allowed. Parameter: " + name);
 
-  ListParameter<double>& 
-  new_double_list_parameter(const string& key)
-  {
-    ListParameter<double> parameter {key};
-    list_dbl_params_.push_back(parameter);
-    return list_dbl_params_[list_dbl_params_.size()-1];
-  }
+    // Update parameter list
+    param_list_.push_back( 
+        std::make_unique<Parameter<T>>( key, n ) 
+    );
 
-  ListParameter<double>& 
-  new_double_list_parameter(const string& start, const string& end)
-  {
-    ListParameter<double> parameter {start, end};
-    list_dbl_params_.push_back(parameter);
-    return list_dbl_params_[list_dbl_params_.size()-1];
-  }
-
-  ListParameter<string>& 
-  new_string_list_parameter(const string& key)
-  {
-    ListParameter<string> parameter {key};
-    list_str_params_.push_back(parameter);
-    return list_str_params_[list_str_params_.size()-1];
-  }
-
-  ListParameter<string>& 
-  new_string_list_parameter(const string& start, const string& end)
-  {
-    ListParameter<string> parameter {start, end};
-    list_str_params_.push_back(parameter);
-    return list_str_params_[list_str_params_.size()-1];
+    // Update parameter map
+    param_map_[name] = param_list_.size() - 1;
   }
 
   /*------------------------------------------------------------------
-  | Query scalar parameters
+  | Create new list parameters to search for in a file
+  |
+  | Arguments:
+  | ----------
+  |   name: The parameter name, under which it can be found in the
+  |         ParaReader structure
+  |   start: The parameter start key, which is used to query 
+  |          the beginning of the parameter data in the input file
+  |   end: The parameter end key, which is used to query 
+  |          the ending of the parameter data in the input file
+  |   n: The number of parameters that must be provided in each line
   ------------------------------------------------------------------*/
   template <typename T>
-  bool query(ScalarParameter<T>& param)
+  void new_list_parameter(const string& name,
+                          const string& start, const string& end, 
+                          size_t n)
   {
-    string query = param.key();
+    // Check that parameter map does not yet contain given name
+    if ( param_map_.count(name) )
+      error("Multiple definitions for parmeter name \"" + name + "\"."); 
 
-    // Query check
-    if (query.size() < 1) error("Invalid query");
+    // Empty parameter keys are not allowed
+    if ( start.size() < 1 || end.size() < 1 )
+      error("Empty parameter queries are not allowed. Parameter: " + name);
+
+    // Update parameter list
+    param_list_.push_back( 
+        std::make_unique<Parameter<T>>( start, end, n ) 
+    );
+
+    // Update parameter map
+    param_map_[name] = param_list_.size() - 1;
+  }
+
+  /*------------------------------------------------------------------
+  | Get a parameter reference from a given parameter name
+  ------------------------------------------------------------------*/
+  template <typename T>
+  Parameter<T>& get_parameter(const string& name)
+  {
+    // Handle unknown parameter names
+    if ( !param_map_.count(name) )
+      error("No parameter with name \"" + name + "\" has been defined.");
+
+    // Cast parameter 
+    Parameter<T>* param_ptr 
+      = dynamic_cast<Parameter<T>*>( 
+          param_list_[ param_map_[name] ].get() 
+    );
+
+    Parameter<T>& param = *param_ptr;
+
+    return param;
+
+  } // ParaReader::get_parameter()
+
+
+  /*------------------------------------------------------------------
+  | Return the first value of a parameter with <name>.
+  ------------------------------------------------------------------*/
+  template <typename T>
+  T get_value(const string& name)
+  {
+    Parameter<T>& param = get_parameter<T>( name );
+
+    // Check if parameter is not found in the input file
+    if ( !param.found() )
+      error("Parameter with name \"" + name + "\" not found in input file.");
+    
+    return param.get_value(0);
+  }
+
+  /*------------------------------------------------------------------
+  | Return the value of a parameter with <name>.
+  ------------------------------------------------------------------*/
+  template <typename T>
+  T get_value(size_t i, const string& name)
+  {
+    Parameter<T>& param = get_parameter<T>( name );
+
+    // Check if parameter is not found in the input file
+    if ( !param.found() )
+      error("Parameter with name \"" + name + "\" not found in input file.");
+    
+    return param.get_value(i);
+  }
+
+  /*------------------------------------------------------------------
+  | Return the value of a parameter with <name> and return it.
+  ------------------------------------------------------------------*/
+  template <typename T>
+  T get_value(size_t i, size_t j, const string& name)
+  {
+    Parameter<T>& param = get_parameter<T>( name );
+
+    // Check if parameter is not found in the input file
+    if ( !param.found() )
+      error("Parameter with name \"" + name + "\" not found in input file.");
+    
+    return param.get_value(i,j);
+  }
+
+  /*------------------------------------------------------------------
+  | Check if a parameter with a given name has been found in the file
+  ------------------------------------------------------------------*/
+  bool found(const string& name)
+  {
+    // Handle unknown parameter names
+    if ( !param_map_.count(name) )
+      error("No parameter with name \"" + name + "\" has been defined.");
+
+    return param_list_[ param_map_[name] ].get()->found();
+  }
+
+  /*------------------------------------------------------------------
+  | Query  parameters
+  | -> Scan the file for the query key of a given parameter with 
+  |    <name>. If query key is found, read the value and store it in
+  |    the corresponding parameter.
+  ------------------------------------------------------------------*/
+  template <typename T>
+  bool query(const string& name)
+  {
+    Parameter<T>& param = get_parameter<T>( name );
+
+    // Scalar parameters
+    if ( param.columns() == 1 && !param.multi_line_definition() )
+      return query_scalar(param);
+    // Single-line & multiple parameters
+    else if ( param.columns() > 1 && !param.multi_line_definition() ) 
+      return query_single_line(param);
+    // Else: Multi-line parameters
+    return query_multiple_lines(param);
+
+  } // ParaReader::query()
+
+
+
+
+
+
+private:
+
+  /*------------------------------------------------------------------
+  | Query scalar parameters
+  | --> Parameter existence has been checked in calling function
+  ------------------------------------------------------------------*/
+  template <typename T>
+  bool query_scalar(Parameter<T>& param)
+  {
+    string query = param.single_key();
 
     // Parameter query reached end of input file
     if ( param.line_to_start() >= file_content_.size() )
@@ -339,45 +515,26 @@ public:
     // Write data to parameter
     try 
     {
-      param.value( string_to_single_value<T>(sub_string) );
+      param.set_value( 0, string_to_single_value<T>(sub_string) );
       param.found( true );
     }
     catch (...)
     {
-      MSG("Failed to read parameter " << param.key() 
-          << " in line " << param.line_to_start() 
-          << " of input parameter file.");
       return false;
     }
 
     return true;
-  }
+
+  } // ParaReader::query_scalar()
 
   /*------------------------------------------------------------------
-  | Query list parameters
+  | Query multiple parameters in a single line
+  | --> Parameter existence has been checked in calling function
   ------------------------------------------------------------------*/
   template <typename T>
-  bool query(ListParameter<T>& param)
+  bool query_single_line(Parameter<T>& param)
   {
-    if ( param.multiple_lines() )
-      return query_multiple_lines(param);
-    else
-      return query_single_line(param);
-  }
-
-
-private:
-
-  /*------------------------------------------------------------------
-  | Query list parameters over a single line
-  ------------------------------------------------------------------*/
-  template <typename T>
-  bool query_single_line(ListParameter<T>& param)
-  {
-    string query = param.key();
-
-    // Query check
-    if (query.size() < 1) error("Invalid query");
+    string query = param.single_key();
 
     // Parameter query reached end of input file
     if ( param.line_to_start() >= file_content_.size() )
@@ -455,17 +612,18 @@ private:
       }
       catch (...)
       {
-        MSG("Failed to read parameter " << param.key() 
-            << " in line " << param.line_to_start() 
-            << " of input parameter file.");
-        return false;
+        continue;
       }
     }
 
+    // Return false,  if not enough parameters
+    if ( out.size() < param.columns() )
+      return false;
+
     // write data into parameter object
-    param.values( out );
-    param.rows( 1 );
-    param.columns( out.size() );
+    // --> consider only defined parameter size
+    for ( size_t i = 0; i < param.columns(); ++i )
+      param.set_value(i, out[i]);
     param.found( true );
 
     return true;
@@ -476,14 +634,10 @@ private:
   | Query list parameters over multiple lines
   ------------------------------------------------------------------*/
   template <typename T>
-  bool query_multiple_lines(ListParameter<T>& param)
+  bool query_multiple_lines(Parameter<T>& param)
   {
-    string start_query = param.start();
-    string end_query   = param.end();
-
-    // Query check
-    if (start_query.size() < 1 || end_query.size() < 1) 
-      error("Invalid query");
+    string start_query = param.start_key();
+    string end_query   = param.end_key();
 
     // Parameter query reached end of input file
     if ( param.line_to_start() >= file_content_.size() )
@@ -572,8 +726,6 @@ private:
     // Convert substring to a vector of type T
     std::vector<T> out;
 
-    size_t n_cols = 0;
-
     for ( size_t i = 0; i < sub_strings.size(); ++i )
     {
       string s;
@@ -595,36 +747,40 @@ private:
         }
         catch (...)
         {
-          MSG("Failed to read parameter " << param.key() 
-              << " in line " << param.line_to_start() 
-              << " of input parameter file.");
-          return false;
+          continue; 
         }
       }
-
-      // Check for correct shape of input data
-      if ( n_cols == 0 )
-      {
-        n_cols = out.size();
-        param.columns( n_cols );
-      }
-      else if ( n_cols != param.columns() )
-        error("Invalid input data shape");
-
     }
 
-    param.values( out );
-    param.rows( sub_strings.size() );
-    param.found( true );
+    // Check for correct shape of input data
+    size_t n_rows = out.size() / param.columns();
+
+    if ( out.size() != param.columns()*n_rows ) 
+      return false;
+
+    for ( size_t j = 0; j < n_rows; ++j )
+    {
+      for ( size_t i = 0; i < param.columns(); ++i )
+      {
+        size_t index = i + j * param.columns();
+        param.set_value(index, out[index]);
+      }
+
+      if ( j < n_rows-1 )
+        param.add_row();
+    }
+
+    param.found( true);
+
 
     return true;
 
   } // ParaReader::query_multiple_lines()
 
 
-  /*--------------------------------------------------------
+  /*------------------------------------------------------------------
   | Function to convert a string to a type T
-  --------------------------------------------------------*/
+  ------------------------------------------------------------------*/
   template <typename T> 
   T string_to_single_value (const string &str)
   {
@@ -646,17 +802,14 @@ private:
   string          comment_;
   char            delimiter_;
 
-  // Scalar parameters 
-  std::vector<ScalarParameter<bool>>   scalar_bool_params_;
-  std::vector<ScalarParameter<int>>    scalar_int_params_;
-  std::vector<ScalarParameter<double>> scalar_dbl_params_;
-  std::vector<ScalarParameter<string>> scalar_str_params_;
-
-  // List parameters 
-  std::vector<ListParameter<int>>      list_int_params_;
-  std::vector<ListParameter<double>>   list_dbl_params_;
-  std::vector<ListParameter<string>>   list_str_params_;
+  ParameterList   param_list_; 
+  ParameterMap    param_map_;
 
 
 
-};
+}; // ParaReader
+
+
+
+
+} // namespace CppUtils

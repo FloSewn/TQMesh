@@ -2,7 +2,8 @@
 #                          TQMESH     
 #-----------------------------------------------------------
 Element size: 0.25 
-Element type: Triangle
+Meshing algorithm: Triangulation
+Number of quad refinements: 0
 
 #-----------------------------------------------------------
 #                         VERTICES     
@@ -10,6 +11,7 @@ Element type: Triangle
 #   1) X-coordinate
 #   2) Y-coordinate
 #   3) Scale parameter
+#   4) Range parameter
 #-----------------------------------------------------------
 Define vertices:
   0.0,   0.0,   1.0,   1.0     # 0
