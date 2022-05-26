@@ -1101,7 +1101,7 @@ void run_mesh_tests(bool benchmark)
   //MeshTests::Test_Mesh_create_simple_hex_layers(true);
   //MeshTests::Test_Mesh_vortex_shedding(true);
     
-  //MeshTests::Test_Mesh_create_bdry_shape_mesh(true);
+  MeshTests::Test_Mesh_create_bdry_shape_mesh(true);
 
   //MeshTests::Test_Mesh_add_quad_layer(true);
 

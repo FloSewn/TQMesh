@@ -39,7 +39,7 @@ Here is a simple example to create the shown mesh of a cylinder in a two-dimensi
 #                          TQMESH     
 #-----------------------------------------------------------
 Element size: 0.05 
-Element type: Triangle 
+Meshing algorithm: Triangulation 
 
 #-----------------------------------------------------------
 #                         VERTICES     
@@ -47,7 +47,7 @@ Element type: Triangle
 #   1) X-coordinate
 #   2) Y-coordinate
 #   3) Scale parameter
-#   3) Range parameter
+#   4) Range parameter
 #-----------------------------------------------------------
 Define vertices
   0.0,   0.0,   1.0,  1.0     # 0
@@ -144,7 +144,7 @@ End fixed vertices
 Of course, we can also discretize the domain with Quadrilateral elements. 
 Simply change the element type in the input file to:
 ``` sh
-Element type: Quadrilateral 
+Meshing algorithm: Paving 
 ``` 
 <img src="doc/RectangleMesh_Quad.png" alt="TQMesh-Grid-Quad" width="750"/>
 
@@ -158,11 +158,19 @@ shapes, such as rectangles or circles:
 # Arguments for rectangular interior boundary:
 #   (marker, x-center, y-center, width, height)
 #-----------------------------------------------------------
-Define interior circular boundary:    2, 1.0, 0.7, 0.15, 40
+Define interior circular boundary:    2, 1.0, 0.7, 0.15, 30
 Define interior rectangular boundary: 3, 1.5, 1.0, 0.30, 0.30
-Define interior circular boundary:    4, 1.0, 1.3, 0.15, 40
+Define interior circular boundary:    4, 1.0, 1.3, 0.15, 30
 ``` 
 <img src="doc/BoundaryShapes.png" alt="TQMesh-Interior-Boundary-Shapes" width="500"/>
+
+In case you need a mesh that consists only of quadrilaterals,
+it is possible to refine the mesh with the command
+``` sh
+Number of quad refinements: 1 
+``` 
+<img src="doc/BoundaryShapes_AllQuad.png" alt="TQMesh-Interior-Boundary-Shapes" width="500"/>
+
 
 ## Output format
 Currently, **TQMesh** only features a simple output format,
@@ -229,7 +237,6 @@ the test functions `run_qtree_tests()` and `run_mesh_tests()`.
 <img src="doc/BenchmarkPlot_QTree.png" alt="TQMesh-QTree-Benchmark" width="400"/> <img src="doc/BenchmarkPlot_Mesh.png" alt="TQMesh-Mesh-Benchmark" width="400"/>
 
 ## To Do's
-* Boundary elements (e.g. circle, triangle, rectangle) for an easier definition of domain boundaries
 * Delaunay refinement for bad / highly skewed elements
 * Export to different mesh output formats
 * Improved documentation / testing

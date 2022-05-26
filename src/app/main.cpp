@@ -7,6 +7,9 @@
 */
 #include <iostream>
 #include <cstdlib>
+#include <sstream>
+
+#include <TQMeshConfig.h>
 
 #include "utils.h"
 
@@ -25,14 +28,95 @@
 using namespace TQMesh::TQUtils;
 using namespace TQMesh::TQAlgorithm;
 
+/*********************************************************************
+* Print TQMesh header
+*********************************************************************/
+static void print_header()
+{
+  MSG("");
+  MSG("   - - - - - - - - - - - - - - - - - - -  ");
+  MSG("  | TQMesh - A simple 2D mesh generator | ");
+  MSG("   - - - - - - - - - - - - - - - - - - -  ");
+  MSG("");
+  MSG("  by Florian Setzwein");
+  MSG("");
+  MSG("  Version " << TQMESH_VERSION_MAJOR << "." << TQMESH_VERSION_MINOR );
+  MSG("");
+
+} // print_header()
+
+/*********************************************************************
+* Print out chosen parameters
+*********************************************************************/
+template<typename T>
+static void print_parameter(CppUtils::ParaReader& reader, 
+                            const std::string& name)
+{
+  auto para = reader.get_parameter<T>(name);
+
+  if ( !para.multi_line_definition() )
+  {
+    auto key = para.single_key();
+
+    size_t n_values = para.columns();
+
+    std::stringstream ss;
+
+    for ( size_t i = 0; i < n_values; ++i )
+    {
+      ss << para.get_value(i);
+
+      if ( i < n_values - 1 )
+        ss << ", ";
+    }
+
+    MSG( key << " " << ss.str() );
+    MSG("");
+
+  }
+  else
+  {
+    auto start_key = para.start_key();
+    auto end_key = para.end_key();
+
+    size_t n_rows = para.rows();
+    size_t n_cols = para.columns();
+
+    MSG( start_key );
+
+    for ( size_t j = 0; j < n_rows; ++j )
+    {
+      std::stringstream ss;
+
+      for ( size_t i = 0; i < n_cols; ++i )
+      {
+        ss << para.get_value(i,j);
+
+        if ( i < n_cols - 1 )
+          ss << ", ";
+      }
+      
+      MSG( ss.str() );
+    }
+
+    MSG( end_key );
+    MSG("");
+  }
+
+} // print_parameter()
+
+
 int main(int argc, char* argv[])
 {
   /*------------------------------------------------------------------
   | Handle command line arguments
   ------------------------------------------------------------------*/
+  print_header();
   if ( argc < 2 )
   {
-    MSG("TQMesh <ParameterFile>");
+    MSG("Usage: " );
+    MSG( argv[0] << " \"Input-File\" > \"Output-Mesh\"" );
+    MSG("");
     return EXIT_SUCCESS;
   }
 
@@ -77,6 +161,10 @@ int main(int argc, char* argv[])
   reader.query<std::string>("size_function");
   reader.query<double>("vertices");
   reader.query<int>("extr_bdry");
+
+  print_parameter<std::string>(reader, "size_function");
+  print_parameter<double>(reader, "vertices");
+  print_parameter<int>(reader, "extr_bdry");
 
   if ( !reader.found("size_function") )
   {
@@ -174,6 +262,7 @@ int main(int argc, char* argv[])
     Boundary& b_int = domain.add_interior_boundary();
 
     auto para_intr_bdry = reader.get_parameter<int>("intr_bdry");
+    print_parameter<int>(reader, "intr_bdry");
 
     for ( size_t i = 0; i < para_intr_bdry.rows(); ++i )
     {
@@ -198,6 +287,7 @@ int main(int argc, char* argv[])
 
     auto para_intr_bdry_rect 
       = reader.get_parameter<double>("intr_bdry_rect");
+    print_parameter<double>(reader, "intr_bdry_rect");
 
     int    m = static_cast<int>( para_intr_bdry_rect.get_value(0) );
     double x = para_intr_bdry_rect.get_value(1);
@@ -218,6 +308,7 @@ int main(int argc, char* argv[])
 
     auto para_intr_bdry_circ 
       = reader.get_parameter<double>("intr_bdry_circ");
+    print_parameter<double>(reader, "intr_bdry_circ");
 
     int    m = static_cast<int>( para_intr_bdry_circ.get_value(0) );
     double x = para_intr_bdry_circ.get_value(1);
@@ -236,6 +327,7 @@ int main(int argc, char* argv[])
   {
     auto para_fixed_vertices 
       = reader.get_parameter<double>("fixed_vertices");
+    print_parameter<double>(reader, "fixed_vertices");
 
     for ( size_t i = 0; i < para_fixed_vertices.rows(); ++i )
     {
@@ -262,6 +354,7 @@ int main(int argc, char* argv[])
   {
     auto para_quad_layers 
       = reader.get_parameter<double>("quad_layers");
+    print_parameter<double>(reader, "quad_layers");
 
       int   i1 = static_cast<int>( para_quad_layers.get_value(0) );
       int   i2 = static_cast<int>( para_quad_layers.get_value(1) );
@@ -282,7 +375,10 @@ int main(int argc, char* argv[])
   std::string meshing_algorithm = "Triangulation";
 
   if ( reader.query<std::string>("algorithm") )
+  {
     meshing_algorithm = reader.get_value<std::string>("algorithm");
+    print_parameter<std::string>(reader, "algorithm");
+  }
 
   /*------------------------------------------------------------------
   | Query mesh refinements
@@ -291,7 +387,10 @@ int main(int argc, char* argv[])
   int n_quad_refinements = 0;
 
   if ( reader.query<int>("quad_refinements") )
+  {
     n_quad_refinements = reader.get_value<int>("quad_refinements");
+    print_parameter<int>(reader, "quad_refinements");
+  }
 
 
 

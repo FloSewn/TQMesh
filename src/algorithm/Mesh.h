@@ -856,6 +856,9 @@ public:
     // The two upcoming function fix these bad elements
     clean_double_quad_edges();
     clean_double_triangle_edges();
+    
+    // Remove deleted entities
+    clear_waste();
 
     // Re-initialize vertex-to-vertex connectivity
     setup_vertex_connectivity();

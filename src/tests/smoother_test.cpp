@@ -81,6 +81,6 @@ void run_smoother_tests()
 {
   MSG("\n#===== Smoother tests =====");
 
-  SmootherTests::Test_Smoother_TriMesh(true);
+  //SmootherTests::Test_Smoother_TriMesh(false);
 }
 

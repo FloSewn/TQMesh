@@ -122,14 +122,14 @@ public:
   /*------------------------------------------------------------------
   | Getters
   ------------------------------------------------------------------*/
-  T get_value(size_t i) 
+  T get_value(size_t i) const
   { 
     if ( i >= ncol_*nrow_ )
       return values_[0];
     return values_[i]; 
   }
 
-  T get_value(size_t i, size_t j) 
+  T get_value(size_t i, size_t j) const
   { 
     size_t index = j * ncol_ + i;
     if ( index >= ncol_*nrow_ )

@@ -1,3 +1,6 @@
 build
 scripts/*.dat
 doc/*.pdf
+doc/*.txt
+scripts/__pycache__
+scripts/*.png

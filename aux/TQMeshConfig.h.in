@@ -1,0 +1,8 @@
+// TQMeshConfig.h.in
+#pragma once
+
+#define TQMESH_VERSION_MAJOR @TQMesh_VERSION_MAJOR@
+#define TQMESH_VERSION_MINOR @TQMesh_VERSION_MINOR@
+
+#define TQMESH_SOURCE_DIR "${CMAKE_SOURCE_DIR}"
+
