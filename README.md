@@ -189,13 +189,13 @@ Define exterior boundary:
  3,  0,  1
 End exterior boundary
 ``` 
-<img src="doc/AllQuadMesh.png" alt="TQMesh-AllQuadMesh" width="300"/>
+<img src="doc/AllQuadMesh.png" alt="TQMesh-AllQuadMesh" width="500"/>
 The number of refinements can be chosen arbitrarly, but the 
 smoothing of the mesh will take very long in case of large refinements.
 
 Of course, the refinement can also be applied to more complex shapes 
 and in combination with quad layers:
-<img src="doc/BoundaryShapes-AllQuad.png" alt="TQMesh-Interior-Boundary-Shapes" width="300"/>
+<img src="doc/BoundaryShapes-AllQuad.png" alt="TQMesh-Interior-Boundary-Shapes" width="500"/>
 
 
 
