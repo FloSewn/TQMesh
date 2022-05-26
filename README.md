@@ -165,11 +165,38 @@ Define interior circular boundary:    4, 1.0, 1.3, 0.15, 30
 <img src="doc/BoundaryShapes.png" alt="TQMesh-Interior-Boundary-Shapes" width="500"/>
 
 In case you need a mesh that consists only of quadrilaterals,
-it is possible to refine the mesh with the command
+it is possible to refine the mesh. This is shown in the following 
+example input file and its corresponding output.
 ``` sh
-Number of quad refinements: 1 
+#-----------------------------------------------------------
+#                          TQMESH     
+#-----------------------------------------------------------
+Element size: 0.5
+Meshing algorithm: Triangulation
+Number of quad refinements: 5
+
+Define vertices:
+  0.0,   0.0,   1.0,   1.0     # 0
+  1.0,   0.0,   1.0,   1.0     # 1
+  1.0,   1.0,   1.0,   1.0     # 2
+  0.0,   1.0,   1.0,   1.0     # 3
+End vertices
+
+Define exterior boundary: 
+ 0,  1,  1
+ 1,  2,  1
+ 2,  3,  1
+ 3,  0,  1
+End exterior boundary
 ``` 
-<img src="doc/BoundaryShapes_AllQuad.png" alt="TQMesh-Interior-Boundary-Shapes" width="500"/>
+<img src="doc/AllQuadMesh.png" alt="TQMesh-AllQuadMesh" width="300"/>
+The number of refinements can be chosen arbitrarly, but the 
+smoothing of the mesh will take very long in case of large refinements.
+
+Of course, the refinement can also be applied to more complex shapes 
+and in combination with quad layers:
+<img src="doc/BoundaryShapes-AllQuad.png" alt="TQMesh-Interior-Boundary-Shapes" width="300"/>
+
 
 
 ## Output format
