@@ -10,8 +10,8 @@
 #include <algorithm>
 
 #include "Vec2.h"
-#include "utils.h"
 
+#include "utils.h"
 #include "Vertex.h"
 #include "Triangle.h"
 #include "Quad.h"
@@ -22,7 +22,7 @@
 namespace TQMesh {
 namespace TQAlgorithm {
 
-using namespace TQUtils;
+using namespace CppUtils;
 
 /*********************************************************************
 * A structure that contains the data for a quad layer generation
@@ -182,7 +182,7 @@ private:
     // create a wedge in between. In this case we use the default 
     // projection coordinates p1_xy and p2_xy that were already 
     // calculated in the constructor
-    if ( TQGeom::is_left(p, r, q) && alpha <= TQ_QUAD_LAYER_ANGLE )
+    if ( is_left(p, r, q) && alpha <= TQMeshQuadLayerAngle )
       return;
 
     // Otherwise, the projected vertex coordinate will be placed
@@ -231,7 +231,7 @@ private:
 
     // If the previous vertex is located right to the starting edge,
     // we use the default projection coordinate
-    if ( !TQGeom::is_left(b1_[0]->xy(), b2_[0]->xy(), v_prev.xy()) )
+    if ( !is_left(b1_[0]->xy(), b2_[0]->xy(), v_prev.xy()) )
       return;
 
     // Check if the segment between v_start and its projected 
@@ -356,7 +356,7 @@ private:
     const Vec2d& xy_end_1 = b1_.back()->xy();
     const Vec2d& xy_end_2 = b2_.back()->xy();
     //
-    if ( !TQGeom::is_left(xy_end_1, xy_end_2, v_next.xy()) )
+    if ( !is_left(xy_end_1, xy_end_2, v_next.xy()) )
       return;
 
     // Check if the segment between v_start and its projected 

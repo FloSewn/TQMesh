@@ -10,10 +10,9 @@
 #include <iostream>
 #include <string>
 
-#include "utils.h"
+#include "MathUtility.h"
 
-namespace TQMesh {
-namespace TQUtils {
+namespace CppUtils {
 
 /*--------------------------------------------------------------------
 | A simple command line progress bar
@@ -83,5 +82,4 @@ static inline std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-} // namespace TQUtils
-} // namespace TQMesh 
+} // namespace CppUtils

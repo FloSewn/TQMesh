@@ -12,7 +12,7 @@
 #include <algorithm>   
 
 #include "utils.h"
-#include "geometry.h"
+#include "Geometry.h"
 #include "Vec2.h"
 #include "Container.h"
 
@@ -21,7 +21,7 @@
 namespace TQMesh {
 namespace TQAlgorithm {
 
-using namespace TQUtils;
+using namespace CppUtils;
 
 /*********************************************************************
 * Forward declarations
@@ -116,7 +116,7 @@ public:
   | or if it is in the interior of the domain
   ------------------------------------------------------------------*/
   bool on_boundary() const 
-  { return ( marker_ != TQ_INTR_EDGE_MARKER ); }
+  { return ( marker_ != TQMeshInteriorEdgeMarker ); }
   bool is_interior() const
   { return !on_boundary(); }
 

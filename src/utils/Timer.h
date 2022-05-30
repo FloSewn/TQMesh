@@ -1,5 +1,5 @@
 /*
-* This source file is part of the tqmesh library.  
+* This file is part of the CppUtils library.  
 * This code was written by Florian Setzwein in 2022, 
 * and is covered under the MIT License
 * Refer to the accompanying documentation for details
@@ -10,12 +10,11 @@
 #include <chrono>
 #include <vector>
 
-namespace TQMesh {
-namespace TQUtils {
+namespace CppUtils {
 
-/***********************************************************
+/*********************************************************************
 * A simple class to measure benchmark times
-***********************************************************/
+*********************************************************************/
 class Timer
 {
 public:
@@ -53,5 +52,4 @@ private:
 }; // Timer
 
 
-} // namespace TQUtils 
-} // namespace TQMesh 
+} // namespace CppUtils

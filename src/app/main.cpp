@@ -25,7 +25,7 @@
 #include "ParaReader.h"
 #include "size_function.h"
 
-using namespace TQMesh::TQUtils;
+using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************

@@ -1,5 +1,5 @@
 /*
-* This source file is part of the tqmesh library.  
+* This file is part of the CppUtils library.  
 * This code was written by Florian Setzwein in 2022, 
 * and is covered under the MIT License
 * Refer to the accompanying documentation for details
@@ -15,21 +15,12 @@
 #include <iostream>  // std::to_string
 
 #include "Vec2.h"
-#include "geometry.h"
+#include "Geometry.h"
+#include "Helpers.h"
 
-/*
- *
- * TO DO:
- * ------
- * * Replace "throw" statements with "ASSERT()" 
- * * QTree removal performes bad if size is very large
- *   --> scale should not be constant in container, but 
- *       a variable value that depends on the case
- *
-*/  
+namespace CppUtils {
 
-namespace TQMesh {
-namespace TQUtils {
+static SimpleLogger QuadTreeLogger { std::clog, "[QuadTree]: " };
 
 /*********************************************************************
 * This class refers to a quad tree for 2D simplices
@@ -52,28 +43,30 @@ namespace TQUtils {
 *
 *********************************************************************/
 template <typename T, typename V>
-class QTree
+class QuadTree
 {
 public:
   using List   = std::list<T*>;
-  using Array  = std::array<QTree<T,V>*,4>; 
+  using Array  = std::array<QuadTree<T,V>*,4>; 
   using Vector = std::vector<T*>;
   using ListIterator = typename List::iterator;
 
   /*------------------------------------------------------------------ 
   | Constructor
   ------------------------------------------------------------------*/
-  QTree(double          scale, 
-        size_t          max_item,
-        size_t          max_depth, 
-        const Vec2<V>&  center={0.0,0.0}, 
-        size_t          depth=0,
-        QTree<T,V>*     parent=nullptr)
+  QuadTree(double          scale, 
+           size_t          max_item,
+           size_t          max_depth, 
+           const Vec2<V>&  center={0.0,0.0}, 
+           size_t          depth=0,
+           SimpleLogger&   logger=QuadTreeLogger,
+           QuadTree<T,V>*  parent=nullptr)
   : scale_      { scale     }
   , max_item_   { max_item  }
   , max_depth_  { max_depth }
   , center_     { center    }
   , depth_      { depth     }
+  , logger_     { &logger   }
   , parent_     { parent    }
   {  
     halfscale_ = 0.5 * scale_;
@@ -81,23 +74,23 @@ public:
     lowleft_   = center_ - hsv;
     upright_   = center_ + hsv;
 
-  } // QTree()
+  } // QuadTree()
 
   /*------------------------------------------------------------------ 
   | Destructor
   ------------------------------------------------------------------*/
-  ~QTree() 
+  ~QuadTree() 
   {
     if ( split_ )
     {
       for ( auto child : children_ )
       {
-        ASSERT( child, "QTree structure is corrupted." );
+        ASSERT( child, "QuadTree structure is corrupted." );
         delete  child;
       }
     }
 
-  } // ~QTree() 
+  } // ~QuadTree() 
 
   /*------------------------------------------------------------------ 
   | Getters
@@ -122,7 +115,7 @@ public:
     {
       for ( auto child : children_ )
       {
-        ASSERT( child, "QTree structure is corrupted." );
+        ASSERT( child, "QuadTree structure is corrupted." );
         n = child->n_leafs( n );
       }
     }
@@ -142,8 +135,8 @@ public:
                    const Vec2<V>& upright,
                    Vector& found) const
   {
-    bool overlap = TQGeom::rect_overlap(lowleft_, upright_,  
-                                        lowleft,  upright  );
+    bool overlap = rect_overlap(lowleft_, upright_,  
+                                lowleft,  upright  );
                                  
     if ( !overlap ) return false;
 
@@ -153,14 +146,14 @@ public:
     {
       for ( auto child : children_ )
       {
-        ASSERT( child, "QTree structure is corrupted." );
+        ASSERT( child, "QuadTree structure is corrupted." );
         n_found += child->get_items(lowleft,upright,found);
       }
     }
     else
     {
       for ( auto item : items_ )
-        if ( TQGeom::in_on_rect(item->xy(), lowleft, upright) )
+        if ( in_on_rect(item->xy(), lowleft, upright) )
         {
           found.push_back( item );
           ++n_found;
@@ -182,8 +175,8 @@ public:
     const Vec2<V> lowleft = center - radius_scaled;
     const Vec2<V> upright = center + radius_scaled;
 
-    bool overlap = TQGeom::rect_overlap( lowleft_, upright_,  
-                                         lowleft,  upright  );
+    bool overlap = rect_overlap( lowleft_, upright_,  
+                                 lowleft,  upright  );
                                  
     if ( !overlap ) return false;
 
@@ -193,7 +186,7 @@ public:
     {
       for ( auto child : children_ )
       {
-        ASSERT( child, "QTree structure is corrupted." );
+        ASSERT( child, "QuadTree structure is corrupted." );
         n_found += child->get_items(center, radius, found);
       }
     }
@@ -222,7 +215,7 @@ public:
   bool add(T* item)
   {
     // Check if item is located within this quad
-    if (!item || !TQGeom::in_on_rect(item->xy(), lowleft_, upright_))
+    if (!item || !in_on_rect(item->xy(), lowleft_, upright_))
       return false;
 
     // If quad is splitted, pass item to children
@@ -244,7 +237,7 @@ public:
       } 
       catch ( std::exception const& e ) 
       {
-        std::cout << "[QTree-Error]: " << e.what() << "\n"; 
+        *logger_ << e.what() << std::endl; 
       }
     }
 
@@ -257,7 +250,7 @@ public:
   ------------------------------------------------------------------*/
   bool remove(T* item)
   {
-    if (!item || !TQGeom::in_on_rect(item->xy(), lowleft_, upright_) )
+    if (!item || !in_on_rect(item->xy(), lowleft_, upright_) )
       return false;
 
     if ( split_ )
@@ -266,13 +259,13 @@ public:
          (  children_[0]->remove(item) || children_[1]->remove(item)
          || children_[2]->remove(item) || children_[3]->remove(item) );
 
-      ASSERT( child_removed, "Failed to remove item from QTree children.");
+      ASSERT( child_removed, "Failed to remove item from QuadTree children.");
       (void) child_removed;
 
       if (n_items_ <= max_item_) 
       {
         bool merged = merge();
-        ASSERT( merged, "Failed to merge QTree structure.");
+        ASSERT( merged, "Failed to merge QuadTree structure.");
         (void) merged;
         return true;
       }
@@ -285,7 +278,7 @@ public:
       size_t new_size = items_.size();
 
       ASSERT( (new_size < orig_size), 
-          "Failed to remove item from QTree." );
+          "Failed to remove item from QuadTree." );
       add_item_number( -1 );
 
       (void) orig_size;
@@ -313,14 +306,14 @@ protected:
 private:
 
   /*------------------------------------------------------------------ 
-  | Merge QTree children
+  | Merge QuadTree children
   ------------------------------------------------------------------*/
   bool merge()
   {
-    ASSERT( children_[0], "QTree structure is corrupted." );
-    ASSERT( children_[1], "QTree structure is corrupted." );
-    ASSERT( children_[2], "QTree structure is corrupted." );
-    ASSERT( children_[3], "QTree structure is corrupted." );
+    ASSERT( children_[0], "QuadTree structure is corrupted." );
+    ASSERT( children_[1], "QuadTree structure is corrupted." );
+    ASSERT( children_[2], "QuadTree structure is corrupted." );
+    ASSERT( children_[3], "QuadTree structure is corrupted." );
 
     if (  children_[0]->split() 
        || children_[1]->split() 
@@ -348,10 +341,10 @@ private:
   ------------------------------------------------------------------*/
   bool pass_children(T* item)
   {
-    ASSERT( children_[0], "QTree structure is corrupted." );
-    ASSERT( children_[1], "QTree structure is corrupted." );
-    ASSERT( children_[2], "QTree structure is corrupted." );
-    ASSERT( children_[3], "QTree structure is corrupted." );
+    ASSERT( children_[0], "QuadTree structure is corrupted." );
+    ASSERT( children_[1], "QuadTree structure is corrupted." );
+    ASSERT( children_[2], "QuadTree structure is corrupted." );
+    ASSERT( children_[3], "QuadTree structure is corrupted." );
 
     if (  children_[0]->add( item ) 
        || children_[1]->add( item ) 
@@ -378,20 +371,20 @@ private:
     Vec2<V> c3 = { center_.x + h,  center_.y - h };
 
     // Child quad: NORTH-EAST (NE)
-    children_[0] = new QTree<T,V> 
-    { halfscale_, max_item_, max_depth_, c0, child_depth, this};
+    children_[0] = new QuadTree<T,V> 
+    { halfscale_, max_item_, max_depth_, c0, child_depth, *logger_, this};
                                
     // Child quad: NORTH-WEST (NW)
-    children_[1] = new QTree<T,V> 
-    { halfscale_, max_item_, max_depth_, c1, child_depth, this};
+    children_[1] = new QuadTree<T,V> 
+    { halfscale_, max_item_, max_depth_, c1, child_depth, *logger_, this};
 
     // Child quad: SOUTH-WEST (SW)
-    children_[2] = new QTree<T,V> 
-    { halfscale_, max_item_, max_depth_, c2, child_depth, this};
+    children_[2] = new QuadTree<T,V> 
+    { halfscale_, max_item_, max_depth_, c2, child_depth, *logger_, this};
 
     // Child quad: SOUTH-EAST (SE)
-    children_[3] = new QTree<T,V> 
-    { halfscale_, max_item_, max_depth_, c3, child_depth, this};
+    children_[3] = new QuadTree<T,V> 
+    { halfscale_, max_item_, max_depth_, c3, child_depth, *logger_, this};
 
     // Distribute items among children
     try 
@@ -406,7 +399,7 @@ private:
     // Check that quad is empty
     if ( items_.size() > 0 )
       throw std::runtime_error(
-          "Failed to split QTree. "
+          "Failed to split QuadTree. "
           "Data structure might be corrupted.");
 
     // Mark this quad as splitted
@@ -423,10 +416,10 @@ private:
     {
       auto item = items_.back();
 
-      ASSERT( children_[0], "QTree structure is corrupted." );
-      ASSERT( children_[1], "QTree structure is corrupted." );
-      ASSERT( children_[2], "QTree structure is corrupted." );
-      ASSERT( children_[3], "QTree structure is corrupted." );
+      ASSERT( children_[0], "QuadTree structure is corrupted." );
+      ASSERT( children_[1], "QuadTree structure is corrupted." );
+      ASSERT( children_[2], "QuadTree structure is corrupted." );
+      ASSERT( children_[3], "QuadTree structure is corrupted." );
       
       if (  children_[0]->add(item)
          || children_[1]->add(item)
@@ -449,33 +442,36 @@ private:
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
-  double       scale_     { 0.0 };
-  double       halfscale_ { 0.0 };
-  size_t       max_item_  { 0 };
-  size_t       max_depth_ { 0 };
+  double         scale_     { 0.0 };
+  double         halfscale_ { 0.0 };
+  size_t         max_item_  { 0 };
+  size_t         max_depth_ { 0 };
 
-  Vec2<V>      center_   { 0.0, 0.0 };
-  Vec2<V>      lowleft_  { 0.0, 0.0 };
-  Vec2<V>      upright_  { 0.0, 0.0 };
+  Vec2<V>        center_   { 0.0, 0.0 };
+  Vec2<V>        lowleft_  { 0.0, 0.0 };
+  Vec2<V>        upright_  { 0.0, 0.0 };
 
-  bool         split_     { false };
-  size_t       depth_     { 0 };
-  size_t       n_items_   { 0 };
+  bool           split_     { false };
+  size_t         depth_     { 0 };
+  size_t         n_items_   { 0 };
 
-  List         items_;
-  Array        children_  { nullptr };
-  QTree<T,V>*  parent_    { nullptr };
+  SimpleLogger*  logger_;
+
+  List           items_;
+  Array          children_  { nullptr };
+  QuadTree<T,V>* parent_    { nullptr };
 
 
 
-}; // QTree
+
+}; // QuadTree
 
 /*********************************************************************
 * Stream to std::cout
 *********************************************************************/
 template<typename T, typename V>
 std::ostream& operator<<(std::ostream& os, 
-                         const QTree<T,V>& qt)
+                         const QuadTree<T,V>& qt)
 {
   if ( qt.split() )
   {
@@ -496,5 +492,4 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 
-} // namespace TQUtils
-} // namespace TQMesh 
+} // namespace CppUtils

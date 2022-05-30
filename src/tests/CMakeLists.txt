@@ -1,9 +1,6 @@
 set( TESTS run_tests )
 
 add_executable( ${TESTS}
-  geometry_test.cpp
-  qtree_test.cpp
-  container_test.cpp
   vertex_test.cpp
   edgelist_test.cpp
   boundary_test.cpp

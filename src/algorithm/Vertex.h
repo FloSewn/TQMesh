@@ -11,15 +11,14 @@
 #include <iomanip>   
 #include <algorithm>   
 
-#include "utils.h"
-#include "geometry.h"
+#include "Geometry.h"
 #include "Vec2.h"
 #include "Container.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
 
-using namespace TQUtils;
+using namespace CppUtils;
 
 /*********************************************************************
 * Forward declaration

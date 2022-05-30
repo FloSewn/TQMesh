@@ -9,7 +9,7 @@
 
 #include "Vec2.h"
 #include "utils.h"
-#include "geometry.h"
+#include "Geometry.h"
 
 #include "EdgeList.h"
 #include "Edge.h"
@@ -18,7 +18,7 @@
 namespace TQMesh {
 namespace TQAlgorithm {
 
-using namespace TQUtils;
+using namespace CppUtils;
 
 /********************************************************************* 
 * Boundary type orientation
@@ -44,7 +44,7 @@ public:
   ------------------------------------------------------------------*/
   Boundary(BdryType btype)
   : EdgeList( (btype == BdryType::EXTERIOR 
-              ? TQGeom::Orientation::CCW : TQGeom::Orientation::CW) ) 
+              ? Orientation::CCW : Orientation::CW) ) 
   , btype_ { btype }
   { }
 

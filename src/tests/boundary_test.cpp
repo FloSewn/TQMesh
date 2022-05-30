@@ -23,7 +23,7 @@
 namespace BoundaryTests
 {
 
-using namespace TQMesh::TQUtils;
+using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************

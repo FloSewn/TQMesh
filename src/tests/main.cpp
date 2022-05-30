@@ -9,9 +9,6 @@
 *********************************************************************/
 int main()
 {
-  run_geometry_tests();
-  run_qtree_tests(false);
-  run_container_tests(false);
   run_vertex_tests();
   run_edgelist_tests();
   run_boundary_tests();

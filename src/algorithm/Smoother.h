@@ -19,7 +19,7 @@
 namespace TQMesh {
 namespace TQAlgorithm {
 
-using namespace TQUtils;
+using namespace CppUtils;
 
 /*********************************************************************
 * This class is used to implement smoothing algorithms for a 

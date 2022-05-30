@@ -15,9 +15,9 @@
 #include <numeric>
 
 #include "Vec2.h"
-#include "geometry.h"
-#include "utils.h"
+#include "Geometry.h"
 
+#include "utils.h"
 #include "EdgeList.h"
 #include "Vertex.h"
 #include "Boundary.h"
@@ -26,7 +26,7 @@
 namespace TQMesh {
 namespace TQAlgorithm {
 
-using namespace TQUtils;
+using namespace CppUtils;
 
 
 /*********************************************************************
@@ -40,7 +40,7 @@ public:
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  Front() : EdgeList( TQGeom::Orientation::NONE )
+  Front() : EdgeList( Orientation::NONE )
   {}
 
   /*------------------------------------------------------------------

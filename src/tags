@@ -5,8 +5,9 @@
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
 ABS	utils/utils.h	/^static inline T ABS(T a)$/;"	f	namespace:TQMesh::TQUtils
-ASSERT	utils/utils.h	15;"	d
+ASSERT	utils/utils.h	22;"	d
 BdryType	algorithm/Boundary.h	/^enum class BdryType$/;"	c	namespace:TQMesh::TQAlgorithm
+BenchmarkContainer	tests/mesh_test.cpp	/^struct BenchmarkContainer$/;"	s	namespace:MeshTests	file:
 Boundary	algorithm/Boundary.h	/^  Boundary(BdryType btype)$/;"	f	class:TQMesh::TQAlgorithm::Boundary
 Boundary	algorithm/Boundary.h	/^class Boundary : public EdgeList$/;"	c	namespace:TQMesh::TQAlgorithm
 BoundaryTests	tests/boundary_test.cpp	/^namespace BoundaryTests$/;"	n	file:
@@ -19,8 +20,9 @@ Container	utils/Container.h	/^  Container(double qtree_scale=TQ_QTREE_SCALE,$/;"
 Container	utils/Container.h	/^class Container$/;"	c	namespace:TQMesh::TQUtils
 ContainerTests	tests/container_test.cpp	/^namespace ContainerTests$/;"	n	file:
 Container_benchmark	tests/container_test.cpp	/^void Container_benchmark(size_t n)$/;"	f	namespace:ContainerTests
-DBG_MSG	utils/utils.h	29;"	d
-Domain	algorithm/Domain.h	/^  Domain( Vertices& vertices,$/;"	f	class:TQMesh::TQAlgorithm::Domain
+CppUtils	utils/ParaReader.h	/^namespace CppUtils {$/;"	n
+DBG_MSG	utils/utils.h	36;"	d
+Domain	algorithm/Domain.h	/^  Domain( UserSizeFunction f = [](const Vec2d& p){return 1.0;},$/;"	f	class:TQMesh::TQAlgorithm::Domain
 Domain	algorithm/Domain.h	/^class Domain$/;"	c	namespace:TQMesh::TQAlgorithm
 EQ	utils/utils.h	/^static inline bool EQ(T a, T b)$/;"	f	namespace:TQMesh::TQUtils
 EQ0	utils/utils.h	/^static inline bool EQ0(T a)$/;"	f	namespace:TQMesh::TQUtils
@@ -35,30 +37,42 @@ EdgeList	algorithm/EdgeList.h	/^  EdgeList(const EdgeList& el) : orient_ { el.or
 EdgeList	algorithm/EdgeList.h	/^class EdgeList$/;"	c	namespace:TQMesh::TQAlgorithm
 EdgeListTests	tests/edgelist_test.cpp	/^namespace EdgeListTests$/;"	n	file:
 F	app/exprtk.h	/^      typedef ifunction<T>                                F;$/;"	t	class:exprtk::parser
-Facet	algorithm/Facet.h	/^  Facet(){}$/;"	f	class:TQMesh::TQAlgorithm::Facet
 Facet	algorithm/Facet.h	/^class Facet$/;"	c	namespace:TQMesh::TQAlgorithm
-Front	algorithm/Front.h	/^  Front( const Domain& domain, Vertices &vertices ) $/;"	f	class:TQMesh::TQAlgorithm::Front
+Front	algorithm/Front.h	/^  Front() : EdgeList( TQGeom::Orientation::NONE )$/;"	f	class:TQMesh::TQAlgorithm::Front
 Front	algorithm/Front.h	/^class Front : public EdgeList$/;"	c	namespace:TQMesh::TQAlgorithm
 FrontTests	tests/front_test.cpp	/^namespace FrontTests$/;"	n	file:
 GF	app/exprtk.h	/^      typedef igeneric_function<T>                        GF;$/;"	t	class:exprtk::parser
 GeometryTests	tests/geometry_test.cpp	/^namespace GeometryTests$/;"	n	file:
 INCLUDE_EXPRTK_HPP	app/exprtk.h	34;"	d
-Invalid	app/ParaReader.h	/^    Invalid(const string& msg){ error_message = msg; }$/;"	f	class:ParaReader::Invalid
-Invalid	app/ParaReader.h	/^  class Invalid$/;"	c	class:ParaReader
-ListParameter	app/ParaReader.h	/^  ListParameter(const string& key) $/;"	f	class:ListParameter
-ListParameter	app/ParaReader.h	/^  ListParameter(const string& start, const string& end) $/;"	f	class:ListParameter
-ListParameter	app/ParaReader.h	/^class ListParameter$/;"	c
+Invalid	utils/ParaReader.h	/^    Invalid(const string& msg){ error_message = msg; }$/;"	f	class:CppUtils::ParaReader::Invalid
+Invalid	utils/ParaReader.h	/^  class Invalid$/;"	c	class:CppUtils::ParaReader
+Invalid	utils/oldParaReader.h	/^    Invalid(const string& msg){ error_message = msg; }$/;"	f	class:ParaReader::Invalid
+Invalid	utils/oldParaReader.h	/^  class Invalid$/;"	c	class:ParaReader
+L	tests/mesh_test.cpp	/^  std::vector<double>   L;$/;"	m	struct:MeshTests::BenchmarkContainer	file:
+ListParameter	utils/oldParaReader.h	/^  ListParameter(const string& key) $/;"	f	class:ListParameter
+ListParameter	utils/oldParaReader.h	/^  ListParameter(const string& start, const string& end) $/;"	f	class:ListParameter
+ListParameter	utils/oldParaReader.h	/^class ListParameter$/;"	c
 MAX	utils/utils.h	/^static inline T MAX(T a, T b) $/;"	f	namespace:TQMesh::TQUtils
 MIN	utils/utils.h	/^static inline T MIN(T a, T b) $/;"	f	namespace:TQMesh::TQUtils
 MOD	utils/utils.h	/^static inline T MOD(T n, T M)$/;"	f	namespace:TQMesh::TQUtils
-MSG	utils/utils.h	39;"	d
+MSG	utils/utils.h	46;"	d
 Mesh	algorithm/Mesh.h	/^  Mesh(Domain&   domain,$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 Mesh	algorithm/Mesh.h	/^class Mesh$/;"	c	namespace:TQMesh::TQAlgorithm
 MeshTests	tests/mesh_test.cpp	/^namespace MeshTests$/;"	n	file:
 NOMINMAX	app/exprtk.h	38735;"	d
 Orientation	utils/geometry.h	/^enum class Orientation$/;"	c	namespace:TQMesh::TQUtils::TQGeom
-ParaReader	app/ParaReader.h	/^  ParaReader(const string& file_path) $/;"	f	class:ParaReader
-ParaReader	app/ParaReader.h	/^class ParaReader$/;"	c
+ParaReader	utils/ParaReader.h	/^  ParaReader(const string& file_path) $/;"	f	class:CppUtils::ParaReader
+ParaReader	utils/ParaReader.h	/^class ParaReader$/;"	c	namespace:CppUtils
+ParaReader	utils/oldParaReader.h	/^  ParaReader(const string& file_path) $/;"	f	class:ParaReader
+ParaReader	utils/oldParaReader.h	/^class ParaReader$/;"	c
+Parameter	utils/ParaReader.h	/^  Parameter(const string& key, size_t n) $/;"	f	class:CppUtils::Parameter
+Parameter	utils/ParaReader.h	/^  Parameter(const string& start, const string& end, size_t n) $/;"	f	class:CppUtils::Parameter
+Parameter	utils/ParaReader.h	/^class Parameter : public ParameterBase$/;"	c	namespace:CppUtils
+ParameterBase	utils/ParaReader.h	/^  ParameterBase(const string& key)$/;"	f	class:CppUtils::ParameterBase
+ParameterBase	utils/ParaReader.h	/^  ParameterBase(const string& start, const string& end)$/;"	f	class:CppUtils::ParameterBase
+ParameterBase	utils/ParaReader.h	/^class ParameterBase$/;"	c	namespace:CppUtils
+ProgressBar	utils/ProgressBar.h	/^  ProgressBar(int w = 70)$/;"	f	class:TQMesh::TQUtils::ProgressBar
+ProgressBar	utils/ProgressBar.h	/^class ProgressBar$/;"	c	namespace:TQMesh::TQUtils
 QTree	utils/QTree.h	/^  QTree(double          scale, $/;"	f	class:TQMesh::TQUtils::QTree
 QTree	utils/QTree.h	/^class QTree$/;"	c	namespace:TQMesh::TQUtils
 QTreeTests	tests/qtree_test.cpp	/^namespace QTreeTests$/;"	n	file:
@@ -76,9 +90,11 @@ RefType	app/exprtk.h	/^         typedef typename opr_base<T>::RefType RefType;$/
 RefType	app/exprtk.h	/^         typedef typename opr_base<T>::RefType RefType;$/;"	t	struct:exprtk::details::mul_op
 RefType	app/exprtk.h	/^         typedef typename opr_base<T>::RefType RefType;$/;"	t	struct:exprtk::details::pow_op
 RefType	app/exprtk.h	/^         typedef typename opr_base<T>::RefType RefType;$/;"	t	struct:exprtk::details::sub_op
-ScalarParameter	app/ParaReader.h	/^  ScalarParameter(const string& key) $/;"	f	class:ScalarParameter
-ScalarParameter	app/ParaReader.h	/^class ScalarParameter$/;"	c
+ScalarParameter	utils/oldParaReader.h	/^  ScalarParameter(const string& key) $/;"	f	class:ScalarParameter
+ScalarParameter	utils/oldParaReader.h	/^class ScalarParameter$/;"	c
 SizeFunctionTests	tests/sizefunction_test.cpp	/^namespace SizeFunctionTests$/;"	n	file:
+Smoother	algorithm/Smoother.h	/^class Smoother$/;"	c	namespace:TQMesh::TQAlgorithm
+SmootherTests	tests/smoother_test.cpp	/^namespace SmootherTests$/;"	n	file:
 SpiralFunction	tests/container_test.cpp	/^  SpiralFunction(double a, double b, double c)$/;"	f	class:ContainerTests::SpiralFunction
 SpiralFunction	tests/container_test.cpp	/^class SpiralFunction$/;"	c	namespace:ContainerTests	file:
 SpiralFunction	tests/qtree_test.cpp	/^  SpiralFunction(double a, double b, double c)$/;"	f	class:QTreeTests::SpiralFunction
@@ -289,6 +305,7 @@ TQAlgorithm	algorithm/Front.h	/^namespace TQAlgorithm {$/;"	n	namespace:TQMesh
 TQAlgorithm	algorithm/Mesh.h	/^namespace TQAlgorithm {$/;"	n	namespace:TQMesh
 TQAlgorithm	algorithm/Quad.h	/^namespace TQAlgorithm {$/;"	n	namespace:TQMesh
 TQAlgorithm	algorithm/QuadLayer.h	/^namespace TQAlgorithm {$/;"	n	namespace:TQMesh
+TQAlgorithm	algorithm/Smoother.h	/^namespace TQAlgorithm {$/;"	n	namespace:TQMesh
 TQAlgorithm	algorithm/Triangle.h	/^namespace TQAlgorithm {$/;"	n	namespace:TQMesh
 TQAlgorithm	algorithm/Vertex.h	/^namespace TQAlgorithm {$/;"	n	namespace:TQMesh
 TQGeom	utils/geometry.h	/^namespace TQGeom {$/;"	n	namespace:TQMesh::TQUtils
@@ -301,42 +318,47 @@ TQMesh	algorithm/Front.h	/^namespace TQMesh {$/;"	n
 TQMesh	algorithm/Mesh.h	/^namespace TQMesh {$/;"	n
 TQMesh	algorithm/Quad.h	/^namespace TQMesh {$/;"	n
 TQMesh	algorithm/QuadLayer.h	/^namespace TQMesh {$/;"	n
+TQMesh	algorithm/Smoother.h	/^namespace TQMesh {$/;"	n
 TQMesh	algorithm/Triangle.h	/^namespace TQMesh {$/;"	n
 TQMesh	algorithm/Vertex.h	/^namespace TQMesh {$/;"	n
 TQMesh	utils/Container.h	/^namespace TQMesh {$/;"	n
+TQMesh	utils/ProgressBar.h	/^namespace TQMesh {$/;"	n
 TQMesh	utils/QTree.h	/^namespace TQMesh {$/;"	n
 TQMesh	utils/Timer.h	/^namespace TQMesh {$/;"	n
 TQMesh	utils/Vec2.h	/^namespace TQMesh {$/;"	n
 TQMesh	utils/geometry.h	/^namespace TQMesh {$/;"	n
 TQMesh	utils/utils.h	/^namespace TQMesh {$/;"	n
 TQUtils	utils/Container.h	/^namespace TQUtils {$/;"	n	namespace:TQMesh
+TQUtils	utils/ProgressBar.h	/^namespace TQUtils {$/;"	n	namespace:TQMesh
 TQUtils	utils/QTree.h	/^namespace TQUtils {$/;"	n	namespace:TQMesh
 TQUtils	utils/Timer.h	/^namespace TQUtils {$/;"	n	namespace:TQMesh
 TQUtils	utils/Vec2.h	/^namespace TQUtils {$/;"	n	namespace:TQMesh
 TQUtils	utils/geometry.h	/^namespace TQUtils {$/;"	n	namespace:TQMesh
 TQUtils	utils/utils.h	/^namespace TQUtils {$/;"	n	namespace:TQMesh
-TQ_DOMAIN_MIN_ELEMSIZE	utils/utils.h	47;"	d
-TQ_DOMAIN_MIN_SCALING	utils/utils.h	46;"	d
-TQ_INTR_EDGE_MARKER	utils/utils.h	53;"	d
+TQ_DOMAIN_MIN_ELEMSIZE	utils/utils.h	54;"	d
+TQ_DOMAIN_MIN_SCALING	utils/utils.h	53;"	d
+TQ_INTR_EDGE_MARKER	utils/utils.h	60;"	d
 TQ_MAX	utils/utils.h	/^constexpr double TQ_MAX    = DBL_MAX;$/;"	m	namespace:TQMesh::TQUtils
 TQ_MIN	utils/utils.h	/^constexpr double TQ_MIN    = DBL_MIN;$/;"	m	namespace:TQMesh::TQUtils
-TQ_QTREE_DEPTH	utils/utils.h	51;"	d
-TQ_QTREE_ITEMS	utils/utils.h	50;"	d
-TQ_QTREE_SCALE	utils/utils.h	49;"	d
-TQ_QUAD_LAYER_ANGLE	utils/utils.h	60;"	d
-TQ_QUAD_LAYER_RANGE	utils/utils.h	61;"	d
-TQ_QUAD_RANGE_FACTOR	utils/utils.h	58;"	d
-TQ_QUAD_WEDGE_ANGLE	utils/utils.h	59;"	d
-TQ_RANGE_FACTOR	utils/utils.h	56;"	d
+TQ_QTREE_DEPTH	utils/utils.h	58;"	d
+TQ_QTREE_ITEMS	utils/utils.h	57;"	d
+TQ_QTREE_SCALE	utils/utils.h	56;"	d
+TQ_QUAD_LAYER_ANGLE	utils/utils.h	67;"	d
+TQ_QUAD_LAYER_RANGE	utils/utils.h	68;"	d
+TQ_QUAD_RANGE_FACTOR	utils/utils.h	65;"	d
+TQ_QUAD_WEDGE_ANGLE	utils/utils.h	66;"	d
+TQ_RANGE_FACTOR	utils/utils.h	63;"	d
 TQ_SMALL	utils/utils.h	/^constexpr double TQ_SMALL  = 1.0E-13; \/\/DBL_EPSILON;$/;"	m	namespace:TQMesh::TQUtils
-TQ_WIDE_SEARCH_FACTOR	utils/utils.h	57;"	d
+TQ_WIDE_SEARCH_FACTOR	utils/utils.h	64;"	d
 T_	app/exprtk.h	/^            static inline void execute(T_ (&v)[1], const branch_t (&b)[1])$/;"	m	struct:exprtk::details::exprtk_final::evaluate_branches
 T_	app/exprtk.h	/^            static inline void execute(T_ (&v)[2], const branch_t (&b)[2])$/;"	m	struct:exprtk::details::exprtk_final::evaluate_branches
 T_	app/exprtk.h	/^            static inline void execute(T_ (&v)[3], const branch_t (&b)[3])$/;"	m	struct:exprtk::details::exprtk_final::evaluate_branches
 T_	app/exprtk.h	/^            static inline void execute(T_ (&v)[4], const branch_t (&b)[4])$/;"	m	struct:exprtk::details::exprtk_final::evaluate_branches
 T_	app/exprtk.h	/^            static inline void execute(T_ (&v)[5], const branch_t (&b)[5])$/;"	m	struct:exprtk::details::exprtk_final::evaluate_branches
 T_	app/exprtk.h	/^            static inline void execute(T_ (&v)[BranchCount], const branch_t (&b)[BranchCount])$/;"	m	struct:exprtk::details::exprtk_final::evaluate_branches
+Test_Boundary_clear_edges	tests/boundary_test.cpp	/^void Test_Boundary_clear_edges()$/;"	f	namespace:BoundaryTests
 Test_Boundary_interior_exterior	tests/boundary_test.cpp	/^void Test_Boundary_interior_exterior()$/;"	f	namespace:BoundaryTests
+Test_Boundary_shapes	tests/boundary_test.cpp	/^void Test_Boundary_shapes()$/;"	f	namespace:BoundaryTests
 Test_Container_Vertices_Edges	tests/container_test.cpp	/^void Test_Container_Vertices_Edges()$/;"	f	namespace:ContainerTests
 Test_Container_insert	tests/container_test.cpp	/^void Test_Container_insert()$/;"	f	namespace:ContainerTests
 Test_Container_push_back	tests/container_test.cpp	/^void Test_Container_push_back()$/;"	f	namespace:ContainerTests
@@ -352,10 +374,15 @@ Test_Mesh_add_quad_layer	tests/mesh_test.cpp	/^void Test_Mesh_add_quad_layer(boo
 Test_Mesh_add_quad_layer_step	tests/mesh_test.cpp	/^void Test_Mesh_add_quad_layer_step(bool export_mesh)$/;"	f	namespace:MeshTests
 Test_Mesh_advance_front_quad	tests/mesh_test.cpp	/^void Test_Mesh_advance_front_quad(bool export_mesh)$/;"	f	namespace:MeshTests
 Test_Mesh_banner	tests/mesh_test.cpp	/^void Test_Mesh_banner(bool export_mesh)$/;"	f	namespace:MeshTests
+Test_Mesh_benchmark	tests/mesh_test.cpp	/^void Test_Mesh_benchmark(double h, double L, $/;"	f	namespace:MeshTests
+Test_Mesh_benchmark_TMesh	tests/mesh_test.cpp	/^void Test_Mesh_benchmark_TMesh(double h, double L, $/;"	f	namespace:MeshTests
+Test_Mesh_create_bdry_shape_mesh	tests/mesh_test.cpp	/^void Test_Mesh_create_bdry_shape_mesh(bool export_mesh)$/;"	f	namespace:MeshTests
 Test_Mesh_create_simple_hex_layers	tests/mesh_test.cpp	/^void Test_Mesh_create_simple_hex_layers(bool export_mesh)$/;"	f	namespace:MeshTests
 Test_Mesh_initialization	tests/mesh_test.cpp	/^void Test_Mesh_initialization()$/;"	f	namespace:MeshTests
+Test_Mesh_multiple_domains	tests/mesh_test.cpp	/^void Test_Mesh_multiple_domains(bool export_mesh)$/;"	f	namespace:MeshTests
+Test_Mesh_pave	tests/mesh_test.cpp	/^void Test_Mesh_pave(bool export_mesh)$/;"	f	namespace:MeshTests
+Test_Mesh_refine_to_quads	tests/mesh_test.cpp	/^void Test_Mesh_refine_to_quads(bool export_mesh)$/;"	f	namespace:MeshTests
 Test_Mesh_triangulate	tests/mesh_test.cpp	/^void Test_Mesh_triangulate(bool export_mesh)$/;"	f	namespace:MeshTests
-Test_Mesh_triangulate_quad_layer	tests/mesh_test.cpp	/^void Test_Mesh_triangulate_quad_layer(bool export_mesh)$/;"	f	namespace:MeshTests
 Test_Mesh_vortex_shedding	tests/mesh_test.cpp	/^void Test_Mesh_vortex_shedding(bool export_mesh)$/;"	f	namespace:MeshTests
 Test_Mesh_wedge	tests/mesh_test.cpp	/^void Test_Mesh_wedge(bool export_mesh)$/;"	f	namespace:MeshTests
 Test_QTree_add	tests/qtree_test.cpp	/^void Test_QTree_add(bool export_qtree=false)$/;"	f	namespace:QTreeTests
@@ -365,6 +392,7 @@ Test_QTree_get_items	tests/qtree_test.cpp	/^void Test_QTree_get_items(bool expor
 Test_QTree_remove	tests/qtree_test.cpp	/^void Test_QTree_remove(bool export_qtree=false)$/;"	f	namespace:QTreeTests
 Test_Quad_initialization	tests/quad_test.cpp	/^void Test_Quad_initialization()$/;"	f	namespace:QuadTests
 Test_SizeFunction_evaluation	tests/sizefunction_test.cpp	/^void Test_SizeFunction_evaluation(bool export_sizefun)$/;"	f	namespace:SizeFunctionTests
+Test_Smoother_TriMesh	tests/smoother_test.cpp	/^void Test_Smoother_TriMesh(bool export_mesh)$/;"	f	namespace:SmootherTests
 Test_TQGeom_in_on_quad	tests/geometry_test.cpp	/^void Test_TQGeom_in_on_quad()$/;"	f	namespace:GeometryTests
 Test_TQGeom_in_on_rect	tests/geometry_test.cpp	/^void Test_TQGeom_in_on_rect()$/;"	f	namespace:GeometryTests
 Test_TQGeom_in_on_segment	tests/geometry_test.cpp	/^void Test_TQGeom_in_on_segment()$/;"	f	namespace:GeometryTests
@@ -435,6 +463,7 @@ Vec2Def	utils/Vec2.h	/^namespace Vec2Def$/;"	n	namespace:TQMesh::TQUtils
 Vertex	algorithm/Vertex.h	/^  Vertex(const Vec2d& c, double s=1.0, double r=1.0) $/;"	f	class:TQMesh::TQAlgorithm::Vertex
 Vertex	algorithm/Vertex.h	/^  Vertex(double x, double y, double s=1.0, double r=1.0) $/;"	f	class:TQMesh::TQAlgorithm::Vertex
 Vertex	algorithm/Vertex.h	/^class Vertex$/;"	c	namespace:TQMesh::TQAlgorithm
+Vertex	app/unused.c	/^  std::vector<std::pair<Vertex&,Vertex&>> quad_layer_vertices {};$/;"	v
 Vertex	tests/container_test.cpp	/^  Vertex(double x, double y) : xy_ {x, y} {}$/;"	f	class:ContainerTests::Vertex
 Vertex	tests/container_test.cpp	/^class Vertex$/;"	c	namespace:ContainerTests	file:
 VertexType	tests/qtree_test.cpp	/^  VertexType(T x, T y) : xy_ {x, y} {}$/;"	f	class:QTreeTests::VertexType
@@ -467,11 +496,13 @@ add_auxiliary_symtab	app/exprtk.h	/^      inline void add_auxiliary_symtab(symbo
 add_boundary	algorithm/Domain.h	/^  Boundary& add_boundary( Args&&... args )$/;"	f	class:TQMesh::TQAlgorithm::Domain
 add_constant	app/exprtk.h	/^      inline bool add_constant(const std::string& constant_name, const T& value)$/;"	f	class:exprtk::symbol_table
 add_constants	app/exprtk.h	/^      inline bool add_constants()$/;"	f	class:exprtk::symbol_table
-add_edge	algorithm/EdgeList.h	/^  Edge& add_edge(Vertex& v1, Vertex& v2, $/;"	f	class:TQMesh::TQAlgorithm::EdgeList
+add_edge	algorithm/Boundary.h	/^  Edge& add_edge(Vertex& v1, Vertex& v2, int marker)$/;"	f	class:TQMesh::TQAlgorithm::Boundary
+add_edge	algorithm/EdgeList.h	/^  virtual Edge& add_edge(Vertex& v1, Vertex& v2, $/;"	f	class:TQMesh::TQAlgorithm::EdgeList
 add_edge	algorithm/Vertex.h	/^  void add_edge(Edge& e) { edges_.push_back(&e); }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
 add_edge	tests/container_test.cpp	/^  void add_edge(Edge* e) { edges_.push_back(e); }$/;"	f	class:ContainerTests::Vertex
 add_element	app/exprtk.h	/^         inline bool add_element(const scope_element& se)$/;"	f	class:exprtk::parser::scope_element_manager
 add_epsilon	app/exprtk.h	/^      inline bool add_epsilon()$/;"	f	class:exprtk::symbol_table
+add_exterior_boundary	algorithm/Domain.h	/^  Boundary& add_exterior_boundary()$/;"	f	class:TQMesh::TQAlgorithm::Domain
 add_facet	algorithm/Vertex.h	/^  void add_facet(Facet& t) { facets_.push_back(&t); }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
 add_fixed_vertex	algorithm/Domain.h	/^  Vertex& add_fixed_vertex( Args&&... args )$/;"	f	class:TQMesh::TQAlgorithm::Domain
 add_function	app/exprtk.h	/^      inline bool add_function(const std::string& function_name, function_t& function)$/;"	f	class:exprtk::symbol_table
@@ -479,6 +510,7 @@ add_function	app/exprtk.h	/^      inline bool add_function(const std::string& fu
 add_function	app/exprtk.h	/^      inline bool add_function(const std::string& vararg_function_name, vararg_function_t& vararg_function)$/;"	f	class:exprtk::symbol_table
 add_impl	app/exprtk.h	/^         inline bool add_impl(const std::string& symbol_name, RType t, const bool is_const)$/;"	f	struct:exprtk::symbol_table::type_store
 add_infinity	app/exprtk.h	/^      inline bool add_infinity()$/;"	f	class:exprtk::symbol_table
+add_interior_boundary	algorithm/Domain.h	/^  Boundary& add_interior_boundary()$/;"	f	class:TQMesh::TQAlgorithm::Domain
 add_invalid	app/exprtk.h	/^            void add_invalid(const lexer::token::token_type base, const lexer::token::token_type t)$/;"	f	class:exprtk::lexer::helper::sequence_validator
 add_invalid	app/exprtk.h	/^            void add_invalid(const token_t t0, const token_t t1, const token_t t2)$/;"	f	class:exprtk::lexer::helper::sequence_validator_3tokens
 add_invalid_set1	app/exprtk.h	/^            void add_invalid_set1(const lexer::token::token_type t)$/;"	f	class:exprtk::lexer::helper::sequence_validator
@@ -486,20 +518,22 @@ add_item_number	utils/QTree.h	/^  inline void add_item_number( int i ) $/;"	f	cl
 add_op	app/exprtk.h	/^      struct add_op : public opr_base<T>$/;"	s	namespace:exprtk::details
 add_package	app/exprtk.h	/^      inline bool add_package(Package& package)$/;"	f	class:exprtk::symbol_table
 add_pi	app/exprtk.h	/^      inline bool add_pi()$/;"	f	class:exprtk::symbol_table
-add_quad_layer	algorithm/Mesh.h	/^  bool add_quad_layer(Vertex*& v_start, Vertex*& v_end, double height)$/;"	f	class:TQMesh::TQAlgorithm::Mesh
+add_quad_layer	algorithm/Mesh.h	/^  bool add_quad_layer(Vertex*& v_start_in, Vertex*& v_end_in, $/;"	f	class:TQMesh::TQAlgorithm::Mesh
 add_quad_layer_triangle	algorithm/Mesh.h	/^  Triangle* add_quad_layer_triangle(Edge* base, $/;"	f	class:TQMesh::TQAlgorithm::Mesh
 add_replace	app/exprtk.h	/^            bool add_replace(const std::string& target_symbol,$/;"	f	class:exprtk::lexer::helper::symbol_replacer
 add_reserved_function	app/exprtk.h	/^      inline bool add_reserved_function(const std::string& function_name, function_t& function)$/;"	f	class:exprtk::symbol_table
 add_reserved_function	app/exprtk.h	/^      inline bool add_reserved_function(const std::string& function_name, generic_function_t& function)$/;"	f	class:exprtk::symbol_table
 add_reserved_function	app/exprtk.h	/^      inline bool add_reserved_function(const std::string& vararg_function_name, vararg_function_t& vararg_function)$/;"	f	class:exprtk::symbol_table
+add_row	utils/ParaReader.h	/^  void add_row()$/;"	f	class:CppUtils::Parameter
 add_stringvar	app/exprtk.h	/^      inline bool add_stringvar(const std::string& stringvar_name, std::string& s, const bool is_constant = false)$/;"	f	class:exprtk::symbol_table
 add_symbol	app/exprtk.h	/^         inline void add_symbol(const std::string& symbol, const symbol_type st)$/;"	f	class:exprtk::parser::dependent_entity_collector
-add_value	app/ParaReader.h	/^  void add_value(T val) { values_.push_back( val ); }$/;"	f	class:ListParameter
+add_value	utils/oldParaReader.h	/^  void add_value(T val) { values_.push_back( val ); }$/;"	f	class:ListParameter
 add_variable	app/exprtk.h	/^      inline bool add_variable(const std::string& variable_name, T& t, const bool is_constant = false)$/;"	f	class:exprtk::symbol_table
 add_vector	app/exprtk.h	/^      inline bool add_vector(const std::string& vector_name, T (&v)[N])$/;"	f	class:exprtk::symbol_table
 add_vector	app/exprtk.h	/^      inline bool add_vector(const std::string& vector_name, T* v, const std::size_t& v_size)$/;"	f	class:exprtk::symbol_table
 add_vector	app/exprtk.h	/^      inline bool add_vector(const std::string& vector_name, exprtk::vector_view<T>& v)$/;"	f	class:exprtk::symbol_table
 add_vector	app/exprtk.h	/^      inline bool add_vector(const std::string& vector_name, std::vector<T,Allocator>& v)$/;"	f	class:exprtk::symbol_table
+add_vertex	algorithm/Domain.h	/^  Vertex& add_vertex( Args&&... args )$/;"	f	class:TQMesh::TQAlgorithm::Domain
 adjacent_facet_intersection	algorithm/Vertex.h	/^  bool adjacent_facet_intersection(const std::list<T*>& facets) const$/;"	f	class:TQMesh::TQAlgorithm::Vertex
 adjacent_vertex	algorithm/Vertex.h	/^  Vertex* adjacent_vertex(size_t i) { return verts_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
 adjacent_vertex	algorithm/Vertex.h	/^  const Vertex* adjacent_vertex(size_t i) const { return verts_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
@@ -563,6 +597,7 @@ any_true	app/exprtk.h	/^      any_true()$/;"	f	class:exprtk::rtl::vecops::any_tr
 any_true	app/exprtk.h	/^   class any_true : public exprtk::igeneric_function<T>$/;"	c	namespace:exprtk::rtl::vecops
 area	algorithm/Domain.h	/^  double area() const$/;"	f	class:TQMesh::TQAlgorithm::Domain
 area	algorithm/EdgeList.h	/^  double area() const { return area_; }$/;"	f	class:TQMesh::TQAlgorithm::EdgeList
+area	algorithm/Mesh.h	/^  double area() const { return mesh_area_; }$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 area	algorithm/Quad.h	/^  double area() const { return area_; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
 area	algorithm/Triangle.h	/^  double area() const { return area_; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
 arg_list_	app/exprtk.h	/^         std::vector<branch_t> arg_list_;$/;"	m	class:exprtk::details::exprtk_final
@@ -769,7 +804,7 @@ break_exception	app/exprtk.h	/^         explicit break_exception(const T& v)$/;"
 break_exception	app/exprtk.h	/^      class break_exception$/;"	c	namespace:exprtk::details
 break_node	app/exprtk.h	/^         break_node(expression_ptr ret = expression_ptr(0))$/;"	f	class:exprtk::details::exprtk_final
 brkcnt_list_	app/exprtk.h	/^      std::deque<bool> brkcnt_list_;$/;"	m	class:exprtk::parser
-btype_	algorithm/Boundary.h	/^  BdryType btype_;$/;"	m	class:TQMesh::TQAlgorithm::Boundary
+btype_	algorithm/Boundary.h	/^  BdryType   btype_;$/;"	m	class:TQMesh::TQAlgorithm::Boundary
 buffer	app/exprtk.h	/^         uchar_t buffer[64];$/;"	m	class:exprtk::details::vector_holder
 build_string	app/exprtk.h	/^         build_string(const std::size_t& initial_size = 64)$/;"	f	class:exprtk::details::build_string
 build_string	app/exprtk.h	/^      class build_string$/;"	c	namespace:exprtk::details
@@ -915,6 +950,7 @@ case_stmt0	app/exprtk.h	31288;"	d
 case_stmt0	app/exprtk.h	31323;"	d
 case_stmt1	app/exprtk.h	31292;"	d
 case_stmt1	app/exprtk.h	31324;"	d
+catch	app/unused.c	/^  catch( ... )$/;"	f
 ceil_impl	app/exprtk.h	/^            template <typename T> inline T  ceil_impl(const T v, int_type_tag) { return v;             }$/;"	f	namespace:exprtk::details::numeric::details
 ceil_impl	app/exprtk.h	/^            template <typename T> inline T  ceil_impl(const T v, real_type_tag) { return std::ceil (v); }$/;"	f	namespace:exprtk::details::numeric::details
 center	utils/QTree.h	/^  const Vec2<V>& center() const { return center_; }$/;"	f	class:TQMesh::TQUtils::QTree
@@ -924,6 +960,7 @@ char_t	app/exprtk.h	/^         typedef details::char_t char_t;$/;"	t	class:exprt
 char_t	app/exprtk.h	/^      typedef char                   char_t;$/;"	t	namespace:exprtk::details
 check	app/exprtk.h	/^         inline bool check() const$/;"	f	struct:exprtk::details::loop_runtime_checker
 check_orientation	algorithm/EdgeList.h	/^  bool check_orientation()$/;"	f	class:TQMesh::TQAlgorithm::EdgeList
+check_remove_boundary_edge	algorithm/Mesh.h	/^  inline void check_remove_boundary_edge(Edge& e)$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 check_remove_interior_edge	algorithm/Mesh.h	/^  inline void check_remove_interior_edge(Edge& e)$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 check_remove_quad	algorithm/Mesh.h	/^  inline void check_remove_quad(Quad& q)$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 check_remove_triangle	algorithm/Mesh.h	/^  inline void check_remove_triangle(Triangle& t)$/;"	f	class:TQMesh::TQAlgorithm::Mesh
@@ -953,6 +990,7 @@ clear	app/exprtk.h	/^         void clear()$/;"	f	struct:exprtk::parser::scope_el
 clear	app/exprtk.h	/^      inline void clear()$/;"	f	class:exprtk::results_context
 clear	app/exprtk.h	/^      inline void clear()$/;"	f	class:exprtk::symbol_table
 clear	app/exprtk.h	/^      void clear()$/;"	f	class:exprtk::function_compositor
+clear_edges	algorithm/EdgeList.h	/^  void clear_edges()$/;"	f	class:TQMesh::TQAlgorithm::EdgeList
 clear_errors	app/exprtk.h	/^            void clear_errors()$/;"	f	class:exprtk::lexer::helper::numeric_checker
 clear_errors	app/exprtk.h	/^            void clear_errors()$/;"	f	class:exprtk::lexer::helper::sequence_validator
 clear_errors	app/exprtk.h	/^            void clear_errors()$/;"	f	class:exprtk::lexer::helper::sequence_validator_3tokens
@@ -963,7 +1001,9 @@ clear_stack	app/exprtk.h	/^         inline void clear_stack()$/;"	f	struct:exprt
 clear_strings	app/exprtk.h	/^      inline void clear_strings()$/;"	f	class:exprtk::symbol_table
 clear_variables	app/exprtk.h	/^      inline void clear_variables(const bool delete_node = true)$/;"	f	class:exprtk::symbol_table
 clear_vectors	app/exprtk.h	/^      inline void clear_vectors()$/;"	f	class:exprtk::symbol_table
-clear_waste	utils/Container.h	/^  bool clear_waste() { waste_.clear(); }$/;"	f	class:TQMesh::TQUtils::Container
+clear_waste	algorithm/EdgeList.h	/^  void clear_waste()$/;"	f	class:TQMesh::TQAlgorithm::EdgeList
+clear_waste	algorithm/Mesh.h	/^  void clear_waste()$/;"	f	class:TQMesh::TQAlgorithm::Mesh
+clear_waste	utils/Container.h	/^  void clear_waste() { waste_.clear(); }$/;"	f	class:TQMesh::TQUtils::Container
 clock_frequency_	app/exprtk.h	/^         LARGE_INTEGER clock_frequency_;$/;"	m	class:exprtk::timer
 close	app/exprtk.h	/^         bool close()$/;"	f	struct:exprtk::rtl::io::file::details::file_descriptor
 close	app/exprtk.h	/^         void close(Ptr& p)$/;"	f	struct:exprtk::rtl::io::file::details::file_descriptor
@@ -1007,9 +1047,11 @@ color	algorithm/Quad.h	/^  void color(int c){ color_ = c; }$/;"	f	class:TQMesh::
 color	algorithm/Triangle.h	/^  int color() const { return color_; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
 color	algorithm/Triangle.h	/^  void color(int c){ color_ = c; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
 column_no	app/exprtk.h	/^         std::size_t column_no;$/;"	m	struct:exprtk::parser_error::type
-columns	app/ParaReader.h	/^  size_t columns() const { return ncol_; }$/;"	f	class:ListParameter
-columns	app/ParaReader.h	/^  void columns(size_t i) { ncol_ = i; }$/;"	f	class:ListParameter
-comment_	app/ParaReader.h	/^  string          comment_;$/;"	m	class:ParaReader
+columns	utils/ParaReader.h	/^  size_t columns() const { return ncol_; }$/;"	f	class:CppUtils::Parameter
+columns	utils/oldParaReader.h	/^  size_t columns() const { return ncol_; }$/;"	f	class:ListParameter
+columns	utils/oldParaReader.h	/^  void columns(size_t i) { ncol_ = i; }$/;"	f	class:ListParameter
+comment_	utils/ParaReader.h	/^  string          comment_;$/;"	m	class:CppUtils::ParaReader
+comment_	utils/oldParaReader.h	/^  string          comment_;$/;"	m	class:ParaReader
 commutative_check_enabled	app/exprtk.h	/^         bool commutative_check_enabled  () const { return enable_commutative_check_;  }$/;"	f	class:exprtk::parser::settings_store
 commutative_inserter	app/exprtk.h	/^            commutative_inserter()$/;"	f	class:exprtk::lexer::helper::commutative_inserter
 commutative_inserter	app/exprtk.h	/^         class commutative_inserter : public lexer::token_inserter$/;"	c	namespace:exprtk::lexer::helper
@@ -1130,6 +1172,7 @@ create	app/exprtk.h	/^            static inline control_block* create(const std:
 create	app/exprtk.h	/^            static inline st_data* create()$/;"	f	struct:exprtk::symbol_table::control_block::st_data
 create	app/exprtk.h	/^         static inline cntrl_blck_ptr_t create(expression_ptr e)$/;"	f	struct:exprtk::expression::control_block
 create	app/exprtk.h	/^         static inline control_block* create()$/;"	f	struct:exprtk::symbol_table::control_block
+create_boundary_shape	algorithm/Boundary.h	/^  void create_boundary_shape(Vertices&           vertices, $/;"	f	class:TQMesh::TQAlgorithm::Boundary
 create_data	app/exprtk.h	/^            inline void create_data()$/;"	f	struct:exprtk::details::vec_data_store::control_block
 create_quad_layer_elements	algorithm/Mesh.h	/^  void create_quad_layer_elements(QuadLayer& quad_layer)$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 create_quad_layers	algorithm/Mesh.h	/^  bool create_quad_layers(Vertex& v_start, Vertex& v_end, $/;"	f	class:TQMesh::TQAlgorithm::Mesh
@@ -1186,7 +1229,8 @@ delete_ptr	app/exprtk.h	/^         bool delete_ptr;$/;"	m	struct:exprtk::parser:
 delete_ptr	app/exprtk.h	/^         bool delete_ptr;$/;"	m	struct:exprtk::parser::scoped_expression_delete
 delete_ptr	app/exprtk.h	/^         bool delete_ptr;$/;"	m	struct:exprtk::parser::scoped_vec_delete
 deleter	app/exprtk.h	/^         struct deleter$/;"	s	struct:exprtk::symbol_table::type_store
-delimiter_	app/ParaReader.h	/^  char            delimiter_;$/;"	m	class:ParaReader
+delimiter_	utils/ParaReader.h	/^  char            delimiter_;$/;"	m	class:CppUtils::ParaReader
+delimiter_	utils/oldParaReader.h	/^  char            delimiter_;$/;"	m	class:ParaReader
 delta	utils/Timer.h	/^  double delta(int i) const$/;"	f	class:TQMesh::TQUtils::Timer
 dependent_entity_collector	app/exprtk.h	/^         dependent_entity_collector(const std::size_t options = e_ct_none)$/;"	f	class:exprtk::parser::dependent_entity_collector
 dependent_entity_collector	app/exprtk.h	/^      class dependent_entity_collector$/;"	c	class:exprtk::parser
@@ -1240,6 +1284,7 @@ disabled_inequality_set_	app/exprtk.h	/^         disabled_entity_set_t disabled_
 disabled_logic_set_	app/exprtk.h	/^         disabled_entity_set_t disabled_logic_set_;$/;"	m	class:exprtk::parser::settings_store
 distribute_items	utils/QTree.h	/^  void distribute_items()$/;"	f	class:TQMesh::TQUtils::QTree
 div_op	app/exprtk.h	/^      struct div_op : public opr_base<T>$/;"	s	namespace:exprtk::details
+domain_size	app/unused.c	/^  const double domain_size = ABS(10.0 * MAX(dx, dy));$/;"	v
 dot	app/exprtk.h	/^      dot()$/;"	f	class:exprtk::rtl::vecops::dot
 dot	app/exprtk.h	/^   class dot : public exprtk::igeneric_function<T>$/;"	c	namespace:exprtk::rtl::vecops
 dot	utils/Vec2.h	/^inline T dot(const Vec2<T> &u, const Vec2<T> &v)$/;"	f	namespace:TQMesh::TQUtils
@@ -1251,6 +1296,8 @@ dump	app/exprtk.h	/^         inline void dump() const$/;"	f	class:exprtk::detail
 dump	app/exprtk.h	/^         inline void dump(const lexer::generator& generator)$/;"	f	namespace:exprtk::lexer::helper
 dump_error	app/exprtk.h	/^      inline void dump_error(const type& error)$/;"	f	namespace:exprtk::parser_error
 dump_ptr	app/exprtk.h	/^      inline void dump_ptr(const std::string& s, const void* ptr, const std::size_t size = 0)$/;"	f	namespace:exprtk::details
+dx	app/unused.c	/^  const double dx = xy_max.x - xy_min.x;$/;"	v
+dy	app/unused.c	/^  const double dy = xy_max.y - xy_min.y;$/;"	v
 e	app/exprtk.h	/^            static const double e       =  2.71828182845904523536028747135266249775724709369996;$/;"	m	namespace:exprtk::details::numeric::constant
 e	app/exprtk.h	/^      eof    <T> e;$/;"	m	struct:exprtk::rtl::io::file::package
 e_abs	app/exprtk.h	/^            e_ipow          , e_ipowinv       , e_abs         , e_acos         ,$/;"	e	enum:exprtk::details::expression_node::node_type
@@ -1934,13 +1981,16 @@ end	algorithm/Domain.h	/^  const_iterator end() const { return boundaries_.end()
 end	algorithm/Domain.h	/^  iterator end() { return boundaries_.end(); }$/;"	f	class:TQMesh::TQAlgorithm::Domain
 end	algorithm/EdgeList.h	/^  const_iterator end() const { return edges_.end(); }$/;"	f	class:TQMesh::TQAlgorithm::EdgeList
 end	algorithm/EdgeList.h	/^  iterator end() { return edges_.end(); }$/;"	f	class:TQMesh::TQAlgorithm::EdgeList
-end	app/ParaReader.h	/^  const string& end() const { return end_; }$/;"	f	class:ListParameter
-end	app/ParaReader.h	/^  string& end() { return end_; }$/;"	f	class:ListParameter
 end	app/exprtk.h	/^         inline const value_t* end() const$/;"	f	struct:exprtk::type_store::type_view
 end	app/exprtk.h	/^         inline value_t* end()$/;"	f	struct:exprtk::type_store::type_view
 end	utils/Container.h	/^  const_iterator end() const { return items_.end(); }$/;"	f	class:TQMesh::TQUtils::Container
 end	utils/Container.h	/^  iterator end() { return items_.end(); }$/;"	f	class:TQMesh::TQUtils::Container
-end_	app/ParaReader.h	/^  string end_;$/;"	m	class:ListParameter
+end	utils/oldParaReader.h	/^  const string& end() const { return end_; }$/;"	f	class:ListParameter
+end	utils/oldParaReader.h	/^  string& end() { return end_; }$/;"	f	class:ListParameter
+end_	utils/oldParaReader.h	/^  string end_;$/;"	m	class:ListParameter
+end_key	utils/ParaReader.h	/^  const string& end_key() const { return end_key_; }$/;"	f	class:CppUtils::ParameterBase
+end_key	utils/ParaReader.h	/^  string& end_key() { return end_key_; }$/;"	f	class:CppUtils::ParameterBase
+end_key_	utils/ParaReader.h	/^  string end_key_;$/;"	m	class:CppUtils::ParameterBase
 entity_name	app/exprtk.h	/^         inline std::string entity_name(const PtrType& ptr) const$/;"	f	struct:exprtk::symbol_table::type_store
 eof	app/exprtk.h	/^         bool eof() const$/;"	f	struct:exprtk::rtl::io::file::details::file_descriptor
 eof	app/exprtk.h	/^      eof()$/;"	f	struct:exprtk::rtl::io::file::eof
@@ -1957,10 +2007,11 @@ erf_impl	app/exprtk.h	/^            inline T erf_impl(T v, int_type_tag)$/;"	f	n
 erf_impl	app/exprtk.h	/^            inline T erf_impl(T v, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 erfc_impl	app/exprtk.h	/^            inline T erfc_impl(T v, int_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 erfc_impl	app/exprtk.h	/^            inline T erfc_impl(T v, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
-error	app/ParaReader.h	/^  void error(string msg) { throw Invalid{msg}; }$/;"	f	class:ParaReader
 error	app/exprtk.h	/^            std::pair<lexer::token,lexer::token> error(const std::size_t index)$/;"	f	class:exprtk::lexer::helper::sequence_validator
 error	app/exprtk.h	/^            std::pair<lexer::token,lexer::token> error(const std::size_t index)$/;"	f	class:exprtk::lexer::helper::sequence_validator_3tokens
 error	app/exprtk.h	/^      inline std::string error() const$/;"	f	class:exprtk::parser
+error	utils/ParaReader.h	/^  void error(string msg) { throw Invalid{msg}; }$/;"	f	class:CppUtils::ParaReader
+error	utils/oldParaReader.h	/^  void error(string msg) { throw Invalid{msg}; }$/;"	f	class:ParaReader
 error_count	app/exprtk.h	/^            std::size_t error_count() const$/;"	f	class:exprtk::lexer::helper::numeric_checker
 error_count	app/exprtk.h	/^            std::size_t error_count() const$/;"	f	class:exprtk::lexer::helper::sequence_validator
 error_count	app/exprtk.h	/^            std::size_t error_count() const$/;"	f	class:exprtk::lexer::helper::sequence_validator_3tokens
@@ -1971,7 +2022,8 @@ error_list_	app/exprtk.h	/^            std::vector<std::pair<lexer::token,lexer:
 error_list_	app/exprtk.h	/^            std::vector<std::pair<lexer::token,lexer::token> > error_list_;$/;"	m	class:exprtk::lexer::helper::sequence_validator_3tokens
 error_list_	app/exprtk.h	/^            std::vector<std::size_t> error_list_;$/;"	m	class:exprtk::lexer::helper::numeric_checker
 error_list_	app/exprtk.h	/^      std::deque<parser_error::type> error_list_;$/;"	m	class:exprtk::parser
-error_message	app/ParaReader.h	/^    string error_message;$/;"	m	class:ParaReader::Invalid
+error_message	utils/ParaReader.h	/^    string error_message;$/;"	m	class:CppUtils::ParaReader::Invalid
+error_message	utils/oldParaReader.h	/^    string error_message;$/;"	m	class:ParaReader::Invalid
 error_mode	app/exprtk.h	/^      enum error_mode$/;"	g	namespace:exprtk::parser_error
 error_node	app/exprtk.h	/^      static inline expression_node_ptr error_node()$/;"	f	class:exprtk::parser
 error_t	app/exprtk.h	/^      typedef parser_error::type      error_t;$/;"	t	struct:exprtk::type_defs
@@ -2307,12 +2359,14 @@ ff13_functor	app/exprtk.h	/^      typedef T (*ff13_functor)(T, T, T, T, T, T, T,
 ff14_functor	app/exprtk.h	/^      typedef T (*ff14_functor)(T, T, T, T, T, T, T, T, T, T, T, T, T, T);$/;"	t	class:exprtk::symbol_table
 ff15_functor	app/exprtk.h	/^      typedef T (*ff15_functor)(T, T, T, T, T, T, T, T, T, T, T, T, T, T, T);$/;"	t	class:exprtk::symbol_table
 file	app/exprtk.h	/^   namespace rtl { namespace io { namespace file { namespace details$/;"	n	namespace:exprtk::rtl::io
-file_content_	app/ParaReader.h	/^  strVec          file_content_;$/;"	m	class:ParaReader
+file_content_	utils/ParaReader.h	/^  strVec          file_content_;$/;"	m	class:CppUtils::ParaReader
+file_content_	utils/oldParaReader.h	/^  strVec          file_content_;$/;"	m	class:ParaReader
 file_descriptor	app/exprtk.h	/^         file_descriptor(const std::string& fname, const std::string& access)$/;"	f	struct:exprtk::rtl::io::file::details::file_descriptor
 file_descriptor	app/exprtk.h	/^      struct file_descriptor$/;"	s	namespace:exprtk::rtl::io::file::details
 file_mode	app/exprtk.h	/^      enum file_mode$/;"	g	namespace:exprtk::rtl::io::file::details
 file_name	app/exprtk.h	/^         std::string file_name;$/;"	m	struct:exprtk::rtl::io::file::details::file_descriptor
-file_path_	app/ParaReader.h	/^  string          file_path_;$/;"	m	class:ParaReader
+file_path_	utils/ParaReader.h	/^  string          file_path_;$/;"	m	class:CppUtils::ParaReader
+file_path_	utils/oldParaReader.h	/^  string          file_path_;$/;"	m	class:ParaReader
 final_node_	app/exprtk.h	/^         branch_t              final_node_;$/;"	m	class:exprtk::details::exprtk_final
 final_stmt_return	app/exprtk.h	/^         bool final_stmt_return() const$/;"	f	class:exprtk::parser::dependent_entity_collector
 final_stmt_return_	app/exprtk.h	/^         bool final_stmt_return_;$/;"	m	class:exprtk::parser::dependent_entity_collector
@@ -2333,12 +2387,16 @@ for_loop_node_t	app/exprtk.h	/^      typedef details::for_loop_node<T>          
 for_loop_rtc_node	app/exprtk.h	/^         for_loop_rtc_node(expression_ptr initialiser,$/;"	f	class:exprtk::details::exprtk_final
 for_loop_rtc_node_t	app/exprtk.h	/^      typedef details::for_loop_rtc_node<T>               for_loop_rtc_node_t;$/;"	t	class:exprtk::parser
 forward	app/exprtk.h	/^      inline bool forward(const std::string& name,$/;"	f	class:exprtk::function_compositor
-found	app/ParaReader.h	/^  bool found() const { return found_; }$/;"	f	class:ListParameter
-found	app/ParaReader.h	/^  bool found() const { return found_; }$/;"	f	class:ScalarParameter
-found	app/ParaReader.h	/^  void found(bool f) { found_ = f; }$/;"	f	class:ListParameter
-found	app/ParaReader.h	/^  void found(bool f) { found_ = f; }$/;"	f	class:ScalarParameter
-found_	app/ParaReader.h	/^  bool   found_;$/;"	m	class:ListParameter
-found_	app/ParaReader.h	/^  bool found_;$/;"	m	class:ScalarParameter
+found	utils/ParaReader.h	/^  bool found() const { return found_; }$/;"	f	class:CppUtils::ParameterBase
+found	utils/ParaReader.h	/^  bool found(const string& name)$/;"	f	class:CppUtils::ParaReader
+found	utils/ParaReader.h	/^  void found(bool f) { found_ = f; }$/;"	f	class:CppUtils::ParameterBase
+found	utils/oldParaReader.h	/^  bool found() const { return found_; }$/;"	f	class:ListParameter
+found	utils/oldParaReader.h	/^  bool found() const { return found_; }$/;"	f	class:ScalarParameter
+found	utils/oldParaReader.h	/^  void found(bool f) { found_ = f; }$/;"	f	class:ListParameter
+found	utils/oldParaReader.h	/^  void found(bool f) { found_ = f; }$/;"	f	class:ScalarParameter
+found_	utils/ParaReader.h	/^  bool   found_;$/;"	m	class:CppUtils::ParameterBase
+found_	utils/oldParaReader.h	/^  bool   found_;$/;"	m	class:ListParameter
+found_	utils/oldParaReader.h	/^  bool found_;$/;"	m	class:ScalarParameter
 fp_map_	app/exprtk.h	/^      std::vector<funcparam_t> fp_map_;$/;"	m	class:exprtk::function_compositor
 frac_impl	app/exprtk.h	/^            template <typename T> inline T  frac_impl(const T  , int_type_tag) { return T(0);          }$/;"	f	namespace:exprtk::details::numeric::details
 frac_impl	app/exprtk.h	/^            template <typename T> inline T  frac_impl(const T v, real_type_tag) { return (v - static_cast<long long>(v)); }$/;"	f	namespace:exprtk::details::numeric::details
@@ -2490,6 +2548,7 @@ get_conststr_stringvar_name	app/exprtk.h	/^         inline std::string get_const
 get_conststr_stringvar_name	app/exprtk.h	/^      inline std::string get_conststr_stringvar_name(const expression_ptr& ptr) const$/;"	f	class:exprtk::symbol_table
 get_edge	algorithm/EdgeList.h	/^  get_edge(const Vertex& v, int pos) const$/;"	f	class:TQMesh::TQAlgorithm::EdgeList
 get_edge	algorithm/EdgeList.h	/^  get_edge(const Vertex& v1, const Vertex& v2, bool dir=false) const$/;"	f	class:TQMesh::TQAlgorithm::EdgeList
+get_edge	algorithm/Mesh.h	/^  Edge* get_edge(const Vertex& v1, const Vertex& v2, bool dir=false)$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 get_edge_index	algorithm/Quad.h	/^  int get_edge_index(const Vertex& v1, const Vertex& v2) const$/;"	f	class:TQMesh::TQAlgorithm::Quad
 get_edge_index	algorithm/Triangle.h	/^  int get_edge_index(const Vertex& v1, const Vertex& v2) const$/;"	f	class:TQMesh::TQAlgorithm::Triangle
 get_element	app/exprtk.h	/^         inline scope_element& get_element(const std::size_t& index)$/;"	f	class:exprtk::parser::scope_element_manager
@@ -2512,6 +2571,7 @@ get_next_edge	algorithm/Edge.h	/^  Edge* get_next_edge() const$/;"	f	class:TQMes
 get_operator	app/exprtk.h	/^         inline details::operator_type get_operator(const binary_functor_t& bop) const$/;"	f	class:exprtk::parser::expression_generator
 get_overload_function	app/exprtk.h	/^         inline generic_function_ptr get_overload_function(const std::string& function_name) const$/;"	f	struct:exprtk::parser::symtab_store
 get_overload_function	app/exprtk.h	/^      inline generic_function_ptr get_overload_function(const std::string& function_name) const$/;"	f	class:exprtk::symbol_table
+get_parameter	utils/ParaReader.h	/^  Parameter<T>& get_parameter(const string& name)$/;"	f	class:CppUtils::ParaReader
 get_prev_edge	algorithm/Edge.h	/^  Edge* get_prev_edge() const$/;"	f	class:TQMesh::TQAlgorithm::Edge
 get_string_function	app/exprtk.h	/^         inline generic_function_ptr get_string_function(const std::string& function_name) const$/;"	f	struct:exprtk::parser::symtab_store
 get_string_function	app/exprtk.h	/^      inline generic_function_ptr get_string_function(const std::string& function_name) const$/;"	f	class:exprtk::symbol_table
@@ -2526,6 +2586,11 @@ get_symbol_table	app/exprtk.h	/^         inline symbol_table_t& get_symbol_table
 get_symbol_table	app/exprtk.h	/^      inline const symbol_table<T>& get_symbol_table(const std::size_t& index = 0) const$/;"	f	class:exprtk::expression
 get_symbol_table	app/exprtk.h	/^      inline symbol_table<T>& get_symbol_table(const std::size_t& index = 0)$/;"	f	class:exprtk::expression
 get_symbol_table_list	app/exprtk.h	/^      inline symtab_list_t get_symbol_table_list() const$/;"	f	class:exprtk::expression
+get_value	utils/ParaReader.h	/^  T get_value(const string& name)$/;"	f	class:CppUtils::ParaReader
+get_value	utils/ParaReader.h	/^  T get_value(size_t i) const$/;"	f	class:CppUtils::Parameter
+get_value	utils/ParaReader.h	/^  T get_value(size_t i, const string& name)$/;"	f	class:CppUtils::ParaReader
+get_value	utils/ParaReader.h	/^  T get_value(size_t i, size_t j) const$/;"	f	class:CppUtils::Parameter
+get_value	utils/ParaReader.h	/^  T get_value(size_t i, size_t j, const string& name)$/;"	f	class:CppUtils::ParaReader
 get_vararg_function	app/exprtk.h	/^         inline vararg_function_ptr get_vararg_function(const std::string& vararg_function_name) const$/;"	f	struct:exprtk::parser::symtab_store
 get_vararg_function	app/exprtk.h	/^      inline vararg_function_ptr get_vararg_function(const std::string& vararg_function_name) const$/;"	f	class:exprtk::symbol_table
 get_variable	app/exprtk.h	/^         inline expression_node_ptr get_variable(const T& v)$/;"	f	class:exprtk::parser::scope_element_manager
@@ -2550,6 +2615,7 @@ getline	app/exprtk.h	/^   class getline : public exprtk::igeneric_function<T>$/;
 global_loop_batch_size	app/exprtk.h	/^         const unsigned int global_loop_batch_size = 16;$/;"	m	namespace:exprtk::details::loop_unroll
 gt_op	app/exprtk.h	/^      struct gt_op : public opr_base<T>$/;"	s	namespace:exprtk::details
 gte_op	app/exprtk.h	/^      struct gte_op : public opr_base<T>$/;"	s	namespace:exprtk::details
+h	tests/mesh_test.cpp	/^  std::vector<double>   h;$/;"	m	struct:MeshTests::BenchmarkContainer	file:
 handle_runtime_violation	app/exprtk.h	/^      virtual void handle_runtime_violation(const violation_context&)$/;"	f	struct:exprtk::loop_runtime_check
 has_side_effects	app/exprtk.h	/^      inline bool& has_side_effects()$/;"	f	class:exprtk::function_traits
 has_side_effects_	app/exprtk.h	/^      bool has_side_effects_;$/;"	m	class:exprtk::function_traits
@@ -2719,9 +2785,11 @@ init	app/exprtk.h	/^         inline bool init(const std::string& str)$/;"	f	clas
 init	app/exprtk.h	/^         virtual void init()                     {              }$/;"	f	class:exprtk::lexer::helper_interface
 init_branches	app/exprtk.h	/^         virtual bool init_branches()$/;"	f	class:exprtk::details::generic_function_node
 init_edge	algorithm/QuadLayer.h	/^  void init_edge(Edge* e_cur)$/;"	f	class:TQMesh::TQAlgorithm::QuadLayer
+init_front_edges	algorithm/Front.h	/^  void init_front_edges(const Domain& domain, Vertices &mesh_vertices)$/;"	f	class:TQMesh::TQAlgorithm::Front
 init_precompilation	app/exprtk.h	/^      inline void init_precompilation()$/;"	f	class:exprtk::parser
 init_size_function	app/size_function.cpp	/^UserSizeFunction init_size_function(const std::string& expr)$/;"	f
 init_synthesize_map	app/exprtk.h	/^         inline void init_synthesize_map()$/;"	f	class:exprtk::parser::expression_generator
+init_vertex_connectivity	algorithm/Smoother.h	/^  VertexConnectivity init_vertex_connectivity(Mesh& mesh)$/;"	f	class:TQMesh::TQAlgorithm::Smoother
 initialised_	app/exprtk.h	/^         bool                  initialised_;$/;"	m	class:exprtk::details::exprtk_final
 initialised_	app/exprtk.h	/^         bool                initialised_;$/;"	m	class:exprtk::details::exprtk_final
 initialised_	app/exprtk.h	/^         bool              initialised_;$/;"	m	class:exprtk::details::exprtk_final
@@ -2737,7 +2805,8 @@ inrange_op	app/exprtk.h	/^      struct inrange_op : public opr_base<T>$/;"	s	nam
 insert	app/exprtk.h	/^            inline int insert(const lexer::token& t0, const lexer::token& t1, lexer::token& new_token)$/;"	f	class:exprtk::lexer::helper::commutative_inserter
 insert	utils/Container.h	/^  T& insert( auto pos, Args&&... args )$/;"	f	class:TQMesh::TQUtils::Container
 insert_boundary	algorithm/Domain.h	/^  Boundary& insert_boundary( auto pos, Args&&... args )$/;"	f	class:TQMesh::TQAlgorithm::Domain
-insert_edge	algorithm/EdgeList.h	/^  Edge& insert_edge(auto pos, Vertex& v1, Vertex& v2, $/;"	f	class:TQMesh::TQAlgorithm::EdgeList
+insert_edge	algorithm/Boundary.h	/^  Edge& insert_edge(auto pos, Vertex& v1, Vertex& v2, $/;"	f	class:TQMesh::TQAlgorithm::Boundary
+insert_edge	algorithm/EdgeList.h	/^  virtual Edge& insert_edge(const_iterator pos, Vertex& v1, Vertex& v2, $/;"	f	class:TQMesh::TQAlgorithm::EdgeList
 insert_front	app/exprtk.h	/^         inline void insert_front(token_t::token_type tk_type)$/;"	f	class:exprtk::lexer::generator
 int_type_tag	app/exprtk.h	/^            struct int_type_tag     { int_type_tag    () {} };$/;"	f	struct:exprtk::details::numeric::details::int_type_tag
 int_type_tag	app/exprtk.h	/^            struct int_type_tag     { int_type_tag    () {} };$/;"	s	namespace:exprtk::details::numeric::details
@@ -2857,6 +2926,7 @@ is_integer	app/exprtk.h	/^         inline bool is_integer(const T v)$/;"	f	names
 is_integer_impl	app/exprtk.h	/^            inline bool is_integer_impl(const T& v, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 is_integer_impl	app/exprtk.h	/^            inline bool is_integer_impl(const T&, int_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 is_interior	algorithm/Boundary.h	/^  bool is_interior() const$/;"	f	class:TQMesh::TQAlgorithm::Boundary
+is_interior	algorithm/Edge.h	/^  bool is_interior() const$/;"	f	class:TQMesh::TQAlgorithm::Edge
 is_invalid	app/exprtk.h	/^      inline bool is_invalid(const char_t c)$/;"	f	namespace:exprtk::details
 is_invalid_arithmetic_operation	app/exprtk.h	/^      bool is_invalid_arithmetic_operation(const details::operator_type operation) const$/;"	f	class:exprtk::parser
 is_invalid_assignment_op	app/exprtk.h	/^         inline bool is_invalid_assignment_op(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const$/;"	f	class:exprtk::parser::expression_generator
@@ -2963,12 +3033,12 @@ join	app/exprtk.h	/^         virtual bool join(const token&, const token&, const
 join	app/exprtk.h	/^         virtual bool join(const token&, const token&, token&)               { return false; }$/;"	f	class:exprtk::lexer::token_joiner
 joiner_enabled	app/exprtk.h	/^         bool joiner_enabled             () const { return enable_joiner_;             }$/;"	f	class:exprtk::parser::settings_store
 kahan_sum	app/exprtk.h	/^      inline void kahan_sum(T& sum, T& error, const T v)$/;"	f	namespace:exprtk::rtl::vecops::details
-key	app/ParaReader.h	/^  const string& key() const { return key_;   }$/;"	f	class:ListParameter
-key	app/ParaReader.h	/^  const string& key() const { return key_;   }$/;"	f	class:ScalarParameter
-key	app/ParaReader.h	/^  string& key() { return key_;   }$/;"	f	class:ListParameter
-key	app/ParaReader.h	/^  string& key() { return key_;   }$/;"	f	class:ScalarParameter
-key_	app/ParaReader.h	/^  string key_;$/;"	m	class:ListParameter
-key_	app/ParaReader.h	/^  string key_;$/;"	m	class:ScalarParameter
+key	utils/oldParaReader.h	/^  const string& key() const { return key_;   }$/;"	f	class:ListParameter
+key	utils/oldParaReader.h	/^  const string& key() const { return key_;   }$/;"	f	class:ScalarParameter
+key	utils/oldParaReader.h	/^  string& key() { return key_;   }$/;"	f	class:ListParameter
+key	utils/oldParaReader.h	/^  string& key() { return key_;   }$/;"	f	class:ScalarParameter
+key_	utils/oldParaReader.h	/^  string key_;$/;"	m	class:ListParameter
+key_	utils/oldParaReader.h	/^  string key_;$/;"	m	class:ScalarParameter
 left	app/exprtk.h	/^         precedence_level left;$/;"	m	struct:exprtk::parser::state_t
 length	algorithm/Edge.h	/^  double length() const { return length_; }$/;"	f	class:TQMesh::TQAlgorithm::Edge
 length	app/exprtk.h	/^         struct numeric_info { enum { length = 0, size = 32, bound_length = 0, min_exp = 0, max_exp = 0 }; };$/;"	e	enum:exprtk::details::numeric::numeric_info::__anon1
@@ -2987,16 +3057,19 @@ limit_exceeded_	app/exprtk.h	/^         bool limit_exceeded_;$/;"	m	class:exprtk
 line_line_intersection	utils/geometry.h	/^static inline bool line_line_intersection(const Vec2<T>& p1,$/;"	f	namespace:TQMesh::TQUtils::TQGeom
 line_no	app/exprtk.h	/^         std::size_t line_no;$/;"	m	struct:exprtk::parser_error::type
 line_quad_intersection	utils/geometry.h	/^static inline bool line_quad_intersection(const Vec2<T>& a,$/;"	f	namespace:TQMesh::TQUtils::TQGeom
-line_start_	app/ParaReader.h	/^  size_t line_start_;$/;"	m	class:ListParameter
-line_start_	app/ParaReader.h	/^  size_t line_start_;$/;"	m	class:ScalarParameter
-line_to_start	app/ParaReader.h	/^  int line_to_start() const { return line_start_; }$/;"	f	class:ListParameter
-line_to_start	app/ParaReader.h	/^  int line_to_start() const { return line_start_; }$/;"	f	class:ScalarParameter
-line_to_start	app/ParaReader.h	/^  void line_to_start(int l) { line_start_ = l; }$/;"	f	class:ListParameter
-line_to_start	app/ParaReader.h	/^  void line_to_start(int l) { line_start_ = l; }$/;"	f	class:ScalarParameter
+line_start_	utils/ParaReader.h	/^  size_t line_start_;$/;"	m	class:CppUtils::ParameterBase
+line_start_	utils/oldParaReader.h	/^  size_t line_start_;$/;"	m	class:ListParameter
+line_start_	utils/oldParaReader.h	/^  size_t line_start_;$/;"	m	class:ScalarParameter
+line_to_start	utils/ParaReader.h	/^  int line_to_start() const { return line_start_; }$/;"	f	class:CppUtils::ParameterBase
+line_to_start	utils/ParaReader.h	/^  void line_to_start(int l) { line_start_ = l; }$/;"	f	class:CppUtils::ParameterBase
+line_to_start	utils/oldParaReader.h	/^  int line_to_start() const { return line_start_; }$/;"	f	class:ListParameter
+line_to_start	utils/oldParaReader.h	/^  int line_to_start() const { return line_start_; }$/;"	f	class:ScalarParameter
+line_to_start	utils/oldParaReader.h	/^  void line_to_start(int l) { line_start_ = l; }$/;"	f	class:ListParameter
+line_to_start	utils/oldParaReader.h	/^  void line_to_start(int l) { line_start_ = l; }$/;"	f	class:ScalarParameter
 line_tri_intersection	utils/geometry.h	/^static inline bool line_tri_intersection(const Vec2<T>& a,$/;"	f	namespace:TQMesh::TQUtils::TQGeom
-list_dbl_params_	app/ParaReader.h	/^  std::vector<ListParameter<double>>   list_dbl_params_;$/;"	m	class:ParaReader
-list_int_params_	app/ParaReader.h	/^  std::vector<ListParameter<int>>      list_int_params_;$/;"	m	class:ParaReader
-list_str_params_	app/ParaReader.h	/^  std::vector<ListParameter<string>>   list_str_params_;$/;"	m	class:ParaReader
+list_dbl_params_	utils/oldParaReader.h	/^  std::vector<ListParameter<double>>   list_dbl_params_;$/;"	m	class:ParaReader
+list_int_params_	utils/oldParaReader.h	/^  std::vector<ListParameter<int>>      list_int_params_;$/;"	m	class:ParaReader
+list_str_params_	utils/oldParaReader.h	/^  std::vector<ListParameter<string>>   list_str_params_;$/;"	m	class:ParaReader
 literal_node	app/exprtk.h	/^         explicit literal_node(const T& v)$/;"	f	class:exprtk::details::exprtk_final
 literal_node	app/exprtk.h	/^         literal_node(literal_node<T>&) {}$/;"	f	class:exprtk::details::exprtk_final
 literal_node_t	app/exprtk.h	/^      typedef details::literal_node<T>                    literal_node_t;$/;"	t	class:exprtk::parser
@@ -3099,6 +3172,9 @@ max_num_args_	app/exprtk.h	/^      std::size_t max_num_args_;$/;"	m	class:exprtk
 max_stack_depth_	app/exprtk.h	/^         std::size_t max_stack_depth_;$/;"	m	class:exprtk::parser::settings_store
 merge	utils/QTree.h	/^  bool merge()$/;"	f	class:TQMesh::TQUtils::QTree
 merge_triangles_to_quads	algorithm/Mesh.h	/^  void merge_triangles_to_quads()$/;"	f	class:TQMesh::TQAlgorithm::Mesh
+mesh	app/unused.c	/^  std::cout << mesh;$/;"	v
+meshing_time	tests/mesh_test.cpp	/^  std::vector<double>   meshing_time;$/;"	m	struct:MeshTests::BenchmarkContainer	file:
+meshing_type	app/unused.c	/^  std::string meshing_type = "Triangulation";$/;"	v
 min	app/exprtk.h	/^         inline T min(const T v0, const T v1)$/;"	f	namespace:exprtk::details::numeric
 min_angle	algorithm/Quad.h	/^  double min_angle() const { return min_angle_; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
 min_angle	algorithm/Triangle.h	/^  double min_angle() const { return min_angle_; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
@@ -3127,21 +3203,28 @@ modulus	app/exprtk.h	/^         inline T modulus(const T v0, const T v1)$/;"	f	n
 modulus_impl	app/exprtk.h	/^            inline T modulus_impl(const T v0, const T v1, int_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 modulus_impl	app/exprtk.h	/^            inline T modulus_impl(const T v0, const T v1, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 mul_op	app/exprtk.h	/^      struct mul_op : public opr_base<T>$/;"	s	namespace:exprtk::details
+multi_line_definition	utils/ParaReader.h	/^  bool multi_line_definition() const { return multi_lines_; }$/;"	f	class:CppUtils::ParameterBase
 multi_switch_node	app/exprtk.h	/^         explicit multi_switch_node(const Sequence<expression_ptr,Allocator>& arg_list)$/;"	f	class:exprtk::details::exprtk_final
 multi_switch_statement	app/exprtk.h	/^         inline expression_node_ptr multi_switch_statement(Sequence<expression_node_ptr,Allocator>& arg_list)$/;"	f	class:exprtk::parser::expression_generator
 multimode_genfunction_node	app/exprtk.h	/^         multimode_genfunction_node(GenericFunction* func,$/;"	f	class:exprtk::details::multimode_genfunction_node
 multimode_genfunction_node	app/exprtk.h	/^      class multimode_genfunction_node : public generic_function_node<T,GenericFunction>$/;"	c	namespace:exprtk::details
 multimode_strfunction_node	app/exprtk.h	/^         multimode_strfunction_node(StringFunction* func,$/;"	f	class:exprtk::details::exprtk_final
-multiple_lines	app/ParaReader.h	/^  bool multiple_lines() const { return multi_lines_; }$/;"	f	class:ListParameter
+multiple_lines	utils/oldParaReader.h	/^  bool multiple_lines() const { return multi_lines_; }$/;"	f	class:ListParameter
 n0_c	app/exprtk.h	/^         std::pair<bool,std::size_t        > n0_c;$/;"	m	struct:exprtk::details::range_pack
 n0_e	app/exprtk.h	/^         std::pair<bool,expression_node_ptr> n0_e;$/;"	m	struct:exprtk::details::range_pack
 n1_c	app/exprtk.h	/^         std::pair<bool,std::size_t        > n1_c;$/;"	m	struct:exprtk::details::range_pack
 n1_e	app/exprtk.h	/^         std::pair<bool,expression_node_ptr> n1_e;$/;"	m	struct:exprtk::details::range_pack
 n_bases	algorithm/QuadLayer.h	/^  int n_bases() const { return n_bases_; }$/;"	f	class:TQMesh::TQAlgorithm::QuadLayer
+n_bdry_edges	tests/mesh_test.cpp	/^  std::vector<int>      n_bdry_edges;$/;"	m	struct:MeshTests::BenchmarkContainer	file:
+n_extr_bdry	app/unused.c	/^  int n_extr_bdry = 0;$/;"	v
+n_intr_edges	tests/mesh_test.cpp	/^  std::vector<int>      n_intr_edges;$/;"	m	struct:MeshTests::BenchmarkContainer	file:
 n_leafs	utils/QTree.h	/^  int n_leafs( int n = 0 ) const $/;"	f	class:TQMesh::TQUtils::QTree
+n_quads	tests/mesh_test.cpp	/^  std::vector<int>      n_quads;$/;"	m	struct:MeshTests::BenchmarkContainer	file:
+n_tris	tests/mesh_test.cpp	/^  std::vector<int>      n_tris;$/;"	m	struct:MeshTests::BenchmarkContainer	file:
 n_vertices	algorithm/Facet.h	/^  virtual size_t n_vertices() const { return 0; }$/;"	f	class:TQMesh::TQAlgorithm::Facet
 n_vertices	algorithm/Quad.h	/^  size_t n_vertices() const { return 4; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
 n_vertices	algorithm/Triangle.h	/^  size_t n_vertices() const { return 3; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
+n_vertices	tests/mesh_test.cpp	/^  std::vector<int>      n_vertices;$/;"	m	struct:MeshTests::BenchmarkContainer	file:
 name	app/exprtk.h	/^         inline function& name(const std::string& n)$/;"	f	struct:exprtk::function_compositor::function
 name	app/exprtk.h	/^         std::string  name;$/;"	m	struct:exprtk::parser::scope_element
 name	app/exprtk.h	/^      std::string name() const$/;"	f	class:exprtk::stringvar_base
@@ -3178,6 +3261,7 @@ ncdf_impl	app/exprtk.h	/^            inline T ncdf_impl(T v, int_type_tag)$/;"	f
 ncdf_impl	app/exprtk.h	/^            inline T ncdf_impl(T v, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 nci_t	app/exprtk.h	/^         typedef node_collector_interface<Node> nci_t;$/;"	t	class:exprtk::details::node_collection_destructor
 nci_t	app/exprtk.h	/^         typedef node_collector_interface<expression_node<T> > nci_t;$/;"	t	class:exprtk::details::expression_node
+ncol_	utils/ParaReader.h	/^  size_t ncol_;$/;"	m	class:CppUtils::Parameter
 ndb_t	app/exprtk.h	/^         typedef node_depth_base<expression_node<T> > ndb_t;$/;"	t	class:exprtk::details::expression_node
 ne	app/exprtk.h	/^      nthelement <T> ne;$/;"	m	struct:exprtk::rtl::vecops::package
 ne_op	app/exprtk.h	/^      struct ne_op : public opr_base<T>$/;"	s	namespace:exprtk::details
@@ -3195,15 +3279,19 @@ nequal	app/exprtk.h	/^         inline T nequal(const T v0, const T v1)$/;"	f	nam
 nequal_impl	app/exprtk.h	/^            inline T nequal_impl(const T v0, const T v1, int_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 nequal_impl	app/exprtk.h	/^            inline T nequal_impl(const T v0, const T v1, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 nequal_impl	app/exprtk.h	/^            inline float nequal_impl(const float v0, const float v1, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
-new_double_list_parameter	app/ParaReader.h	/^  new_double_list_parameter(const string& key)$/;"	f	class:ParaReader
-new_double_list_parameter	app/ParaReader.h	/^  new_double_list_parameter(const string& start, const string& end)$/;"	f	class:ParaReader
-new_double_parameter	app/ParaReader.h	/^  new_double_parameter(const string& key)$/;"	f	class:ParaReader
-new_int_list_parameter	app/ParaReader.h	/^  new_int_list_parameter(const string& key)$/;"	f	class:ParaReader
-new_int_list_parameter	app/ParaReader.h	/^  new_int_list_parameter(const string& start, const string& end)$/;"	f	class:ParaReader
-new_int_parameter	app/ParaReader.h	/^  new_int_parameter(const string& key)$/;"	f	class:ParaReader
-new_string_list_parameter	app/ParaReader.h	/^  new_string_list_parameter(const string& key)$/;"	f	class:ParaReader
-new_string_list_parameter	app/ParaReader.h	/^  new_string_list_parameter(const string& start, const string& end)$/;"	f	class:ParaReader
-new_string_parameter	app/ParaReader.h	/^  new_string_parameter(const string& key)$/;"	f	class:ParaReader
+new_bool_parameter	utils/oldParaReader.h	/^  new_bool_parameter(const string& key)$/;"	f	class:ParaReader
+new_double_list_parameter	utils/oldParaReader.h	/^  new_double_list_parameter(const string& key)$/;"	f	class:ParaReader
+new_double_list_parameter	utils/oldParaReader.h	/^  new_double_list_parameter(const string& start, const string& end)$/;"	f	class:ParaReader
+new_double_parameter	utils/oldParaReader.h	/^  new_double_parameter(const string& key)$/;"	f	class:ParaReader
+new_int_list_parameter	utils/oldParaReader.h	/^  new_int_list_parameter(const string& key)$/;"	f	class:ParaReader
+new_int_list_parameter	utils/oldParaReader.h	/^  new_int_list_parameter(const string& start, const string& end)$/;"	f	class:ParaReader
+new_int_parameter	utils/oldParaReader.h	/^  new_int_parameter(const string& key)$/;"	f	class:ParaReader
+new_list_parameter	utils/ParaReader.h	/^  void new_list_parameter(const string& name, $/;"	f	class:CppUtils::ParaReader
+new_list_parameter	utils/ParaReader.h	/^  void new_list_parameter(const string& name,$/;"	f	class:CppUtils::ParaReader
+new_scalar_parameter	utils/ParaReader.h	/^  void new_scalar_parameter(const string& name, const string& key)$/;"	f	class:CppUtils::ParaReader
+new_string_list_parameter	utils/oldParaReader.h	/^  new_string_list_parameter(const string& key)$/;"	f	class:ParaReader
+new_string_list_parameter	utils/oldParaReader.h	/^  new_string_list_parameter(const string& start, const string& end)$/;"	f	class:ParaReader
+new_string_parameter	utils/oldParaReader.h	/^  new_string_parameter(const string& key)$/;"	f	class:ParaReader
 next_ip_index	app/exprtk.h	/^         inline std::size_t next_ip_index()$/;"	f	class:exprtk::parser::scope_element_manager
 next_token	app/exprtk.h	/^         inline token_t& next_token()$/;"	f	class:exprtk::lexer::generator
 next_token	app/exprtk.h	/^         inline void next_token()$/;"	f	class:exprtk::lexer::parser_helper
@@ -3304,6 +3392,7 @@ normal	algorithm/Edge.h	/^  const Vec2d& normal() const { return norm_;}$/;"	f	c
 normal	tests/container_test.cpp	/^  const Vec2d& normal() const { return norm_;}$/;"	f	class:ContainerTests::Edge
 notl_impl	app/exprtk.h	/^            template <typename T> inline T  notl_impl(const T v, int_type_tag) { return !v;            }$/;"	f	namespace:exprtk::details::numeric::details
 notl_impl	app/exprtk.h	/^            template <typename T> inline T  notl_impl(const T v, real_type_tag) { return (std::not_equal_to<T>()(T(0),v) ? T(0) : T(1)); }$/;"	f	namespace:exprtk::details::numeric::details
+nrow_	utils/ParaReader.h	/^  size_t nrow_;$/;"	m	class:CppUtils::Parameter
 nt	app/exprtk.h	/^      any_true   <T> nt;$/;"	m	struct:exprtk::rtl::vecops::package
 nthelement	app/exprtk.h	/^      nthelement()$/;"	f	class:exprtk::rtl::vecops::nthelement
 nthelement	app/exprtk.h	/^   class nthelement : public exprtk::igeneric_function<T>$/;"	c	namespace:exprtk::rtl::vecops
@@ -3522,6 +3611,7 @@ operator <<	algorithm/Vertex.h	/^static std::ostream& operator<<(std::ostream& o
 operator <<	app/exprtk.h	/^         inline build_string& operator << (char_cptr s)$/;"	f	class:exprtk::details::build_string
 operator <<	app/exprtk.h	/^         inline build_string& operator << (const std::string& s)$/;"	f	class:exprtk::details::build_string
 operator <<	tests/container_test.cpp	/^static std::ostream& operator<<(std::ostream& os, $/;"	f	namespace:ContainerTests
+operator <<	utils/ProgressBar.h	/^static inline std::ostream& operator<<(std::ostream& os, $/;"	f	namespace:TQMesh::TQUtils
 operator <<	utils/QTree.h	/^std::ostream& operator<<(std::ostream& os, $/;"	f	namespace:TQMesh::TQUtils
 operator <<	utils/Vec2.h	/^inline std::ostream& operator<<(std::ostream &out, $/;"	f	namespace:TQMesh::TQUtils
 operator =	app/exprtk.h	/^         T0oT1<T,T0,T1>& operator=(T0oT1<T,T0,T1>&) { return (*this); }$/;"	f	class:exprtk::details::exprtk_final
@@ -3595,7 +3685,19 @@ package	app/exprtk.h	/^   struct package$/;"	s	namespace:exprtk::rtl::io::file
 package	app/exprtk.h	/^   struct package$/;"	s	namespace:exprtk::rtl::vecops
 pair	app/exprtk.h	/^      inline void construct_branch_pair(std::pair<expression_node<T>*,bool> (&branch)[N],$/;"	m	namespace:exprtk::details
 pair	app/exprtk.h	/^      inline void init_branches(std::pair<expression_node<T>*,bool> (&branch)[N],$/;"	m	namespace:exprtk::details
+para_extr_bdry	app/unused.c	/^  auto para_extr_bdry = reader.new_int_list_parameter($/;"	v
+para_fixed_vertices	app/unused.c	/^  auto para_fixed_vertices = reader.new_double_list_parameter($/;"	v
+para_intr_bdry	app/unused.c	/^  auto para_intr_bdry = reader.new_int_list_parameter($/;"	v
+para_intr_circ_bdry	app/unused.c	/^  auto para_intr_circ_bdry = reader.new_double_list_parameter($/;"	v
+para_intr_rect_bdry	app/unused.c	/^  auto para_intr_rect_bdry = reader.new_double_list_parameter($/;"	v
+para_meshing_algorithm	app/unused.c	/^  auto para_meshing_algorithm = reader.new_string_parameter($/;"	v
+para_quad_layers	app/unused.c	/^  auto para_quad_layers = reader.new_double_list_parameter($/;"	v
+para_quad_refinements	app/unused.c	/^  auto para_quad_refinements = reader.new_int_parameter($/;"	v
+para_size_fun	app/unused.c	/^  auto para_size_fun = reader.new_string_parameter($/;"	v
+para_vertices	app/unused.c	/^  auto para_vertices = reader.new_double_list_parameter($/;"	v
 param_count	app/exprtk.h	/^      std::size_t param_count;$/;"	m	class:exprtk::ifunction
+param_list_	utils/ParaReader.h	/^  ParameterList   param_list_; $/;"	m	class:CppUtils::ParaReader
+param_map_	utils/ParaReader.h	/^  ParameterMap    param_map_;$/;"	m	class:CppUtils::ParaReader
 param_seq_index_	app/exprtk.h	/^         const std::size_t param_seq_index_;$/;"	m	class:exprtk::details::exprtk_final
 param_seq_index_	app/exprtk.h	/^         std::size_t param_seq_index_;$/;"	m	class:exprtk::details::multimode_genfunction_node
 param_stack	app/exprtk.h	/^         std::deque<var_t> param_stack;$/;"	m	struct:exprtk::function_compositor::base_func
@@ -3770,7 +3872,9 @@ print	app/exprtk.h	/^         static inline void print(const std::string& scalar
 print	app/exprtk.h	/^         static inline void print(const string_t& s)$/;"	f	struct:exprtk::rtl::io::details::print_impl
 print	app/exprtk.h	/^      print(const std::string& scalar_format = "%10.5f")$/;"	f	struct:exprtk::rtl::io::print
 print	app/exprtk.h	/^   struct print : public exprtk::igeneric_function<T>$/;"	s	namespace:exprtk::rtl::io
+print_header	app/main.cpp	/^static void print_header()$/;"	f	file:
 print_impl	app/exprtk.h	/^      struct print_impl$/;"	s	namespace:exprtk::rtl::io::details
+print_parameter	app/main.cpp	/^static void print_parameter(CppUtils::ParaReader& reader, $/;"	f	file:
 print_type	app/exprtk.h	/^      inline void print_type(const std::string& fmt,$/;"	f	namespace:exprtk::rtl::io::details
 println	app/exprtk.h	/^      println(const std::string& scalar_format = "%10.5f")$/;"	f	struct:exprtk::rtl::io::println
 println	app/exprtk.h	/^   struct println : public exprtk::igeneric_function<T>$/;"	s	namespace:exprtk::rtl::io
@@ -3983,6 +4087,7 @@ qfunc_t	app/exprtk.h	/^         typedef T (*qfunc_t)(Type t0, Type t1, Type t2, 
 qfunc_t	app/exprtk.h	/^         typedef typename functor_t::qfunc_t    qfunc_t;$/;"	t	class:exprtk::details::exprtk_final
 qtree	utils/Container.h	/^  const QTree<T,double>& qtree() const { return qtree_; }$/;"	f	class:TQMesh::TQUtils::Container
 qtree_	utils/Container.h	/^  QTree<T,double> qtree_;$/;"	m	class:TQMesh::TQUtils::Container
+quad_layer_time	tests/mesh_test.cpp	/^  std::vector<double>   quad_layer_time;$/;"	m	struct:MeshTests::BenchmarkContainer	file:
 quad_quad_intersection	utils/geometry.h	/^static inline bool quad_quad_intersection(const Vec2<T>& p1,$/;"	f	namespace:TQMesh::TQUtils::TQGeom
 quads	algorithm/Mesh.h	/^  Quads& quads() { return quads_; }$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 quads	algorithm/Mesh.h	/^  const Quads& quads() const { return quads_; }$/;"	f	class:TQMesh::TQAlgorithm::Mesh
@@ -3994,10 +4099,14 @@ quaternary_functor_t	app/exprtk.h	/^      typedef typename functor_t::qfunc_t   
 quaternary_node	app/exprtk.h	/^         quaternary_node(const operator_type& opr,$/;"	f	class:exprtk::details::quaternary_node
 quaternary_node	app/exprtk.h	/^      class quaternary_node : public expression_node<T>$/;"	c	namespace:exprtk::details
 quaternary_node_t	app/exprtk.h	/^      typedef details::quaternary_node<T>                 quaternary_node_t;$/;"	t	class:exprtk::parser
-query	app/ParaReader.h	/^  bool query(ListParameter<T>& param)$/;"	f	class:ParaReader
-query	app/ParaReader.h	/^  bool query(ScalarParameter<T>& param)$/;"	f	class:ParaReader
-query_multiple_lines	app/ParaReader.h	/^  bool query_multiple_lines(ListParameter<T>& param)$/;"	f	class:ParaReader
-query_single_line	app/ParaReader.h	/^  bool query_single_line(ListParameter<T>& param)$/;"	f	class:ParaReader
+query	utils/ParaReader.h	/^  bool query(const string& name)$/;"	f	class:CppUtils::ParaReader
+query	utils/oldParaReader.h	/^  bool query(ListParameter<T>& param)$/;"	f	class:ParaReader
+query	utils/oldParaReader.h	/^  bool query(ScalarParameter<T>& param)$/;"	f	class:ParaReader
+query_multiple_lines	utils/ParaReader.h	/^  bool query_multiple_lines(Parameter<T>& param)$/;"	f	class:CppUtils::ParaReader
+query_multiple_lines	utils/oldParaReader.h	/^  bool query_multiple_lines(ListParameter<T>& param)$/;"	f	class:ParaReader
+query_scalar	utils/ParaReader.h	/^  bool query_scalar(Parameter<T>& param)$/;"	f	class:CppUtils::ParaReader
+query_single_line	utils/ParaReader.h	/^  bool query_single_line(Parameter<T>& param)$/;"	f	class:CppUtils::ParaReader
+query_single_line	utils/oldParaReader.h	/^  bool query_single_line(ListParameter<T>& param)$/;"	f	class:ParaReader
 r	app/exprtk.h	/^      read   <T> r;$/;"	m	struct:exprtk::rtl::io::file::package
 r2d_impl	app/exprtk.h	/^            template <typename T> inline T   r2d_impl(const T v, real_type_tag) { return (v * T(numeric::constant::_180_pi)); }$/;"	f	namespace:exprtk::details::numeric::details
 range	algorithm/Vertex.h	/^  double range() const { return range_; }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
@@ -4059,6 +4168,7 @@ ref_count	app/exprtk.h	/^         std::size_t  ref_count;$/;"	m	struct:exprtk::p
 ref_count	app/exprtk.h	/^         std::size_t ref_count;$/;"	m	struct:exprtk::expression::control_block
 ref_count	app/exprtk.h	/^         std::size_t ref_count;$/;"	m	struct:exprtk::symbol_table::control_block
 refine	algorithm/Front.h	/^  int refine(const Domain& domain, Vertices& vertices)$/;"	f	class:TQMesh::TQAlgorithm::Front
+refine_to_quads	algorithm/Mesh.h	/^  bool refine_to_quads()$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 register_binary_op	app/exprtk.h	36829;"	d
 register_binary_op	app/exprtk.h	36850;"	d
 register_binary_op	app/exprtk.h	36857;"	d
@@ -4096,13 +4206,13 @@ release	app/exprtk.h	/^         inline void release()$/;"	f	class:exprtk::detail
 release	app/exprtk.h	/^      inline expression<T>& release()$/;"	f	class:exprtk::expression
 remainder	app/exprtk.h	/^            int remainder;$/;"	m	struct:exprtk::details::loop_unroll::details
 remaining	app/exprtk.h	/^         inline std::string remaining() const$/;"	f	class:exprtk::lexer::generator
-remove	algorithm/Domain.h	/^  void remove(size_t pos) $/;"	f	class:TQMesh::TQAlgorithm::Domain
 remove	algorithm/EdgeList.h	/^  bool remove(Edge& edge) { return edges_.remove( edge ); }$/;"	f	class:TQMesh::TQAlgorithm::EdgeList
 remove	app/exprtk.h	/^            bool remove(const std::string& target_symbol)$/;"	f	class:exprtk::lexer::helper::symbol_replacer
 remove	app/exprtk.h	/^         inline bool remove(const std::string& symbol_name, const bool delete_node = true)$/;"	f	struct:exprtk::symbol_table::type_store
 remove	app/exprtk.h	/^      inline void remove(const std::string& name, const std::size_t& arg_count)$/;"	f	class:exprtk::function_compositor
 remove	utils/Container.h	/^  bool remove(T& item) $/;"	f	class:TQMesh::TQUtils::Container
 remove	utils/QTree.h	/^  bool remove(T* item)$/;"	f	class:TQMesh::TQUtils::QTree
+remove_boundary	algorithm/Domain.h	/^  void remove_boundary(size_t pos) $/;"	f	class:TQMesh::TQAlgorithm::Domain
 remove_edge	algorithm/Vertex.h	/^  void remove_edge(Edge& e) { edges_.remove(&e); }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
 remove_edge	tests/container_test.cpp	/^  void remove_edge(Edge* e) { edges_.remove(e); }$/;"	f	class:ContainerTests::Vertex
 remove_facet	algorithm/Vertex.h	/^  void remove_facet(Facet& t) { facets_.remove(&t); }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
@@ -4114,6 +4224,7 @@ remove_stringvar	app/exprtk.h	/^      inline bool remove_stringvar(const std::st
 remove_vararg_function	app/exprtk.h	/^      inline bool remove_vararg_function(const std::string& vararg_function_name)$/;"	f	class:exprtk::symbol_table
 remove_variable	app/exprtk.h	/^      inline bool remove_variable(const std::string& variable_name, const bool delete_node = true)$/;"	f	class:exprtk::symbol_table
 remove_vector	app/exprtk.h	/^      inline bool remove_vector(const std::string& vector_name)$/;"	f	class:exprtk::symbol_table
+remove_vertex	algorithm/Domain.h	/^  void remove_vertex(Vertex& v) $/;"	f	class:TQMesh::TQAlgorithm::Domain
 repeat_until_loop	app/exprtk.h	/^         inline expression_node_ptr repeat_until_loop(expression_node_ptr& condition,$/;"	f	class:exprtk::parser::expression_generator
 repeat_until_loop_bc_node	app/exprtk.h	/^         repeat_until_loop_bc_node(expression_ptr condition,$/;"	f	class:exprtk::details::repeat_until_loop_bc_node
 repeat_until_loop_bc_node	app/exprtk.h	/^      class repeat_until_loop_bc_node : public repeat_until_loop_node<T>$/;"	c	namespace:exprtk::details
@@ -4227,8 +4338,9 @@ round_impl	app/exprtk.h	/^            template <typename T> inline T round_impl(
 roundn	app/exprtk.h	/^         inline T roundn(const T v0, const T v1)$/;"	f	namespace:exprtk::details::numeric
 roundn_impl	app/exprtk.h	/^            inline T roundn_impl(const T v0, const T v1, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 roundn_impl	app/exprtk.h	/^            inline T roundn_impl(const T v0, const T, int_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
-rows	app/ParaReader.h	/^  size_t rows() const { return nrow_; }$/;"	f	class:ListParameter
-rows	app/ParaReader.h	/^  void rows(size_t i) { nrow_ = i; }$/;"	f	class:ListParameter
+rows	utils/ParaReader.h	/^  size_t rows() const { return nrow_; }$/;"	f	class:CppUtils::Parameter
+rows	utils/oldParaReader.h	/^  size_t rows() const { return nrow_; }$/;"	f	class:ListParameter
+rows	utils/oldParaReader.h	/^  void rows(size_t i) { nrow_ = i; }$/;"	f	class:ListParameter
 rp0_	app/exprtk.h	/^         RangePack rp0_;$/;"	m	class:exprtk::details::exprtk_final
 rp1_	app/exprtk.h	/^         RangePack rp1_;$/;"	m	class:exprtk::details::exprtk_final
 rp_	app/exprtk.h	/^         mutable range_t rp_;$/;"	m	class:exprtk::details::exprtk_final
@@ -4248,12 +4360,13 @@ run_front_tests	tests/front_test.cpp	/^void run_front_tests()$/;"	f
 run_geometry_tests	tests/geometry_test.cpp	/^void run_geometry_tests()$/;"	f
 run_inserters	app/exprtk.h	/^            inline bool run_inserters(lexer::generator& g)$/;"	f	struct:exprtk::lexer::helper::helper_assembly
 run_joiners	app/exprtk.h	/^            inline bool run_joiners(lexer::generator& g)$/;"	f	struct:exprtk::lexer::helper::helper_assembly
-run_mesh_tests	tests/mesh_test.cpp	/^void run_mesh_tests()$/;"	f
+run_mesh_tests	tests/mesh_test.cpp	/^void run_mesh_tests(bool benchmark)$/;"	f
 run_modifiers	app/exprtk.h	/^            inline bool run_modifiers(lexer::generator& g)$/;"	f	struct:exprtk::lexer::helper::helper_assembly
 run_qtree_tests	tests/qtree_test.cpp	/^void run_qtree_tests(bool benchmark)$/;"	f
 run_quad_tests	tests/quad_test.cpp	/^void run_quad_tests()$/;"	f
 run_scanners	app/exprtk.h	/^            inline bool run_scanners(lexer::generator& g)$/;"	f	struct:exprtk::lexer::helper::helper_assembly
 run_sizefunction_tests	tests/sizefunction_test.cpp	/^void run_sizefunction_tests()$/;"	f
+run_smoother_tests	tests/smoother_test.cpp	/^void run_smoother_tests()$/;"	f
 run_triangle_tests	tests/triangle_test.cpp	/^void run_triangle_tests()$/;"	f
 run_vertex_tests	tests/vertex_test.cpp	/^void run_vertex_tests()$/;"	f
 s0	app/exprtk.h	/^         inline std::string& s0()$/;"	f	class:exprtk::details::exprtk_final
@@ -4266,11 +4379,12 @@ s2	app/exprtk.h	/^         inline std::string& s2()$/;"	f	class:exprtk::details:
 s2_	app/exprtk.h	/^         SType2 s2_;$/;"	m	class:exprtk::details::exprtk_final
 s_end_	app/exprtk.h	/^         details::char_cptr s_end_;$/;"	m	class:exprtk::lexer::generator
 s_itr_	app/exprtk.h	/^         details::char_cptr s_itr_;$/;"	m	class:exprtk::lexer::generator
-scalar_dbl_params_	app/ParaReader.h	/^  std::vector<ScalarParameter<double>> scalar_dbl_params_;$/;"	m	class:ParaReader
+scalar_bool_params_	utils/oldParaReader.h	/^  std::vector<ScalarParameter<bool>>   scalar_bool_params_;$/;"	m	class:ParaReader
+scalar_dbl_params_	utils/oldParaReader.h	/^  std::vector<ScalarParameter<double>> scalar_dbl_params_;$/;"	m	class:ParaReader
 scalar_format_	app/exprtk.h	/^      std::string scalar_format_;$/;"	m	struct:exprtk::rtl::io::print
 scalar_format_	app/exprtk.h	/^      std::string scalar_format_;$/;"	m	struct:exprtk::rtl::io::println
-scalar_int_params_	app/ParaReader.h	/^  std::vector<ScalarParameter<int>>    scalar_int_params_;$/;"	m	class:ParaReader
-scalar_str_params_	app/ParaReader.h	/^  std::vector<ScalarParameter<string>> scalar_str_params_;$/;"	m	class:ParaReader
+scalar_int_params_	utils/oldParaReader.h	/^  std::vector<ScalarParameter<int>>    scalar_int_params_;$/;"	m	class:ParaReader
+scalar_str_params_	utils/oldParaReader.h	/^  std::vector<ScalarParameter<string>> scalar_str_params_;$/;"	m	class:ParaReader
 scalar_t	app/exprtk.h	/^         typedef typename generic_type::scalar_view    scalar_t;$/;"	t	struct:exprtk::rtl::vecops::helper::load_vector_range
 scalar_t	app/exprtk.h	/^         typedef typename generic_type::scalar_view scalar_t;$/;"	t	struct:exprtk::rtl::io::details::print_impl
 scalar_t	app/exprtk.h	/^      typedef typename generic_type::scalar_view    scalar_t;$/;"	t	class:exprtk::rtl::io::file::getline
@@ -4367,6 +4481,10 @@ set_ref	app/exprtk.h	/^      void set_ref(data_ptr_t* data_ref)$/;"	f	class:expr
 set_retinvk	app/exprtk.h	/^      inline void set_retinvk(bool* retinvk_ptr)$/;"	f	class:exprtk::expression
 set_sf3m	app/exprtk.h	/^         inline void set_sf3m(sf3_map_t& sf3_map)$/;"	f	class:exprtk::parser::expression_generator
 set_sf4m	app/exprtk.h	/^         inline void set_sf4m(sf4_map_t& sf4_map)$/;"	f	class:exprtk::parser::expression_generator
+set_shape_circle	algorithm/Boundary.h	/^  void set_shape_circle(Vertices& vertices, int marker,$/;"	f	class:TQMesh::TQAlgorithm::Boundary
+set_shape_rectangle	algorithm/Boundary.h	/^  void set_shape_rectangle(Vertices& vertices, int marker,$/;"	f	class:TQMesh::TQAlgorithm::Boundary
+set_shape_square	algorithm/Boundary.h	/^  void set_shape_square(Vertices& vertices, int marker, $/;"	f	class:TQMesh::TQAlgorithm::Boundary
+set_shape_triangle	algorithm/Boundary.h	/^  void set_shape_triangle(Vertices& vertices, int marker,$/;"	f	class:TQMesh::TQAlgorithm::Boundary
 set_strength_reduction_state	app/exprtk.h	/^         inline void set_strength_reduction_state(const bool enabled)$/;"	f	class:exprtk::parser::expression_generator
 set_string	app/exprtk.h	/^         inline token& set_string(const Iterator begin, const Iterator end, const Iterator base_begin = Iterator(0))$/;"	f	struct:exprtk::lexer::token
 set_string	app/exprtk.h	/^         inline token& set_string(const std::string& s, const std::size_t p)$/;"	f	struct:exprtk::lexer::token
@@ -4375,6 +4493,8 @@ set_synthesis_error	app/exprtk.h	/^      inline void set_synthesis_error(const s
 set_t	app/exprtk.h	/^            typedef std::set<token_pair_t> set_t;$/;"	t	class:exprtk::lexer::helper::sequence_validator
 set_t	app/exprtk.h	/^            typedef std::set<token_triplet_t> set_t;$/;"	t	class:exprtk::lexer::helper::sequence_validator_3tokens
 set_uom	app/exprtk.h	/^         inline void set_uom(unary_op_map_t& unary_op_map)$/;"	f	class:exprtk::parser::expression_generator
+set_value	utils/ParaReader.h	/^  void set_value(size_t i, T val) $/;"	f	class:CppUtils::Parameter
+set_value	utils/ParaReader.h	/^  void set_value(size_t i, size_t j, T val) $/;"	f	class:CppUtils::Parameter
 settings	app/exprtk.h	/^      inline settings_store& settings()$/;"	f	class:exprtk::parser
 settings_	app/exprtk.h	/^      settings_store settings_;$/;"	m	class:exprtk::parser
 settings_arithmetic_opr	app/exprtk.h	/^         enum settings_arithmetic_opr$/;"	g	class:exprtk::parser::settings_store
@@ -4475,6 +4595,7 @@ shift_right	app/exprtk.h	/^   class shift_right : public exprtk::igeneric_functi
 shl	app/exprtk.h	/^         inline T shl(const T v0, const T v1)$/;"	f	namespace:exprtk::details::numeric
 shl_impl	app/exprtk.h	/^            inline T shl_impl(const T v0, const T v1, int_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 shl_impl	app/exprtk.h	/^            inline T shl_impl(const T v0, const T v1, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
+show	utils/ProgressBar.h	/^  void show(std::ostream& os) const$/;"	f	class:TQMesh::TQUtils::ProgressBar
 shr	app/exprtk.h	/^         inline T shr(const T v0, const T v1)$/;"	f	namespace:exprtk::details::numeric
 shr_impl	app/exprtk.h	/^            inline T shr_impl(const T v0, const T v1, int_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 shr_impl	app/exprtk.h	/^            inline T shr_impl(const T v0, const T v1, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
@@ -4485,6 +4606,9 @@ sin_impl	app/exprtk.h	/^            template <typename T> inline T   sin_impl(co
 sin_impl	app/exprtk.h	/^            template <typename T> inline T   sin_impl(const T v, real_type_tag) { return std::sin  (v); }$/;"	f	namespace:exprtk::details::numeric::details
 sinc_impl	app/exprtk.h	/^            inline T sinc_impl(T v, int_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 sinc_impl	app/exprtk.h	/^            inline T sinc_impl(T v, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
+single_key	utils/ParaReader.h	/^  const string& single_key() const { return single_key_;   }$/;"	f	class:CppUtils::ParameterBase
+single_key	utils/ParaReader.h	/^  string& single_key() { return single_key_;   }$/;"	f	class:CppUtils::ParameterBase
+single_key_	utils/ParaReader.h	/^  string single_key_;$/;"	m	class:CppUtils::ParameterBase
 single_value_initialse_	app/exprtk.h	/^         const bool single_value_initialse_;$/;"	m	class:exprtk::details::exprtk_final
 sinh_impl	app/exprtk.h	/^            template <typename T> inline T  sinh_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }$/;"	f	namespace:exprtk::details::numeric::details
 sinh_impl	app/exprtk.h	/^            template <typename T> inline T  sinh_impl(const T v, real_type_tag) { return std::sinh (v); }$/;"	f	namespace:exprtk::details::numeric::details
@@ -4513,16 +4637,18 @@ size	utils/QTree.h	/^  size_t size() const { return n_items_; }$/;"	f	class:TQMe
 size_	app/exprtk.h	/^            const std::size_t size_;$/;"	m	class:exprtk::details::vector_holder::array_vector_impl
 size_	app/exprtk.h	/^         const std::size_t size_;$/;"	m	class:exprtk::details::exprtk_final
 size_	app/exprtk.h	/^      const std::size_t size_;$/;"	m	class:exprtk::vector_view
+size_fun	app/unused.c	/^  UserSizeFunction size_fun;$/;"	v
 size_function	algorithm/Domain.h	/^  inline double size_function(const Vec2d& xy) const$/;"	f	class:TQMesh::TQAlgorithm::Domain
 sizing	algorithm/Vertex.h	/^  double sizing() const { return sizing_; }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
 sk	app/exprtk.h	/^      sumk       <T> sk;$/;"	m	struct:exprtk::rtl::vecops::package
 skip_comments	app/exprtk.h	/^         inline void skip_comments()$/;"	f	class:exprtk::lexer::generator
 skip_whitespace	app/exprtk.h	/^         inline void skip_whitespace()$/;"	f	class:exprtk::lexer::generator
 sl	app/exprtk.h	/^      shift_left <T> sl;$/;"	m	struct:exprtk::rtl::vecops::package
+smooth	algorithm/Smoother.h	/^  void smooth(const Domain& domain, Mesh& mesh, int iterations,$/;"	f	class:TQMesh::TQAlgorithm::Smoother
 smooth_heights	algorithm/QuadLayer.h	/^  void smooth_heights(const Domain& domain)$/;"	f	class:TQMesh::TQAlgorithm::QuadLayer
-smoothing	algorithm/Mesh.h	/^  bool smoothing(int iterations, double eps=0.75, double decay=1.0)$/;"	f	class:TQMesh::TQAlgorithm::Mesh
-smoothing_laplace	algorithm/Mesh.h	/^  bool smoothing_laplace(int    iterations, $/;"	f	class:TQMesh::TQAlgorithm::Mesh
-smoothing_torsion	algorithm/Mesh.h	/^  bool smoothing_torsion(int    iterations, $/;"	f	class:TQMesh::TQAlgorithm::Mesh
+smooth_laplace	algorithm/Smoother.h	/^  void smooth_laplace(const Domain& domain, Mesh& mesh, $/;"	f	class:TQMesh::TQAlgorithm::Smoother
+smooth_torsion	algorithm/Smoother.h	/^  void smooth_torsion(const Domain& domain, Mesh& mesh, $/;"	f	class:TQMesh::TQAlgorithm::Smoother
+smoothing_time	tests/mesh_test.cpp	/^  std::vector<double>   smoothing_time;$/;"	m	struct:MeshTests::BenchmarkContainer	file:
 sort	app/exprtk.h	/^      sort()$/;"	f	class:exprtk::rtl::vecops::sort
 sort	app/exprtk.h	/^   class sort : public exprtk::igeneric_function<T>$/;"	c	namespace:exprtk::rtl::vecops
 sort	utils/Container.h	/^  void sort(Compare comp)$/;"	f	class:TQMesh::TQUtils::Container
@@ -4551,10 +4677,13 @@ stack_depth	app/exprtk.h	/^         std::size_t stack_depth;$/;"	m	struct:exprtk
 stack_depth	app/exprtk.h	/^         std::size_t stack_depth;$/;"	m	struct:exprtk::parser::parser_state
 stack_limit_handler	app/exprtk.h	/^         explicit stack_limit_handler(parser<T>& p)$/;"	f	class:exprtk::parser::stack_limit_handler
 stack_limit_handler	app/exprtk.h	/^      class stack_limit_handler$/;"	c	class:exprtk::parser
-start	app/ParaReader.h	/^  const string& start() const { return start_; }$/;"	f	class:ListParameter
-start	app/ParaReader.h	/^  string& start() { return start_; }$/;"	f	class:ListParameter
 start	app/exprtk.h	/^      inline void start()$/;"	f	class:exprtk::timer
-start_	app/ParaReader.h	/^  string start_;$/;"	m	class:ListParameter
+start	utils/oldParaReader.h	/^  const string& start() const { return start_; }$/;"	f	class:ListParameter
+start	utils/oldParaReader.h	/^  string& start() { return start_; }$/;"	f	class:ListParameter
+start_	utils/oldParaReader.h	/^  string start_;$/;"	m	class:ListParameter
+start_key	utils/ParaReader.h	/^  const string& start_key() const { return start_key_; }$/;"	f	class:CppUtils::ParameterBase
+start_key	utils/ParaReader.h	/^  string& start_key() { return start_key_; }$/;"	f	class:CppUtils::ParameterBase
+start_key_	utils/ParaReader.h	/^  string start_key_;$/;"	m	class:CppUtils::ParameterBase
 start_time_	app/exprtk.h	/^         LARGE_INTEGER start_time_;$/;"	m	class:exprtk::timer
 start_time_	app/exprtk.h	/^         struct timeval start_time_;$/;"	m	class:exprtk::timer	typeref:struct:exprtk::timer::timeval
 state_	app/exprtk.h	/^            bool state_;$/;"	m	class:exprtk::lexer::helper::bracket_checker
@@ -4634,7 +4763,8 @@ string_t	app/exprtk.h	/^      typedef typename generic_type::string_view    stri
 string_t	app/exprtk.h	/^      typedef typename generic_type::string_view    string_t;$/;"	t	class:exprtk::rtl::vecops::sort
 string_to_real	app/exprtk.h	/^      inline bool string_to_real(Iterator& itr_external, const Iterator end, T& t, numeric::details::real_type_tag)$/;"	f	namespace:exprtk::details
 string_to_real	app/exprtk.h	/^      inline bool string_to_real(const std::string& s, T& t)$/;"	f	namespace:exprtk::details
-string_to_single_value	app/ParaReader.h	/^  T string_to_single_value (const string &str)$/;"	f	class:ParaReader
+string_to_single_value	utils/ParaReader.h	/^  T string_to_single_value (const string &str)$/;"	f	class:CppUtils::ParaReader
+string_to_single_value	utils/oldParaReader.h	/^  T string_to_single_value (const string &str)$/;"	f	class:ParaReader
 string_to_type_converter_impl_ref	app/exprtk.h	/^      inline bool string_to_type_converter_impl_ref(Iterator& itr, const Iterator end, T& result)$/;"	f	namespace:exprtk::details
 string_varnode_	app/exprtk.h	/^      stringvar_node_t* string_varnode_;$/;"	m	class:exprtk::stringvar_base
 string_view	app/exprtk.h	/^      typedef type_view<char> string_view;$/;"	t	struct:exprtk::type_store
@@ -4657,6 +4787,8 @@ stringvar_t	app/exprtk.h	/^      typedef typename details::stringvar_node<T> str
 strvar_node_ptr	app/exprtk.h	/^         typedef stringvar_node   <T>* strvar_node_ptr;$/;"	t	class:exprtk::details::exprtk_final
 strvar_node_ptr	app/exprtk.h	/^         typedef stringvar_node  <T>* strvar_node_ptr;$/;"	t	class:exprtk::details::exprtk_final
 sub_op	app/exprtk.h	/^      struct sub_op : public opr_base<T>$/;"	s	namespace:exprtk::details
+sub_vertex	algorithm/Edge.h	/^  Vertex* sub_vertex() const { return sub_vertex_; }$/;"	f	class:TQMesh::TQAlgorithm::Edge
+sub_vertex	algorithm/Edge.h	/^  void sub_vertex(Vertex* v) { sub_vertex_ = v; }$/;"	f	class:TQMesh::TQAlgorithm::Edge
 substr	app/exprtk.h	/^         inline std::string substr(const std::size_t& begin, const std::size_t& end)$/;"	f	class:exprtk::lexer::generator
 sumk	app/exprtk.h	/^      sumk()$/;"	f	class:exprtk::rtl::vecops::sumk
 sumk	app/exprtk.h	/^   class sumk : public exprtk::igeneric_function<T>$/;"	c	namespace:exprtk::rtl::vecops
@@ -5011,6 +5143,7 @@ unary_opr_switch_statements	app/exprtk.h	35975;"	d
 unary_optimisable	app/exprtk.h	/^         inline bool unary_optimisable(const details::operator_type& operation) const$/;"	f	class:exprtk::parser::expression_generator
 unary_variable_node	app/exprtk.h	/^         explicit unary_variable_node(const T& var)$/;"	f	class:exprtk::details::exprtk_final
 unary_vector_node	app/exprtk.h	/^         unary_vector_node(const operator_type& opr, expression_ptr branch0)$/;"	f	class:exprtk::details::exprtk_final
+unfix_vertices	algorithm/Smoother.h	/^  void unfix_vertices(Mesh& mesh) $/;"	f	class:TQMesh::TQAlgorithm::Smoother
 unit_vector	utils/Vec2.h	/^inline Vec2<T> unit_vector(const Vec2<T>& u)$/;"	f	namespace:TQMesh::TQUtils
 unknown_symbol_resolver	app/exprtk.h	/^         unknown_symbol_resolver(const usr_mode m = e_usrmode_default)$/;"	f	struct:exprtk::parser::unknown_symbol_resolver
 unknown_symbol_resolver	app/exprtk.h	/^      struct unknown_symbol_resolver$/;"	s	class:exprtk::parser
@@ -5023,6 +5156,7 @@ update	app/exprtk.h	/^         inline void update(const T& v0, const T& v1, cons
 update	app/exprtk.h	/^         inline void update(const T& v0, const T& v1, const T& v2, const T& v3)$/;"	f	struct:exprtk::function_compositor::base_func
 update	app/exprtk.h	/^         inline void update(const T& v0, const T& v1, const T& v2, const T& v3, const T& v4)$/;"	f	struct:exprtk::function_compositor::base_func
 update	app/exprtk.h	/^         inline void update(const T& v0, const T& v1, const T& v2, const T& v3, const T& v4, const T& v5)$/;"	f	struct:exprtk::function_compositor::base_func
+update	utils/ProgressBar.h	/^  void update(int prog) $/;"	f	class:TQMesh::TQUtils::ProgressBar
 update_error	app/exprtk.h	/^      inline bool update_error(type& error, const std::string& expression)$/;"	f	namespace:exprtk::parser_error
 update_front	algorithm/Mesh.h	/^  void update_front( Edge& base, Vertex& v_new, Triangle& t_new )$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 upper_bound	app/exprtk.h	/^            int upper_bound;$/;"	m	struct:exprtk::details::loop_unroll::details
@@ -5084,11 +5218,6 @@ valid_string_operation	app/exprtk.h	/^         inline bool valid_string_operatio
 valid_symbol	app/exprtk.h	/^         inline bool valid_symbol(const std::string& symbol) const$/;"	f	struct:exprtk::parser::symtab_store
 valid_symbol	app/exprtk.h	/^      inline bool valid_symbol(const std::string& symbol, const bool check_reserved_symb = true) const$/;"	f	class:exprtk::symbol_table
 valid_vararg_operation	app/exprtk.h	/^      inline bool valid_vararg_operation(const std::string& symbol) const$/;"	f	class:exprtk::parser
-value	app/ParaReader.h	/^  T& value() { return value_; }$/;"	f	class:ScalarParameter
-value	app/ParaReader.h	/^  T& value(size_t i) { return values_[i]; }$/;"	f	class:ListParameter
-value	app/ParaReader.h	/^  const T& value() const { return value_; }$/;"	f	class:ScalarParameter
-value	app/ParaReader.h	/^  const T& value(size_t i) const { return values_[i]; }$/;"	f	class:ListParameter
-value	app/ParaReader.h	/^  void value(T val) { value_ = val; };$/;"	f	class:ScalarParameter
 value	app/exprtk.h	/^         T value;$/;"	m	class:exprtk::details::break_exception
 value	app/exprtk.h	/^         inline virtual T value() const$/;"	f	class:exprtk::details::expression_node
 value	app/exprtk.h	/^         inline virtual T value(expression_t& e)$/;"	f	struct:exprtk::function_compositor::base_func
@@ -5098,12 +5227,17 @@ value	app/exprtk.h	/^      inline T value(const T& t)$/;"	f	namespace:exprtk::de
 value	app/exprtk.h	/^      inline T value(const T* t)$/;"	f	namespace:exprtk::details
 value	app/exprtk.h	/^      inline T value(details::expression_node<T>* n)$/;"	f	namespace:exprtk::details
 value	app/exprtk.h	/^      inline T value(std::pair<details::expression_node<T>*,bool> n)$/;"	f	namespace:exprtk::details
-value_	app/ParaReader.h	/^  T value_;$/;"	m	class:ScalarParameter
+value	utils/oldParaReader.h	/^  T& value() { return value_; }$/;"	f	class:ScalarParameter
+value	utils/oldParaReader.h	/^  T& value(size_t i) { return values_[i]; }$/;"	f	class:ListParameter
+value	utils/oldParaReader.h	/^  const T& value() const { return value_; }$/;"	f	class:ScalarParameter
+value	utils/oldParaReader.h	/^  const T& value(size_t i) const { return values_[i]; }$/;"	f	class:ListParameter
+value	utils/oldParaReader.h	/^  void value(T val) { value_ = val; };$/;"	f	class:ScalarParameter
 value_	app/exprtk.h	/^         T* value_;$/;"	m	class:exprtk::details::exprtk_final
 value_	app/exprtk.h	/^         const T value_;$/;"	m	class:exprtk::details::exprtk_final
 value_	app/exprtk.h	/^         const std::string value_;$/;"	m	class:exprtk::details::exprtk_final
 value_	app/exprtk.h	/^         mutable std::string value_;$/;"	m	class:exprtk::details::exprtk_final
 value_	app/exprtk.h	/^         std::string* value_;$/;"	m	class:exprtk::details::exprtk_final
+value_	utils/oldParaReader.h	/^  T value_;$/;"	m	class:ScalarParameter
 value_at	app/exprtk.h	/^            value_ptr value_at(const std::size_t& index) const$/;"	f	class:exprtk::details::vector_holder::array_vector_impl
 value_at	app/exprtk.h	/^            value_ptr value_at(const std::size_t& index) const$/;"	f	class:exprtk::details::vector_holder::sequence_vector_impl
 value_at	app/exprtk.h	/^            value_ptr value_at(const std::size_t& index) const$/;"	f	class:exprtk::details::vector_holder::vector_view_impl
@@ -5114,8 +5248,10 @@ value_t	app/exprtk.h	/^         typedef ViewType      value_t;$/;"	t	struct:expr
 value_type	app/exprtk.h	/^         typedef T value_type;$/;"	t	class:exprtk::details::expression_node
 value_type	app/exprtk.h	/^         typedef T value_type;$/;"	t	class:exprtk::details::exprtk_final
 value_type	app/exprtk.h	/^         typedef Type value_type;$/;"	t	class:exprtk::details::vector_holder
-values	app/ParaReader.h	/^  void values(std::vector<T> v) { values_ = std::move(v); }$/;"	f	class:ListParameter
-values_	app/ParaReader.h	/^  std::vector<T> values_;$/;"	m	class:ListParameter
+values	utils/oldParaReader.h	/^  void values(std::vector<T> v) { values_ = std::move(v); }$/;"	f	class:ListParameter
+values_	utils/ParaReader.h	/^    , values_(n,T{})$/;"	f	class:CppUtils::Parameter
+values_	utils/ParaReader.h	/^  std::vector<T> values_;$/;"	m	class:CppUtils::Parameter
+values_	utils/oldParaReader.h	/^  std::vector<T> values_;$/;"	m	class:ListParameter
 var	app/exprtk.h	/^         inline function& var(const std::string& v)$/;"	f	struct:exprtk::function_compositor::function
 var0_	app/exprtk.h	/^         ivariable_ptr var0_;$/;"	m	class:exprtk::details::exprtk_final
 var0_	app/exprtk.h	/^         variable_node_ptr var0_;$/;"	m	class:exprtk::details::exprtk_final
@@ -5288,12 +5424,15 @@ vertex	algorithm/Quad.h	/^  const Vertex& vertex(size_t i) const { return *v_[i]
 vertex	algorithm/Triangle.h	/^  Vertex& vertex(size_t i) { return *v_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
 vertex	algorithm/Triangle.h	/^  const Vertex& vertex(size_t i) const { return *v_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
 vertex_edge_dist_sqr	utils/geometry.h	/^inline double vertex_edge_dist_sqr(const Vec2<T>& p,$/;"	f	namespace:TQMesh::TQUtils::TQGeom
-vertices	algorithm/Domain.h	/^  Vertices& vertices() { return *verts_; }$/;"	f	class:TQMesh::TQAlgorithm::Domain
-vertices	algorithm/Domain.h	/^  const Vertices& vertices() const { return *verts_; }$/;"	f	class:TQMesh::TQAlgorithm::Domain
-vertices	algorithm/Mesh.h	/^  Vertices& vertices() { return *verts_; }$/;"	f	class:TQMesh::TQAlgorithm::Mesh
-vertices	algorithm/Mesh.h	/^  const Vertices& vertices() const { return *verts_; }$/;"	f	class:TQMesh::TQAlgorithm::Mesh
+vertices	algorithm/Domain.h	/^  Vertices& vertices() { return verts_; }$/;"	f	class:TQMesh::TQAlgorithm::Domain
+vertices	algorithm/Domain.h	/^  const Vertices& vertices() const { return verts_; }$/;"	f	class:TQMesh::TQAlgorithm::Domain
+vertices	algorithm/Mesh.h	/^  Vertices& vertices() { return verts_; }$/;"	f	class:TQMesh::TQAlgorithm::Mesh
+vertices	algorithm/Mesh.h	/^  const Vertices& vertices() const { return verts_; }$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 vertices	algorithm/Vertex.h	/^  VertexVector& vertices() { return verts_; }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
 vertices	algorithm/Vertex.h	/^  const VertexVector& vertices() const { return verts_; }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
+vertices	app/unused.c	/^  Vertices& vertices = domain.vertices();$/;"	v
+verts_	algorithm/Domain.h	/^  Vertices         verts_;$/;"	m	class:TQMesh::TQAlgorithm::Domain
+verts_	algorithm/Mesh.h	/^  Vertices   verts_;$/;"	m	class:TQMesh::TQAlgorithm::Mesh
 violation	app/exprtk.h	/^         violation_type violation;$/;"	m	struct:exprtk::loop_runtime_check::violation_context
 violation_context	app/exprtk.h	/^      struct violation_context$/;"	s	struct:exprtk::loop_runtime_check
 violation_type	app/exprtk.h	/^      enum violation_type$/;"	g	struct:exprtk::loop_runtime_check
@@ -5326,7 +5465,8 @@ waste	utils/Container.h	/^  const List& waste() const { return waste_; }$/;"	f	c
 waste_	utils/Container.h	/^  List            waste_;$/;"	m	class:TQMesh::TQUtils::Container
 wc_imatch	app/exprtk.h	/^      inline bool wc_imatch(const std::string& wild_card,$/;"	f	namespace:exprtk::details
 wc_match	app/exprtk.h	/^      inline bool wc_match(const std::string& wild_card,$/;"	f	namespace:exprtk::details
-what	app/ParaReader.h	/^    string& what() { return error_message; }$/;"	f	class:ParaReader::Invalid
+what	utils/ParaReader.h	/^    string& what() { return error_message; }$/;"	f	class:CppUtils::ParaReader::Invalid
+what	utils/oldParaReader.h	/^    string& what() { return error_message; }$/;"	f	class:ParaReader::Invalid
 while_loop	app/exprtk.h	/^         inline expression_node_ptr while_loop(expression_node_ptr& condition,$/;"	f	class:exprtk::parser::expression_generator
 while_loop_bc_node	app/exprtk.h	/^         while_loop_bc_node(expression_ptr condition,$/;"	f	class:exprtk::details::while_loop_bc_node
 while_loop_bc_node	app/exprtk.h	/^      class while_loop_bc_node : public while_loop_node<T>$/;"	c	namespace:exprtk::details
@@ -5338,6 +5478,7 @@ while_loop_node	app/exprtk.h	/^      class while_loop_node : public expression_n
 while_loop_node_t	app/exprtk.h	/^      typedef details::while_loop_node<T>                 while_loop_node_t;$/;"	t	class:exprtk::parser
 while_loop_rtc_node	app/exprtk.h	/^         while_loop_rtc_node(expression_ptr condition,$/;"	f	class:exprtk::details::exprtk_final
 while_loop_rtc_node_t	app/exprtk.h	/^      typedef details::while_loop_rtc_node<T>             while_loop_rtc_node_t;$/;"	t	class:exprtk::parser
+width_	utils/ProgressBar.h	/^  int   width_;$/;"	m	class:TQMesh::TQUtils::ProgressBar
 write	app/exprtk.h	/^         bool write(const View& view, const std::size_t amount, const std::size_t offset = 0)$/;"	f	struct:exprtk::rtl::io::file::details::file_descriptor
 write	app/exprtk.h	/^      write()$/;"	f	class:exprtk::rtl::io::file::write
 write	app/exprtk.h	/^   class write : public exprtk::igeneric_function<T>$/;"	c	namespace:exprtk::rtl::io::file

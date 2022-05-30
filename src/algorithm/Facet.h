@@ -8,9 +8,9 @@
 #pragma once
 
 #include "Vec2.h"
-#include "utils.h"
-#include "geometry.h"
+#include "Geometry.h"
 #include "Container.h"
+#include "utils.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {

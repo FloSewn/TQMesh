@@ -9,10 +9,10 @@
 
 #include "run_tests.h"
 
-#include "utils.h"
 #include "Vec2.h"
 #include "Timer.h"
 #include "Vertex.h"
+#include "utils.h"
 
 /*********************************************************************
 * 

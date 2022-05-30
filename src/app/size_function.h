@@ -11,7 +11,7 @@
 #include "Vec2.h"
 #include "Domain.h"
 
-using namespace TQMesh::TQUtils;
+using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /********************************************************************

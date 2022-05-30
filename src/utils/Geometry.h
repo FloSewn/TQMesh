@@ -1,5 +1,5 @@
 /*
-* This source file is part of the tqmesh library.  
+* This file is part of the CppUtils library.  
 * This code was written by Florian Setzwein in 2022, 
 * and is covered under the MIT License
 * Refer to the accompanying documentation for details
@@ -7,12 +7,10 @@
 */
 #pragma once
 
+#include "MathUtility.h"
 #include "Vec2.h"
-#include "utils.h"
 
-namespace TQMesh {
-namespace TQUtils {
-namespace TQGeom {
+namespace CppUtils {
 
 /*--------------------------------------------------------------------
 | Geometrical orientation
@@ -46,7 +44,7 @@ static inline Orientation orientation(const Vec2<T>& p,
   T area2 = (p.x-r.x) * (q.y-r.y)
           - (q.x-r.x) * (p.y-r.y);
   
-  if ( ( area2*area2 ) < TQ_SMALL )
+  if ( ( area2*area2 ) < CPPUTILS_SMALL )
     return Orientation::CL;
 
   if ( area2 > 0)
@@ -443,6 +441,4 @@ inline double vertex_edge_dist_sqr(const Vec2<T>& p,
   return (p - proj_p).length_squared();
 }
 
-} // namespace TQGeom
-} // namespace TQUtils
-} // namespace TQMesh
+} // namespace CppUtils

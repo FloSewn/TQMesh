@@ -1,5 +1,5 @@
 /*
-* This source file is part of the tqmesh library.  
+* This file is part of the CppUtils library.  
 * This code was written by Florian Setzwein in 2022, 
 * and is covered under the MIT License
 * Refer to the accompanying documentation for details
@@ -14,8 +14,7 @@
 #include <stdexcept>
 #include <float.h>
 
-namespace TQMesh {
-namespace TQUtils {
+namespace CppUtils {
 
 namespace Vec2Def
 {
@@ -225,5 +224,4 @@ using Vec2d = Vec2<double>;
 using Vec2f = Vec2<float>;
 
 
-} // namespace TQUtils
-} // namespace TQMesh
+} // namespace CppUtils

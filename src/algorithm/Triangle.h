@@ -12,9 +12,9 @@
 #include <array>
 
 #include "Vec2.h"
-#include "utils.h"
-#include "geometry.h"
+#include "Geometry.h"
 
+#include "utils.h"
 #include "Vertex.h"
 #include "Facet.h"
 
@@ -24,7 +24,7 @@
 namespace TQMesh {
 namespace TQAlgorithm {
 
-using namespace TQUtils;
+using namespace CppUtils;
 
 /*********************************************************************
 * A simple triangle - Must be defined CCW
@@ -249,7 +249,7 @@ public:
     if (  v == *v_[0] || v == *v_[1] || v == *v_[2] )
       return false;
 
-    return TQGeom::in_on_triangle(v.xy(), 
+    return in_on_triangle(v.xy(), 
         v_[0]->xy(), v_[1]->xy(), v_[2]->xy());
 
   } // Triangle::intersects_vertex() 
@@ -296,12 +296,12 @@ public:
       const Vec2d& c2 = this->xy();
 
       // Check for triangle edge intersection
-      if ( TQGeom::tri_tri_intersection( p1,q1,r1, p2,q2,r2 ) )
+      if ( tri_tri_intersection( p1,q1,r1, p2,q2,r2 ) )
         return true;
 
       // Check if one triangle contains the other
-      if (  TQGeom::in_triangle( c1, p2,q2,r2 ) 
-         || TQGeom::in_triangle( c2, p1,q1,r1 ) )
+      if (  in_triangle( c1, p2,q2,r2 ) 
+         || in_triangle( c2, p1,q1,r1 ) )
         return true;
     }
 
@@ -333,7 +333,7 @@ public:
       const Vec2d& q2 = v_[1]->xy();
       const Vec2d& r2 = v_[2]->xy();
 
-      if ( TQGeom::tri_quad_intersection( p2,q2,r2, p1,q1,r1,s1 ) )
+      if ( tri_quad_intersection( p2,q2,r2, p1,q1,r1,s1 ) )
         return true;
     }
 
@@ -359,7 +359,7 @@ public:
       const Vec2d& t2   = v_[1]->xy();
       const Vec2d& t3   = v_[2]->xy();
 
-      if ( TQGeom::line_tri_intersection( e1,e2, t1,t2,t3 ) )
+      if ( line_tri_intersection( e1,e2, t1,t2,t3 ) )
         return true;
     }
 
@@ -386,7 +386,7 @@ public:
 
       const Vec2d& xy   = v->xy();
 
-      if ( TQGeom::in_on_triangle( xy, t1,t2,t3 ) )
+      if ( in_on_triangle( xy, t1,t2,t3 ) )
         return true;
     }
 

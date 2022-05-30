@@ -12,9 +12,9 @@
 #include <array>
 
 #include "Vec2.h"
-#include "utils.h"
-#include "geometry.h"
+#include "Geometry.h"
 
+#include "utils.h"
 #include "Vertex.h"
 #include "Facet.h"
 
@@ -24,7 +24,7 @@
 namespace TQMesh {
 namespace TQAlgorithm {
 
-using namespace TQUtils;
+using namespace CppUtils;
 
 /*********************************************************************
 * A simple quadrilateral - Must be defined CCW
@@ -241,7 +241,7 @@ public:
     if (  v == *v_[0] || v == *v_[1] || v == *v_[2] || v == *v_[3] )
       return false;
 
-    return TQGeom::in_on_quad(v.xy(), 
+    return in_on_quad(v.xy(), 
         v_[0]->xy(), v_[1]->xy(), v_[2]->xy(), v_[3]->xy());
 
   } // Quad::intersects_vertex() 
@@ -283,7 +283,7 @@ public:
       const Vec2d& r2 = v_[2]->xy();
       const Vec2d& s2 = v_[3]->xy();
 
-      if ( TQGeom::tri_quad_intersection( p1,q1,r1, p2,q2,r2,s2 ) )
+      if ( tri_quad_intersection( p1,q1,r1, p2,q2,r2,s2 ) )
         return true;
     }
 
@@ -316,7 +316,7 @@ public:
       const Vec2d& r2 = v_[2]->xy();
       const Vec2d& s2 = v_[2]->xy();
 
-      if ( TQGeom::quad_quad_intersection( p2,q2,r2,s2, p1,q1,r1,s1 ) )
+      if ( quad_quad_intersection( p2,q2,r2,s2, p1,q1,r1,s1 ) )
         return true;
     }
 
@@ -350,10 +350,10 @@ public:
       if ( v == *v_[0] || v == *v_[1] || v == *v_[2] || v == *v_[3] )
         continue;
 
-      if (TQGeom::vertex_edge_dist_sqr(v_xy, q1,q2) < min_dist_sqr ||
-          TQGeom::vertex_edge_dist_sqr(v_xy, q2,q3) < min_dist_sqr ||
-          TQGeom::vertex_edge_dist_sqr(v_xy, q3,q4) < min_dist_sqr ||
-          TQGeom::vertex_edge_dist_sqr(v_xy, q4,q1) < min_dist_sqr  )
+      if (vertex_edge_dist_sqr(v_xy, q1,q2) < min_dist_sqr ||
+          vertex_edge_dist_sqr(v_xy, q2,q3) < min_dist_sqr ||
+          vertex_edge_dist_sqr(v_xy, q3,q4) < min_dist_sqr ||
+          vertex_edge_dist_sqr(v_xy, q4,q1) < min_dist_sqr  )
         return true;
     }
 

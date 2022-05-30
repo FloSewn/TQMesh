@@ -24,7 +24,7 @@
 namespace TQMesh {
 namespace TQAlgorithm {
 
-using namespace TQUtils;
+using namespace CppUtils;
 
 /*********************************************************************
 * The mesh 
@@ -45,9 +45,9 @@ public:
   | Constructor
   ------------------------------------------------------------------*/
   Mesh(Domain&   domain,
-       double    qtree_scale=TQ_QTREE_SCALE,
-       size_t    qtree_items=TQ_QTREE_ITEMS, 
-       size_t    qtree_depth=TQ_QTREE_DEPTH,
+       double    qtree_scale=ContainerQuadTreeScale,
+       size_t    qtree_items=ContainerQuadTreeItems, 
+       size_t    qtree_depth=ContainerQuadTreeDepth,
        bool      init_structure=true)
   : domain_ { &domain }
   , verts_  { qtree_scale, qtree_items, qtree_depth }
@@ -571,8 +571,8 @@ public:
 
     if ( height > 0 )
     {
-      r1 = TQ_QUAD_RANGE_FACTOR * height;
-      r2 = TQ_QUAD_RANGE_FACTOR * height;
+      r1 = TQMeshQuadRangeFactor * height;
+      r2 = TQMeshQuadRangeFactor * height;
     }
 
     // ****** Create first triangle *******
@@ -692,7 +692,7 @@ public:
 
     // Find all vertices in the vicinity of the current base edge
     VertexVector vertex_candidates 
-      = find_local_vertices(v_xy, TQ_RANGE_FACTOR * r, wide_search);
+      = find_local_vertices(v_xy, TQMeshRangeFactor * r, wide_search);
 
     // Create potential triangles with all found vertices
     TriVector new_triangles {};
@@ -884,7 +884,7 @@ private:
                                    bool wide_search=false )
   {
     if (wide_search)
-      dist *= TQ_WIDE_SEARCH_FACTOR;
+      dist *= TQMeshWideSearchFactor;
 
     // Get vertices in vicinity of xy  
     VertexVector vertex_candidates = verts_.get_items(xy, dist);
@@ -919,8 +919,8 @@ private:
         continue;
 
       // Skip vertices that are colinear to the current base edge
-      if ( TQGeom::orientation( base.v1().xy(), base.v2().xy(), v->xy() )
-          == TQGeom::Orientation::CL )
+      if ( orientation( base.v1().xy(), base.v2().xy(), v->xy() )
+          == Orientation::CL )
         continue;
 
       // Create new potential triangle 
@@ -1257,7 +1257,7 @@ private:
       f2->neighbor( idx2, f1 );
 
       // Setup connectivity between internal edge and facets
-      if ( TQGeom::is_left( v1.xy(), v2.xy(), f1->xy() ) )
+      if ( is_left( v1.xy(), v2.xy(), f1->xy() ) )
       {
         e_ptr->facet_l( f1 );
         e_ptr->facet_r( f2 );
@@ -1286,7 +1286,7 @@ private:
       }
 
       // Setup connectivity between internal edge and facets
-      if ( TQGeom::is_left( v1.xy(), v2.xy(), f1->xy() ) )
+      if ( is_left( v1.xy(), v2.xy(), f1->xy() ) )
         e_ptr->facet_l( f1 );
 
     }
@@ -1681,7 +1681,7 @@ private:
 
       Edge *e_next = e_start->get_next_edge();
 
-      if ( e_next && ang <= TQ_QUAD_LAYER_ANGLE )
+      if ( e_next && ang <= TQMeshQuadLayerAngle )
       {
         e_end = e_start;
         e_start = e_next; 
@@ -1768,7 +1768,7 @@ private:
     {
       // Search radius for vertices in the vicinity of the 
       // projected coordinates
-      const double r = TQ_QUAD_LAYER_RANGE * heights[i];
+      const double r = TQMeshQuadLayerRange * heights[i];
 
       // Create first triangle (b1,b2,p1)
       Edge* base = bases[i];
@@ -1911,7 +1911,7 @@ private:
       const double alpha = angle(l1,l2);
 
       // Don't add a new vertex and instead only connect (a,b,c)
-      if ( alpha <= TQ_QUAD_LAYER_ANGLE )
+      if ( alpha <= TQMeshQuadLayerAngle )
       {
         Triangle* t_new = &( tris_.push_back(a, b, c) );
 
@@ -2006,9 +2006,9 @@ private:
       const double l = 0.5 * ( e_cur->length() + e_next->length() );
       const double h = MIN( l, height );
 
-      if (   !( TQGeom::is_lefton(p1.xy(), p2.xy(), c.xy()) ) 
+      if (   !( is_lefton(p1.xy(), p2.xy(), c.xy()) ) 
           && delta <= 4.0 * h  
-          && alpha <= TQ_QUAD_LAYER_ANGLE )
+          && alpha <= TQMeshQuadLayerAngle )
       {
         Edge* e_buf = e_next->get_next_edge();
 
@@ -2145,8 +2145,8 @@ private:
   Quads      quads_;
   Front      front_;
 
-  EdgeList   intr_edges_ { TQGeom::Orientation::NONE };
-  EdgeList   bdry_edges_ { TQGeom::Orientation::NONE };
+  EdgeList   intr_edges_ { Orientation::NONE };
+  EdgeList   bdry_edges_ { Orientation::NONE };
 
   double     mesh_area_ { 0.0 };
 

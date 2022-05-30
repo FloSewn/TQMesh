@@ -12,14 +12,14 @@
 #include "Container.h"
 #include "utils.h"
 #include "Vec2.h"
-#include "geometry.h"
+#include "Geometry.h"
 
 #include "Edge.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
 
-using namespace TQUtils;
+using namespace CppUtils;
 
 /*********************************************************************
 * This class represents a directed list of edges
@@ -42,9 +42,9 @@ public:
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  EdgeList( TQGeom::Orientation orient ) : orient_ { orient }
+  EdgeList( Orientation orient ) : orient_ { orient }
   {
-    ASSERT( ( orient != TQGeom::Orientation::CL ),
+    ASSERT( ( orient != Orientation::CL ),
         "Invalid edge list orientation.");
   }
 
@@ -79,8 +79,8 @@ public:
   ------------------------------------------------------------------*/
   size_t size() const { return edges_.size(); }
   double area() const { return area_; }
-  bool is_ccw() const { return (orient_ == TQGeom::Orientation::CCW); }
-  TQGeom::Orientation orient() const { return orient_; }
+  bool is_ccw() const { return (orient_ == Orientation::CCW); }
+  Orientation orient() const { return orient_; }
 
   const auto& edges() const { return edges_; }
   auto& edges() { return edges_; }
@@ -98,10 +98,10 @@ public:
   | Boundary edges are assumed to be defined with a marker > 0
   ------------------------------------------------------------------*/
   virtual Edge& insert_edge(const_iterator pos, Vertex& v1, Vertex& v2, 
-                            int marker=TQ_INTR_EDGE_MARKER)
+                            int marker=TQMeshInteriorEdgeMarker)
   {
     Edge& e = edges_.insert(pos, v1, v2, *this, marker);
-    if ( orient_ != TQGeom::Orientation::NONE )
+    if ( orient_ != Orientation::NONE )
       compute_area();
     
     // Mark the added objects somehow
@@ -123,9 +123,9 @@ public:
   |   connected to more than two edges of this list type
   ------------------------------------------------------------------*/
   virtual Edge& add_edge(Vertex& v1, Vertex& v2, 
-                         int marker=TQ_INTR_EDGE_MARKER)
+                         int marker=TQMeshInteriorEdgeMarker)
   { 
-    if ( orient_ == TQGeom::Orientation::NONE || edges_.size() < 1 )
+    if ( orient_ == Orientation::NONE || edges_.size() < 1 )
       return insert_edge( edges_.end(), v1, v2, marker ); 
 
     // Check that the new edge is connected to the last edge
@@ -236,7 +236,7 @@ public:
 
       // Object on edge
       if ( EQ( obj.y, v2.y ) && EQ( obj.y, v1.y ) )
-        if ( TQGeom::in_on_segment(v1, v2, obj) )
+        if ( in_on_segment(v1, v2, obj) )
           return true;
 
       // Crossing lines
@@ -405,7 +405,7 @@ protected:
   ------------------------------------------------------------------*/
   bool check_orientation()
   {
-    if ( orient_ == TQGeom::Orientation::NONE )
+    if ( orient_ == Orientation::NONE )
       return true;
 
     if (edges_.size() < 2)
@@ -428,10 +428,10 @@ protected:
                      ? e2->v1().xy() 
                      : e2->v2().xy();
 
-      auto ori = TQGeom::orientation( p, q, r );
+      auto ori = orientation( p, q, r );
 
       // Allow colinear edges
-      return ( ori == orient_ || ori == TQGeom::Orientation::CL );
+      return ( ori == orient_ || ori == Orientation::CL );
     }
     else
     {
@@ -451,7 +451,7 @@ protected:
   /*------------------------------------------------------------------
   | EdgeList attributes
   ------------------------------------------------------------------*/
-  TQGeom::Orientation orient_;
+  Orientation         orient_;
   Container<Edge>     edges_ {};
   double              area_  {0.0};
 

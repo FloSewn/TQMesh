@@ -9,11 +9,11 @@
 
 #include "run_tests.h"
 
-#include "utils.h"
 #include "Vec2.h"
 #include "Timer.h"
 #include "Container.h"
 
+#include "utils.h"
 #include "Vertex.h"
 #include "Edge.h"
 #include "EdgeList.h"
@@ -22,7 +22,7 @@
 namespace EdgeListTests
 {
 
-using namespace TQMesh::TQUtils;
+using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 
@@ -46,7 +46,7 @@ void Test_EdgeList_add_remove()
   Vertex& v5 = vertices.push_back( 2.0, 2.0 );
   Vertex& v6 = vertices.push_back( 1.0, 2.0 );
 
-  EdgeList edges{ TQGeom::Orientation::CCW };
+  EdgeList edges{ Orientation::CCW };
 
   Edge& e1 = edges.add_edge(v1,v2,1);
   Edge& e2 = edges.add_edge(v2,v3,1);
@@ -116,7 +116,7 @@ void Test_EdgeList_is_inside()
   Vertex& v5 = vertices.push_back( 2.0, 2.0 );
   Vertex& v6 = vertices.push_back( 1.0, 2.0 );
 
-  EdgeList edges{ TQGeom::Orientation::CCW };
+  EdgeList edges{ Orientation::CCW };
 
   Edge& e1 = edges.add_edge(v1,v2,1);
   Edge& e2 = edges.add_edge(v2,v3,1);
@@ -167,7 +167,7 @@ void Test_EdgeList_split_edge()
   Vertex& v5 = vertices.push_back( 2.0, 2.0 );
   Vertex& v6 = vertices.push_back( 1.0, 2.0 );
 
-  EdgeList edges{ TQGeom::Orientation::CCW };
+  EdgeList edges{ Orientation::CCW };
 
   Edge& e1 = edges.add_edge(v1,v2,1);
   Edge& e2 = edges.add_edge(v2,v3,1);

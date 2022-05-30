@@ -19,7 +19,7 @@
 namespace TQMesh {
 namespace TQAlgorithm {
 
-using namespace TQUtils;
+using namespace CppUtils;
 
 /*********************************************************************
 * A size function definition by the user
@@ -50,11 +50,11 @@ public:
   | Constructor
   ------------------------------------------------------------------*/
   Domain( UserSizeFunction f = [](const Vec2d& p){return 1.0;},
-          double qtree_scale = TQ_QTREE_SCALE,
-          size_t qtree_items = TQ_QTREE_ITEMS, 
-          size_t qtree_depth = TQ_QTREE_DEPTH,
-          double min_size    = TQ_DOMAIN_MIN_ELEMSIZE,
-          double min_scaling = TQ_DOMAIN_MIN_SCALING )
+          double qtree_scale = ContainerQuadTreeScale,
+          size_t qtree_items = ContainerQuadTreeItems, 
+          size_t qtree_depth = ContainerQuadTreeDepth,
+          double min_size    = TQMeshMinimumElementSize,
+          double min_scaling = TQMeshMinimumElementScaling )
   : f_ { f }
   , verts_ { qtree_scale, qtree_items, qtree_depth }
   , min_size_ { min_size }

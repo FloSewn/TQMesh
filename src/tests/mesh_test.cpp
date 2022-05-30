@@ -22,7 +22,7 @@
 namespace MeshTests
 {
 
-using namespace TQMesh::TQUtils;
+using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
@@ -816,6 +816,16 @@ void Test_Mesh_create_bdry_shape_mesh(bool export_mesh)
 
 
 /*********************************************************************
+* Test: Create meshing with multiple domains
+*********************************************************************/
+void Test_Mesh_multiple_domains(bool export_mesh)
+{
+
+
+} // Test_Mesh_multiple_domains()
+
+
+/*********************************************************************
 * Test: Benchmark the meshing process
 *********************************************************************/
 void Test_Mesh_benchmark(double h, double L, 
@@ -1093,7 +1103,7 @@ void run_mesh_tests(bool benchmark)
   //MeshTests::Test_Mesh_triangulate(false);
   //MeshTests::Test_Mesh_pave(false);
   //MeshTests::Test_Mesh_refine_to_quads(true);
-  //MeshTests::Test_Mesh_advance_front_quad(true);
+  MeshTests::Test_Mesh_advance_front_quad(true);
   //MeshTests::Test_Mesh_add_quad_layer_step(true);
   //MeshTests::Test_Mesh_wedge(true);
   //MeshTests::Test_Mesh_banner(true);
@@ -1101,7 +1111,7 @@ void run_mesh_tests(bool benchmark)
   //MeshTests::Test_Mesh_create_simple_hex_layers(true);
   //MeshTests::Test_Mesh_vortex_shedding(true);
     
-  MeshTests::Test_Mesh_create_bdry_shape_mesh(true);
+  //MeshTests::Test_Mesh_create_bdry_shape_mesh(true);
 
   //MeshTests::Test_Mesh_add_quad_layer(true);
 
