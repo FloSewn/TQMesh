@@ -96,8 +96,8 @@ void Test_Front_initialization(bool export_data)
 
     domain.export_size_function({0.0,0.0}, {5.0,5.0}, 100, 100);
 
-    std::cout << "QTREE-LEAFS " << vertices.qtree().n_leafs() << std::endl;
-    std::cout << vertices.qtree();
+    std::cout << "QTREE-LEAFS " << vertices.quad_tree().n_leafs() << std::endl;
+    std::cout << vertices.quad_tree();
   }
 
   DBG_MSG("Tests for Front initialization succeeded");

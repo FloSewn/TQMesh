@@ -202,14 +202,17 @@ private:
   EdgeList*           edgelist_ { nullptr };
   int                 marker_   { -1 };
 
+  // Edge properties
   Vec2d               xy_          { 0.0, 0.0 };
   double              length_      { 0.0 };
   Vec2d               tang_        { 0.0, 0.0 };
   Vec2d               norm_        { 0.0, 0.0 };
 
+  // Pointer to adjacent facets
   Facet*              face_l_ {nullptr};
   Facet*              face_r_ {nullptr};
 
+  // Sub vertex for quad refinement of the mesh
   Vertex*             sub_vertex_    {nullptr};
 
   // Mandatory container attributes

@@ -72,6 +72,13 @@ public:
   const Vertices& vertices() const { return verts_; }
   Vertices& vertices() { return verts_; }
 
+  const UserSizeFunction& size_function() const { return f_; }
+  UserSizeFunction& size_function() { return f_; }
+
+  double min_size() const { return min_size_; }
+  double min_scaling() const { return min_scaling_; }
+
+
   /*------------------------------------------------------------------
   | Insert any boundary through constructor behind 
   | a specified position

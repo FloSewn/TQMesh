@@ -82,9 +82,9 @@ public:
   | Move constructor
   ------------------------------------------------------------------*/
   Container(Container<T>&& c) 
-  : qtree_ { c.qtree().scale(),
-             c.qtree().max_items(),
-             c.qtree().max_depth() }  
+  : qtree_ { c.quad_tree().scale(),
+             c.quad_tree().max_items(),
+             c.quad_tree().max_depth() }  
   , logger_ { c.logger_ }
   {
     items_ = std::move(c.items_);
@@ -106,7 +106,7 @@ public:
   /*------------------------------------------------------------------
   | Get reference to the  container qtreee
   ------------------------------------------------------------------*/
-  const QuadTree<T,double>& qtree() const { return qtree_; }
+  const QuadTree<T,double>& quad_tree() const { return qtree_; }
 
   /*------------------------------------------------------------------
   | Get all items in a specified rectangle
