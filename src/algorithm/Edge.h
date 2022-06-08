@@ -26,8 +26,23 @@ using namespace CppUtils;
 /*********************************************************************
 * Forward declarations
 *********************************************************************/
+class Edge;
 class Facet;
 class EdgeList;
+
+/*********************************************************************
+* A simple container to store data of boundary edges.
+* * It is primarly used to keep track of mesh edges, that are 
+*   located on a domain's boundary edge.
+* * It also keeps a pointer to a possible twin edge, which is 
+*   used for the merging of two adjacent meshes
+*********************************************************************/
+struct BdryEdgeData
+{
+  std::vector<Edge*> sub_edges;
+  Edge* twin_edge;
+
+}; // BdryEdgeData
 
 /*********************************************************************
 * A simple edge class that is stored in the Container
@@ -77,6 +92,15 @@ public:
   }
 
   /*------------------------------------------------------------------
+  | Initialize the boundary data structure 
+  ------------------------------------------------------------------*/
+  BdryEdgeData* init_bdry_data() 
+  {
+    bdry_data_ = std::make_unique<BdryEdgeData>();
+    return bdry_data_.get();
+  }
+
+  /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
   const Vec2d& xy() const { return xy_; }
@@ -102,6 +126,9 @@ public:
   Facet* facet_r() { return face_r_; }
 
   Vertex* sub_vertex() const { return sub_vertex_; }
+
+  const BdryEdgeData* bdry_data() const { return bdry_data_.get(); }
+  BdryEdgeData* bdry_data() { return bdry_data_.get(); }
 
   /*------------------------------------------------------------------
   | Setters 
@@ -214,6 +241,9 @@ private:
 
   // Sub vertex for quad refinement of the mesh
   Vertex*             sub_vertex_    {nullptr};
+
+  // Boundary data struct used for mesh merging
+  std::unique_ptr<BdryEdgeData> bdry_data_;
 
   // Mandatory container attributes
   ContainerIterator   pos_;

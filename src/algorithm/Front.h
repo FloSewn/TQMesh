@@ -59,7 +59,6 @@ public:
     for ( const auto& v_ptr : domain.vertices() )
       v_ptr->index( v_index++ );
 
-
     // Initialize array with pointers to the mesh vertices
     std::vector<Vertex*> v_ptrs {};
 
@@ -131,6 +130,58 @@ public:
 
     // Refine the front based on the underlying size function
     this->refine(domain, mesh_vertices);
+
+
+
+
+    // Collect all front edges of every domain boundary edge
+    for ( const auto& boundary : domain )
+    {
+      for ( const auto& e : boundary->edges() )
+      {
+        // Add new edge to the boundary edge's data structure
+        BdryEdgeData* bdry_data = e->bdry_data();
+
+        ASSERT( bdry_data != nullptr, 
+            "Error: The BdryEdgeData structure of a domain-edge "
+            "seems not to be properly initialized.");
+
+        // Find all front edges that are located in the vicinity 
+        // of the current domain boundary edge
+        const Vec2d& c = e->xy();
+        double       r = TQMeshEdgeSearchFactor * e->length();
+
+        const Vec2d& v = e->v1().xy();
+        const Vec2d& w = e->v2().xy();
+
+        std::vector<Edge*> found = edges_.get_items(c, r);
+        
+        // Get all edges, that are actually located on the segment
+        // of the current domain boundary edge and add them to
+        // its boundary data structure
+        for ( Edge* e_found : found )
+        {
+          const Vec2d& p = e_found->v1().xy();
+          const Vec2d& q = e_found->v2().xy();
+
+          if ( in_on_segment(v,w,p) && in_on_segment(v,w,q) )
+            bdry_data->sub_edges.push_back( e_found );
+        }
+
+        // Sort all edges in the boundary data structure in 
+        // ascending order to the starting vertex
+        std::sort(bdry_data->sub_edges.begin(), bdry_data->sub_edges.end(), 
+        [v](Edge* e1, Edge* e2)
+        {
+          double delta_1 = (e1->xy() - v).length_squared();
+          double delta_2 = (e2->xy() - v).length_squared();
+          return (delta_1 < delta_2);
+        });
+
+
+      }
+    }
+
 
   } // init_front_edges()
 

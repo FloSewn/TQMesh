@@ -47,18 +47,13 @@ public:
   Mesh(Domain&   domain,
        double    qtree_scale=ContainerQuadTreeScale,
        size_t    qtree_items=ContainerQuadTreeItems, 
-       size_t    qtree_depth=ContainerQuadTreeDepth,
-       bool      init_structure=true)
+       size_t    qtree_depth=ContainerQuadTreeDepth)
   : domain_ { &domain }
   , verts_  { qtree_scale, qtree_items, qtree_depth }
   , tris_   { qtree_scale, qtree_items, qtree_depth }
   , quads_  { qtree_scale, qtree_items, qtree_depth }
   , front_  { }
   {
-    // Return if vertices & front should not be initialized
-    if (!init_structure)
-      return;
-
     // Copy vertices from domain
     for ( const auto& v_ptr : domain.vertices() )
     {
@@ -80,6 +75,81 @@ public:
   } // Mesh::Constructor()
 
   /*------------------------------------------------------------------
+  | Constructor
+  ------------------------------------------------------------------*/
+  Mesh(Domain&   domain,
+       Mesh&     mesh,
+       double    qtree_scale=ContainerQuadTreeScale,
+       size_t    qtree_items=ContainerQuadTreeItems, 
+       size_t    qtree_depth=ContainerQuadTreeDepth)
+  : domain_ { &domain }
+  , verts_  { qtree_scale, qtree_items, qtree_depth }
+  , tris_   { qtree_scale, qtree_items, qtree_depth }
+  , quads_  { qtree_scale, qtree_items, qtree_depth }
+  , front_  { }
+  {
+    // For every boundary edge of the domain, check if it is 
+    // overlapping with a boundary edge of the other mesh's domain
+    // All overlapping edge pairs are stored.
+    std::vector<std::pair<Edge*, Edge*>> overlaps {};
+
+    Domain& nbr_domain = mesh.domain();
+
+    for ( const auto& boundary : domain )
+    {
+      for ( const auto& e : boundary->edges() )
+      {
+        const Vec2d v1 = e->v1().xy();
+        const Vec2d w1 = e->v2().xy();
+
+        // search in vicinity of current edge for edges of the 
+        // neighboring domain. 
+        const Vec2d c  = e->xy();
+        double radius  = TQMeshEdgeSearchFactor * e->length();
+
+        EdgeVector nbr_edges = nbr_domain.get_edges(c, radius);
+
+        for ( Edge* e_nbr : nbr_edges )
+        {
+          const Vec2d v2 = e_nbr->v1().xy();
+          const Vec2d w2 = e_nbr->v2().xy();
+
+          if ( segment_overlap(v1,w1, v2,w2) )
+          {
+            overlaps.push_back( {e.get(), e_nbr} );
+            break;
+          }
+        }
+      }
+    }
+
+
+  } // Mesh::Constructor()
+
+  /*------------------------------------------------------------------
+  | Return mesh entities within a given position and radius
+  ------------------------------------------------------------------*/
+  VertexVector 
+  get_vertices(const Vec2d& center, double radius) const
+  { return std::move( verts_.get_items(center, radius ) ); }
+
+  EdgeVector
+  get_intr_edges(const Vec2d& center, double radius) const
+  { return std::move( intr_edges_.get_edges(center, radius ) ); }
+
+  EdgeVector
+  get_bdry_edges(const Vec2d& center, double radius) const
+  { return std::move( bdry_edges_.get_edges(center, radius ) ); }
+
+  TriVector
+  get_triangles(const Vec2d& center, double radius) const
+  { return std::move( tris_.get_items(center, radius ) ); }
+
+  QuadVector
+  get_quads(const Vec2d& center, double radius) const
+  { return std::move( quads_.get_items(center, radius ) ); }
+
+  /*------------------------------------------------------------------
   | This function takes care of the garbage collection 
   ------------------------------------------------------------------*/
   void clear_waste()
@@ -95,6 +165,11 @@ public:
   /*------------------------------------------------------------------
   | Getter
   ------------------------------------------------------------------*/
+  const Domain& domain() const 
+  { ASSERT(domain_,"Invalid mesh domain"); return *domain_; }
+  Domain& domain() 
+  { ASSERT(domain_,"Invalid mesh domain"); return *domain_; }
+
   const Front& front() const { return front_; }
   Front& front() { return front_; }
 

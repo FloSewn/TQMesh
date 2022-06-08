@@ -441,4 +441,21 @@ inline double vertex_edge_dist_sqr(const Vec2<T>& p,
   return (p - proj_p).length_squared();
 }
 
+/*--------------------------------------------------------------------
+| Check if two segments (which are defined by their ending vertices 
+| (v,w) overlap
+--------------------------------------------------------------------*/
+template <typename T>
+inline bool segment_overlap(const Vec2<T>& v1, const Vec2<T> w1,
+                            const Vec2<T>& v2, const Vec2<T> w2)
+{
+  if ( ( v1 == v2 ) && ( w1 == w2 ) ) 
+    return true;
+
+  if ( ( v1 == w2 ) && ( w1 == v2 ) ) 
+    return true;
+
+  return false;
+}
+
 } // namespace CppUtils

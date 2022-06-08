@@ -75,6 +75,14 @@ public:
   }
 
   /*------------------------------------------------------------------
+  | Return all edges that within a given position and radius
+  ------------------------------------------------------------------*/
+  std::vector<Edge*>
+  get_edges(const Vec2d& center, const double radius) const
+  { return std::move( edges_.get_items(center, radius) ); }
+  
+
+  /*------------------------------------------------------------------
   | Getters
   ------------------------------------------------------------------*/
   size_t size() const { return edges_.size(); }

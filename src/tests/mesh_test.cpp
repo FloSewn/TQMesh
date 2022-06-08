@@ -820,7 +820,136 @@ void Test_Mesh_create_bdry_shape_mesh(bool export_mesh)
 *********************************************************************/
 void Test_Mesh_multiple_domains(bool export_mesh)
 {
+  // Define a variable size function
+  UserSizeFunction f = [](const Vec2d& p) 
+  { 
+    return 0.5; 
+  };
 
+  // First domain = major domain 
+  Domain domain_1 { f, 20.0 };
+
+  Boundary&  b_ext_1 = domain_1.add_exterior_boundary();
+  Boundary&  b_int_1 = domain_1.add_interior_boundary();
+
+  // Build exterior boundary of domain 1
+  Vertex& v1 = domain_1.add_vertex(  0.0,  0.0 );
+  Vertex& v2 = domain_1.add_vertex(  8.0,  0.0 );
+  Vertex& v3 = domain_1.add_vertex(  8.0,  8.0 );
+  Vertex& v4 = domain_1.add_vertex(  0.0,  8.0 );
+
+  Edge& e_ext_1 = b_ext_1.add_edge( v1, v2, 1 );
+
+  ASSERT( e_ext_1.bdry_data() != nullptr,
+      "Boundary::add_edge() failed.");
+
+  b_ext_1.add_edge( v2, v3, 1 );
+  b_ext_1.add_edge( v3, v4, 1 );
+  b_ext_1.add_edge( v4, v1, 1 );
+
+  // Build interior boundary of domain 1
+  // --> This will be the exterior boundary of domain 2
+  Vertex& v5 = domain_1.add_vertex(  2.0,  2.0 );
+  Vertex& v6 = domain_1.add_vertex(  2.0,  6.0 );
+  Vertex& v7 = domain_1.add_vertex(  6.0,  6.0 );
+  Vertex& v8 = domain_1.add_vertex(  6.0,  2.0 );
+
+  b_int_1.add_edge( v5, v6, 2 ); // These markers will not be needed 
+  b_int_1.add_edge( v6, v7, 2 ); // after everything is meshed
+  b_int_1.add_edge( v7, v8, 2 );
+  b_int_1.add_edge( v8, v5, 2 );
+
+  // Create the mesh for domain 1
+  // --> Here the edges of domain 1 are discretized into further 
+  //     segments, according to the size function of domain 1
+  Mesh mesh_1 { domain_1, 50.0 };
+
+  mesh_1.triangulate();
+
+  MSG("NUMBER OF EDGES ON e_ext_1: " << e_ext_1.bdry_data()->sub_edges.size() );
+  //for (Edge* e : e_ext_1.bdry_data()->sub_edges)
+  //  MSG("Edge: " << e->v1() << " -> " << e->v2());
+
+  // ToDo:
+  // --> Every domain edge must know its sub-vertices of the mesh
+  //     as well as the corresponding boundary edges of the mesh
+  // --> This must happen during the advancing front initialization
+  //
+  // --> Structure for every domain edge:
+  //     * vector of pointers to sub-edges
+  //       (both arranged in direction of the edge)
+  //     * Pointer to possible twin edge of another domain
+  //  
+
+
+
+  //=======================================================
+  // Second domain = sub-domain of domain_1
+  // --> domain_1 is given as constructor argument instead 
+  //     of size function
+  // --> it's size function is used
+  // --> the remaining arguments can be given by user
+  //
+  // ToDo: 
+  // --> Everytime an entity gets added, we must check
+  //     in the background, if this entity is a copy
+  //     of an entity in domain_1
+  //     * Vertices: by coordinate
+  //     * Edges: by start & ending vertex coordinate
+  //     -> Use get_item() in case of large domains?
+  //
+  //
+  //Domain domain_2 { domain_1 };
+  //Boundary&  b_ext_2 = domain_2.add_exterior_boundary();
+
+  // Build exterior boundary of domain 2
+  // --> Must somehow handle, that vertex scale properties 
+  //     of Domain 1 and Domain 2 should be the same!
+  //Vertex& v9  = domain_2.add_vertex(  2.0,  2.0 );
+  //Vertex& v10 = domain_2.add_vertex(  2.0,  6.0 );
+  //Vertex& v11 = domain_2.add_vertex(  6.0,  6.0 );
+  //Vertex& v12 = domain_2.add_vertex(  6.0,  2.0 );
+
+  //b_ext_2.add_edge( v1, v4, 2 );
+  //b_ext_2.add_edge( v4, v3, 2 );
+  //b_ext_2.add_edge( v3, v2, 2 );
+  //b_ext_2.add_edge( v2, v1, 2 );
+
+  
+  // Create the mesh for domain 2
+  // --> Here the edges of domain 2 are discretized into further 
+  //     segments, by using the corresponding entities of domain 1
+  //     or by placing new vertices according to its size function
+  //Mesh mesh_2 { domain_2, 50.0 };
+  //mesh_2.triangulate();
+
+
+
+
+  // Merge meshes
+  // --> combine both meshes to one 
+  // --> Boundaries must keep their markers
+  // --> Boundary edges at mesh interfaces must be turned into 
+  //     interior edges
+  // --> In case of entitiy duplicates, use always vertices or 
+  //     edges of the first mesh
+  // --> If vertices,  interior & boundary edges and elements
+  //     are initialized, we can get the full connectivity by 
+  //     the mesh's functions
+  //Mesh mesh_3 { mesh_1, mesh_2 };
+
+
+  // Export the mesh
+  if (export_mesh)
+  {
+    // Make sure that all vertex / element indices are assigned
+    mesh_1.assign_mesh_indices();
+
+    std::cout << mesh_1;
+    //domain.export_size_function({0.0,0.0}, {5.0,5.0}, 100, 100);
+  }
+
+  DBG_MSG("Tests for Mesh::add_quad_layer() succeeded");
 
 } // Test_Mesh_multiple_domains()
 
@@ -1103,7 +1232,7 @@ void run_mesh_tests(bool benchmark)
   //MeshTests::Test_Mesh_triangulate(false);
   //MeshTests::Test_Mesh_pave(false);
   //MeshTests::Test_Mesh_refine_to_quads(true);
-  MeshTests::Test_Mesh_advance_front_quad(true);
+  //MeshTests::Test_Mesh_advance_front_quad(true);
   //MeshTests::Test_Mesh_add_quad_layer_step(true);
   //MeshTests::Test_Mesh_wedge(true);
   //MeshTests::Test_Mesh_banner(true);
@@ -1114,6 +1243,9 @@ void run_mesh_tests(bool benchmark)
   //MeshTests::Test_Mesh_create_bdry_shape_mesh(true);
 
   //MeshTests::Test_Mesh_add_quad_layer(true);
+    
+  MeshTests::Test_Mesh_multiple_domains(true);
+
 
   if ( benchmark )
   {

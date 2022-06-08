@@ -67,6 +67,23 @@ public:
   size_type size() const { return boundaries_.size(); }
 
   /*------------------------------------------------------------------
+  | Get edges within a given point and radius
+  ------------------------------------------------------------------*/
+  std::vector<Edge*> 
+  get_edges (const Vec2d& center, double radius) const 
+  {
+    std::vector<Edge*> found {};
+
+    for ( const auto& boundary : *this )
+    {
+      auto cur_found = boundary->get_edges(center, radius);
+      found.insert(found.end(), cur_found.begin(), cur_found.end());
+    }
+
+    return std::move( found );
+  }
+
+  /*------------------------------------------------------------------
   | Getter
   ------------------------------------------------------------------*/
   const Vertices& vertices() const { return verts_; }

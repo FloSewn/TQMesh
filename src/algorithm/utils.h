@@ -60,5 +60,8 @@ constexpr double TQMeshRangeFactor = 1.0;
 
 constexpr double TQMeshWideSearchFactor = 10.0;
 
+// This value is used to enlarge the search radius for edges
+constexpr double TQMeshEdgeSearchFactor = 1.5;
+
 } // namespace TQAlgorithm
 } // namespace TQMesh 
