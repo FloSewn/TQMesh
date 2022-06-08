@@ -75,7 +75,7 @@ public:
     {
       connectivity.push_back( {} );
 
-      for ( const auto& e : boundary.get()->edges() )
+      for ( const auto& e : boundary->edges() )
       {
         connectivity[i_bdry].push_back( 
             {e->v1().index(), e->v2().index()} 
@@ -94,7 +94,7 @@ public:
     {
       size_t i_edge = 0;
 
-      for ( const auto& e : boundary.get()->edges() )
+      for ( const auto& e : boundary->edges() )
       {
         // Get mesh vertices of current edge
         size_t i1 = connectivity[i_bdry][i_edge].first;
