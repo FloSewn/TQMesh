@@ -88,40 +88,79 @@ public:
   , quads_  { qtree_scale, qtree_items, qtree_depth }
   , front_  { }
   {
-    // For every boundary edge of the domain, check if it is 
-    // overlapping with a boundary edge of the other mesh's domain
-    // All overlapping edge pairs are stored.
-    std::vector<std::pair<Edge*, Edge*>> overlaps {};
-
+    // Check if the mesh that is given as input parameter 
+    // is overlapping with the current domain
     Domain& nbr_domain = mesh.domain();
+
+    size_t n_overlaps = domain_->get_overlaps( nbr_domain );
+    DBG_MSG("MESH INITIALIZATION FROM ANOTHER EXISTING MESH");
+    DBG_MSG("  > NUMBER OF OVERLAPPING DOMAIN BOUNDARY EDGES: " 
+             << n_overlaps);
+
+    if ( n_overlaps < 1 )
+      MSG("WARNING: NEW MESH IS INITIALIZED FROM AN EXISTING MESH, "
+          "BUT THEIR DOMAINS DO NOT SHARE ANY BOUNDARY EDGES.");
+
+    // For every boundary edge of the current mesh's domain,
+    // collect all overlapping boundary edges of the existing mesh 
+    std::vector<std::vector<EdgeVector>> bdry_edge_connectivity {};
+    size_t n_init_edges = 0;
 
     for ( const auto& boundary : domain )
     {
+      std::vector<EdgeVector> cur_bdry_edges {};
+
       for ( const auto& e : boundary->edges() )
       {
-        const Vec2d v1 = e->v1().xy();
-        const Vec2d w1 = e->v2().xy();
+        EdgeVector found_edges {};
 
-        // search in vicinity of current edge for edges of the 
-        // neighboring domain. 
-        const Vec2d c  = e->xy();
-        double radius  = TQMeshEdgeSearchFactor * e->length();
+        const Vec2d& c = e->xy();
+        double       r = TQMeshEdgeSearchFactor * e->length();
 
-        EdgeVector nbr_edges = nbr_domain.get_edges(c, radius);
+        const Vec2d& v = e->v1().xy();
+        const Vec2d& w = e->v2().xy();
 
-        for ( Edge* e_nbr : nbr_edges )
+        // Check boundary edges of neighboring mesh for overlap
+        // with current domain boundary edge
+        EdgeVector found = mesh.get_bdry_edges(c, r);
+
+        // Get all edges, that are actually located on the segment
+        // of the current domain boundary edge 
+        for ( Edge* e_found : found )
         {
-          const Vec2d v2 = e_nbr->v1().xy();
-          const Vec2d w2 = e_nbr->v2().xy();
+          const Vec2d& p = e_found->v1().xy();
+          const Vec2d& q = e_found->v2().xy();
 
-          if ( segment_overlap(v1,w1, v2,w2) )
+          if ( in_on_segment(v,w,p) && in_on_segment(v,w,q) )
           {
-            overlaps.push_back( {e.get(), e_nbr} );
-            break;
+            found_edges.push_back( e_found );
+            ++n_init_edges;
           }
         }
+
+        // Sort all edges in the boundary data structure in 
+        // ascending order to the starting vertex
+        std::sort(found_edges.begin(), found_edges.end(), 
+        [v](Edge* e1, Edge* e2)
+        {
+          double delta_1 = (e1->xy() - v).length_squared();
+          double delta_2 = (e2->xy() - v).length_squared();
+          return (delta_1 < delta_2);
+        });
+
+        /// Connect all found & sorted edges to the current 
+        //  domain boundary edge
+        cur_bdry_edges.push_back( found_edges );
       }
+
+      /// Connect all found & sorted edges to the current 
+      //  domain boundary 
+      bdry_edge_connectivity.push_back( cur_bdry_edges );
     }
+
+    MSG("MESH WILL BE INITIALIZED WITH " << n_init_edges 
+        << " EDGES FROM A NEIGHBORING MESH.");
+
 
 
   } // Mesh::Constructor()

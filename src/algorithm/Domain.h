@@ -168,6 +168,42 @@ public:
   }
 
   /*------------------------------------------------------------------
+  | Count the number of edge overlaps between this and another domain
+  ------------------------------------------------------------------*/
+  size_t get_overlaps(const Domain& nbr_domain)
+  {
+    size_t n_overlaps = 0;
+
+    for ( const auto& boundary : *this )
+    {
+      for ( const auto& e : boundary->edges() )
+      {
+        const Vec2d v1 = e->v1().xy();
+        const Vec2d w1 = e->v2().xy();
+
+        // search in vicinity of current edge for edges of the 
+        // neighboring domain. 
+        const Vec2d c  = e->xy();
+        double radius  = TQMeshEdgeSearchFactor * e->length();
+
+        std::vector<Edge*> nbr_edges = nbr_domain.get_edges(c, radius);
+
+        for ( Edge* e_nbr : nbr_edges )
+        {
+          const Vec2d v2 = e_nbr->v1().xy();
+          const Vec2d w2 = e_nbr->v2().xy();
+
+          if ( segment_overlap(v1,w1, v2,w2) )
+            ++n_overlaps;
+        }
+      }
+    }
+
+    return n_overlaps;
+
+  } // Domain::overlaps()
+
+  /*------------------------------------------------------------------
   | Evaluate the domain's size function at a given point
   ------------------------------------------------------------------*/
   inline double size_function(const Vec2d& xy) const

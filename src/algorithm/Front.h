@@ -35,6 +35,8 @@ using namespace CppUtils;
 *********************************************************************/
 class Front : public EdgeList
 {
+  using EdgeVector = std::vector<Edge*>;
+
 public:
 
   /*------------------------------------------------------------------
@@ -132,8 +134,8 @@ public:
     this->refine(domain, mesh_vertices);
 
 
-
-
+    /*************************************
+     * DEPRECATED
     // Collect all front edges of every domain boundary edge
     for ( const auto& boundary : domain )
     {
@@ -177,13 +179,123 @@ public:
           double delta_2 = (e2->xy() - v).length_squared();
           return (delta_1 < delta_2);
         });
-
-
       }
     }
-
+    *******************************************/
 
   } // init_front_edges()
+
+  /*------------------------------------------------------------------
+  | Init the front edges from a given domain, as well as a 
+  | corresponding connectivity of edges, that are part of another mesh
+  | Since the advancing front is part if the mesh, this function
+  | requires the mesh's vertices to setup the edges
+  ------------------------------------------------------------------*/
+  void init_front_from_edges(const Domain& domain, 
+                             const std::vector<std::vector<EdgeVector>>& edge_conn,
+                             Vertices &mesh_vertices)
+  {
+    // Stage 1 
+    // ----------
+    // Loop over all boundaries and their boundary edges of the domain.
+    // |
+    // |-If a domain boundary edge contains sub-edges from another 
+    // | mesh: loop over all these sub-edges
+    // | |
+    // | |-Create a new vertex for every sub-edge and store a pointer
+    // |   Fort this, take that vertex of the sub-edge, which is closer
+    // |   to the starting-vertex of the current domain boundary edge
+    // |   (because sub-edge might be aligned in the wrong direction)
+    // |
+    // |-Else: Use starting vertex of current domain boundary edge
+    // |       and initialize a new vertex from it. 
+    // |       Store a pointer to it.
+
+
+    std::vector<Vertex*> new_vertices {};
+
+    size_t i_bdry = 0;
+
+    for ( const auto& boundary : domain )
+    {
+      size_t i_edge = 0;
+
+      for ( const auto& e : boundary->edges() )
+      {
+        // This is the starting vertex of the current boundary edge
+        Vertex& v1_bdry = e->v1();
+
+        // Check if there are given sub-edges 
+        if ( edge_conn[i_bdry][i_edge].size() > 0 )
+        {
+          for ( Edge* sub_edge : edge_conn[i_bdry][i_edge] )
+          {
+            const Vec2d& v1_xy = sub_edge->v1().xy();
+            const Vec2d& v2_xy = sub_edge->v2().xy();
+
+            // Choose vertex that is closer to starting vertex
+            // of current boundary edge
+            double delta_1 = ( v1_xy - v1_bdry.xy() ).length_squared();
+            double delta_2 = ( v2_xy - v1_bdry.xy() ).length_squared();
+
+            Vertex& v1 = (delta_1 < delta_2) 
+                       ? sub_edge->v1()
+                       : sub_edge->v2();
+
+            Vertex& v_new = mesh_vertices.push_back( v1.xy(), 
+                                                     v1.sizing(), 
+                                                     v1.range() );
+            v_new.on_front( true );
+            v_new.on_boundary( true );
+            v_new.is_fixed( true );
+
+            new_vertices.push_back( &v_new );
+          }
+        }
+        // Otherwise, no sub-edges exist for this boundary edge,
+        // so it must be initialized from its starting and ending 
+        // vertex
+        else
+        {
+          Vertex& v_new = mesh_vertices.push_back( v1_bdry.xy(), 
+                                                   v1_bdry.sizing(), 
+                                                   v1_bdry.range() );
+          v_new.on_front( true );
+          v_new.on_boundary( true );
+          v_new.is_fixed( true );
+
+          new_vertices.push_back( &v_new );
+        }
+        ++i_edge;
+      }
+      ++i_bdry;
+    }
+
+    // Stage 2
+    // ----------
+    // Mark indices of all new vertices
+
+
+    // Stage 3
+    // ----------
+    // Create a vertex-edge connectivity (similar to init_front_edges)
+    // --> Here we must use the same loop structure as in stage 1,
+    //     such that the order of the vertex-pointer-vector and the
+    //     vertices in the boundary structure is the same
+    //
+    // Create list edge-vertex-connectivity given in the domain
+    std::vector<std::vector<std::vector<std::pair<size_t,size_t>>>> 
+    connectivity {};
+
+    // Stage 4
+    // ----------
+    // Create edges
+
+    // Stage 5
+    // ----------
+    // Refine -> But do not refine sub-edges!!!
+
+  } // Front::init_front_from_edges()
 
   /*------------------------------------------------------------------
   | Getters

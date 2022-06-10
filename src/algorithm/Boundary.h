@@ -72,7 +72,7 @@ public:
     // Initialize the boundary data structure of the new edge,
     // which keeps track of all mesh edges that will be created 
     // on it
-    new_edge.init_bdry_data();
+    //new_edge.init_bdry_data();
 
     return new_edge;
   }
