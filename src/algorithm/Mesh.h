@@ -31,14 +31,15 @@ using namespace CppUtils;
 *********************************************************************/
 class Mesh
 {
-  using EdgePair       = std::pair<const Edge*,const Edge*>;
-  using EdgePairVector = std::vector<EdgePair>;
-  using EdgeVector     = std::vector<Edge*>;
-  using VertexVector   = std::vector<Vertex*>;
-  using TriVector      = std::vector<Triangle*>;
-  using QuadVector     = std::vector<Quad*>;
-  using DoubleVector   = std::vector<double>;
-  using Vec2dVector    = std::vector<Vec2d>;
+  using EdgePair             = std::pair<const Edge*,const Edge*>;
+  using EdgePairVector       = std::vector<EdgePair>;
+  using EdgeVector           = std::vector<Edge*>;
+  using VertexVector         = std::vector<Vertex*>;
+  using TriVector            = std::vector<Triangle*>;
+  using QuadVector           = std::vector<Quad*>;
+  using DoubleVector         = std::vector<double>;
+  using Vec2dVector          = std::vector<Vec2d>;
+  using BdryEdgeConnectivity = std::vector<std::vector<EdgeVector>>;
 
 public:
   /*------------------------------------------------------------------
@@ -103,7 +104,7 @@ public:
 
     // For every boundary edge of the current mesh's domain,
     // collect all overlapping boundary edges of the existing mesh 
-    std::vector<std::vector<EdgeVector>> bdry_edge_connectivity {};
+    BdryEdgeConnectivity bdry_edge_connectivity {};
     size_t n_init_edges = 0;
 
     for ( const auto& boundary : domain )
@@ -161,7 +162,13 @@ public:
     MSG("MESH WILL BE INITIALIZED WITH " << n_init_edges 
         << " EDGES FROM A NEIGHBORING MESH.");
 
+    // Initialize edges in the advancing front
+    front_.init_front_edges(domain, verts_, 
+                            bdry_edge_connectivity);
 
+    // Setup boundary edges from the initial advancing front
+    for ( auto& e : front_ )
+      bdry_edges_.add_edge( e->v1(), e->v2(), e->marker() );
 
   } // Mesh::Constructor()
 

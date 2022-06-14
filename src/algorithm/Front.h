@@ -35,7 +35,9 @@ using namespace CppUtils;
 *********************************************************************/
 class Front : public EdgeList
 {
-  using EdgeVector = std::vector<Edge*>;
+  using BoolVector           = std::vector<bool>;
+  using EdgeVector           = std::vector<Edge*>;
+  using BdryEdgeConnectivity = std::vector<std::vector<EdgeVector>>;
 
 public:
 
@@ -49,7 +51,7 @@ public:
   | Init the front edges from a domain and refine them
   | Since the advancing front is part if the mesh, this function
   | requires the mesh's vertices to setup the edges
-  ------------------------------------------------------------------*/
+  ------------------------------------------------------------------*
   void init_front_edges(const Domain& domain, Vertices &mesh_vertices)
   {
     // Check for correct number of vertices of domain and mesh
@@ -126,64 +128,13 @@ public:
       ++i_bdry;
     }
 
-
     // Check for correct orientation
     ASSERT( check_orientation(), "Invalid edge list orientation." );
 
     // Refine the front based on the underlying size function
     this->refine(domain, mesh_vertices);
 
-
-    /*************************************
-     * DEPRECATED
-    // Collect all front edges of every domain boundary edge
-    for ( const auto& boundary : domain )
-    {
-      for ( const auto& e : boundary->edges() )
-      {
-        // Add new edge to the boundary edge's data structure
-        BdryEdgeData* bdry_data = e->bdry_data();
-
-        ASSERT( bdry_data != nullptr, 
-            "Error: The BdryEdgeData structure of a domain-edge "
-            "seems not to be properly initialized.");
-
-        // Find all front edges that are located in the vicinity 
-        // of the current domain boundary edge
-        const Vec2d& c = e->xy();
-        double       r = TQMeshEdgeSearchFactor * e->length();
-
-        const Vec2d& v = e->v1().xy();
-        const Vec2d& w = e->v2().xy();
-
-        std::vector<Edge*> found = edges_.get_items(c, r);
-        
-        // Get all edges, that are actually located on the segment
-        // of the current domain boundary edge and add them to
-        // its boundary data structure
-        for ( Edge* e_found : found )
-        {
-          const Vec2d& p = e_found->v1().xy();
-          const Vec2d& q = e_found->v2().xy();
-
-          if ( in_on_segment(v,w,p) && in_on_segment(v,w,q) )
-            bdry_data->sub_edges.push_back( e_found );
-        }
-
-        // Sort all edges in the boundary data structure in 
-        // ascending order to the starting vertex
-        std::sort(bdry_data->sub_edges.begin(), bdry_data->sub_edges.end(), 
-        [v](Edge* e1, Edge* e2)
-        {
-          double delta_1 = (e1->xy() - v).length_squared();
-          double delta_2 = (e2->xy() - v).length_squared();
-          return (delta_1 < delta_2);
-        });
-      }
-    }
-    *******************************************/
-
-  } // init_front_edges()
+  } // init_front_edges() */
 
   /*------------------------------------------------------------------
   | Init the front edges from a given domain, as well as a 
@@ -191,9 +142,9 @@ public:
   | Since the advancing front is part if the mesh, this function
   | requires the mesh's vertices to setup the edges
   ------------------------------------------------------------------*/
-  void init_front_from_edges(const Domain& domain, 
-                             const std::vector<std::vector<EdgeVector>>& edge_conn,
-                             Vertices &mesh_vertices)
+  void init_front_edges(const Domain& domain, 
+                        Vertices &mesh_vertices,
+                        const BdryEdgeConnectivity& edge_conn = {})
   {
     // Stage 1 
     // ----------
@@ -203,18 +154,26 @@ public:
     // | mesh: loop over all these sub-edges
     // | |
     // | |-Create a new vertex for every sub-edge and store a pointer
-    // |   Fort this, take that vertex of the sub-edge, which is closer
-    // |   to the starting-vertex of the current domain boundary edge
-    // |   (because sub-edge might be aligned in the wrong direction)
+    // | | Fort this, take that vertex of the sub-edge, which is closer
+    // | | to the starting-vertex of the current domain boundary edge
+    // | | (because sub-edge might be aligned in the wrong direction)
+    // | |
+    // | |-Give both the old and the new vertex an index, which is
+    // | | used in the subsquent step for the vertex->edge connectivity
+    // |
+    // |
     // |
     // |-Else: Use starting vertex of current domain boundary edge
     // |       and initialize a new vertex from it. 
     // |       Store a pointer to it.
-
+    // |       Give both the old and the new vertex an index, which is
+    // |       used in the subsquent step for the vertex->edge 
+    // |       connectivity
 
     std::vector<Vertex*> new_vertices {};
 
     size_t i_bdry = 0;
+    size_t v_index = 0; 
 
     for ( const auto& boundary : domain )
     {
@@ -226,7 +185,8 @@ public:
         Vertex& v1_bdry = e->v1();
 
         // Check if there are given sub-edges 
-        if ( edge_conn[i_bdry][i_edge].size() > 0 )
+        if ( edge_conn.size() > 0 && 
+             edge_conn[i_bdry][i_edge].size() > 0 )
         {
           for ( Edge* sub_edge : edge_conn[i_bdry][i_edge] )
           {
@@ -250,6 +210,12 @@ public:
             v_new.is_fixed( true );
 
             new_vertices.push_back( &v_new );
+
+            // Mark v1 & v_new with the current vertex index
+            v1.index( v_index );
+            v_new.index( v_index );
+            ++v_index;
+
           }
         }
         // Otherwise, no sub-edges exist for this boundary edge,
@@ -265,6 +231,12 @@ public:
           v_new.is_fixed( true );
 
           new_vertices.push_back( &v_new );
+
+          // Mark v1 & v1_bdry with the current vertex index
+          v1_bdry.index( v_index );
+          v_new.index( v_index );
+          ++v_index;
+
         }
         ++i_edge;
       }
@@ -273,29 +245,69 @@ public:
 
     // Stage 2
     // ----------
-    // Mark indices of all new vertices
+    // The vector <edges_to_refine> is used to track which edges can 
+    // and can not be refined in the next stage
+    //
+    i_bdry = 0;
+    BoolVector edges_to_refine {};
 
+    for ( const auto& boundary : domain )
+    {
+      size_t i_edge = 0;
+
+      for ( const auto& e : boundary->edges() )
+      {
+        // Sub-edges are associated to the current domain boundary 
+        if ( edge_conn.size() > 0 && 
+             edge_conn[i_bdry][i_edge].size() > 0 )
+        {
+          for ( Edge* sub_edge : edge_conn[i_bdry][i_edge] )
+          {
+            size_t i1 = sub_edge->v1().index();
+            size_t i2 = sub_edge->v2().index();
+
+            Vertex* v1 = new_vertices[i1];
+            Vertex* v2 = new_vertices[i2];
+
+            // Vertices must be aligned in the opposed direction
+            // in order to preserve orientation
+            this->add_edge( *v2, *v1, sub_edge->marker() );
+            edges_to_refine.push_back( false );
+          }
+        }
+        // No sub-edges are associated to the current domain boundary
+        else
+        {
+          size_t i1 = e->v1().index();
+          size_t i2 = e->v2().index();
+
+          Vertex* v1 = new_vertices[i1];
+          Vertex* v2 = new_vertices[i2];
+          
+          this->add_edge( *v1, *v2, e->marker() );
+          edges_to_refine.push_back( true );
+        }
+
+        ++i_edge;
+      }
+
+      ++i_bdry;
+    }
+
+    // Check for correct orientation
+    ASSERT( check_orientation(), "Invalid edge list orientation." );
+
+    ASSERT( edges_to_refine.size() == edges_.size(),
+        "Something went wrong during the initialization of the "
+        "advancing front.");
 
     // Stage 3
     // ----------
-    // Create a vertex-edge connectivity (similar to init_front_edges)
-    // --> Here we must use the same loop structure as in stage 1,
-    //     such that the order of the vertex-pointer-vector and the
-    //     vertices in the boundary structure is the same
-    //
-    // Create list edge-vertex-connectivity given in the domain
-    std::vector<std::vector<std::vector<std::pair<size_t,size_t>>>> 
-    connectivity {};
+    // Refine the front based on the underlying size function
+    // -> But do not refine sub-edges!
+    this->refine(domain, edges_to_refine, mesh_vertices);
 
-    // Stage 4
-    // ----------
-    // Create edges
-
-    // Stage 5
-    // ----------
-    // Refine -> But do not refine sub-edges!!!
-
-  } // Front::init_front_from_edges()
+  } // Front::init_front_edges()
 
   /*------------------------------------------------------------------
   | Getters
@@ -312,15 +324,23 @@ public:
   | Refine the advancing front 
   | Returns the number of new edges
   ------------------------------------------------------------------*/
-  int refine(const Domain& domain, Vertices& vertices)
+  int refine(const Domain& domain, 
+             const BoolVector& edges_to_refine,
+             Vertices& vertices)
   {
     int n_before = edges_.size();
 
     std::vector<Edge*> marked {};
 
+    size_t i_edge = 0;
+
     // Loop over all edge segments
     for ( const auto& e_ptr : edges_ )
     {
+      // Ignore edges that should not be refined
+      if ( !edges_to_refine[i_edge] )
+        continue;
+
       Edge* e = e_ptr.get();
 
       const double rho_1 = domain.size_function( e->v1().xy() );
@@ -345,6 +365,8 @@ public:
 
       // Create new vertices and edges
       create_sub_edges( *e, xy_new, vertices );
+
+      ++i_edge;
     }
 
     // Remove old boundary segments
@@ -356,7 +378,7 @@ public:
 
     return ( edges_.size() - n_before );
 
-  }
+  } // Front::refine()
 
   /*------------------------------------------------------------------
   | Let base point to first edge in container

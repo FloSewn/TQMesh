@@ -838,11 +838,7 @@ void Test_Mesh_multiple_domains(bool export_mesh)
   Vertex& v3 = domain_1.add_vertex(  8.0,  8.0 );
   Vertex& v4 = domain_1.add_vertex(  0.0,  8.0 );
 
-  Edge& e_ext_1 = b_ext_1.add_edge( v1, v2, 1 );
-
-  ASSERT( e_ext_1.bdry_data() != nullptr,
-      "Boundary::add_edge() failed.");
-
+  b_ext_1.add_edge( v1, v2, 1 );
   b_ext_1.add_edge( v2, v3, 1 );
   b_ext_1.add_edge( v3, v4, 1 );
   b_ext_1.add_edge( v4, v1, 1 );
@@ -865,10 +861,6 @@ void Test_Mesh_multiple_domains(bool export_mesh)
   Mesh mesh_1 { domain_1, 50.0 };
 
   mesh_1.triangulate();
-
-  MSG("NUMBER OF EDGES ON e_ext_1: " << e_ext_1.bdry_data()->sub_edges.size() );
-  //for (Edge* e : e_ext_1.bdry_data()->sub_edges)
-  //  MSG("Edge: " << e->v1() << " -> " << e->v2());
 
   // ToDo:
   // --> Every domain edge must know its sub-vertices of the mesh
@@ -899,30 +891,29 @@ void Test_Mesh_multiple_domains(bool export_mesh)
   //     -> Use get_item() in case of large domains?
   //
   //
-  //Domain domain_2 { domain_1 };
-  //Boundary&  b_ext_2 = domain_2.add_exterior_boundary();
+  Domain domain_2 { f, 20.0 };
+  Boundary&  b_ext_2 = domain_2.add_exterior_boundary();
 
   // Build exterior boundary of domain 2
   // --> Must somehow handle, that vertex scale properties 
   //     of Domain 1 and Domain 2 should be the same!
-  //Vertex& v9  = domain_2.add_vertex(  2.0,  2.0 );
-  //Vertex& v10 = domain_2.add_vertex(  2.0,  6.0 );
-  //Vertex& v11 = domain_2.add_vertex(  6.0,  6.0 );
-  //Vertex& v12 = domain_2.add_vertex(  6.0,  2.0 );
+  Vertex& v9  = domain_2.add_vertex(  2.0,  2.0 );
+  Vertex& v10 = domain_2.add_vertex(  6.0,  2.0 );
+  Vertex& v11 = domain_2.add_vertex(  6.0,  6.0 );
+  Vertex& v12 = domain_2.add_vertex(  2.0,  6.0 );
 
-  //b_ext_2.add_edge( v1, v4, 2 );
-  //b_ext_2.add_edge( v4, v3, 2 );
-  //b_ext_2.add_edge( v3, v2, 2 );
-  //b_ext_2.add_edge( v2, v1, 2 );
-
+  b_ext_2.add_edge(  v9, v10, 2 );
+  b_ext_2.add_edge( v10, v11, 2 );
+  b_ext_2.add_edge( v11, v12, 2 );
+  b_ext_2.add_edge( v12,  v9, 2 );
   
   // Create the mesh for domain 2
   // --> Here the edges of domain 2 are discretized into further 
   //     segments, by using the corresponding entities of domain 1
   //     or by placing new vertices according to its size function
-  //Mesh mesh_2 { domain_2, 50.0 };
-  //mesh_2.triangulate();
+  Mesh mesh_2 { domain_2, mesh_1, 50.0 };
 
+  mesh_2.triangulate();
 
 
 
@@ -943,13 +934,13 @@ void Test_Mesh_multiple_domains(bool export_mesh)
   if (export_mesh)
   {
     // Make sure that all vertex / element indices are assigned
-    mesh_1.assign_mesh_indices();
+    mesh_2.assign_mesh_indices();
 
-    std::cout << mesh_1;
+    std::cout << mesh_2;
     //domain.export_size_function({0.0,0.0}, {5.0,5.0}, 100, 100);
   }
 
-  DBG_MSG("Tests for Mesh::add_quad_layer() succeeded");
+  DBG_MSG("Tests for Mesh_multiple_domains() succeeded");
 
 } // Test_Mesh_multiple_domains()
 
