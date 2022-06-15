@@ -26,23 +26,9 @@ using namespace CppUtils;
 /*********************************************************************
 * Forward declarations
 *********************************************************************/
-//class Edge;
 class Facet;
 class EdgeList;
 
-/*********************************************************************
-* A simple container to store data of boundary edges.
-* * It is primarly used to keep track of mesh edges, that are 
-*   located on a domain's boundary edge.
-* * It also keeps a pointer to a possible twin edge, which is 
-*   used for the merging of two adjacent meshes
-*********************************************************************
-struct BdryEdgeData
-{
-  std::vector<Edge*> sub_edges;
-  Edge* twin_edge;
-
-}; // BdryEdgeData */
 
 /*********************************************************************
 * A simple edge class that is stored in the Container
@@ -126,9 +112,7 @@ public:
   Facet* facet_r() { return face_r_; }
 
   Vertex* sub_vertex() const { return sub_vertex_; }
-
-  //const BdryEdgeData* bdry_data() const { return bdry_data_.get(); }
-  //BdryEdgeData* bdry_data() { return bdry_data_.get(); }
+  Edge* twin_edge() const { return twin_edge_; }
 
   /*------------------------------------------------------------------
   | Setters 
@@ -137,6 +121,7 @@ public:
   void facet_r(Facet* f) { face_r_ = f; }
 
   void sub_vertex(Vertex* v) { sub_vertex_ = v; }
+  void twin_edge(Edge* e) { twin_edge_ = e; }
 
   /*------------------------------------------------------------------
   | Function returns, if edges is located on a boundary
@@ -242,8 +227,8 @@ private:
   // Sub vertex for quad refinement of the mesh
   Vertex*             sub_vertex_    {nullptr};
 
-  // Boundary data struct used for mesh merging
-  //std::unique_ptr<BdryEdgeData> bdry_data_;
+  // Twin edge of a partner mesh
+  Edge*               twin_edge_ {nullptr};
 
   // Mandatory container attributes
   ContainerIterator   pos_;

@@ -31,15 +31,16 @@ using namespace CppUtils;
 *********************************************************************/
 class Mesh
 {
-  using EdgePair             = std::pair<const Edge*,const Edge*>;
-  using EdgePairVector       = std::vector<EdgePair>;
-  using EdgeVector           = std::vector<Edge*>;
-  using VertexVector         = std::vector<Vertex*>;
-  using TriVector            = std::vector<Triangle*>;
-  using QuadVector           = std::vector<Quad*>;
-  using DoubleVector         = std::vector<double>;
-  using Vec2dVector          = std::vector<Vec2d>;
-  using BdryEdgeConnectivity = std::vector<std::vector<EdgeVector>>;
+  using EdgePair       = std::pair<const Edge*,const Edge*>;
+  using EdgePairVector = std::vector<EdgePair>;
+  using EdgeVector     = std::vector<Edge*>;
+  using VertexVector   = std::vector<Vertex*>;
+  using TriVector      = std::vector<Triangle*>;
+  using QuadVector     = std::vector<Quad*>;
+  using DoubleVector   = std::vector<double>;
+  using Vec2dVector    = std::vector<Vec2d>;
+  using MeshVector     = std::vector<Mesh*>;
+  using BdryEdgeConn   = std::vector<std::vector<EdgeVector>>;
 
 public:
   /*------------------------------------------------------------------
@@ -69,7 +70,7 @@ public:
     // Initialize edges in the advancing front
     front_.init_front_edges(domain, verts_);
 
-    // Setup boundary edges from the initial advancing front
+    // Setup the mesh boundary edges from the initial advancing front
     for ( auto& e : front_ )
       bdry_edges_.add_edge( e->v1(), e->v2(), e->marker() );
 
@@ -79,7 +80,7 @@ public:
   | Constructor
   ------------------------------------------------------------------*/
   Mesh(Domain&   domain,
-       Mesh&     mesh,
+       Mesh&     partner_mesh,
        double    qtree_scale=ContainerQuadTreeScale,
        size_t    qtree_items=ContainerQuadTreeItems, 
        size_t    qtree_depth=ContainerQuadTreeDepth)
@@ -91,84 +92,46 @@ public:
   {
     // Check if the mesh that is given as input parameter 
     // is overlapping with the current domain
-    Domain& nbr_domain = mesh.domain();
+    Domain& partner_domain = partner_mesh.domain();
 
-    size_t n_overlaps = domain_->get_overlaps( nbr_domain );
-    DBG_MSG("MESH INITIALIZATION FROM ANOTHER EXISTING MESH");
-    DBG_MSG("  > NUMBER OF OVERLAPPING DOMAIN BOUNDARY EDGES: " 
-             << n_overlaps);
+    size_t n_overlaps = domain_->get_overlaps( partner_domain );
 
     if ( n_overlaps < 1 )
       MSG("WARNING: NEW MESH IS INITIALIZED FROM AN EXISTING MESH, "
           "BUT THEIR DOMAINS DO NOT SHARE ANY BOUNDARY EDGES.");
 
     // For every boundary edge of the current mesh's domain,
-    // collect all overlapping boundary edges of the existing mesh 
-    BdryEdgeConnectivity bdry_edge_connectivity {};
-    size_t n_init_edges = 0;
+    // collect all overlapping boundary edges of the partner mesh 
+    BdryEdgeConn bdry_edge_conn {};
 
-    for ( const auto& boundary : domain )
+    if ( n_overlaps > 0 )
     {
-      std::vector<EdgeVector> cur_bdry_edges {};
+      bdry_edge_conn = setup_bdry_edge_connectivity(partner_mesh);
 
-      for ( const auto& e : boundary->edges() )
-      {
-        EdgeVector found_edges {};
-
-        const Vec2d& c = e->xy();
-        double       r = TQMeshEdgeSearchFactor * e->length();
-
-        const Vec2d& v = e->v1().xy();
-        const Vec2d& w = e->v2().xy();
-
-        // Check boundary edges of neighboring mesh for overlap
-        // with current domain boundary edge
-        EdgeVector found = mesh.get_bdry_edges(c, r);
-
-        // Get all edges, that are actually located on the segment
-        // of the current domain boundary edge 
-        for ( Edge* e_found : found )
-        {
-          const Vec2d& p = e_found->v1().xy();
-          const Vec2d& q = e_found->v2().xy();
-
-          if ( in_on_segment(v,w,p) && in_on_segment(v,w,q) )
-          {
-            found_edges.push_back( e_found );
-            ++n_init_edges;
-          }
-        }
-
-        // Sort all edges in the boundary data structure in 
-        // ascending order to the starting vertex
-        std::sort(found_edges.begin(), found_edges.end(), 
-        [v](Edge* e1, Edge* e2)
-        {
-          double delta_1 = (e1->xy() - v).length_squared();
-          double delta_2 = (e2->xy() - v).length_squared();
-          return (delta_1 < delta_2);
-        });
-
-        /// Connect all found & sorted edges to the current 
-        //  domain boundary edge
-        cur_bdry_edges.push_back( found_edges );
-      }
-
-      /// Connect all found & sorted edges to the current 
-      //  domain boundary 
-      bdry_edge_connectivity.push_back( cur_bdry_edges );
+      // Connect this mesh with its partner
+      this->add_partner_mesh( partner_mesh );
+      partner_mesh.add_partner_mesh( *this );
     }
 
-    MSG("MESH WILL BE INITIALIZED WITH " << n_init_edges 
-        << " EDGES FROM A NEIGHBORING MESH.");
-
     // Initialize edges in the advancing front
-    front_.init_front_edges(domain, verts_, 
-                            bdry_edge_connectivity);
+    front_.init_front_edges(domain, verts_, bdry_edge_conn);
 
-    // Setup boundary edges from the initial advancing front
+    // Setup the mesh boundary edges from the initial advancing front
     for ( auto& e : front_ )
-      bdry_edges_.add_edge( e->v1(), e->v2(), e->marker() );
+    {
+      Vertex& v1 = e->v1();
+      Vertex& v2 = e->v2();
+      int marker = e->marker();
+      Edge& e_new = bdry_edges_.add_edge( v1, v2, marker );
+
+      // Connect boundary edges of this mesh and its parner mesh
+      Edge* e_twin = e->twin_edge();
+      ASSERT( e_twin != nullptr,
+          "Connectivtiy between boundary edges of two meshes failed.");
+      e_twin->twin_edge( &e_new );
+      e_new.twin_edge( e_twin );
+      e->twin_edge( nullptr );
+    }
 
   } // Mesh::Constructor()
 
@@ -236,6 +199,23 @@ public:
 
   double area() const { return mesh_area_; }
 
+  /*------------------------------------------------------------------
+  | Add another mesh to the partner-mesh-list
+  ------------------------------------------------------------------*/
+  void add_partner_mesh(Mesh& mesh)
+  { partner_meshes_.push_back( &mesh ); }
+
+  /*------------------------------------------------------------------
+  | Remove another mesh to the partner-mesh-list
+  ------------------------------------------------------------------*/
+  void remove_partner_mesh(Mesh& mesh)
+  {
+    auto it = std::find(partner_meshes_.begin(), 
+                        partner_meshes_.end(), 
+                        &mesh);
+    if ( it != partner_meshes_.end() )
+      partner_meshes_.erase( it );
+  }
 
   /*------------------------------------------------------------------
   | This function assigns a corresponding global index to each entity
@@ -2189,6 +2169,78 @@ private:
   } // Mesh::prepare_quad_layer_front()
 
   /*------------------------------------------------------------------
+  | This function creates a connectivity structure between the 
+  | domain of this mesh and the existing boundary edges of a given
+  | partner mesh. 
+  | It is called upon the construction of a new mesh structure, 
+  | where an existing mesh is given as argument.
+  ------------------------------------------------------------------*/
+  BdryEdgeConn setup_bdry_edge_connectivity(Mesh& partner_mesh)
+  {
+    BdryEdgeConn bdry_edge_connectivity {};
+    size_t n_init_edges = 0;
+
+    for ( const auto& boundary : *domain_ )
+    {
+      std::vector<EdgeVector> cur_bdry_edges {};
+
+      for ( const auto& e : boundary->edges() )
+      {
+        EdgeVector found_edges {};
+
+        const Vec2d& c = e->xy();
+        double       r = TQMeshEdgeSearchFactor * e->length();
+
+        const Vec2d& v = e->v1().xy();
+        const Vec2d& w = e->v2().xy();
+
+        // Check boundary edges of neighboring mesh for overlap
+        // with current domain boundary edge
+        EdgeVector found = partner_mesh.get_bdry_edges(c, r);
+
+        // Get all edges, that are actually located on the segment
+        // of the current domain boundary edge 
+        for ( Edge* e_found : found )
+        {
+          const Vec2d& p = e_found->v1().xy();
+          const Vec2d& q = e_found->v2().xy();
+
+          if ( in_on_segment(v,w,p) && in_on_segment(v,w,q) )
+          {
+            found_edges.push_back( e_found );
+            ++n_init_edges;
+          }
+        }
+
+        // Sort all edges in the boundary data structure in 
+        // ascending order to the starting vertex
+        std::sort(found_edges.begin(), found_edges.end(), 
+        [v](Edge* e1, Edge* e2)
+        {
+          double delta_1 = (e1->xy() - v).length_squared();
+          double delta_2 = (e2->xy() - v).length_squared();
+          return (delta_1 < delta_2);
+        });
+
+        /// Connect all found & sorted edges to the current 
+        //  domain boundary edge
+        cur_bdry_edges.push_back( found_edges );
+      }
+
+      /// Connect all found & sorted edges to the current 
+      //  domain boundary 
+      bdry_edge_connectivity.push_back( cur_bdry_edges );
+    }
+
+    MSG("MESH WILL BE INITIALIZED WITH " << n_init_edges 
+        << " EDGES FROM A NEIGHBORING MESH.");
+
+    return std::move( bdry_edge_connectivity );
+
+  } // Mesh::setup_bdry_edge_connectivity()
+
+
+  /*------------------------------------------------------------------
   | Get edge 
   ------------------------------------------------------------------*/
   Edge* get_edge(const Vertex& v1, const Vertex& v2, bool dir=false)
@@ -2268,6 +2320,8 @@ private:
 
   EdgeList   intr_edges_ { Orientation::NONE };
   EdgeList   bdry_edges_ { Orientation::NONE };
+
+  MeshVector partner_meshes_ {};
 
   double     mesh_area_ { 0.0 };
 
