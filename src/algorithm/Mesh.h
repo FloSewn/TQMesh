@@ -58,16 +58,6 @@ public:
   , quads_   { qtree_scale, qtree_items, qtree_depth }
   , front_   { }
   {
-    // Copy vertices from domain
-    for ( const auto& v_ptr : domain.vertices() )
-    {
-      Vertex& v = verts_.push_back( v_ptr->xy(), 
-                                    v_ptr->sizing(), 
-                                    v_ptr->range() );
-      v.on_front( v_ptr->on_front() );
-      v.on_boundary( v_ptr->on_boundary() );
-      v.is_fixed( v_ptr->is_fixed() );
-    }
 
     // Initialize edges in the advancing front
     front_.init_front_edges(domain, verts_);
@@ -2373,70 +2363,109 @@ static inline std::ostream& operator<<(std::ostream& os,
 
   os << "INTERIOREDGES " << mesh.interior_edges().size() << "\n";
   for ( const auto& e_ptr : mesh.interior_edges() )
+  {
+    auto v1_index = e_ptr->v1().index();
+    auto v2_index = e_ptr->v2().index();
+
+    auto fl_index = ( e_ptr->facet_l() != nullptr ) 
+                  ?   e_ptr->facet_l()->index()
+                  :   -1;
+    auto fr_index = ( e_ptr->facet_r() != nullptr ) 
+                  ?   e_ptr->facet_r()->index()
+                  :   -1;
+
     os << std::setprecision(0) << std::fixed 
-      << std::setw(4) << e_ptr->v1().index() << "," 
-      << std::setw(4) << e_ptr->v2().index() << ","
-      << std::setw(4) << e_ptr->facet_l()->index() << ","
-      << std::setw(4) << e_ptr->facet_r()->index() << "\n";
+      << std::setw(4) << v1_index << "," 
+      << std::setw(4) << v2_index << ","
+      << std::setw(4) << fl_index << ","
+      << std::setw(4) << fr_index << "\n";
+  }
 
   os << "BOUNDARYEDGES " << mesh.boundary_edges().size() << "\n";
   for ( const auto& e_ptr : mesh.boundary_edges() )
+  {
+    auto v1_index = e_ptr->v1().index();
+    auto v2_index = e_ptr->v2().index();
+
+    auto fl_index = ( e_ptr->facet_l() != nullptr ) 
+                  ?   e_ptr->facet_l()->index()
+                  :   -1;
+    auto marker   = e_ptr->marker();
+
     os << std::setprecision(0) << std::fixed 
-      << std::setw(4) << e_ptr->v1().index() << "," 
-      << std::setw(4) << e_ptr->v2().index() << ","
-      << std::setw(4) << e_ptr->facet_l()->index() << ","
-      << std::setw(4) << e_ptr->marker() << "\n";
+      << std::setw(4) << v1_index << "," 
+      << std::setw(4) << v2_index << ","
+      << std::setw(4) << fl_index << ","
+      << std::setw(4) << marker << "\n";
+  }
 
   os << "FRONT " << mesh.front().size() << "\n";
   for ( const auto& e_ptr : mesh.front() )
+  {
+    auto v1_index = e_ptr->v1().index();
+    auto v2_index = e_ptr->v2().index();
+    auto marker   = e_ptr->marker();
+
     os << std::setprecision(0) << std::fixed 
-      << std::setw(4) << e_ptr->v1().index() << "," 
-      << std::setw(4) << e_ptr->v2().index() << ","
-      << std::setw(4) << e_ptr->marker() << "\n";
+      << std::setw(4) << v1_index << "," 
+      << std::setw(4) << v2_index << ","
+      << std::setw(4) << marker << "\n";
+  }
 
   os << "QUADS " << mesh.quads().size() << "\n";
   for ( const auto& q_ptr : mesh.quads() )
   {
+    auto v1_index = q_ptr->v1().index();
+    auto v2_index = q_ptr->v2().index();
+    auto v3_index = q_ptr->v3().index();
+    auto v4_index = q_ptr->v4().index();
+
     os << std::setprecision(0) << std::fixed
-      << std::setw(4) << q_ptr->v1().index() << ","
-      << std::setw(4) << q_ptr->v2().index() << ","
-      << std::setw(4) << q_ptr->v3().index() << ","
-      << std::setw(4) << q_ptr->v4().index() << "\n";
+      << std::setw(4) << v1_index << ","
+      << std::setw(4) << v2_index << ","
+      << std::setw(4) << v3_index << ","
+      << std::setw(4) << v4_index << "\n";
   }
 
   os << "TRIANGLES " << mesh.triangles().size() << "\n";
   for ( const auto& t_ptr : mesh.triangles() )
   {
+    auto v1_index = t_ptr->v1().index();
+    auto v2_index = t_ptr->v2().index();
+    auto v3_index = t_ptr->v3().index();
+
     os << std::setprecision(0) << std::fixed
-      << std::setw(4) << t_ptr->v1().index() << ","
-      << std::setw(4) << t_ptr->v2().index() << ","
-      << std::setw(4) << t_ptr->v3().index() << "\n";
+      << std::setw(4) << v1_index << ","
+      << std::setw(4) << v2_index << ","
+      << std::setw(4) << v3_index << "\n";
   }
 
   os << "QUADNEIGHBORS " << mesh.quads().size() << "\n";
   for ( const auto& q_ptr : mesh.quads() )
   {
+    auto nbr1_index = q_ptr->nbr1() ? q_ptr->nbr1()->index() : -1;
+    auto nbr2_index = q_ptr->nbr2() ? q_ptr->nbr2()->index() : -1;
+    auto nbr3_index = q_ptr->nbr3() ? q_ptr->nbr3()->index() : -1;
+    auto nbr4_index = q_ptr->nbr4() ? q_ptr->nbr4()->index() : -1;
+
     os << std::setprecision(0) << std::fixed << std::setw(4) 
-      << ( q_ptr->nbr1() ? q_ptr->nbr1()->index() : -1 ) 
-      << "," << std::setw(4) 
-      << ( q_ptr->nbr2() ? q_ptr->nbr2()->index() : -1 ) 
-      << "," << std::setw(4) 
-      << ( q_ptr->nbr3() ? q_ptr->nbr3()->index() : -1 ) 
-      << "," << std::setw(4) 
-      << ( q_ptr->nbr4() ? q_ptr->nbr4()->index() : -1 ) 
-      << "\n";
+      << nbr1_index << "," << std::setw(4) 
+      << nbr2_index << "," << std::setw(4) 
+      << nbr3_index << "," << std::setw(4) 
+      << nbr4_index << "\n";
   }
 
   os << "TRIANGLENEIGHBORS " << mesh.triangles().size() << "\n";
   for ( const auto& t_ptr : mesh.triangles() )
   {
+    auto nbr1_index = t_ptr->nbr1() ? t_ptr->nbr1()->index() : -1;
+    auto nbr2_index = t_ptr->nbr2() ? t_ptr->nbr2()->index() : -1;
+    auto nbr3_index = t_ptr->nbr3() ? t_ptr->nbr3()->index() : -1;
+
     os << std::setprecision(0) << std::fixed << std::setw(4) 
-      << ( t_ptr->nbr1() ? t_ptr->nbr1()->index() : -1 ) 
-      << "," << std::setw(4) 
-      << ( t_ptr->nbr2() ? t_ptr->nbr2()->index() : -1 ) 
-      << "," << std::setw(4) 
-      << ( t_ptr->nbr3() ? t_ptr->nbr3()->index() : -1 ) 
-      << "\n";
+      << nbr1_index << "," << std::setw(4) 
+      << nbr2_index << "," << std::setw(4) 
+      << nbr3_index << "\n";
   }
 
 

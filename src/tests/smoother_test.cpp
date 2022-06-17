@@ -48,7 +48,7 @@ void Test_Smoother_TriMesh(bool export_mesh)
   b_ext.add_edge( v4, v1, 4 );
 
   // Create the mesh
-  Mesh mesh { domain, 50.0 };
+  Mesh mesh { domain, 0, 50.0 };
   Smoother smoother {};
 
   mesh.pave();
