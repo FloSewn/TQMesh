@@ -47,14 +47,16 @@ public:
   | Constructor
   ------------------------------------------------------------------*/
   Mesh(Domain&   domain,
+       int       mesh_id=TQMeshDefaultMeshId,
        double    qtree_scale=ContainerQuadTreeScale,
        size_t    qtree_items=ContainerQuadTreeItems, 
        size_t    qtree_depth=ContainerQuadTreeDepth)
-  : domain_ { &domain }
-  , verts_  { qtree_scale, qtree_items, qtree_depth }
-  , tris_   { qtree_scale, qtree_items, qtree_depth }
-  , quads_  { qtree_scale, qtree_items, qtree_depth }
-  , front_  { }
+  : domain_  { &domain }
+  , mesh_id_ { mesh_id }
+  , verts_   { qtree_scale, qtree_items, qtree_depth }
+  , tris_    { qtree_scale, qtree_items, qtree_depth }
+  , quads_   { qtree_scale, qtree_items, qtree_depth }
+  , front_   { }
   {
     // Copy vertices from domain
     for ( const auto& v_ptr : domain.vertices() )
@@ -81,14 +83,16 @@ public:
   ------------------------------------------------------------------*/
   Mesh(Domain&   domain,
        Mesh&     partner_mesh,
+       int       mesh_id=TQMeshDefaultMeshId,
        double    qtree_scale=ContainerQuadTreeScale,
        size_t    qtree_items=ContainerQuadTreeItems, 
        size_t    qtree_depth=ContainerQuadTreeDepth)
-  : domain_ { &domain }
-  , verts_  { qtree_scale, qtree_items, qtree_depth }
-  , tris_   { qtree_scale, qtree_items, qtree_depth }
-  , quads_  { qtree_scale, qtree_items, qtree_depth }
-  , front_  { }
+  : domain_  { &domain }
+  , mesh_id_ { mesh_id }
+  , verts_   { qtree_scale, qtree_items, qtree_depth }
+  , tris_    { qtree_scale, qtree_items, qtree_depth }
+  , quads_   { qtree_scale, qtree_items, qtree_depth }
+  , front_   { }
   {
     // Check if the mesh that is given as input parameter 
     // is overlapping with the current domain
@@ -157,6 +161,30 @@ public:
   QuadVector
   get_quads(const Vec2d& center, double radius) const
   { return std::move( quads_.get_items(center, radius ) ); }
+
+  /*------------------------------------------------------------------
+  | Add mesh new entities 
+  ------------------------------------------------------------------*/
+  Triangle& add_triangle(Vertex& v1, Vertex& v2, Vertex& v3)
+  {
+    Triangle& t_new = tris_.push_back(v1, v2, v3);
+
+    t_new.mesh_id( mesh_id_ );
+
+    return t_new;
+    
+  } // Mesh::add_triangle()
+
+  Quad& add_quad(Vertex& v1, Vertex& v2, Vertex& v3, Vertex& v4)
+  {
+    Quad& q_new = quads_.push_back(v1, v2, v3, v4);
+
+    q_new.mesh_id( mesh_id_ );
+
+    return q_new;
+    
+  } // Mesh::add_quad()
+
 
   /*------------------------------------------------------------------
   | This function takes care of the garbage collection 
@@ -2312,6 +2340,7 @@ private:
   | Attributes
   ------------------------------------------------------------------*/
   Domain*    domain_ {nullptr};
+  int        mesh_id_ { TQMeshDefaultMeshId };
 
   Vertices   verts_;
   Triangles  tris_;

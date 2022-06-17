@@ -51,6 +51,7 @@ constexpr double TQMeshMinimumElementSize = 0.001;
 constexpr double TQMeshMinimumElementScaling = 0.001;
 
 constexpr int TQMeshInteriorEdgeMarker = -1;
+constexpr int TQMeshDefaultMeshId = -1;
 
 constexpr double TQMeshQuadLayerAngle = 1.57079633; // = 1/2 pi
 constexpr double TQMeshQuadLayerRange = 0.75;
@@ -62,6 +63,7 @@ constexpr double TQMeshWideSearchFactor = 10.0;
 
 // This value is used to enlarge the search radius for edges
 constexpr double TQMeshEdgeSearchFactor = 1.5;
+
 
 } // namespace TQAlgorithm
 } // namespace TQMesh 

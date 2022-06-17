@@ -43,10 +43,12 @@ class Facet
   virtual int index() const = 0;
   virtual bool is_active() const = 0;
   virtual int color() const = 0;
+  virtual int mesh_id() const = 0;
 
   /*------------------------------------------------------------------
   | Setters 
   ------------------------------------------------------------------*/
+  virtual void mesh_id(int i) = 0;
   virtual void index(int i) = 0;
   virtual void is_active(bool a) = 0;
   virtual void color(int c) = 0;
