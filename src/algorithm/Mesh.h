@@ -410,16 +410,16 @@ public:
 
     // Remove old entitires
     for ( auto e : coarse_intr_edges )
-      check_remove_interior_edge( *e );
+      remove_interior_edge( *e );
       
     for ( auto e : coarse_bdry_edges )
-      check_remove_boundary_edge( *e );
+      remove_boundary_edge( *e );
 
     for ( auto t : coarse_tris )
-      check_remove_triangle( *t );
+      remove_triangle( *t );
 
     for ( auto q : coarse_quads )
-      check_remove_quad( *q );
+      remove_quad( *q );
 
 
     // Re-initialize vertex-to-vertex connectivity
@@ -715,13 +715,8 @@ public:
       Triangle& t_new = add_triangle( b1, b2, v_new );
 
       // Algorithm fails if new vertex or new triangle is invalid
-      if ( !check_vertex( v_new ) || !check_triangle( t_new) )
-      {
-        check_remove_triangle( t_new );
-        check_remove_vertex( v_new );
-
+      if ( remove_if_invalid(v_new, t_new) )
         return false;
-      }
 
       // Update the advancing front with new vertex
       update_front( base, v_new, t_new );
@@ -760,13 +755,8 @@ public:
       Triangle& t_new = add_triangle(d1, d2, v_new);
 
       // Algorithm fails if new vertex or new triangle is invalid
-      if ( !check_vertex( v_new ) || !check_triangle( t_new) )
-      {
-        check_remove_triangle( t_new );
-        check_remove_vertex( v_new );
-
+      if ( remove_if_invalid(v_new, t_new) )
         return true;
-      }
 
       // Update the advancing front with new vertex
       update_front( *diag, v_new, t_new );
@@ -784,11 +774,11 @@ public:
 
     // Remove internal edge
     Edge* e_rem = intr_edges_.get_edge(q2, q4);
-    check_remove_interior_edge( *e_rem );
+    remove_interior_edge( *e_rem );
 
     // Remove old triangular elements
-    check_remove_triangle( *t1 );
-    check_remove_triangle( *t2 );
+    remove_triangle( *t1 );
+    remove_triangle( *t2 );
 
     // Create new quadrilateral element
     Quad& q_new = add_quad( q1, q2, q3, q4 );
@@ -830,13 +820,8 @@ public:
     Triangle& t_new = add_triangle(b1, b2, v_new);
     
     // Algorithm fails if new vertex or new triangle is invalid
-    if ( !check_vertex( v_new ) || !check_triangle( t_new) )
-    {
-      check_remove_triangle( t_new );
-      check_remove_vertex( v_new );
-
+    if ( remove_if_invalid(v_new, t_new) )
       return false;
-    }
     
     // Update the advancing front with new vertex
     update_front( base, v_new, t_new );
@@ -929,7 +914,7 @@ public:
       Vertex& q_r = f_r->vertex(i_r);
 
       // Remove internal edge
-      check_remove_interior_edge( *e );
+      remove_interior_edge( *e );
       e = nullptr;
 
       // Create new quadrilateral element
@@ -962,8 +947,8 @@ public:
       }
 
       // Remove triangles
-      check_remove_triangle( *(static_cast<Triangle*>(f_l)) );
-      check_remove_triangle( *(static_cast<Triangle*>(f_r)) );
+      remove_triangle( *(static_cast<Triangle*>(f_l)) );
+      remove_triangle( *(static_cast<Triangle*>(f_r)) );
 
     }
 
@@ -1046,10 +1031,8 @@ private:
       Triangle& t_new = add_triangle( base.v1(), base.v2(), *v );
 
       // Check if new potential triangle is valid
-      if ( check_triangle( t_new ) )
+      if ( !remove_if_invalid(t_new) )
         new_triangles.push_back( &t_new );
-      else
-        check_remove_triangle( t_new );
 
     }
 
@@ -1095,9 +1078,10 @@ private:
   } // choose_best_triangle()
 
   /*------------------------------------------------------------------
-  | 
+  | Check if a triangle is valid. If yes, return true - 
+  | else return false.
   ------------------------------------------------------------------*/
-  bool check_triangle(const Triangle& tri)
+  bool triangle_is_valid(const Triangle& tri)
   {
     const double rho   = domain_->size_function( tri.xy() );
     const double range = 2.0 * rho;
@@ -1135,12 +1119,13 @@ private:
 
     return true;
 
-  } // check_triangle()
+  } // Mesh::triangle_is_valid()
 
   /*------------------------------------------------------------------
-  | 
+  | Check if a vertex is valid. If yes, return true - 
+  | else return false.
   ------------------------------------------------------------------*/
-  bool check_vertex(const Vertex& v)
+  bool vertex_is_valid(const Vertex& v)
   {
     const double rho   = domain_->size_function( v.xy() );
     const double range = 2.0 * rho;
@@ -1169,7 +1154,51 @@ private:
 
     return true;
 
-  } // check_vertex()
+  } // Mesh::vertex_is_valid()
+
+  /*------------------------------------------------------------------
+  | Check if mesh entities are invalid. If yes, remove them and 
+  | return true. Else, simply return false.
+  ------------------------------------------------------------------*/
+  bool remove_if_invalid(Vertex& v)
+  {
+    if ( vertex_is_valid(v) )
+      return false;
+    remove_vertex(v);
+    return true;
+  } 
+
+  bool remove_if_invalid(Triangle& t)
+  {
+    if ( triangle_is_valid(t) )
+      return false;
+    remove_triangle(t);
+    return true;
+  } 
+
+  bool remove_if_invalid(Vertex& v, Triangle& t)
+  {
+    if ( !vertex_is_valid(v) || !triangle_is_valid(t) )
+    {
+      remove_triangle(t);
+      remove_vertex(v);
+      return true;
+    }
+    return false;
+  } 
+
+  bool remove_if_invalid(Vertex& v, Triangle& t1, Triangle& t2)
+  {
+    if (  !vertex_is_valid(v) 
+       || !triangle_is_valid(t1) || !triangle_is_valid(t2) )
+    {
+      remove_triangle(t1);
+      remove_triangle(t2);
+      remove_vertex(v);
+      return true;
+    }
+    return false;
+  }
 
   /*------------------------------------------------------------------
   | 
@@ -1550,8 +1579,8 @@ private:
       Quad* q1 = quads_to_remove[i].first;
       Quad* q2 = quads_to_remove[i].second;
 
-      check_remove_quad( *q1 );
-      check_remove_quad( *q2 );
+      remove_quad( *q1 );
+      remove_quad( *q2 );
     }
 
     // Removal of old interior edges
@@ -1560,15 +1589,15 @@ private:
       Edge* e1 = edges_to_remove[i].first;
       Edge* e2 = edges_to_remove[i].second;
 
-      check_remove_interior_edge( *e1 );
-      check_remove_interior_edge( *e2 );
+      remove_interior_edge( *e1 );
+      remove_interior_edge( *e2 );
     }
 
     // Removal of old vertices
     for (size_t i = 0; i < verts_to_remove.size(); ++i)
     {
       Vertex* v = verts_to_remove[i];
-      check_remove_vertex( *v );
+      remove_vertex( *v );
     }
 
     // Re-initialize facet-to-facet connectivity
@@ -1704,8 +1733,8 @@ private:
       Quad*     q = elements_to_remove[i].first;
       Triangle* t = elements_to_remove[i].second;
       
-      check_remove_quad( *q );
-      check_remove_triangle( *t );
+      remove_quad( *q );
+      remove_triangle( *t );
     }
 
     // Removal of old interiord edges
@@ -1714,15 +1743,15 @@ private:
       Edge* e1 = edges_to_remove[i].first;
       Edge* e2 = edges_to_remove[i].second;
 
-      check_remove_interior_edge( *e1 );
-      check_remove_interior_edge( *e2 );
+      remove_interior_edge( *e1 );
+      remove_interior_edge( *e2 );
     }
 
     // Removal of old vertices
     for (size_t i = 0; i < verts_to_remove.size(); ++i)
     {
       Vertex* v = verts_to_remove[i];
-      check_remove_vertex( *v );
+      remove_vertex( *v );
     }
 
     // Re-initialize facet-to-facet connectivity
@@ -1920,13 +1949,13 @@ private:
       Edge* e_rem = intr_edges_.get_edge( *b2[i], *p1[i] );
 
       if ( e_rem ) 
-        check_remove_interior_edge( *e_rem );
+        remove_interior_edge( *e_rem );
       else
         continue;
 
       // Remove old triangular elements
-      check_remove_triangle( *t1 );
-      check_remove_triangle( *t2 );
+      remove_triangle( *t1 );
+      remove_triangle( *t2 );
       t1 = nullptr;
       t2 = nullptr;
 
@@ -1971,10 +2000,8 @@ private:
       tri = &( add_triangle(v1, v2, v_new) );
 
       // If the created entities are invalid, clean up
-      if ( !check_vertex( v_new ) || !check_triangle( *tri ) )
+      if ( remove_if_invalid(v_new, *tri) )
       {
-        check_remove_triangle( *tri );
-        check_remove_vertex( v_new );
         tri = nullptr;
       }
       // Otherwise, update the advancing front with the new triangle
@@ -2034,11 +2061,7 @@ private:
       {
         Triangle* t_new = &( add_triangle(a, b, c) );
 
-        if ( !check_triangle( *t_new ) )
-        {
-          check_remove_triangle( *t_new );
-        }
-        else
+        if ( !remove_if_invalid(*t_new) )
         {
           Edge* base = front_.get_edge( b, c );
           update_front( *base, a, *t_new );
@@ -2054,14 +2077,7 @@ private:
         Triangle* t1_new = &( add_triangle(a, b, v_new) );
         Triangle* t2_new = &( add_triangle(b, c, v_new) );
 
-        if (  !check_vertex( v_new ) 
-           || !check_triangle( *t1_new ) || !check_triangle( *t2_new ) )
-        {
-          check_remove_triangle( *t1_new );
-          check_remove_triangle( *t2_new );
-          check_remove_vertex( v_new );
-        }
-        else
+        if ( !remove_if_invalid(v_new, *t1_new, *t2_new) )
         {
           Edge* base = nullptr;
 
@@ -2142,29 +2158,20 @@ private:
           Triangle& t1_new = add_triangle(p1, c, v_new);
           Triangle& t2_new = add_triangle(c, p2, v_new);
 
-          if (  !check_vertex( v_new ) 
-             || !check_triangle( t1_new )
-             || !check_triangle( t2_new ) )
-          {
-            check_remove_triangle( t1_new );
-            check_remove_triangle( t2_new );
-            check_remove_vertex( v_new );
-          }
-          else
+          if ( !remove_if_invalid(v_new, t1_new, t2_new) )
           {
             update_front( *e_cur, v_new, t1_new );
             update_front( *e_next, v_new, t2_new );
 
             v_new.is_fixed( true );
           }
+
         }
         else
         {
           Triangle& t_new = add_triangle(p1, c, p2);
 
-          if ( !check_triangle( t_new ) )
-            check_remove_triangle( t_new );
-          else
+          if ( !remove_if_invalid(t_new) )
             update_front( *e_cur, p2, t_new );
         }
 
@@ -2290,35 +2297,35 @@ private:
   | This function removes an entity and makes sure, that the 
   | removal succeeded
   ------------------------------------------------------------------*/
-  inline void check_remove_vertex(Vertex& v)
+  inline void remove_vertex(Vertex& v)
   {
     bool removed = verts_.remove( v );
     ASSERT( removed, "Failed to remove vertex.");
     (void) removed;
   }
 
-  inline void check_remove_triangle(Triangle& t)
+  inline void remove_triangle(Triangle& t)
   {
     bool removed = tris_.remove( t );
     ASSERT( removed, "Failed to remove triangle.");
     (void) removed;
   }
 
-  inline void check_remove_quad(Quad& q)
+  inline void remove_quad(Quad& q)
   {
     bool removed = quads_.remove( q );
     ASSERT( removed, "Failed to remove quad.");
     (void) removed;
   }
 
-  inline void check_remove_interior_edge(Edge& e)
+  inline void remove_interior_edge(Edge& e)
   {
     bool removed = intr_edges_.remove( e );
     ASSERT( removed, "Failed to remove interior edge.");
     (void) removed;
   }
 
-  inline void check_remove_boundary_edge(Edge& e)
+  inline void remove_boundary_edge(Edge& e)
   {
     bool removed = bdry_edges_.remove( e );
     ASSERT( removed, "Failed to remove interior edge.");
