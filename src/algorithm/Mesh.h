@@ -155,25 +155,25 @@ public:
   /*------------------------------------------------------------------
   | Add mesh new entities 
   ------------------------------------------------------------------*/
+  Vertex& add_vertex(const Vec2d& xy)
+  {
+    Vertex& v_new = verts_.push_back( xy );
+    return v_new;
+  } 
+
   Triangle& add_triangle(Vertex& v1, Vertex& v2, Vertex& v3)
   {
     Triangle& t_new = tris_.push_back(v1, v2, v3);
-
     t_new.mesh_id( mesh_id_ );
-
     return t_new;
-    
-  } // Mesh::add_triangle()
+  } 
 
   Quad& add_quad(Vertex& v1, Vertex& v2, Vertex& v3, Vertex& v4)
   {
     Quad& q_new = quads_.push_back(v1, v2, v3, v4);
-
     q_new.mesh_id( mesh_id_ );
-
     return q_new;
-    
-  } // Mesh::add_quad()
+  } 
 
 
   /*------------------------------------------------------------------
@@ -321,7 +321,7 @@ public:
     // Refine interior edges
     for ( auto e : coarse_intr_edges )
     {
-      Vertex& v = verts_.push_back( e->xy() );
+      Vertex& v = add_vertex( e->xy() );
       intr_edges_.add_edge( e->v1(), v );
       intr_edges_.add_edge( v, e->v2() );
       e->sub_vertex( &v );
@@ -333,7 +333,7 @@ public:
     // Refine boundary edges
     for ( auto e : coarse_bdry_edges )
     {
-      Vertex& v = verts_.push_back( e->xy() );
+      Vertex& v = add_vertex( e->xy() );
       bdry_edges_.add_edge( e->v1(), v, e->marker() );
       bdry_edges_.add_edge( v, e->v2(), e->marker() );
       e->sub_vertex( &v );
@@ -359,12 +359,12 @@ public:
       Vertex* v6 = e51->sub_vertex();
 
       // Create new vertex at center of quad
-      Vertex& v7 = verts_.push_back( t->xy() );
+      Vertex& v7 = add_vertex( t->xy() );
 
       // Create new sub-quads 
-      quads_.push_back( v1, *v2, v7, *v6 );
-      quads_.push_back( v3, *v4, v7, *v2 );
-      quads_.push_back( v5, *v6, v7, *v4 );
+      add_quad( v1, *v2, v7, *v6 );
+      add_quad( v3, *v4, v7, *v2 );
+      add_quad( v5, *v6, v7, *v4 );
 
       // Create new interior edges
       intr_edges_.add_edge( *v2, v7 );
@@ -392,13 +392,13 @@ public:
       Vertex* v8 = e71->sub_vertex();
 
       // Create new vertex at center of quad
-      Vertex& v9 = verts_.push_back( q->xy() );
+      Vertex& v9 = add_vertex( q->xy() );
 
       // Create new sub-quads 
-      quads_.push_back( v1, *v2, v9, *v8 );
-      quads_.push_back( v3, *v4, v9, *v2 );
-      quads_.push_back( v5, *v6, v9, *v4 );
-      quads_.push_back( v7, *v8, v9, *v6 );
+      add_quad( v1, *v2, v9, *v8 );
+      add_quad( v3, *v4, v9, *v2 );
+      add_quad( v5, *v6, v9, *v4 );
+      add_quad( v7, *v8, v9, *v6 );
 
       // Create new interior edges
       intr_edges_.add_edge( *v2, v9 );
@@ -711,8 +711,8 @@ public:
     // No triangle has been found yet -> create new one
     if ( !t1 )
     {
-      Vertex&   v_new = verts_.push_back( p1 );
-      Triangle& t_new = tris_.push_back(b1, b2, v_new);
+      Vertex&   v_new = add_vertex( p1 );
+      Triangle& t_new = add_triangle( b1, b2, v_new );
 
       // Algorithm fails if new vertex or new triangle is invalid
       if ( !check_vertex( v_new ) || !check_triangle( t_new) )
@@ -756,8 +756,8 @@ public:
     // No triangle has been found yet -> create new one
     if ( !t2 )
     {
-      Vertex&   v_new = verts_.push_back( p2 );
-      Triangle& t_new = tris_.push_back(d1, d2, v_new);
+      Vertex&   v_new = add_vertex( p2 );
+      Triangle& t_new = add_triangle(d1, d2, v_new);
 
       // Algorithm fails if new vertex or new triangle is invalid
       if ( !check_vertex( v_new ) || !check_triangle( t_new) )
@@ -791,7 +791,7 @@ public:
     check_remove_triangle( *t2 );
 
     // Create new quadrilateral element
-    Quad& q_new = quads_.push_back( q1, q2, q3, q4 );
+    Quad& q_new = add_quad( q1, q2, q3, q4 );
     q_new.is_active( true );
 
     return true;
@@ -827,7 +827,7 @@ public:
     Vertex& b2 = base.v2();
 
     Vertex&   v_new = get_base_vertex( base );
-    Triangle& t_new = tris_.push_back(b1, b2, v_new);
+    Triangle& t_new = add_triangle(b1, b2, v_new);
     
     // Algorithm fails if new vertex or new triangle is invalid
     if ( !check_vertex( v_new ) || !check_triangle( t_new) )
@@ -933,7 +933,7 @@ public:
       e = nullptr;
 
       // Create new quadrilateral element
-      Quad& q_new = quads_.push_back( q_l, v1, q_r, v2 );
+      Quad& q_new = add_quad( q_l, v1, q_r, v2 );
       q_new.is_active( true );
 
       // Update internal edge connectivity to prevent bad memory 
@@ -1043,7 +1043,7 @@ private:
         continue;
 
       // Create new potential triangle 
-      Triangle& t_new = tris_.push_back( base.v1(), base.v2(), *v );
+      Triangle& t_new = add_triangle( base.v1(), base.v2(), *v );
 
       // Check if new potential triangle is valid
       if ( check_triangle( t_new ) )
@@ -1188,7 +1188,7 @@ private:
     // Coordinate of new vertex 
     Vec2d xy = base.xy() + base.normal() * rho;
 
-    return verts_.push_back( xy.x, xy.y );
+    return add_vertex( xy );
 
   } // get_base_vertex() 
 
@@ -1539,7 +1539,7 @@ private:
       Vertex* o2 = opposing_vertices[i].second;
 
       // Create new quad 
-      Quad& q_new = quads_.push_back( *o1, v1, *o2, v3 );
+      Quad& q_new = add_quad( *o1, v1, *o2, v3 );
       q_new.is_active(true);
 
     }
@@ -1694,7 +1694,7 @@ private:
       Vertex& v3 = q->vertex( MOD(id_v+3, 4) );
 
       // Create new triangle 
-      Triangle& t_new = tris_.push_back( v1, v2, v3 );
+      Triangle& t_new = add_triangle( v1, v2, v3 );
       t_new.is_active(true);
     }
 
@@ -1931,7 +1931,7 @@ private:
       t2 = nullptr;
 
       // Create new quadrilateral element
-      Quad& q_new = quads_.push_back( *b1[i], *b2[i], *p2[i], *p1[i] );
+      Quad& q_new = add_quad( *b1[i], *b2[i], *p2[i], *p1[i] );
       q_new.is_active( true );
 
     }
@@ -1967,8 +1967,8 @@ private:
     // with this new vertex
     if ( !tri )
     {
-      Vertex& v_new = verts_.push_back( xy );
-      tri = &( tris_.push_back(v1, v2, v_new) );
+      Vertex& v_new = add_vertex( xy );
+      tri = &( add_triangle(v1, v2, v_new) );
 
       // If the created entities are invalid, clean up
       if ( !check_vertex( v_new ) || !check_triangle( *tri ) )
@@ -2032,7 +2032,7 @@ private:
       // Don't add a new vertex and instead only connect (a,b,c)
       if ( alpha <= TQMeshQuadLayerAngle )
       {
-        Triangle* t_new = &( tris_.push_back(a, b, c) );
+        Triangle* t_new = &( add_triangle(a, b, c) );
 
         if ( !check_triangle( *t_new ) )
         {
@@ -2049,10 +2049,10 @@ private:
       {
         const Vec2d v_xy = b.xy() + l1 + l2;
 
-        Vertex& v_new = verts_.push_back( v_xy );
+        Vertex& v_new = add_vertex( v_xy );
 
-        Triangle* t1_new = &( tris_.push_back(a, b, v_new) );
-        Triangle* t2_new = &( tris_.push_back(b, c, v_new) );
+        Triangle* t1_new = &( add_triangle(a, b, v_new) );
+        Triangle* t2_new = &( add_triangle(b, c, v_new) );
 
         if (  !check_vertex( v_new ) 
            || !check_triangle( *t1_new ) || !check_triangle( *t2_new ) )
@@ -2137,10 +2137,10 @@ private:
         if ( delta <= h )
         {
           const Vec2d v_xy = 0.5 * (p1.xy() + p2.xy());
-          Vertex& v_new = verts_.push_back( v_xy );
+          Vertex& v_new = add_vertex( v_xy );
 
-          Triangle& t1_new = tris_.push_back(p1, c, v_new);
-          Triangle& t2_new = tris_.push_back(c, p2, v_new);
+          Triangle& t1_new = add_triangle(p1, c, v_new);
+          Triangle& t2_new = add_triangle(c, p2, v_new);
 
           if (  !check_vertex( v_new ) 
              || !check_triangle( t1_new )
@@ -2160,7 +2160,7 @@ private:
         }
         else
         {
-          Triangle& t_new = tris_.push_back(p1, c, p2);
+          Triangle& t_new = add_triangle(p1, c, p2);
 
           if ( !check_triangle( t_new ) )
             check_remove_triangle( t_new );
