@@ -216,6 +216,7 @@ public:
   EdgeList& boundary_edges() { return bdry_edges_; }
 
   double area() const { return mesh_area_; }
+  int id() const { return mesh_id_; }
 
   /*------------------------------------------------------------------
   | Add another mesh to the partner-mesh-list
@@ -2360,6 +2361,8 @@ private:
 static inline std::ostream& operator<<(std::ostream& os, 
                                        const Mesh& mesh)
 {
+  os << "MESH " << mesh.id() << "\n";
+
   os << "VERTICES " << mesh.vertices().size() << "\n";
   for ( const auto& v_ptr : mesh.vertices() )
   {
@@ -2388,9 +2391,17 @@ static inline std::ostream& operator<<(std::ostream& os,
       << std::setw(4) << fr_index << "\n";
   }
 
+
+  // During the output of all boundary edges, we track the 
+  // occurence of interface edges to other meshes
+  size_t n_interface_edges = 0;
+
   os << "BOUNDARYEDGES " << mesh.boundary_edges().size() << "\n";
   for ( const auto& e_ptr : mesh.boundary_edges() )
   {
+    if (e_ptr->twin_edge() != nullptr)
+      ++n_interface_edges;
+
     auto v1_index = e_ptr->v1().index();
     auto v2_index = e_ptr->v2().index();
 
@@ -2404,6 +2415,36 @@ static inline std::ostream& operator<<(std::ostream& os,
       << std::setw(4) << v2_index << ","
       << std::setw(4) << fl_index << ","
       << std::setw(4) << marker << "\n";
+  }
+
+  os << "INTERFACEDGES " << n_interface_edges << "\n";
+  for ( const auto& e_ptr : mesh.boundary_edges() )
+  {
+    if (e_ptr->twin_edge() == nullptr)
+      continue;
+
+    auto v1_index = e_ptr->v1().index();
+    auto v2_index = e_ptr->v2().index();
+
+    auto fl_index = ( e_ptr->facet_l() != nullptr ) 
+                  ?   e_ptr->facet_l()->index()
+                  :   -1;
+
+    auto e_twin = e_ptr->twin_edge();
+    auto f_twin = e_twin->facet_l();
+    auto fl_twin_index = ( f_twin != nullptr )
+                       ?   f_twin->index()
+                       :   -1;
+    auto fl_twin_mesh_id = ( f_twin != nullptr )
+                         ?   f_twin->mesh_id()
+                         :   -1;
+
+    os << std::setprecision(0) << std::fixed 
+      << std::setw(4) << v1_index << "," 
+      << std::setw(4) << v2_index << ","
+      << std::setw(4) << fl_index << ","
+      << std::setw(4) << fl_twin_index << ","
+      << std::setw(4) << fl_twin_mesh_id  << "\n";
   }
 
   os << "FRONT " << mesh.front().size() << "\n";
@@ -2426,12 +2467,14 @@ static inline std::ostream& operator<<(std::ostream& os,
     auto v2_index = q_ptr->v2().index();
     auto v3_index = q_ptr->v3().index();
     auto v4_index = q_ptr->v4().index();
+    auto mesh_id  = q_ptr->mesh_id();
 
     os << std::setprecision(0) << std::fixed
       << std::setw(4) << v1_index << ","
       << std::setw(4) << v2_index << ","
       << std::setw(4) << v3_index << ","
-      << std::setw(4) << v4_index << "\n";
+      << std::setw(4) << v4_index << ","
+      << std::setw(4) << mesh_id << "\n";
   }
 
   os << "TRIANGLES " << mesh.triangles().size() << "\n";
@@ -2440,11 +2483,13 @@ static inline std::ostream& operator<<(std::ostream& os,
     auto v1_index = t_ptr->v1().index();
     auto v2_index = t_ptr->v2().index();
     auto v3_index = t_ptr->v3().index();
+    auto mesh_id  = t_ptr->mesh_id();
 
     os << std::setprecision(0) << std::fixed
       << std::setw(4) << v1_index << ","
       << std::setw(4) << v2_index << ","
-      << std::setw(4) << v3_index << "\n";
+      << std::setw(4) << v3_index << ","
+      << std::setw(4) << mesh_id << "\n";
   }
 
   os << "QUADNEIGHBORS " << mesh.quads().size() << "\n";
