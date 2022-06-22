@@ -14,15 +14,10 @@ class TQMesh:
             of the mesh in the file.
         '''
         self.mesh_id = mesh_id
-
         self.vertices = np.array( io_read_vertices( mesh_id, lines ) )
-
         self.front, self.front_markers = io_read_front( mesh_id, lines, self.vertices )
-
         self.boundary, self.boundary_elements, self.boundary_markers = io_read_boundary( mesh_id, lines, self.vertices )
-
         self.triangles, self.tri_ids = io_read_triangles( mesh_id, lines, self.vertices )
-
         self.quads, self.quad_ids = io_read_quads( mesh_id, lines, self.vertices )
 
     def get_extent(self):
@@ -57,23 +52,23 @@ class TQMesh:
         bdry_collection = mc.LineCollection( self.boundary, colors=[(.7,.4,.4)], lw=2.0, ls='--' )
         ax.add_collection( bdry_collection )
 
-    def plot_triangles(self, ax, indices=False):
+    def plot_triangles(self, ax, color='None', indices=False):
         ''' Plot all mesh triangles
         '''
         tri_collection = mc.PolyCollection(self.triangles, edgecolors=['k'],
-                                           facecolors=['None'], lw=0.5 )
+                                           facecolors=[color], lw=0.5 )
         ax.add_collection( tri_collection )
 
         if indices:
             for i, t in enumerate(self.triangles):
                 c = np.mean(t, axis=0)
-                ax.text(c[0], c[1], str(i+len(quads)), c=(.3,.3,.3))
+                ax.text(c[0], c[1], str(i+len(self.quads)), c=(.3,.3,.3))
 
-    def plot_quads(self, ax, indices=False):
+    def plot_quads(self, ax, color='None', indices=False):
         ''' Plot all mesh quads
         '''
         quad_collection = mc.PolyCollection(self.quads, edgecolors=['k'],
-                                            facecolors=['None'], lw=0.5 )
+                                            facecolors=[color], lw=0.5 )
         ax.add_collection( quad_collection )
 
         if indices:
@@ -340,15 +335,15 @@ def main():
         meshes.append( TQMesh(i, lines) )
 
 
-    #vertices = np.array( io_read_vertices( lines ) )
-    #front, front_markers = io_read_front( lines, vertices )
-    #boundary, boundary_elements, boundary_markers = io_read_boundary( lines, vertices )
-    #triangles, tri_ids = io_read_triangles( lines, vertices )
-    #quads, quad_ids = io_read_quads( lines, vertices )
-
     qtree = io_read_qtree( lines )
     X,Y,Z = io_read_sizefunction( lines )
 
+
+
+    # Initialize face colors for mesh entities
+    colors = ['None' for i in range(len(meshes))]
+    if '-c' in sys.argv:
+        colors = plt.cm.Set1( np.linspace(0.0,1.0,len(meshes)) )
 
 
 
@@ -381,8 +376,8 @@ def main():
         if '-b' in sys.argv:
             mesh.plot_boundaries(ax)
 
-        mesh.plot_triangles(ax, '-e' in sys.argv)
-        mesh.plot_quads(ax, '-e' in sys.argv)
+        mesh.plot_triangles(ax, colors[i], '-e' in sys.argv)
+        mesh.plot_quads(ax, colors[i], '-e' in sys.argv)
 
 
     xy_min = np.min(np.vstack( xy_min ).T)
@@ -395,60 +390,6 @@ def main():
     ax.set_aspect('equal')
 
 
-
-
-    '''
-
-
-    quad_collection = mc.PolyCollection( quads, edgecolors=['k'], facecolors=['None'], lw=0.5 )
-    ax.add_collection( quad_collection )
-
-    tri_collection = mc.PolyCollection( triangles, edgecolors=['k'], facecolors=['None'], lw=0.5 )
-    #tri_collection = mc.PolyCollection( triangles, edgecolors=['w'], facecolors=[(.3,.3,.3)], lw=0.5 )
-    ax.add_collection( tri_collection )
-
-    if '-i' in sys.argv:
-
-        for i, q in enumerate(quads):
-            c = np.mean( q, axis=0 )
-            ax.text(c[0], c[1], str(i), c=(.3,.3,.3))
-
-        for i, t in enumerate(triangles):
-            c = np.mean( t, axis=0 )
-            ax.text(c[0], c[1], str(i+len(quads)), c=(.3,.3,.3))
-
-    # Plot the mesh boundaries
-
-    # Plot remaining advancing front edges
-    if '-f' in sys.argv:
-        front_collection = mc.LineCollection( front, colors=[(.7,.4,.4)], lw=1.0, ls='--' )
-        ax.add_collection( front_collection )
-
-    # Plot the boundary edges
-    if '-b' in sys.argv:
-        bdry_collection = mc.LineCollection( boundary, colors=[(.7,.4,.4)], lw=2.0, ls='--' )
-        ax.add_collection( bdry_collection )
-
-    if len(vertices) > 0:
-        #ax.scatter( vertices[:,0], vertices[:,1], marker='o', color='k', s=3 )
-
-        if '-v' in sys.argv:
-            for i, v in enumerate(vertices):
-                ax.text(v[0], v[1], str(i))
-
-    ax.set_aspect('equal')
-
-    xy_max = np.max( vertices )
-    xy_min = np.min( vertices )
-    ax.set_xlim( (xy_min,xy_max))
-    ax.set_ylim( (xy_min,xy_max))
-
-    ax.set_ylim( (np.min(vertices[:,1]), np.max(vertices[:,1]) ) )
-
-    ax.set_axis_off()
-
-    #plt.show()
-    '''
 
     fig.tight_layout()
     export_fig_path = "MeshPlot.png"
