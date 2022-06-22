@@ -6,6 +6,98 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import sys, os
 
 
+class TQMesh:
+
+    def __init__(self, mesh_id, lines):
+        ''' Initialize a new TQMesh from a file, passed as an array
+            of lines. The mesh_id corresponds to the index number
+            of the mesh in the file.
+        '''
+        self.mesh_id = mesh_id
+
+        self.vertices = np.array( io_read_vertices( mesh_id, lines ) )
+
+        self.front, self.front_markers = io_read_front( mesh_id, lines, self.vertices )
+
+        self.boundary, self.boundary_elements, self.boundary_markers = io_read_boundary( mesh_id, lines, self.vertices )
+
+        self.triangles, self.tri_ids = io_read_triangles( mesh_id, lines, self.vertices )
+
+        self.quads, self.quad_ids = io_read_quads( mesh_id, lines, self.vertices )
+
+    def get_extent(self):
+        ''' Return the mesh extents
+        '''
+        xy_max = np.max( self.vertices )
+        xy_min = np.min( self.vertices )
+
+        return (xy_min, xy_max)
+
+
+
+    def plot_vertices(self, ax, indices=False):
+        ''' Plot all mesh vertices
+        '''
+        ax.scatter(self.vertices[:,0], self.vertices[:,1],
+                   marker='o', color='k', s=3)
+
+        if indices:
+            for i, v in enumerate(self.vertices):
+                ax.text(v[0], v[1], str(i))
+
+    def plot_front(self, ax):
+        ''' Plot the advancing front of the mesh
+        '''
+        front_collection = mc.LineCollection( self.front, colors=[(.7,.4,.4)], lw=1.0, ls='--' )
+        ax.add_collection( front_collection )
+
+    def plot_boundaries(self, ax):
+        ''' Plot the mesh boundary edges
+        '''
+        bdry_collection = mc.LineCollection( self.boundary, colors=[(.7,.4,.4)], lw=2.0, ls='--' )
+        ax.add_collection( bdry_collection )
+
+    def plot_triangles(self, ax, indices=False):
+        ''' Plot all mesh triangles
+        '''
+        tri_collection = mc.PolyCollection(self.triangles, edgecolors=['k'],
+                                           facecolors=['None'], lw=0.5 )
+        ax.add_collection( tri_collection )
+
+        if indices:
+            for i, t in enumerate(self.triangles):
+                c = np.mean(t, axis=0)
+                ax.text(c[0], c[1], str(i+len(quads)), c=(.3,.3,.3))
+
+    def plot_quads(self, ax, indices=False):
+        ''' Plot all mesh quads
+        '''
+        quad_collection = mc.PolyCollection(self.quads, edgecolors=['k'],
+                                            facecolors=['None'], lw=0.5 )
+        ax.add_collection( quad_collection )
+
+        if indices:
+            for i, q in enumerate(self.quads):
+                c = np.mean( q, axis=0 )
+                ax.text(c[0], c[1], str(i), c=(.3,.3,.3))
+
+
+
+
+
+def io_gather_mesh_ids(lines):
+    ''' Returns a list of mesh-IDs that are defined in the mesh file.
+        This is used to estimate the number of meshes in the file.
+    '''
+    mesh_ids = []
+
+    for i, line in enumerate(lines):
+        line = line.split(" ")
+        if line[0] == "MESH":
+            mesh_ids.append( int(line[1]) )
+
+    return mesh_ids
+
 def io_clear_comments(lines):
     ''' Clears all comments from the input string
     '''
@@ -14,19 +106,26 @@ def io_clear_comments(lines):
         if line[0] == '#':
             lines.pop( i )
 
-def io_read_vertices(lines):
+def io_read_vertices(mesh_id, lines):
     ''' Read vertices from the input string
     '''
     vertices = []
     start, n_vert = 0, 0
+    mesh_passed = False
 
+    # Estimate start and ending line to read the vertices
+    # that are associated to the given mesh-ID
     for i, line in enumerate(lines):
         line = line.split(" ")
-        if line[0] == "VERTICES":
+        if line[0] == "MESH":
+            if int(line[1]) == mesh_id:
+                mesh_passed = True
+        if mesh_passed and line[0] == "VERTICES":
             start  = i + 1
             n_vert = int(line[1])
             break
 
+    # Read the vertices
     for i in range(start, start+n_vert):
         line = lines[i]
         (x,y) = ( float(s) for s in line.split(',') )
@@ -34,20 +133,27 @@ def io_read_vertices(lines):
 
     return vertices
 
-def io_read_front(lines, vertices):
+def io_read_front(mesh_id, lines, vertices):
     ''' Read advancing front edges from the input string
     '''
     edges = []
     markers = []
     start, n_edge = 0, 0
+    mesh_passed = False
 
+    # Estimate start and ending line to read the front edges
+    # that are associated to the given mesh-ID
     for i, line in enumerate(lines):
         line = line.split(" ")
-        if line[0] == "FRONT":
+        if line[0] == "MESH":
+            if int(line[1]) == mesh_id:
+                mesh_passed = True
+        if mesh_passed and line[0] == "FRONT":
             start = i + 1
             n_edge = int(line[1])
             break
 
+    # Read the front edges and their markers
     for i in range(start, start+n_edge):
         line = lines[i]
         (v1,v2,m) = ( int(s) for s in line.split(',') )
@@ -58,21 +164,27 @@ def io_read_front(lines, vertices):
 
     return edges, markers
 
-def io_read_boundary(lines, vertices):
+def io_read_boundary(mesh_id, lines, vertices):
     ''' Read boundary edges from the input string
     '''
     edges = []
     bdry_elements = []
     markers = []
     start, n_edge = 0, 0
+    mesh_passed = False
 
+    # Estimate start and ending line to read the boundary edges
+    # that are associated to the given mesh-ID
     for i, line in enumerate(lines):
         line = line.split(" ")
-        if line[0] == "BOUNDARYEDGES":
+        if line[0] == "MESH":
+            if int(line[1]) == mesh_id:
+                mesh_passed = True
+        if mesh_passed and line[0] == "BOUNDARYEDGES":
             start = i + 1
             n_edge = int(line[1])
             break
-
+    # Read the boundary edges and their markers
     for i in range(start, start+n_edge):
         line = lines[i]
         (v1,v2,e,m) = ( int(s) for s in line.split(',') )
@@ -85,52 +197,68 @@ def io_read_boundary(lines, vertices):
     return edges, bdry_elements, markers
 
 
-def io_read_triangles(lines, vertices):
+def io_read_triangles(mesh_id, lines, vertices):
     ''' Read triangles from the input string
     '''
-    tris = []
+    tris, mesh_ids = [], []
     start, n_tris = 0, 0
+    mesh_passed = False
 
+    # Estimate start and ending line to read the triangles
+    # that are associated to the given mesh-ID
     for i, line in enumerate(lines):
         line = line.split(" ")
-        if line[0] == "TRIANGLES":
+        if line[0] == "MESH":
+            if int(line[1]) == mesh_id:
+                mesh_passed = True
+        if mesh_passed and line[0] == "TRIANGLES":
             start = i + 1
             n_tris = int(line[1])
             break
 
+    # Read triangles and their corresponding mesh ID
     for i in range(start, start+n_tris):
         line = lines[i]
-        (v1,v2,v3) = ( int(s) for s in line.split(',') )
+        (v1,v2,v3,mesh_id) = ( int(s) for s in line.split(',') )
         (x1, y1) = vertices[v1]
         (x2, y2) = vertices[v2]
         (x3, y3) = vertices[v3]
         tris.append( [(x1,y1),(x2,y2),(x3,y3)] )
+        mesh_ids.append( mesh_id )
 
-    return tris
+    return tris, mesh_ids
 
-def io_read_quads(lines, vertices):
+def io_read_quads(mesh_id, lines, vertices):
     ''' Read quadrilaterals from the input string
     '''
-    quads = []
+    quads, mesh_ids = [], []
     start, n_quads = 0, 0
+    mesh_passed = False
 
+    # Estimate start and ending line to read the quads
+    # that are associated to the given mesh-ID
     for i, line in enumerate(lines):
         line = line.split(" ")
-        if line[0] == "QUADS":
+        if line[0] == "MESH":
+            if int(line[1]) == mesh_id:
+                mesh_passed = True
+        if mesh_passed and line[0] == "QUADS":
             start = i + 1
             n_quads = int(line[1])
             break
 
+    # Read quads and their corresponding mesh ID
     for i in range(start, start+n_quads):
         line = lines[i]
-        (v1,v2,v3,v4) = ( int(s) for s in line.split(',') )
+        (v1,v2,v3,v4,mesh_id) = ( int(s) for s in line.split(',') )
         (x1, y1) = vertices[v1]
         (x2, y2) = vertices[v2]
         (x3, y3) = vertices[v3]
         (x4, y4) = vertices[v4]
         quads.append( [(x1,y1),(x2,y2),(x3,y3),(x4,y4)] )
+        mesh_ids.append( mesh_id )
 
-    return quads
+    return quads, mesh_ids
 
 def io_read_qtree(lines):
     ''' Read qtree from the input string
@@ -204,11 +332,20 @@ def main():
         lines = f.readlines()
 
     io_clear_comments( lines )
-    vertices = np.array( io_read_vertices( lines ) )
-    front, front_markers = io_read_front( lines, vertices )
-    boundary, boundary_elements, boundary_markers = io_read_boundary( lines, vertices )
-    triangles = io_read_triangles( lines, vertices )
-    quads = io_read_quads( lines, vertices )
+
+    mesh_ids = io_gather_mesh_ids( lines )
+
+    meshes = []
+    for i in mesh_ids:
+        meshes.append( TQMesh(i, lines) )
+
+
+    #vertices = np.array( io_read_vertices( lines ) )
+    #front, front_markers = io_read_front( lines, vertices )
+    #boundary, boundary_elements, boundary_markers = io_read_boundary( lines, vertices )
+    #triangles, tri_ids = io_read_triangles( lines, vertices )
+    #quads, quad_ids = io_read_quads( lines, vertices )
+
     qtree = io_read_qtree( lines )
     X,Y,Z = io_read_sizefunction( lines )
 
@@ -228,10 +365,46 @@ def main():
         plt.colorbar(size_fun, cax=cax)
 
 
+    xy_min, xy_max = [], []
+
+    for i, mesh in enumerate(meshes):
+        xy_min_i, xy_max_i = mesh.get_extent()
+        xy_min.append( xy_min_i )
+        xy_max.append( xy_max_i )
+
+        if '-v' in sys.argv:
+            mesh.plot_vertices(ax, indices=True)
+
+        if '-f' in sys.argv:
+            mesh.plot_front(ax)
+
+        if '-b' in sys.argv:
+            mesh.plot_boundaries(ax)
+
+        mesh.plot_triangles(ax, '-e' in sys.argv)
+        mesh.plot_quads(ax, '-e' in sys.argv)
+
+
+    xy_min = np.min(np.vstack( xy_min ).T)
+    xy_max = np.max(np.vstack( xy_max ).T)
+
+    ax.set_xlim( (xy_min,xy_max))
+    ax.set_ylim( (xy_min,xy_max))
+
+    ax.set_axis_off()
+    ax.set_aspect('equal')
+
+
+
+
+    '''
+
+
     quad_collection = mc.PolyCollection( quads, edgecolors=['k'], facecolors=['None'], lw=0.5 )
     ax.add_collection( quad_collection )
 
     tri_collection = mc.PolyCollection( triangles, edgecolors=['k'], facecolors=['None'], lw=0.5 )
+    #tri_collection = mc.PolyCollection( triangles, edgecolors=['w'], facecolors=[(.3,.3,.3)], lw=0.5 )
     ax.add_collection( tri_collection )
 
     if '-i' in sys.argv:
@@ -275,6 +448,7 @@ def main():
     ax.set_axis_off()
 
     #plt.show()
+    '''
 
     fig.tight_layout()
     export_fig_path = "MeshPlot.png"
