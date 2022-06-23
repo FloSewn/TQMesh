@@ -137,7 +137,7 @@ public:
   int mesh_id() const { return mesh_id_; }
   int index() const { return index_; }
   bool is_active() const { return active_; }
-  int color() const { return color_; }
+  bool marker() const { return marker_; }
 
   double area() const { return area_; }
   double circumradius() const { return circ_radius_; }
@@ -162,7 +162,7 @@ public:
   void mesh_id(int i) { mesh_id_ = i; }
   void index(int i) { index_ = i; }
   void is_active(bool a) { active_ = a; }
-  void color(int c){ color_ = c; }
+  void marker(bool c){ marker_ = c; }
 
   /*------------------------------------------------------------------
   | Returns true if the quad is valid
@@ -496,7 +496,7 @@ private:
   int                  mesh_id_       {TQMeshDefaultMeshId};
   int                  index_         {-1};
   bool                 active_        {false};
-  int                  color_         {0};
+  bool                 marker_        {false};
 
   double               area_          {0.0};
   double               circ_radius_   {0.0};

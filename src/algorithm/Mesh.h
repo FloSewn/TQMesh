@@ -1468,9 +1468,9 @@ private:
   ------------------------------------------------------------------*/
   void clean_double_quad_edges()
   {
-    // Initialize all quad colors
+    // Initialize all quad markers
     for ( auto& q_cur : quads_ )
-      q_cur->color(0);
+      q_cur->marker( false );
 
     std::vector<std::pair<Quad*,Quad*>>     quads_to_remove;
     std::vector<std::pair<Edge*,Edge*>>     edges_to_remove;
@@ -1479,7 +1479,7 @@ private:
 
     for ( auto& q_cur : quads_ )
     {
-      if ( q_cur->color() > 0 )
+      if ( q_cur->marker() )
         continue;
 
       // Loop over all edges of the current quad
@@ -1502,7 +1502,7 @@ private:
         // Proceed, if no neighbors are found (nullptr) or if 
         // neighbors of the adjacent edges differ, or if the neighbor
         // has already been added
-        if ( !nbr_1 || !nbr_2 || nbr_1 != nbr_2 || nbr_1->color() > 0)
+        if ( !nbr_1 || !nbr_2 || nbr_1 != nbr_2 || nbr_1->marker() )
           continue;
 
         // In this stage, we address only quad / quad connections
@@ -1521,10 +1521,10 @@ private:
                || e1->v2() == e2->v1() || e1->v2() == e2->v2() ),
             "WRONG EDGES FOUND.");
 
-        // Color the current quads, such that the won't get chosen
+        // Mark the current quads, such that these won't get chosen
         // in upcoming loops
-        q_cur->color(1);
-        q_nbr->color(1);
+        q_cur->marker( true );
+        q_nbr->marker( true );
 
         // Add elements to the removal vectors
         quads_to_remove.push_back( {q_cur.get(), q_nbr} ); 
@@ -1641,9 +1641,9 @@ private:
   ------------------------------------------------------------------*/
   void clean_double_triangle_edges()
   {
-    // Initialize all quad colors
+    // Initialize all quad markers to false
     for ( auto& q_cur : quads_ )
-      q_cur->color(0);
+      q_cur->marker(false);
 
     std::vector<std::pair<Quad*,Triangle*>> elements_to_remove;
     std::vector<std::pair<Edge*,Edge*>>     edges_to_remove;
@@ -1651,7 +1651,7 @@ private:
 
     for ( auto& q_cur : quads_ )
     {
-      if ( q_cur->color() > 0 )
+      if ( q_cur->marker() )
         continue;
 
       // Loop over all edges of the current quad
@@ -1673,7 +1673,7 @@ private:
         // Proceed, if no neighbors are found (nullptr) or if 
         // neighbors of the adjacent edges differ, or if the neighbor
         // has already been added
-        if ( !nbr_1 || !nbr_2 || nbr_1 != nbr_2 || nbr_1->color() > 0)
+        if ( !nbr_1 || !nbr_2 || nbr_1 != nbr_2 || nbr_1->marker() )
           continue;
 
         // In this stage, we address only quad / triangle connections
@@ -1692,10 +1692,10 @@ private:
                || e1->v2() == e2->v1() || e1->v2() == e2->v2() ),
             "WRONG EDGES FOUND.");
 
-        // Color the current quads, such that the won't get chosen
+        // Mark the current quads, such that the won't get chosen
         // in upcoming loops
-        q_cur->color(1);
-        t_nbr->color(1);
+        q_cur->marker( true );
+        t_nbr->marker( true );
 
         // Add elements to the removal vectors
         elements_to_remove.push_back( {q_cur.get(), t_nbr} ); 

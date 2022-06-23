@@ -42,7 +42,7 @@ class Facet
   virtual Vertex& vertex(size_t i) = 0;
   virtual int index() const = 0;
   virtual bool is_active() const = 0;
-  virtual int color() const = 0;
+  virtual bool marker() const = 0;
   virtual int mesh_id() const = 0;
 
   /*------------------------------------------------------------------
@@ -51,7 +51,7 @@ class Facet
   virtual void mesh_id(int i) = 0;
   virtual void index(int i) = 0;
   virtual void is_active(bool a) = 0;
-  virtual void color(int c) = 0;
+  virtual void marker(bool c) = 0;
 
   /*------------------------------------------------------------------
   | Functions to return indices of vertices, edges...
