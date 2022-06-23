@@ -51,11 +51,11 @@ public:
   | This function is used to initialize the advancing front for a 
   | given mesh and its corresponding domain.
   | If a connectivity structure between the front's mesh and a 
-  | partner mesh is given, then the respective boundary edges 
+  | neighbor mesh is given, then the respective boundary edges 
   | in that structure are considered in the generation of the 
   | advancing front edges, such that both the front's mesh and its 
-  | partner mesh will retain the conformity of their boundaries.
-  | Front edges that are not located at partner mesh boundaries 
+  | neighbor mesh will retain the conformity of their boundaries.
+  | Front edges that are not located at neighbor mesh boundaries 
   | will be refined, such that the meet the size criteria of the 
   | domain's size function.
   ------------------------------------------------------------------*/
@@ -82,7 +82,7 @@ public:
         Vertex& v1_bdry = e->v1();
 
         // Check if there are sub-edges, that belong to a possible 
-        // partner mesh
+        // neighbor mesh
         if ( edge_conn.size() > 0 && 
              edge_conn[i_bdry].size() > 0 &&
              edge_conn[i_bdry][i_edge].size() > 0 )
@@ -175,7 +175,7 @@ public:
             Edge& e_new = this->add_edge( *v2, *v1, sub_edge->marker() );
             edges_to_refine.push_back( false );
 
-            // Connect the boundary edge of the partner mesh
+            // Connect the boundary edge of the neighbor mesh
             // and the new front edge
             e_new.twin_edge( sub_edge );
             sub_edge->twin_edge( &e_new );

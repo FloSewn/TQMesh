@@ -134,7 +134,7 @@ public:
   const Vec2d& xy() const { return xy_; }
   const Vec2d& circumcenter() const { return circ_centr_; }
 
-  int mesh_id() const { return mesh_id_; }
+  int color() const { return color_; }
   int index() const { return index_; }
   bool is_active() const { return active_; }
   bool marker() const { return marker_; }
@@ -159,7 +159,7 @@ public:
   void nbr3(Facet* f) { f_[2] = f; }
   void nbr4(Facet* f) { f_[3] = f; }
 
-  void mesh_id(int i) { mesh_id_ = i; }
+  void color(int i) { color_ = i; }
   void index(int i) { index_ = i; }
   void is_active(bool a) { active_ = a; }
   void marker(bool c){ marker_ = c; }
@@ -493,7 +493,7 @@ private:
   Vec2d                xy_            {0.0, 0.0};
   Vec2d                circ_centr_    {0.0,0.0};
 
-  int                  mesh_id_       {TQMeshDefaultMeshId};
+  int                  color_         {TQMeshDefaultElementColor};
   int                  index_         {-1};
   bool                 active_        {false};
   bool                 marker_        {false};

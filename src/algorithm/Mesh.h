@@ -48,15 +48,17 @@ public:
   ------------------------------------------------------------------*/
   Mesh(Domain&   domain,
        int       mesh_id=TQMeshDefaultMeshId,
+       int       element_color=TQMeshDefaultElementColor,
        double    qtree_scale=ContainerQuadTreeScale,
        size_t    qtree_items=ContainerQuadTreeItems, 
        size_t    qtree_depth=ContainerQuadTreeDepth)
-  : domain_  { &domain }
-  , mesh_id_ { mesh_id }
-  , verts_   { qtree_scale, qtree_items, qtree_depth }
-  , tris_    { qtree_scale, qtree_items, qtree_depth }
-  , quads_   { qtree_scale, qtree_items, qtree_depth }
-  , front_   { }
+  : domain_     { &domain }
+  , mesh_id_    { mesh_id }
+  , elem_color_ { element_color }
+  , verts_      { qtree_scale, qtree_items, qtree_depth }
+  , tris_       { qtree_scale, qtree_items, qtree_depth }
+  , quads_      { qtree_scale, qtree_items, qtree_depth }
+  , front_      { }
   {
 
     // Initialize edges in the advancing front
@@ -72,39 +74,41 @@ public:
   | Constructor
   ------------------------------------------------------------------*/
   Mesh(Domain&   domain,
-       Mesh&     partner_mesh,
+       Mesh&     neighbor_mesh,
        int       mesh_id=TQMeshDefaultMeshId,
+       int       element_color=TQMeshDefaultElementColor,
        double    qtree_scale=ContainerQuadTreeScale,
        size_t    qtree_items=ContainerQuadTreeItems, 
        size_t    qtree_depth=ContainerQuadTreeDepth)
-  : domain_  { &domain }
-  , mesh_id_ { mesh_id }
-  , verts_   { qtree_scale, qtree_items, qtree_depth }
-  , tris_    { qtree_scale, qtree_items, qtree_depth }
-  , quads_   { qtree_scale, qtree_items, qtree_depth }
-  , front_   { }
+  : domain_     { &domain }
+  , mesh_id_    { mesh_id }
+  , elem_color_ { element_color }
+  , verts_      { qtree_scale, qtree_items, qtree_depth }
+  , tris_       { qtree_scale, qtree_items, qtree_depth }
+  , quads_      { qtree_scale, qtree_items, qtree_depth }
+  , front_      { }
   {
     // Check if the mesh that is given as input parameter 
     // is overlapping with the current domain
-    Domain& partner_domain = partner_mesh.domain();
+    Domain& neighbor_domain = neighbor_mesh.domain();
 
-    size_t n_overlaps = domain_->get_overlaps( partner_domain );
+    size_t n_overlaps = domain_->get_overlaps( neighbor_domain );
 
     if ( n_overlaps < 1 )
       MSG("WARNING: NEW MESH IS INITIALIZED FROM AN EXISTING MESH, "
           "BUT THEIR DOMAINS DO NOT SHARE ANY BOUNDARY EDGES.");
 
     // For every boundary edge of the current mesh's domain,
-    // collect all overlapping boundary edges of the partner mesh 
+    // collect all overlapping boundary edges of the neighbor mesh 
     BdryEdgeConn bdry_edge_conn {};
 
     if ( n_overlaps > 0 )
     {
-      bdry_edge_conn = setup_bdry_edge_connectivity(partner_mesh);
+      bdry_edge_conn = setup_bdry_edge_connectivity(neighbor_mesh);
 
-      // Connect this mesh with its partner
-      this->add_partner_mesh( partner_mesh );
-      partner_mesh.add_partner_mesh( *this );
+      // Connect this mesh with its neighbor
+      this->add_neighbor_mesh( neighbor_mesh );
+      neighbor_mesh.add_neighbor_mesh( *this );
     }
 
     // Initialize edges in the advancing front
@@ -164,14 +168,14 @@ public:
   Triangle& add_triangle(Vertex& v1, Vertex& v2, Vertex& v3)
   {
     Triangle& t_new = tris_.push_back(v1, v2, v3);
-    t_new.mesh_id( mesh_id_ );
+    t_new.color( elem_color_ );
     return t_new;
   } 
 
   Quad& add_quad(Vertex& v1, Vertex& v2, Vertex& v3, Vertex& v4)
   {
     Quad& q_new = quads_.push_back(v1, v2, v3, v4);
-    q_new.mesh_id( mesh_id_ );
+    q_new.color( elem_color_ );
     return q_new;
   } 
 
@@ -217,23 +221,25 @@ public:
 
   double area() const { return mesh_area_; }
   int id() const { return mesh_id_; }
+  int element_color() const { return elem_color_; }
+  size_t neighbor_meshes() const { return neighbor_meshes_.size(); }
 
   /*------------------------------------------------------------------
-  | Add another mesh to the partner-mesh-list
+  | Add another mesh to the neighbor-mesh-list
   ------------------------------------------------------------------*/
-  void add_partner_mesh(Mesh& mesh)
-  { partner_meshes_.push_back( &mesh ); }
+  void add_neighbor_mesh(Mesh& mesh)
+  { neighbor_meshes_.push_back( &mesh ); }
 
   /*------------------------------------------------------------------
-  | Remove another mesh to the partner-mesh-list
+  | Remove another mesh to the neighbor-mesh-list
   ------------------------------------------------------------------*/
-  void remove_partner_mesh(Mesh& mesh)
+  void remove_neighbor_mesh(Mesh& mesh)
   {
-    auto it = std::find(partner_meshes_.begin(), 
-                        partner_meshes_.end(), 
+    auto it = std::find(neighbor_meshes_.begin(), 
+                        neighbor_meshes_.end(), 
                         &mesh);
-    if ( it != partner_meshes_.end() )
-      partner_meshes_.erase( it );
+    if ( it != neighbor_meshes_.end() )
+      neighbor_meshes_.erase( it );
   }
 
   /*------------------------------------------------------------------
@@ -298,6 +304,15 @@ public:
   ------------------------------------------------------------------*/
   bool refine_to_quads()
   {
+    // Check if this mesh is connected to any other meshes
+    // If yes, do not refine
+    if ( neighbor_meshes() > 0 )
+    {
+      MSG("WARNING: CAN NOT REFINE MESH " << mesh_id_ << 
+          ", BECAUSE IT IS CONNECTED TO ANOTHER MESH.");
+      return false;
+    }
+
     MSG("START MESH REFINEMENT");
     clear_waste();
 
@@ -363,9 +378,14 @@ public:
       Vertex& v7 = add_vertex( t->xy() );
 
       // Create new sub-quads 
-      add_quad( v1, *v2, v7, *v6 );
-      add_quad( v3, *v4, v7, *v2 );
-      add_quad( v5, *v6, v7, *v4 );
+      Quad& q1 = add_quad( v1, *v2, v7, *v6 );
+      Quad& q2 = add_quad( v3, *v4, v7, *v2 );
+      Quad& q3 = add_quad( v5, *v6, v7, *v4 );
+
+      // New quads get assigned to colors of old element
+      q1.color( t->color() );
+      q2.color( t->color() );
+      q3.color( t->color() );
 
       // Create new interior edges
       intr_edges_.add_edge( *v2, v7 );
@@ -396,10 +416,16 @@ public:
       Vertex& v9 = add_vertex( q->xy() );
 
       // Create new sub-quads 
-      add_quad( v1, *v2, v9, *v8 );
-      add_quad( v3, *v4, v9, *v2 );
-      add_quad( v5, *v6, v9, *v4 );
-      add_quad( v7, *v8, v9, *v6 );
+      Quad& q1 = add_quad( v1, *v2, v9, *v8 );
+      Quad& q2 = add_quad( v3, *v4, v9, *v2 );
+      Quad& q3 = add_quad( v5, *v6, v9, *v4 );
+      Quad& q4 = add_quad( v7, *v8, v9, *v6 );
+
+      // New quads get assigned to colors of old element
+      q1.color( q->color() );
+      q2.color( q->color() );
+      q3.color( q->color() );
+      q4.color( q->color() );
 
       // Create new interior edges
       intr_edges_.add_edge( *v2, v9 );
@@ -2197,11 +2223,11 @@ private:
   /*------------------------------------------------------------------
   | This function creates a connectivity structure between the 
   | domain of this mesh and the existing boundary edges of a given
-  | partner mesh. 
+  | neighbor mesh. 
   | It is called upon the construction of a new mesh structure, 
   | where an existing mesh is given as argument.
   ------------------------------------------------------------------*/
-  BdryEdgeConn setup_bdry_edge_connectivity(Mesh& partner_mesh)
+  BdryEdgeConn setup_bdry_edge_connectivity(Mesh& neighbor_mesh)
   {
     BdryEdgeConn bdry_edge_connectivity {};
     size_t n_init_edges = 0;
@@ -2222,7 +2248,7 @@ private:
 
         // Check boundary edges of neighboring mesh for overlap
         // with current domain boundary edge
-        EdgeVector found = partner_mesh.get_bdry_edges(c, r);
+        EdgeVector found = neighbor_mesh.get_bdry_edges(c, r);
 
         // Get all edges, that are actually located on the segment
         // of the current domain boundary edge 
@@ -2337,8 +2363,9 @@ private:
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
-  Domain*    domain_ {nullptr};
-  int        mesh_id_ { TQMeshDefaultMeshId };
+  Domain*    domain_     {nullptr};
+  int        mesh_id_    { 0 };
+  int        elem_color_ { TQMeshDefaultElementColor };
 
   Vertices   verts_;
   Triangles  tris_;
@@ -2348,7 +2375,7 @@ private:
   EdgeList   intr_edges_ { Orientation::NONE };
   EdgeList   bdry_edges_ { Orientation::NONE };
 
-  MeshVector partner_meshes_ {};
+  MeshVector neighbor_meshes_ {};
 
   double     mesh_area_ { 0.0 };
 
@@ -2435,8 +2462,8 @@ static inline std::ostream& operator<<(std::ostream& os,
     auto fl_twin_index = ( f_twin != nullptr )
                        ?   f_twin->index()
                        :   -1;
-    auto fl_twin_mesh_id = ( f_twin != nullptr )
-                         ?   f_twin->mesh_id()
+    auto fl_twin_color = ( f_twin != nullptr )
+                         ?   f_twin->color()
                          :   -1;
 
     os << std::setprecision(0) << std::fixed 
@@ -2444,7 +2471,7 @@ static inline std::ostream& operator<<(std::ostream& os,
       << std::setw(4) << v2_index << ","
       << std::setw(4) << fl_index << ","
       << std::setw(4) << fl_twin_index << ","
-      << std::setw(4) << fl_twin_mesh_id  << "\n";
+      << std::setw(4) << fl_twin_color << "\n";
   }
 
   os << "FRONT " << mesh.front().size() << "\n";
@@ -2467,14 +2494,14 @@ static inline std::ostream& operator<<(std::ostream& os,
     auto v2_index = q_ptr->v2().index();
     auto v3_index = q_ptr->v3().index();
     auto v4_index = q_ptr->v4().index();
-    auto mesh_id  = q_ptr->mesh_id();
+    auto color    = q_ptr->color();
 
     os << std::setprecision(0) << std::fixed
       << std::setw(4) << v1_index << ","
       << std::setw(4) << v2_index << ","
       << std::setw(4) << v3_index << ","
       << std::setw(4) << v4_index << ","
-      << std::setw(4) << mesh_id << "\n";
+      << std::setw(4) << color << "\n";
   }
 
   os << "TRIANGLES " << mesh.triangles().size() << "\n";
@@ -2483,13 +2510,13 @@ static inline std::ostream& operator<<(std::ostream& os,
     auto v1_index = t_ptr->v1().index();
     auto v2_index = t_ptr->v2().index();
     auto v3_index = t_ptr->v3().index();
-    auto mesh_id  = t_ptr->mesh_id();
+    auto color    = t_ptr->color();
 
     os << std::setprecision(0) << std::fixed
       << std::setw(4) << v1_index << ","
       << std::setw(4) << v2_index << ","
       << std::setw(4) << v3_index << ","
-      << std::setw(4) << mesh_id << "\n";
+      << std::setw(4) << color << "\n";
   }
 
   os << "QUADNEIGHBORS " << mesh.quads().size() << "\n";

@@ -51,7 +51,8 @@ constexpr double TQMeshMinimumElementSize = 0.001;
 constexpr double TQMeshMinimumElementScaling = 0.001;
 
 constexpr int TQMeshInteriorEdgeMarker = -1;
-constexpr int TQMeshDefaultMeshId = -1;
+constexpr int TQMeshDefaultElementColor = 0;
+constexpr int TQMeshDefaultMeshId = 0;
 
 constexpr double TQMeshQuadLayerAngle = 1.57079633; // = 1/2 pi
 constexpr double TQMeshQuadLayerRange = 0.75;
