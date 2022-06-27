@@ -11,6 +11,7 @@
 
 #include "Vec2.h"
 #include "utils.h"
+#include "VtkIO.h"
 #include "ProgressBar.h"
 
 #include "Vertex.h"
@@ -224,23 +225,23 @@ public:
   int element_color() const { return elem_color_; }
   size_t neighbor_meshes() const { return neighbor_meshes_.size(); }
 
-  /*------------------------------------------------------------------
-  | Add another mesh to the neighbor-mesh-list
-  ------------------------------------------------------------------*/
-  void add_neighbor_mesh(Mesh& mesh)
-  { neighbor_meshes_.push_back( &mesh ); }
 
   /*------------------------------------------------------------------
-  | Remove another mesh to the neighbor-mesh-list
+  | Export the mesh to a file
   ------------------------------------------------------------------*/
-  void remove_neighbor_mesh(Mesh& mesh)
+  void write_to_file(const std::string& path, ExportType type )
   {
-    auto it = std::find(neighbor_meshes_.begin(), 
-                        neighbor_meshes_.end(), 
-                        &mesh);
-    if ( it != neighbor_meshes_.end() )
-      neighbor_meshes_.erase( it );
-  }
+    // Prepare all indices of mesh entities
+    assign_mesh_indices();
+
+    if ( type == ExportType::txt )
+      write_to_txt_file( path );
+
+    if ( type == ExportType::vtu )
+      write_to_vtu_file( path );
+
+    
+  } // Mesh::write_to_file()
 
   /*------------------------------------------------------------------
   | This function assigns a corresponding global index to each entity
@@ -2319,6 +2320,23 @@ private:
 
   } // Mesh::get_edge()
 
+  /*------------------------------------------------------------------
+  | Add another mesh to the neighbor-mesh-list
+  ------------------------------------------------------------------*/
+  void add_neighbor_mesh(Mesh& mesh)
+  { neighbor_meshes_.push_back( &mesh ); }
+
+  /*------------------------------------------------------------------
+  | Remove another mesh to the neighbor-mesh-list
+  ------------------------------------------------------------------*/
+  void remove_neighbor_mesh(Mesh& mesh)
+  {
+    auto it = std::find(neighbor_meshes_.begin(), 
+                        neighbor_meshes_.end(), 
+                        &mesh);
+    if ( it != neighbor_meshes_.end() )
+      neighbor_meshes_.erase( it );
+  }
 
   /*------------------------------------------------------------------
   | This function removes an entity and makes sure, that the 
@@ -2358,6 +2376,96 @@ private:
     ASSERT( removed, "Failed to remove interior edge.");
     (void) removed;
   }
+
+  /*------------------------------------------------------------------
+  | Export the mesh to a text file
+  ------------------------------------------------------------------*/
+  void write_to_txt_file(const std::string& path) const
+  {
+    std::ofstream outfile;
+
+    std::string file_name = path;
+
+    if(file_name.substr(file_name.find_last_of(".") + 1) != "txt") 
+      file_name += ".txt";
+
+    outfile.open( file_name );
+
+    //outfile << (*this);
+
+    outfile.close();
+
+  } // Mesh::write_to_txt_file()
+
+  /*------------------------------------------------------------------
+  | Export the mesh to a vtu file
+  ------------------------------------------------------------------*/
+  void write_to_vtu_file(const std::string& path) const
+  {
+    std::string file_name = path;
+
+    if(file_name.substr(file_name.find_last_of(".") + 1) != "vtu") 
+      file_name += ".vtu";
+
+    // Create data structure for VTU format
+    std::vector<double> points {};
+    std::vector<size_t> connectivity {};
+    std::vector<size_t> offsets {};
+    std::vector<size_t> types {};
+    std::vector<double> size_function {};
+    std::vector<int>    element_color {};
+
+    size_t i_offset = 0;
+
+    for ( const auto& v_ptr : verts_ )
+    {
+      points.push_back( v_ptr->xy().x );
+      points.push_back( v_ptr->xy().y );
+      points.push_back( 0.0 );
+
+      size_function.push_back( domain_->size_function(v_ptr->xy()) ); 
+    }
+
+    for ( const auto& q_ptr : quads_ )
+    {
+      connectivity.push_back( q_ptr->v1().index() );
+      connectivity.push_back( q_ptr->v2().index() );
+      connectivity.push_back( q_ptr->v3().index() );
+      connectivity.push_back( q_ptr->v4().index() );
+
+      i_offset += 4;
+      offsets.push_back( i_offset );
+
+      /// Type == 9 -> VTK_QUAD
+      types.push_back( 9 );
+
+      element_color.push_back( q_ptr->color() );
+    }
+
+    for ( const auto& t_ptr : tris_ )
+    {
+      connectivity.push_back( t_ptr->v1().index() );
+      connectivity.push_back( t_ptr->v2().index() );
+      connectivity.push_back( t_ptr->v3().index() );
+
+      i_offset += 3;
+      offsets.push_back( i_offset );
+
+      /// Type == 5 -> VTK_TRIANGLE
+      types.push_back( 5 );
+
+      element_color.push_back( t_ptr->color() );
+    }
+
+
+    VtuWriter writer { points, connectivity, offsets, types };
+
+    writer.add_point_data( size_function, "size_function", 1 );
+    writer.add_cell_data( element_color, "element_color", 1 );
+
+    writer.write( file_name );
+
+  } // Mesh::write_to_vtu_file()
 
 
   /*------------------------------------------------------------------

@@ -66,5 +66,10 @@ constexpr double TQMeshWideSearchFactor = 10.0;
 constexpr double TQMeshEdgeSearchFactor = 1.5;
 
 
+/*********************************************************************
+* 
+*********************************************************************/
+enum class ExportType { txt, vtu };
+
 } // namespace TQAlgorithm
 } // namespace TQMesh 

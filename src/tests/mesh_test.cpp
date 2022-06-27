@@ -83,7 +83,7 @@ void Test_Mesh_initialization()
   b_int.add_edge( v8, v5, 2 );
 
   // Create the mesh
-  Mesh mesh { domain, 0, 10.0 };
+  Mesh mesh { domain, 0, 0, 10.0 };
 
   ASSERT( EQ(mesh.front().area(), domain.area()),
       "Front initialization failed.");
@@ -123,7 +123,7 @@ void Test_Mesh_triangulate(bool export_mesh)
   b_ext.add_edge( v6, v1, 1 );
 
   // Create the mesh
-  Mesh mesh { domain, 0, 50.0 };
+  Mesh mesh { domain, 0, 0, 50.0 };
 
   mesh.triangulate();
 
@@ -176,7 +176,7 @@ void Test_Mesh_pave(bool export_mesh)
   b_ext.add_edge( v6, v1, 1 );
 
   // Create the mesh
-  Mesh mesh { domain, 0, 50.0 };
+  Mesh mesh { domain, 0, 0, 50.0 };
 
   mesh.pave();
 
@@ -226,7 +226,7 @@ void Test_Mesh_refine_to_quads(bool export_mesh)
   b_ext.add_edge( v4, v1, 4 );
 
   // Create the mesh
-  Mesh mesh { domain, 0, 50.0 };
+  Mesh mesh { domain, 0, 0, 50.0 };
 
   mesh.create_quad_layers(v1, v1, 1, 1.0, 1.5);
 
@@ -289,7 +289,7 @@ void Test_Mesh_advance_front_quad(bool export_mesh)
   b_int.add_edge( v7, v5, 2 );
 
   // Create the mesh
-  Mesh mesh { domain, 0, 50.0 };
+  Mesh mesh { domain, 0, 0, 50.0 };
 
   mesh.pave();
   //mesh.triangulate();
@@ -345,7 +345,7 @@ void Test_Mesh_create_simple_hex_layers(bool export_mesh)
   domain.add_fixed_vertex(8.0, 8.0, 0.3, 2.0);
 
   // Create the mesh
-  Mesh mesh { domain, 0, 150.0 };
+  Mesh mesh { domain, 0, 0, 150.0 };
 
   // Create quad layers
   mesh.create_quad_layers(v1, v6, 3, 0.1, 1.2);
@@ -397,7 +397,7 @@ void Test_Mesh_add_quad_layer(bool export_mesh)
   b_ext.add_edge( v4, v1, 1 );
 
   // Create the mesh
-  Mesh mesh { domain, 0, 50.0 };
+  Mesh mesh { domain, 0, 0, 50.0 };
 
   mesh.create_quad_layers(v1, v1, 4, 0.1, 1.0);
 
@@ -452,7 +452,7 @@ void Test_Mesh_add_quad_layer_step(bool export_mesh)
   b_ext.add_edge( v6, v1, 1 );
 
   // Create the mesh
-  Mesh mesh { domain, 0, 50.0 };
+  Mesh mesh { domain, 0, 0, 50.0 };
 
   mesh.triangulate();
   //mesh.pave();
@@ -516,7 +516,7 @@ void Test_Mesh_wedge(bool export_mesh)
   b_ext.add_edge( v11,  v0, 1 );
 
   // Create the mesh
-  Mesh mesh { domain, 0, 2000.0 };
+  Mesh mesh { domain, 0, 0, 2000.0 };
 
   mesh.triangulate();
 
@@ -669,7 +669,7 @@ void Test_Mesh_banner(bool export_mesh)
   b_M.add_edge( M13,  M0, 4 );
 
   // Create the mesh
-  Mesh mesh { domain, 0, 60.0 };
+  Mesh mesh { domain, 0, 0, 60.0 };
 
   // Create quad layers
   mesh.create_quad_layers(b0, b0, 2, 0.5, 1.0);
@@ -737,7 +737,7 @@ void Test_Mesh_vortex_shedding(bool export_mesh)
   b_int.add_edge( v8, v5, 4 );
 
   // Create the mesh
-  Mesh mesh { domain, 0, 10.0 };
+  Mesh mesh { domain, 0, 0, 10.0 };
 
   mesh.create_quad_layers(v1, v2, 2, 0.05, 1.0);
   mesh.create_quad_layers(v3, v4, 2, 0.05, 1.0);
@@ -788,7 +788,7 @@ void Test_Mesh_create_bdry_shape_mesh(bool export_mesh)
 
 
   // Create the mesh
-  Mesh mesh { domain, 0, 40.0 };
+  Mesh mesh { domain, 0, 0, 40.0 };
 
   //mesh.create_quad_layers(v1, v2, 2, 0.05, 1.0);
   //mesh.create_quad_layers(v3, v4, 2, 0.05, 1.0);
@@ -856,9 +856,12 @@ void Test_Mesh_multiple_domains(bool export_mesh)
   // Create the mesh for domain 1
   // --> Here the edges of domain 1 are discretized into further 
   //     segments, according to the size function of domain 1
-  Mesh mesh_1 { domain_1, 0, 50.0 };
+  Mesh mesh_1 { domain_1, 0, 0, 50.0 };
 
   mesh_1.triangulate();
+  mesh_1.merge_triangles_to_quads();
+
+  mesh_1.refine_to_quads();
 
   // ToDo:
   // --> Every domain edge must know its sub-vertices of the mesh
@@ -909,9 +912,10 @@ void Test_Mesh_multiple_domains(bool export_mesh)
   // --> Here the edges of domain 2 are discretized into further 
   //     segments, by using the corresponding entities of domain 1
   //     or by placing new vertices according to its size function
-  Mesh mesh_2 { domain_2, mesh_1, 1, 50.0 };
+  Mesh mesh_2 { domain_2, mesh_1, 1, 1, 50.0 };
 
   mesh_2.triangulate();
+  mesh_2.refine_to_quads();
 
 
 
@@ -932,10 +936,18 @@ void Test_Mesh_multiple_domains(bool export_mesh)
   if (export_mesh)
   {
     // Make sure that all vertex / element indices are assigned
-    mesh_2.assign_mesh_indices();
+    //mesh_1.assign_mesh_indices();
+    //mesh_2.assign_mesh_indices();
 
-    std::cout << mesh_2;
+    //std::cout << mesh_1;
+    //std::cout << mesh_2;
     //domain.export_size_function({0.0,0.0}, {5.0,5.0}, 100, 100);
+
+    std::string export_prefix = 
+      "/home/florian/datadisk/Code/C++-Code/TQMesh/build/mesh";
+
+    mesh_1.write_to_file( export_prefix + "_1.txt", ExportType::txt );
+    mesh_2.write_to_file( export_prefix + "_2.txt", ExportType::txt );
   }
 
   DBG_MSG("Tests for Mesh_multiple_domains() succeeded");
@@ -994,7 +1006,7 @@ void Test_Mesh_benchmark(double h, double L,
   ------------------------------------------------------------------*/
   timer.count();
 
-  Mesh mesh { domain, 0, 40.0*L };
+  Mesh mesh { domain, 0, 0, 40.0*L };
 
   /*------------------------------------------------------------------
   | Create the quad layer
@@ -1124,7 +1136,7 @@ void Test_Mesh_benchmark_TMesh(double h, double L,
   //------------------------------------------------------------------
   timer.count();
 
-  Mesh mesh { domain, 0, 20.0*L };
+  Mesh mesh { domain, 0, 0, 20.0*L };
 
   //------------------------------------------------------------------
   // Create the quad layer
@@ -1226,14 +1238,14 @@ void run_mesh_tests(bool benchmark)
   //MeshTests::Test_Mesh_wedge(true);
   //MeshTests::Test_Mesh_banner(true);
     
-  MeshTests::Test_Mesh_create_simple_hex_layers(true);
+  //MeshTests::Test_Mesh_create_simple_hex_layers(true);
   //MeshTests::Test_Mesh_vortex_shedding(true);
     
   //MeshTests::Test_Mesh_create_bdry_shape_mesh(true);
 
   //MeshTests::Test_Mesh_add_quad_layer(true);
     
-  //MeshTests::Test_Mesh_multiple_domains(true);
+  MeshTests::Test_Mesh_multiple_domains(true);
 
 
   if ( benchmark )
