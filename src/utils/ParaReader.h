@@ -16,7 +16,6 @@
 #include <memory>
 #include <map>
 
-
 namespace CppUtils {
 
 /*--------------------------------------------------------------------
@@ -27,35 +26,77 @@ using ofstream      = std::ofstream;
 using ifstream      = std::ifstream;
 using strVec        = std::vector<string>;
 using istringstream = std::istringstream;
+using strVec_ptr    = std::shared_ptr<strVec>;
+
 
 /*--------------------------------------------------------------------
-| The default parameter parent class 
+| Basic parameter types
+--------------------------------------------------------------------*/
+enum class ParaType 
+{ scalar, vector, matrix, block };
+
+/*--------------------------------------------------------------------
+| Delimiter char and comment marker
+--------------------------------------------------------------------*/
+static inline string ParaFileComment { "#" };
+static inline char ParaFileDelimiter { ',' };
+
+/*--------------------------------------------------------------------
+| A simple container for query data
+--------------------------------------------------------------------*/
+struct QueryContainer
+{
+  QueryContainer() {};
+
+  bool   found      { false };
+  size_t line_index { string::npos };
+  size_t line_pos   { string::npos };
+  size_t query_size { 0 };
+}; 
+
+
+/*--------------------------------------------------------------------
+| The parameter base class 
 --------------------------------------------------------------------*/
 class ParameterBase
 {
 public:
-  ParameterBase(const string& key)
-  : single_key_ { key }
-  , start_key_ { "" }
-  , end_key_ { "" }
-  , line_start_ { 0 }
-  , found_ { false } 
-  , multi_lines_ { false }
+  ParameterBase(ParaType type)
+  : type_        { type }
+  , start_key_   { "" }
+  , end_key_     { "" }
+  , block_start_ { 0 }
+  , block_end_   { 0 }
   {}
 
-  ParameterBase(const string& start, const string& end)
-  : single_key_ { "" }
-  , start_key_ { start }
-  , end_key_ { end }
-  , line_start_ { 0 }
-  , found_ { false } 
-  , multi_lines_ { true }
+  ParameterBase(ParaType type, const string& key,
+                size_t block_start, size_t block_end)
+  : type_        { type }
+  , start_key_   { key }
+  , end_key_     { "" }
+  , block_start_ { block_start }
+  , block_end_   { block_end }
+  {}
+
+  ParameterBase(ParaType type,
+                const string& start, const string& end,
+                size_t block_start, size_t block_end)
+  : type_        { type }
+  , start_key_   { start }
+  , end_key_     { end }
+  , block_start_ { block_start }
+  , block_end_   { block_end }
   {}
 
   virtual ~ParameterBase() = default;
 
-  const string& single_key() const { return single_key_;   }
-  string& single_key() { return single_key_;   }
+  /*------------------------------------------------------------------
+  | Getters
+  ------------------------------------------------------------------*/
+  ParaType type() const { return type_; }
+
+  const string& key() const { return start_key_; }
+  string& key() { return start_key_; }
 
   const string& start_key() const { return start_key_; }
   string& start_key() { return start_key_; }
@@ -63,23 +104,105 @@ public:
   const string& end_key() const { return end_key_; }
   string& end_key() { return end_key_; }
 
-  int line_to_start() const { return line_start_; }
-  void line_to_start(int l) { line_start_ = l; }
+  size_t block_start() const { return block_start_; }
+
+  size_t block_end() const { return block_end_; }
 
   bool found() const { return found_; }
+
+  int block_index() const { return block_index_; }
+
+  bool reached_end() const { return block_index_ >= block_end_; }
+
+  /*------------------------------------------------------------------
+  | Setters
+  ------------------------------------------------------------------*/
+  void block_start(size_t i) { block_start_ = i; }
+
+  void block_end(size_t i) { block_end_ = i; }
+
   void found(bool f) { found_ = f; }
 
-  bool multi_line_definition() const { return multi_lines_; }
+  void block_index(int l) { block_index_ = l; }
 
-private:
-  string single_key_;
-  string start_key_;
-  string end_key_;
+  /*------------------------------------------------------------------
+  | Query the parameter -> Search in file content for its occurrence
+  ------------------------------------------------------------------*/
+  QueryContainer get_query_data(const string& query, 
+                                const strVec& content) 
+  {
+    QueryContainer query_data {};
 
-  size_t line_start_;
-  bool   found_;
-  bool   multi_lines_ {false};
-}; 
+    // Parameter query reached end of input file
+    if ( reached_end() )
+      return query_data;
+
+    // Position of query in the line
+    size_t line_pos = string::npos;
+
+    // Index of line where query is found
+    size_t line_index = string::npos;
+
+    size_t index;
+
+    // Search for query in file buffer line by line
+    for (size_t cur_line = block_start() + block_index(); 
+         cur_line < content.size(); 
+         ++cur_line)
+    {
+      const string& line = content[cur_line];
+
+      // Search in all lines for query
+      // Use last query definition that occures in a line
+      size_t pos = 0;
+
+      while ((index = line.find(query, pos)) != string::npos)
+      {
+        // Position is from next element of index
+        line_pos   = index;
+        line_index = cur_line;
+        pos        = index + 1;
+
+        // Set starting line for next query search
+        block_index( cur_line + 1 - block_start() );
+      }
+
+      // Stop if query has been found in current line
+      if ( line_index != string::npos )
+        break;
+    }
+
+    // Nothing found -> return empty string
+    if (line_index == string::npos)
+      return query_data;
+
+    // Copy data to query container
+    query_data.found      = true;
+    query_data.line_index = line_index;
+    query_data.line_pos   = line_pos;
+    query_data.query_size = query.size();
+
+    return query_data;
+
+  } // ParameterBase::get_query_data()
+
+
+
+
+
+protected:
+  ParaType type_;
+  string   start_key_;
+  string   end_key_;
+  size_t   block_start_;
+  size_t   block_end_;
+
+  size_t   block_index_ { 0 };
+  bool     found_      { false };
+
+
+}; // ParameterBase
+
 
 /*--------------------------------------------------------------------
 | The derived template class for a specified parameter
@@ -89,31 +212,23 @@ class Parameter : public ParameterBase
 {
 public:
   /*------------------------------------------------------------------
-  | This constructor is used to create parameters that are defined
-  | in a single line.
-  | These parameters are queried with a given <key>, which is given
-  | via the constructor. 
-  | Additionally, the number <n> of parameters that must be given 
-  | behind the query key, is set via the constructor.
+  | Constructor - Scalar / Vector
   ------------------------------------------------------------------*/
-  Parameter(const string& key, size_t n) 
-    : ParameterBase(key)
+  Parameter(ParaType type, const string& key, size_t n,
+            size_t block_start, size_t block_end) 
+    : ParameterBase(type, key, block_start, block_end)
     , ncol_{n}
     , nrow_{1}
     , values_(n,T{})
   {}
 
   /*------------------------------------------------------------------
-  | This constructor is used to create parameter that are defined
-  | over multiple lines
-  | These parameters are queried with a given <start> and <end>
-  | key, which is given via the constructor. 
-  | Additionally, the number <n> of parameters that must be given 
-  | in every line between the start and ending query keas 
-  | are set via the constructor.
+  | Constructor - Matrix 
   ------------------------------------------------------------------*/
-  Parameter(const string& start, const string& end, size_t n) 
-    : ParameterBase(start, end)
+  Parameter(ParaType type, 
+            const string& start, const string& end, size_t n,
+            size_t block_start, size_t block_end) 
+    : ParameterBase(type, start, end, block_start, block_end)
     , ncol_{n}
     , nrow_{1}
     , values_(n,T{})
@@ -162,6 +277,9 @@ public:
 
   void add_row()
   {
+    if ( type_ != ParaType::matrix )
+      return;
+
     ++nrow_;
     for( size_t i = 0; i < ncol_; i++ )
       values_.push_back( T{} );
@@ -179,11 +297,16 @@ private:
 
 
 
+
+
+
+
 /*--------------------------------------------------------------------
-| The parameter file reader 
+| A parameter block where data is stored
 --------------------------------------------------------------------*/
-class ParaReader
+class ParaBlock : public ParameterBase
 {
+  using ParaBlockList = std::vector<ParaBlock>;
   using ParameterList = std::vector<std::unique_ptr<ParameterBase>>; 
   using ParameterMap  = std::map<std::string, size_t>;
 
@@ -205,61 +328,75 @@ public:
   ------------------------------------------------------------------*/
   void error(string msg) { throw Invalid{msg}; }
 
+
   /*------------------------------------------------------------------
   | Constructor
-  | Read parameter file and store it in the file_content_ buffer, 
-  | such that each line of the file is stored as a separate
-  | string in it.
   ------------------------------------------------------------------*/
-  ParaReader(const string& file_path) 
+  ParaBlock(const string& file_path)
+  : ParameterBase( ParaType::block )
+  { 
+    // Read the file content
+    content_ = read_content( file_path );
+
+    // Set bounds of top ParaBlock
+    block_start( 0 );
+    block_end( content_->size() );
+  }
+
+  ParaBlock(const string& start, const string& end,
+            size_t block_start, size_t block_end)
+  : ParameterBase( ParaType::block, start, end, block_start, block_end )
+  { }
+
+
+  /*------------------------------------------------------------------
+  | Setters
+  ------------------------------------------------------------------*/
+  void set_content(strVec_ptr c) { content_ = c; }
+
+  /*------------------------------------------------------------------
+  | Getters
+  ------------------------------------------------------------------*/
+  const ParameterList& para_list() const { return para_list_; }
+  ParameterList& para_list() { return para_list_; }
+
+
+  /*------------------------------------------------------------------
+  | Create new block parameter to search for in a file
+  ------------------------------------------------------------------*/
+  void new_block_parameter(const string& name,
+                           const string& start, const string& end) 
   {
-    file_path_   = file_path;
-    comment_     = "#";
-    delimiter_   = ',';
+    // Check that parameter map does not yet contain given name
+    if ( para_map_.count(name) )
+      error("Multiple definitions for parmeter name \"" + name + "\"."); 
 
-    ifstream ifs {file_path_};
-    if (!ifs) error("Can't open file: " + file_path);
+    // Empty parameter keys are not allowed
+    if ( start.size() < 1 || end.size() < 1 )
+      error("Empty parameter queries are not allowed. Parameter: " + name);
 
-    // General throw for bad reading of file
-    ifs.exceptions(ifs.exceptions() | std::ios_base::badbit);
+    ParaBlock* new_b = new ParaBlock { start, end, 
+                                       block_start_, block_end_ };
 
-    // Read the input file
-    string line;
-    while (std::getline(ifs, line))
-    {
-      // Ignore commented lines
-      string l_cpy = line;
-      l_cpy.erase(std::remove_if(l_cpy.begin(), l_cpy.end(), isspace), 
-                  l_cpy.end());
-      if ( l_cpy[0] == '#' )
-        continue;
-      
-      // Add line to content, if it not a comment line
-      file_content_.push_back(line);
-    }
+    // Update parameter list
+    para_list_.emplace_back( new_b );
 
-    if (!ifs.eof()) 
-      error("Failed to read entire file - "
-            "Stopped reading in line " + 
-            std::to_string(file_content_.size()));
+    // Update parameter map
+    para_map_[name] = para_list_.size() - 1;
 
-  } // ParaReader::Constructor() 
+    // Pass content to new block
+    new_b->set_content( content_ );
+
+  }
 
   /*------------------------------------------------------------------
   | Create new scalar parameters to search for in a file
-  | 
-  | Arguments:
-  | ----------
-  |   name: The parameter name, under which it can be found in the
-  |         ParaReader structure
-  |   key: The parameter key, which is used to query the parameter
-  |        in the input file
   ------------------------------------------------------------------*/
   template <typename T>
   void new_scalar_parameter(const string& name, const string& key)
   {
     // Check that parameter map does not yet contain given name
-    if ( param_map_.count(name) )
+    if ( para_map_.count(name) )
       error("Multiple definitions for parmeter name \"" + name + "\"."); 
 
     // Empty parameter keys are not allowed
@@ -267,31 +404,24 @@ public:
       error("Empty parameter queries are not allowed. Parameter: " + name);
 
     // Update parameter list
-    param_list_.push_back( 
-        std::make_unique<Parameter<T>>( key, 1 ) 
+    para_list_.emplace_back( 
+      new Parameter<T> { ParaType::scalar, key, 1, 
+                         block_start_, block_end_ } 
     );
 
     // Update parameter map
-    param_map_[name] = param_list_.size() - 1;
+    para_map_[name] = para_list_.size() - 1;
   }
 
   /*------------------------------------------------------------------
-  | Create new list parameters to search for in a file
-  |
-  | Arguments:
-  | ----------
-  |   name: The parameter name, under which it can be found in the
-  |         ParaReader structure
-  |   key: The parameter key, which is used to query the parameter
-  |        in the input file
-  |   n: The number of parameters that must be provided
+  | Create new vector parameters to search for in a file
   ------------------------------------------------------------------*/
   template <typename T>
-  void new_list_parameter(const string& name, 
-                          const string& key, size_t n)
+  void new_vector_parameter(const string& name, 
+                            const string& key, size_t n)
   {
     // Check that parameter map does not yet contain given name
-    if ( param_map_.count(name) )
+    if ( para_map_.count(name) )
       error("Multiple definitions for parmeter name \"" + name + "\"."); 
 
     // Empty parameter keys are not allowed
@@ -299,34 +429,25 @@ public:
       error("Empty parameter queries are not allowed. Parameter: " + name);
 
     // Update parameter list
-    param_list_.push_back( 
-        std::make_unique<Parameter<T>>( key, n ) 
+    para_list_.emplace_back( 
+      new Parameter<T> { ParaType::vector, key, n,
+                         block_start_, block_end_ } 
     );
 
     // Update parameter map
-    param_map_[name] = param_list_.size() - 1;
+    para_map_[name] = para_list_.size() - 1;
   }
 
   /*------------------------------------------------------------------
-  | Create new list parameters to search for in a file
-  |
-  | Arguments:
-  | ----------
-  |   name: The parameter name, under which it can be found in the
-  |         ParaReader structure
-  |   start: The parameter start key, which is used to query 
-  |          the beginning of the parameter data in the input file
-  |   end: The parameter end key, which is used to query 
-  |          the ending of the parameter data in the input file
-  |   n: The number of parameters that must be provided in each line
+  | Create new matrix parameters to search for in a file
   ------------------------------------------------------------------*/
   template <typename T>
-  void new_list_parameter(const string& name,
-                          const string& start, const string& end, 
-                          size_t n)
+  void new_matrix_parameter(const string& name,
+                            const string& start, const string& end, 
+                            size_t n)
   {
     // Check that parameter map does not yet contain given name
-    if ( param_map_.count(name) )
+    if ( para_map_.count(name) )
       error("Multiple definitions for parmeter name \"" + name + "\"."); 
 
     // Empty parameter keys are not allowed
@@ -334,12 +455,13 @@ public:
       error("Empty parameter queries are not allowed. Parameter: " + name);
 
     // Update parameter list
-    param_list_.push_back( 
-        std::make_unique<Parameter<T>>( start, end, n ) 
+    para_list_.emplace_back( 
+      new Parameter<T> { ParaType::matrix, start, end, n,
+                         block_start_, block_end_ } 
     );
 
     // Update parameter map
-    param_map_[name] = param_list_.size() - 1;
+    para_map_[name] = para_list_.size() - 1;
   }
 
   /*------------------------------------------------------------------
@@ -349,35 +471,47 @@ public:
   Parameter<T>& get_parameter(const string& name)
   {
     // Handle unknown parameter names
-    if ( !param_map_.count(name) )
+    if ( !para_map_.count(name) )
       error("No parameter with name \"" + name + "\" has been defined.");
 
     // Cast parameter 
-    Parameter<T>* param_ptr 
-      = dynamic_cast<Parameter<T>*>( 
-          param_list_[ param_map_[name] ].get() 
+    Parameter<T>* para_ptr = dynamic_cast<Parameter<T>*>(
+        para_list_[ para_map_[name] ].get()
     );
 
-    Parameter<T>& param = *param_ptr;
+    return *para_ptr;
+  }
 
-    return param;
+  /*------------------------------------------------------------------
+  | Get a parameter reference from a given parameter name
+  ------------------------------------------------------------------*/
+  ParaBlock& get_block(const string& name)
+  {
+    // Handle unknown parameter names
+    if ( !para_map_.count(name) )
+      error("No block with name \"" + name + "\" has been defined.");
 
-  } // ParaReader::get_parameter()
+    // Cast parameter 
+    ParaBlock* para_ptr = dynamic_cast<ParaBlock*>(
+        para_list_[ para_map_[name] ].get()
+    );
 
-
+    return *para_ptr;
+  }
+   
   /*------------------------------------------------------------------
   | Return the first value of a parameter with <name>.
   ------------------------------------------------------------------*/
   template <typename T>
   T get_value(const string& name)
   {
-    Parameter<T>& param = get_parameter<T>( name );
+    Parameter<T>& para = get_parameter<T>( name );
 
     // Check if parameter is not found in the input file
-    if ( !param.found() )
+    if ( !para.found() )
       error("Parameter with name \"" + name + "\" not found in input file.");
     
-    return param.get_value(0);
+    return para.get_value(0);
   }
 
   /*------------------------------------------------------------------
@@ -386,13 +520,13 @@ public:
   template <typename T>
   T get_value(size_t i, const string& name)
   {
-    Parameter<T>& param = get_parameter<T>( name );
+    Parameter<T>& para = get_parameter<T>( name );
 
     // Check if parameter is not found in the input file
-    if ( !param.found() )
+    if ( !para.found() )
       error("Parameter with name \"" + name + "\" not found in input file.");
     
-    return param.get_value(i);
+    return para.get_value(i);
   }
 
   /*------------------------------------------------------------------
@@ -401,13 +535,13 @@ public:
   template <typename T>
   T get_value(size_t i, size_t j, const string& name)
   {
-    Parameter<T>& param = get_parameter<T>( name );
+    Parameter<T>& para = get_parameter<T>( name );
 
     // Check if parameter is not found in the input file
-    if ( !param.found() )
+    if ( !para.found() )
       error("Parameter with name \"" + name + "\" not found in input file.");
     
-    return param.get_value(i,j);
+    return para.get_value(i,j);
   }
 
   /*------------------------------------------------------------------
@@ -416,107 +550,112 @@ public:
   bool found(const string& name)
   {
     // Handle unknown parameter names
-    if ( !param_map_.count(name) )
+    if ( !para_map_.count(name) )
       error("No parameter with name \"" + name + "\" has been defined.");
 
-    return param_list_[ param_map_[name] ].get()->found();
+    return para_list_[ para_map_[name] ].get()->found();
   }
 
   /*------------------------------------------------------------------
   | Query  parameters
-  | -> Scan the file for the query key of a given parameter with 
-  |    <name>. If query key is found, read the value and store it in
-  |    the corresponding parameter.
   ------------------------------------------------------------------*/
   template <typename T>
   bool query(const string& name)
   {
-    Parameter<T>& param = get_parameter<T>( name );
+    // Account for empty content
+    if (!content_)
+      return false;
 
-    // Scalar parameters
-    if ( param.columns() == 1 && !param.multi_line_definition() )
-      return query_scalar(param);
-    // Single-line & multiple parameters
-    else if ( param.columns() > 1 && !param.multi_line_definition() ) 
-      return query_single_line(param);
-    // Else: Multi-line parameters
-    return query_multiple_lines(param);
+    // Query actual parameter
+    Parameter<T>& para = get_parameter<T>( name );
 
-  } // ParaReader::query()
+    if ( para.type() == ParaType::scalar )
+    {
+      return query_scalar( para, *(content_) );
+    }
+    else if ( para.type() == ParaType::vector ) 
+    {
+      return query_vector( para, *(content_) );
+    }
+    else if ( para.type() == ParaType::matrix )
+    {
+      return query_matrix( para, *(content_) );
+    }
 
+    return false;
 
+  } // ParaBlock::query()
 
+  /*------------------------------------------------------------------
+  | Query the block parameters
+  ------------------------------------------------------------------*/
+  bool query(const string& name)
+  {
+    // Account for empty content
+    if (!content_)
+      return false;
 
+    // Query actual parameter
+    ParaBlock& block = get_block( name );
 
+    auto start_data = block.get_query_data(block.start_key(), 
+                                           *content_ );
+
+    if ( !start_data.found )
+      return false;
+
+    auto end_data = block.get_query_data(block.end_key(), *content_ );
+
+    if ( !end_data.found )
+      return false;
+
+    // Set start and end of this block
+    block.block_start( start_data.line_index );
+    block.block_end( end_data.line_index );
+
+    // Set starts and ends of all parameters of this block
+    for ( auto& para : block.para_list() )
+    {
+      para->block_start( start_data.line_index );
+      para->block_end( end_data.line_index );
+    }
+
+    return true;
+
+  } // ParaBlock::query() 
 
 private:
 
   /*------------------------------------------------------------------
   | Query scalar parameters
-  | --> Parameter existence has been checked in calling function
   ------------------------------------------------------------------*/
   template <typename T>
-  bool query_scalar(Parameter<T>& param)
+  bool query_scalar(Parameter<T>& para, const strVec& content)
   {
-    string query = param.single_key();
+    auto query_data = para.get_query_data(para.start_key(), content );
 
-    // Parameter query reached end of input file
-    if ( param.line_to_start() >= file_content_.size() )
-      return false;
-
-    // Position of query in the line
-    size_t line_pos = string::npos;
-
-    // Index of line where query is found
-    size_t line_index = string::npos;
-
-    size_t index;
-
-    // Search for query in file buffer line by line
-    for (size_t cur_line = param.line_to_start(); 
-         cur_line < file_content_.size(); 
-         ++cur_line)
-    {
-      const string& line = file_content_[cur_line];
-
-      // Search in all lines for query
-      // Use last query definition that occures in a line
-      size_t pos = 0;
-
-      while ((index = line.find(query, pos)) != string::npos)
-      {
-        // Position is from next element of index
-        line_pos   = index;
-        line_index = cur_line;
-        pos        = index + 1;
-
-        // Set starting line for next query search
-        param.line_to_start( cur_line + 1 );
-      }
-
-      // Stop if query has been found in current line
-      if ( line_index != string::npos )
-        break;
-    }
-
-    // Nothing found -> return empty string
-    if (line_index == string::npos)
+    if ( !query_data.found )
       return false;
 
     // Extract substring (all characters behind query)
-    string sub_string = file_content_[line_index].substr(line_pos + query.size());
+    string sub_string = content[query_data.line_index].substr(
+        query_data.line_pos + query_data.query_size
+    );
     
     // Remove everything behind the comment identifier
-    sub_string = sub_string.substr(0, sub_string.find(comment_));
+    sub_string = sub_string.substr(0, sub_string.find(ParaFileComment));
 
     // Remove all whitespace characters
-    sub_string.erase(std::remove(sub_string.begin(), sub_string.end(), ' '), sub_string.end());
+    sub_string.erase(
+        std::remove(sub_string.begin(), sub_string.end(), ' '), 
+        sub_string.end()
+    );
 
     // Write data to parameter
     try 
     {
-      param.set_value( 0, string_to_single_value<T>(sub_string) );
-      param.found( true );
+      para.set_value( 0, string_to_single_value<T>(sub_string) );
+      para.found( true );
     }
     catch (...)
     {
@@ -525,70 +664,32 @@ private:
 
     return true;
 
-  } // ParaReader::query_scalar()
+  } // ParaBlock::query_scalar()
 
   /*------------------------------------------------------------------
-  | Query multiple parameters in a single line
-  | --> Parameter existence has been checked in calling function
+  | Query vector parameters 
   ------------------------------------------------------------------*/
   template <typename T>
-  bool query_single_line(Parameter<T>& param)
+  bool query_vector(Parameter<T>& para, const strVec& content)
   {
-    string query = param.single_key();
+    auto query_data = para.get_query_data(para.start_key(), content );
 
-    // Parameter query reached end of input file
-    if ( param.line_to_start() >= file_content_.size() )
-      return false;
-
-    // Position of query in the line
-    size_t line_pos = string::npos;
-
-    // Index of line where query is found
-    size_t line_index = string::npos;
-
-    size_t index;
-
-    // Search for query in file buffer line by line
-    for (size_t cur_line = param.line_to_start(); 
-         cur_line < file_content_.size(); 
-         ++cur_line)
-    {
-      const string& line = file_content_[cur_line];
-
-      // Search in all lines for query
-      // Use last query definition that occures in a line
-      size_t pos = 0;
-
-      while ((index = line.find(query, pos)) != string::npos)
-      {
-        // Position is from next element of index
-        line_pos   = index;
-        line_index = cur_line;
-        pos        = index + 1;
-
-        // Set starting line for next query search
-        param.line_to_start( cur_line + 1 );
-      }
-
-      // Stop if query has been found in current line
-      if ( line_index != string::npos )
-        break;
-
-    }
-
-    // Nothing found -> return empty string
-    if (line_index == string::npos)
+    if ( !query_data.found )
       return false;
 
     // Extract substring (all characters behind query)
-    string sub_string = file_content_[line_index].substr(line_pos + query.size());
+    string sub_string = content[query_data.line_index].substr(
+        query_data.line_pos + query_data.query_size 
+    );
     
     // Remove everything behind the comment identifier
-    sub_string = sub_string.substr(0, sub_string.find(comment_));
+    sub_string = sub_string.substr(0, sub_string.find(ParaFileComment));
 
     // Remove all whitespace characters
-    sub_string.erase(std::remove(sub_string.begin(), sub_string.end(), ' '), sub_string.end());
-
+    sub_string.erase(
+        std::remove(sub_string.begin(), sub_string.end(), ' '), 
+        sub_string.end()
+    );
 
     // Convert substring to a vector of type T
     std::vector<T> out;
@@ -598,7 +699,7 @@ private:
 
     // Split string at delimiter and put every sub-string
     // into "out" vector
-    while(std::getline(ss, s, delimiter_))
+    while(std::getline(ss, s, ParaFileDelimiter))
     {
       // Remove parantheses
       s.erase(std::remove(s.begin(), s.end(), '('), s.end());
@@ -617,111 +718,40 @@ private:
     }
 
     // Return false,  if not enough parameters
-    if ( out.size() < param.columns() )
+    if ( out.size() < para.columns() )
       return false;
 
     // write data into parameter object
     // --> consider only defined parameter size
-    for ( size_t i = 0; i < param.columns(); ++i )
-      param.set_value(i, out[i]);
-    param.found( true );
+    for ( size_t i = 0; i < para.columns(); ++i )
+      para.set_value(i, out[i]);
+    para.found( true );
 
     return true;
 
-  } // ParaReader::query_single_line()
+  } // ParaBlock::query_vector()
 
   /*------------------------------------------------------------------
-  | Query list parameters over multiple lines
+  | Query matrix parameters 
   ------------------------------------------------------------------*/
   template <typename T>
-  bool query_multiple_lines(Parameter<T>& param)
+  bool query_matrix(Parameter<T>& para, const strVec& content)
   {
-    string start_query = param.start_key();
-    string end_query   = param.end_key();
+    auto start_data = para.get_query_data(para.start_key(), content );
 
-    // Parameter query reached end of input file
-    if ( param.line_to_start() >= file_content_.size() )
+    if ( !start_data.found )
       return false;
 
-    // Position of query in the line
-    size_t line_start_pos = -1;
-    size_t line_end_pos = -1;
+    auto end_data = para.get_query_data(para.end_key(), content );
 
-    // Index of starting / ending line where query is found
-    size_t line_start_index = -1;
-    size_t line_end_index = -1;
-
-    size_t index;
-
-    // Search for starting query in file buffer line by line
-    for (size_t cur_line = param.line_to_start(); 
-         cur_line < file_content_.size(); 
-         ++cur_line)
-    {
-      const string& line = file_content_[cur_line];
-
-      // Search in all lines for starting query
-      // use last query that occured in file
-      size_t pos = 0;
-
-      while ((index = line.find(start_query, pos)) != string::npos)
-      {
-        // Position is from next element of index
-        line_start_pos   = index;
-        line_start_index = cur_line;
-        pos              = index + 1;
-
-        // Set starting line for next query search
-        param.line_to_start( cur_line + 1 );
-      }
-
-      // Stop if query has been found in current line
-      if ( line_start_index != string::npos )
-        break;
-    }
-
-    // Nothing found -> return empty string
-    if (line_start_index == string::npos)
+    if ( !end_data.found )
       return false;
 
-
-
-    // Search for ending query in file buffer line by line
-    for (size_t cur_line = param.line_to_start(); 
-         cur_line < file_content_.size(); 
-         ++cur_line)
-    {
-      const string& line = file_content_[cur_line];
-
-      // Search in all lines for starting query
-      // use last query that occured in file
-      size_t pos = 0;
-
-      while ((index = line.find(end_query, pos)) != string::npos)
-      {
-        // Position is from next element of index
-        line_end_pos   = index;
-        line_end_index = cur_line;
-        pos            = index + 1;
-
-        // Set starting line for next query search
-        param.line_to_start( cur_line + 1 );
-      }
-
-      // Stop if query has been found in current line
-      if ( line_end_index != string::npos )
-        break;
-    }
-
-    // Nothing found -> return empty string
-    if (line_end_index == string::npos)
-      return false;
-
+    // Gather sub strings
     std::vector<string> sub_strings {};
 
-    for (int i = line_start_index+1; i < line_end_index; i++)
-      sub_strings.push_back( file_content_[i] );
-
+    for (int i = start_data.line_index+1; i < end_data.line_index; i++)
+      sub_strings.push_back( content[i] );
 
     // Convert substring to a vector of type T
     std::vector<T> out;
@@ -733,7 +763,7 @@ private:
 
       // Split string at delimiter and put every sub-string
       // into "out" vector
-      while(std::getline(ss, s, delimiter_))
+      while(std::getline(ss, s, ParaFileDelimiter))
       {
         // Remove parantheses
         s.erase(std::remove(s.begin(), s.end(), '('), s.end());
@@ -753,29 +783,29 @@ private:
     }
 
     // Check for correct shape of input data
-    size_t n_rows = out.size() / param.columns();
+    size_t n_rows = out.size() / para.columns();
 
-    if ( out.size() != param.columns()*n_rows ) 
+    if ( out.size() != para.columns()*n_rows ) 
       return false;
 
     for ( size_t j = 0; j < n_rows; ++j )
     {
-      for ( size_t i = 0; i < param.columns(); ++i )
+      for ( size_t i = 0; i < para.columns(); ++i )
       {
-        size_t index = i + j * param.columns();
-        param.set_value(index, out[index]);
+        size_t index = i + j * para.columns();
+        para.set_value(index, out[index]);
       }
 
       if ( j < n_rows-1 )
-        param.add_row();
+        para.add_row();
     }
 
-    param.found( true);
+    para.found( true);
 
 
     return true;
 
-  } // ParaReader::query_multiple_lines()
+  } // ParaBlock::query_matrix()
 
 
   /*------------------------------------------------------------------
@@ -795,21 +825,55 @@ private:
   }
 
   /*------------------------------------------------------------------
+  | Get the content from a text file
+  ------------------------------------------------------------------*/
+  strVec_ptr read_content(const string& file_path)
+  {
+    strVec_ptr content = std::make_shared<strVec>();
+
+    ifstream ifs {file_path};
+    if (!ifs) error("Can't open file: " + file_path);
+
+    // General throw for bad reading of file
+    ifs.exceptions(ifs.exceptions() | std::ios_base::badbit);
+
+    // Read the input file
+    string line;
+    while (std::getline(ifs, line))
+    {
+      // Ignore commented lines
+      string l_cpy = line;
+      l_cpy.erase(std::remove_if(l_cpy.begin(), l_cpy.end(), isspace), 
+                  l_cpy.end());
+      if ( l_cpy[0] == '#' )
+        continue;
+      
+      // Add line to content, if it not a comment line
+      content->push_back(line);
+    }
+
+    if (!ifs.eof()) 
+      error("Failed to read entire file - "
+            "Stopped reading in line " + 
+            std::to_string(content->size()));
+
+    return content;
+  }
+
+
+  /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
-  string          file_path_;
-  strVec          file_content_;
-  string          comment_;
-  char            delimiter_;
+  ParameterList   para_list_; 
+  ParameterMap    para_map_;
 
-  ParameterList   param_list_; 
-  ParameterMap    param_map_;
+  strVec_ptr      content_;
 
+  size_t          line_end_ { 0 };
 
 
-}; // ParaReader
+}; // ParaBlock
 
-
-
+using ParaReader = ParaBlock;
 
 } // namespace CppUtils

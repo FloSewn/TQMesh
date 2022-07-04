@@ -135,6 +135,11 @@ public:
   } // Mesh::Constructor()
 
   /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  friend std::ostream& operator<<(std::ostream& os, const Mesh& mesh);
+
+  /*------------------------------------------------------------------
   | Return mesh entities within a given position and radius
   ------------------------------------------------------------------*/
   VertexVector 
@@ -233,6 +238,9 @@ public:
   {
     // Prepare all indices of mesh entities
     assign_mesh_indices();
+
+    if ( type == ExportType::cout )
+      std::cout << (*this);
 
     if ( type == ExportType::txt )
       write_to_txt_file( path );
@@ -2391,7 +2399,7 @@ private:
 
     outfile.open( file_name );
 
-    //outfile << (*this);
+    outfile << (*this);
 
     outfile.close();
 
@@ -2493,8 +2501,7 @@ private:
 /*********************************************************************
 * Print out the mesh to std::cout
 *********************************************************************/
-static inline std::ostream& operator<<(std::ostream& os, 
-                                       const Mesh& mesh)
+inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
 {
   os << "MESH " << mesh.id() << "\n";
 

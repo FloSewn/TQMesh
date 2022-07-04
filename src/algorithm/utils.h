@@ -69,7 +69,7 @@ constexpr double TQMeshEdgeSearchFactor = 1.5;
 /*********************************************************************
 * 
 *********************************************************************/
-enum class ExportType { txt, vtu };
+enum class ExportType { cout, txt, vtu };
 
 } // namespace TQAlgorithm
 } // namespace TQMesh 

@@ -946,8 +946,8 @@ void Test_Mesh_multiple_domains(bool export_mesh)
     std::string export_prefix = 
       "/home/florian/datadisk/Code/C++-Code/TQMesh/build/mesh";
 
-    mesh_1.write_to_file( export_prefix + "_1.txt", ExportType::txt );
-    mesh_2.write_to_file( export_prefix + "_2.txt", ExportType::txt );
+    mesh_1.write_to_file( export_prefix + "_1.txt", ExportType::cout );
+    mesh_2.write_to_file( export_prefix + "_2.txt", ExportType::cout );
   }
 
   DBG_MSG("Tests for Mesh_multiple_domains() succeeded");
