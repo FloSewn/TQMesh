@@ -42,6 +42,7 @@ class Mesh
   using Vec2dVector    = std::vector<Vec2d>;
   using MeshVector     = std::vector<Mesh*>;
   using BdryEdgeConn   = std::vector<std::vector<EdgeVector>>;
+  using NbrMeshConn    = std::vector<std::vector<EdgeVector>>;
 
 public:
   /*------------------------------------------------------------------
@@ -60,61 +61,33 @@ public:
   , tris_       { qtree_scale, qtree_items, qtree_depth }
   , quads_      { qtree_scale, qtree_items, qtree_depth }
   , front_      { }
-  {
-
-    // Initialize edges in the advancing front
-    front_.init_front_edges(domain, verts_);
-
-    // Setup the mesh boundary edges from the initial advancing front
-    for ( auto& e : front_ )
-      bdry_edges_.add_edge( e->v1(), e->v2(), e->marker() );
-
-  } // Mesh::Constructor()
+  { }
 
   /*------------------------------------------------------------------
-  | Constructor
+  | Initialize the advancing front structure of the mesh
   ------------------------------------------------------------------*/
-  Mesh(Domain&   domain,
-       Mesh&     neighbor_mesh,
-       int       mesh_id=TQMeshDefaultMeshId,
-       int       element_color=TQMeshDefaultElementColor,
-       double    qtree_scale=ContainerQuadTreeScale,
-       size_t    qtree_items=ContainerQuadTreeItems, 
-       size_t    qtree_depth=ContainerQuadTreeDepth)
-  : domain_     { &domain }
-  , mesh_id_    { mesh_id }
-  , elem_color_ { element_color }
-  , verts_      { qtree_scale, qtree_items, qtree_depth }
-  , tris_       { qtree_scale, qtree_items, qtree_depth }
-  , quads_      { qtree_scale, qtree_items, qtree_depth }
-  , front_      { }
+  void init_advancing_front()
   {
-    // Check if the mesh that is given as input parameter 
-    // is overlapping with the current domain
-    Domain& neighbor_domain = neighbor_mesh.domain();
+    // Count the number of overlaps with other meshes
+    size_t n_overlaps = 0;
 
-    size_t n_overlaps = domain_->get_overlaps( neighbor_domain );
-
-    if ( n_overlaps < 1 )
-      MSG("WARNING: NEW MESH IS INITIALIZED FROM AN EXISTING MESH, "
-          "BUT THEIR DOMAINS DO NOT SHARE ANY BOUNDARY EDGES.");
-
-    // For every boundary edge of the current mesh's domain,
-    // collect all overlapping boundary edges of the neighbor mesh 
-    BdryEdgeConn bdry_edge_conn {};
-
-    if ( n_overlaps > 0 )
+    for ( auto neighbor_mesh : neighbor_meshes_ )
     {
-      bdry_edge_conn = setup_bdry_edge_connectivity(neighbor_mesh);
+      Domain& neighbor_domain = neighbor_mesh->domain();
 
-      // Connect this mesh with its neighbor
-      this->add_neighbor_mesh( neighbor_mesh );
-      neighbor_mesh.add_neighbor_mesh( *this );
+      n_overlaps += domain_->get_overlaps( neighbor_domain );
     }
 
-    // Initialize edges in the advancing front
-    front_.init_front_edges(domain, verts_, bdry_edge_conn);
+    if ( n_overlaps > 0 )
+      MSG("MESH WILL BE INITIALIZED FROM EXISTING MESHES.");
 
+    // Create connectivity between the current domain edges and 
+    // the existing edges of neighboring meshes
+    NbrMeshConn nbr_mesh_conn = setup_neighbor_mesh_connectivity();
+
+    // Initialize edges in the advancing front
+    front_.init_front_edges(*domain_, verts_, nbr_mesh_conn);
+     
     // Setup the mesh boundary edges from the initial advancing front
     for ( auto& e : front_ )
     {
@@ -125,15 +98,17 @@ public:
 
       // Connect boundary edges of this mesh and its parner mesh
       Edge* e_twin = e->twin_edge();
-      ASSERT( e_twin != nullptr,
-          "Connectivtiy between boundary edges of two meshes failed.");
-      e_twin->twin_edge( &e_new );
-      e_new.twin_edge( e_twin );
-      e->twin_edge( nullptr );
+
+      if ( e_twin )
+      {
+        e_twin->twin_edge( &e_new );
+        e_new.twin_edge( e_twin );
+        e->twin_edge( nullptr );
+      }
     }
 
-  } // Mesh::Constructor()
-
+  } // Mesh::init_advancing_front()
+  
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
@@ -184,6 +159,24 @@ public:
     q_new.color( elem_color_ );
     return q_new;
   } 
+
+  /*------------------------------------------------------------------
+  | Add another mesh to the neighbor-mesh-list
+  ------------------------------------------------------------------*/
+  void add_neighbor_mesh(Mesh& mesh)
+  { neighbor_meshes_.push_back( &mesh ); }
+
+  /*------------------------------------------------------------------
+  | Remove another mesh to the neighbor-mesh-list
+  ------------------------------------------------------------------*/
+  void remove_neighbor_mesh(Mesh& mesh)
+  {
+    auto it = std::find(neighbor_meshes_.begin(), 
+                        neighbor_meshes_.end(), 
+                        &mesh);
+    if ( it != neighbor_meshes_.end() )
+      neighbor_meshes_.erase( it );
+  }
 
 
   /*------------------------------------------------------------------
@@ -2229,6 +2222,7 @@ private:
 
   } // Mesh::prepare_quad_layer_front()
 
+
   /*------------------------------------------------------------------
   | This function creates a connectivity structure between the 
   | domain of this mesh and the existing boundary edges of a given
@@ -2300,6 +2294,87 @@ private:
 
   } // Mesh::setup_bdry_edge_connectivity()
 
+  /*------------------------------------------------------------------
+  | This function creates a connectivity structure between the 
+  | domain of this mesh and the existing boundary edges of its
+  | neighbor meshes. 
+  ------------------------------------------------------------------*/
+  NbrMeshConn setup_neighbor_mesh_connectivity()
+  {
+    NbrMeshConn connectivity {};
+
+    size_t n_init_edges = 0;
+
+    for ( const auto& boundary : *domain_ )
+    {
+      std::vector<EdgeVector> bdry_conn {};
+
+      for ( const auto& e : boundary->edges() )
+      {
+        EdgeVector   nbr_edges {};
+
+        const Vec2d& c = e->xy();
+        double       r = TQMeshEdgeSearchFactor * e->length();
+
+        const Vec2d& v = e->v1().xy();
+        const Vec2d& w = e->v2().xy();
+
+        // Check boundary edges of neighboring mesh for overlap
+        // with current domain boundary edge
+        // --> First come, first serve
+        for ( Mesh* m : neighbor_meshes_ )
+        {
+          ASSERT( m, "Neighbor mesh data structure is invalid." );
+
+          EdgeVector found = m->get_bdry_edges(c, r);
+
+          // Get all edges, that are actually located on the segment
+          // of the current domain boundary edge 
+          for ( Edge* e_found : found )
+          {
+            const Vec2d& p = e_found->v1().xy();
+            const Vec2d& q = e_found->v2().xy();
+
+            if ( in_on_segment(v,w,p) && in_on_segment(v,w,q) )
+            {
+              nbr_edges.push_back( e_found );
+              ++n_init_edges;
+            }
+          }
+
+          // Sort all edges in the boundary data structure in 
+          // ascending order to the starting vertex
+          std::sort(nbr_edges.begin(), nbr_edges.end(), 
+          [v](Edge* e1, Edge* e2)
+          {
+            double delta_1 = (e1->xy() - v).length_squared();
+            double delta_2 = (e2->xy() - v).length_squared();
+            return (delta_1 < delta_2);
+          });
+
+          // If edges have been located, save pointer to the current 
+          // neighbor mesh and terminate search
+          if ( nbr_edges.size() > 0 )
+            break;
+        }
+
+        /// Connect all found & sorted edges to the current 
+        //  domain boundary edge
+        bdry_conn.push_back( nbr_edges );
+      }
+
+      /// Connect all found & sorted edges to the current 
+      //  domain boundary 
+      connectivity.push_back( bdry_conn );
+    }
+
+    MSG("MESH WILL BE INITIALIZED WITH " << n_init_edges 
+        << " EDGES FROM A NEIGHBORING MESH.");
+
+    return std::move( connectivity );
+
+  } // setup_neighbor_mesh_connectivity()
+
 
   /*------------------------------------------------------------------
   | Get edge 
@@ -2327,24 +2402,6 @@ private:
     return found;
 
   } // Mesh::get_edge()
-
-  /*------------------------------------------------------------------
-  | Add another mesh to the neighbor-mesh-list
-  ------------------------------------------------------------------*/
-  void add_neighbor_mesh(Mesh& mesh)
-  { neighbor_meshes_.push_back( &mesh ); }
-
-  /*------------------------------------------------------------------
-  | Remove another mesh to the neighbor-mesh-list
-  ------------------------------------------------------------------*/
-  void remove_neighbor_mesh(Mesh& mesh)
-  {
-    auto it = std::find(neighbor_meshes_.begin(), 
-                        neighbor_meshes_.end(), 
-                        &mesh);
-    if ( it != neighbor_meshes_.end() )
-      neighbor_meshes_.erase( it );
-  }
 
   /*------------------------------------------------------------------
   | This function removes an entity and makes sure, that the 

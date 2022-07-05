@@ -84,6 +84,7 @@ void Test_Mesh_initialization()
 
   // Create the mesh
   Mesh mesh { domain, 0, 0, 10.0 };
+  mesh.init_advancing_front();
 
   ASSERT( EQ(mesh.front().area(), domain.area()),
       "Front initialization failed.");
@@ -124,6 +125,7 @@ void Test_Mesh_triangulate(bool export_mesh)
 
   // Create the mesh
   Mesh mesh { domain, 0, 0, 50.0 };
+  mesh.init_advancing_front();
 
   mesh.triangulate();
 
@@ -178,6 +180,7 @@ void Test_Mesh_pave(bool export_mesh)
   // Create the mesh
   Mesh mesh { domain, 0, 0, 50.0 };
 
+  mesh.init_advancing_front();
   mesh.pave();
 
   // Assertions
@@ -227,6 +230,8 @@ void Test_Mesh_refine_to_quads(bool export_mesh)
 
   // Create the mesh
   Mesh mesh { domain, 0, 0, 50.0 };
+
+  mesh.init_advancing_front();
 
   mesh.create_quad_layers(v1, v1, 1, 1.0, 1.5);
 
@@ -290,6 +295,7 @@ void Test_Mesh_advance_front_quad(bool export_mesh)
 
   // Create the mesh
   Mesh mesh { domain, 0, 0, 50.0 };
+  mesh.init_advancing_front();
 
   mesh.pave();
   //mesh.triangulate();
@@ -346,6 +352,7 @@ void Test_Mesh_create_simple_hex_layers(bool export_mesh)
 
   // Create the mesh
   Mesh mesh { domain, 0, 0, 150.0 };
+  mesh.init_advancing_front();
 
   // Create quad layers
   mesh.create_quad_layers(v1, v6, 3, 0.1, 1.2);
@@ -398,6 +405,7 @@ void Test_Mesh_add_quad_layer(bool export_mesh)
 
   // Create the mesh
   Mesh mesh { domain, 0, 0, 50.0 };
+  mesh.init_advancing_front();
 
   mesh.create_quad_layers(v1, v1, 4, 0.1, 1.0);
 
@@ -453,6 +461,7 @@ void Test_Mesh_add_quad_layer_step(bool export_mesh)
 
   // Create the mesh
   Mesh mesh { domain, 0, 0, 50.0 };
+  mesh.init_advancing_front();
 
   mesh.triangulate();
   //mesh.pave();
@@ -517,6 +526,7 @@ void Test_Mesh_wedge(bool export_mesh)
 
   // Create the mesh
   Mesh mesh { domain, 0, 0, 2000.0 };
+  mesh.init_advancing_front();
 
   mesh.triangulate();
 
@@ -670,6 +680,7 @@ void Test_Mesh_banner(bool export_mesh)
 
   // Create the mesh
   Mesh mesh { domain, 0, 0, 60.0 };
+  mesh.init_advancing_front();
 
   // Create quad layers
   mesh.create_quad_layers(b0, b0, 2, 0.5, 1.0);
@@ -738,6 +749,7 @@ void Test_Mesh_vortex_shedding(bool export_mesh)
 
   // Create the mesh
   Mesh mesh { domain, 0, 0, 10.0 };
+  mesh.init_advancing_front();
 
   mesh.create_quad_layers(v1, v2, 2, 0.05, 1.0);
   mesh.create_quad_layers(v3, v4, 2, 0.05, 1.0);
@@ -789,6 +801,7 @@ void Test_Mesh_create_bdry_shape_mesh(bool export_mesh)
 
   // Create the mesh
   Mesh mesh { domain, 0, 0, 40.0 };
+  mesh.init_advancing_front();
 
   //mesh.create_quad_layers(v1, v2, 2, 0.05, 1.0);
   //mesh.create_quad_layers(v3, v4, 2, 0.05, 1.0);
@@ -857,41 +870,15 @@ void Test_Mesh_multiple_domains(bool export_mesh)
   // --> Here the edges of domain 1 are discretized into further 
   //     segments, according to the size function of domain 1
   Mesh mesh_1 { domain_1, 0, 0, 50.0 };
+  mesh_1.init_advancing_front();
 
   mesh_1.triangulate();
   mesh_1.merge_triangles_to_quads();
 
   mesh_1.refine_to_quads();
 
-  // ToDo:
-  // --> Every domain edge must know its sub-vertices of the mesh
-  //     as well as the corresponding boundary edges of the mesh
-  // --> This must happen during the advancing front initialization
-  //
-  // --> Structure for every domain edge:
-  //     * vector of pointers to sub-edges
-  //       (both arranged in direction of the edge)
-  //     * Pointer to possible twin edge of another domain
-  //  
 
-
-
-  //=======================================================
   // Second domain = sub-domain of domain_1
-  // --> domain_1 is given as constructor argument instead 
-  //     of size function
-  // --> it's size function is used
-  // --> the remaining arguments can be given by user
-  //
-  // ToDo: 
-  // --> Everytime an entity gets added, we must check
-  //     in the background, if this entity is a copy
-  //     of an entity in domain_1
-  //     * Vertices: by coordinate
-  //     * Edges: by start & ending vertex coordinate
-  //     -> Use get_item() in case of large domains?
-  //
-  //
   Domain domain_2 { f2, 20.0 };
   Boundary&  b_ext_2 = domain_2.add_exterior_boundary();
 
@@ -909,45 +896,25 @@ void Test_Mesh_multiple_domains(bool export_mesh)
   b_ext_2.add_edge( v12,  v9, 2 );
   
   // Create the mesh for domain 2
-  // --> Here the edges of domain 2 are discretized into further 
-  //     segments, by using the corresponding entities of domain 1
-  //     or by placing new vertices according to its size function
-  Mesh mesh_2 { domain_2, mesh_1, 1, 1, 50.0 };
+  Mesh mesh_2 { domain_2, 1, 1, 50.0 };
+
+  mesh_2.add_neighbor_mesh( mesh_1 );
+  mesh_2.init_advancing_front();
 
   mesh_2.triangulate();
   mesh_2.refine_to_quads();
 
-
-
-  // Merge meshes
-  // --> combine both meshes to one 
-  // --> Boundaries must keep their markers
-  // --> Boundary edges at mesh interfaces must be turned into 
-  //     interior edges
-  // --> In case of entitiy duplicates, use always vertices or 
-  //     edges of the first mesh
-  // --> If vertices,  interior & boundary edges and elements
-  //     are initialized, we can get the full connectivity by 
-  //     the mesh's functions
-  //Mesh mesh_3 { mesh_1, mesh_2 };
-
-
   // Export the mesh
   if (export_mesh)
   {
-    // Make sure that all vertex / element indices are assigned
-    //mesh_1.assign_mesh_indices();
-    //mesh_2.assign_mesh_indices();
-
-    //std::cout << mesh_1;
-    //std::cout << mesh_2;
-    //domain.export_size_function({0.0,0.0}, {5.0,5.0}, 100, 100);
 
     std::string export_prefix = 
       "/home/florian/datadisk/Code/C++-Code/TQMesh/build/mesh";
 
-    mesh_1.write_to_file( export_prefix + "_1.txt", ExportType::cout );
-    mesh_2.write_to_file( export_prefix + "_2.txt", ExportType::cout );
+    mesh_1.write_to_file( export_prefix + "_1.vtu", ExportType::vtu );
+    mesh_2.write_to_file( export_prefix + "_2.vtu", ExportType::vtu );
+
+    //domain.export_size_function({0.0,0.0}, {5.0,5.0}, 100, 100);
   }
 
   DBG_MSG("Tests for Mesh_multiple_domains() succeeded");
@@ -1007,6 +974,7 @@ void Test_Mesh_benchmark(double h, double L,
   timer.count();
 
   Mesh mesh { domain, 0, 0, 40.0*L };
+  mesh.init_advancing_front();
 
   /*------------------------------------------------------------------
   | Create the quad layer
@@ -1137,6 +1105,7 @@ void Test_Mesh_benchmark_TMesh(double h, double L,
   timer.count();
 
   Mesh mesh { domain, 0, 0, 20.0*L };
+  mesh.init_advancing_front();
 
   //------------------------------------------------------------------
   // Create the quad layer

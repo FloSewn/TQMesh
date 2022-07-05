@@ -478,6 +478,12 @@ private:
                                    domain_extent_ );
     Mesh& mesh = *( mesh_.get() );
 
+    // Connect mesh to all previously generated meshes
+    // --> MISSING!
+
+    // Initialize the advancing front structure
+    mesh.init_advancing_front();
+
     // Create quad layers
     for ( size_t i = 0; i < quad_layer_vertices_.size(); ++i )
     {
