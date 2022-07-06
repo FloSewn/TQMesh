@@ -39,10 +39,13 @@ class Mesh
   using TriVector      = std::vector<Triangle*>;
   using QuadVector     = std::vector<Quad*>;
   using DoubleVector   = std::vector<double>;
+  using BoolVector     = std::vector<bool>;
+  using IntVector      = std::vector<int>;
   using Vec2dVector    = std::vector<Vec2d>;
   using MeshVector     = std::vector<Mesh*>;
   using BdryEdgeConn   = std::vector<std::vector<EdgeVector>>;
   using NbrMeshConn    = std::vector<std::vector<EdgeVector>>;
+  using FrontData      = std::pair<EdgeVector,BoolVector>;
 
 public:
   /*------------------------------------------------------------------
@@ -68,6 +71,18 @@ public:
   ------------------------------------------------------------------*/
   void init_advancing_front()
   {
+    // Check if domain boundaries are traversable
+    for ( const auto& boundary : *domain_ )
+    {
+      Edge& e_start = boundary->edges()[0];
+      if ( !boundary->is_traversable(e_start, e_start) )
+      {
+        MSG("Can not initialize advancing front. "
+            "Mesh boundaries are not traversable.");
+        return;
+      }
+    }
+
     // Count the number of overlaps with other meshes
     size_t n_overlaps = 0;
 
@@ -79,14 +94,13 @@ public:
     }
 
     if ( n_overlaps > 0 )
-      MSG("MESH WILL BE INITIALIZED FROM EXISTING MESHES.");
+      DBG_MSG("MESH WILL BE INITIALIZED FROM EXISTING MESHES.");
 
-    // Create connectivity between the current domain edges and 
-    // the existing edges of neighboring meshes
-    NbrMeshConn nbr_mesh_conn = setup_neighbor_mesh_connectivity();
+    // Get all edges that will define the advancing front
+    FrontInitData front_data = collect_front_edges();
 
     // Initialize edges in the advancing front
-    front_.init_front_edges(*domain_, verts_, nbr_mesh_conn);
+    front_.init_front_edges(*domain_, front_data, verts_);
      
     // Setup the mesh boundary edges from the initial advancing front
     for ( auto& e : front_ )
@@ -2222,158 +2236,110 @@ private:
 
   } // Mesh::prepare_quad_layer_front()
 
-
   /*------------------------------------------------------------------
-  | This function creates a connectivity structure between the 
-  | domain of this mesh and the existing boundary edges of a given
-  | neighbor mesh. 
-  | It is called upon the construction of a new mesh structure, 
-  | where an existing mesh is given as argument.
+  | Collect all boundary / neighbor-mesh edges that will be used 
+  | for the creation of the advancing front
+  | Additionally, return also an array of booleans, which indicate
+  | the orientation of the given edges.
+  | Edges which result from neighbor mesh are oriented in the 
+  | opposite direction. This can be used to identify these edges
+  | from normal boundary edges (e.g. for the advancing front 
+  | refinement).
   ------------------------------------------------------------------*/
-  BdryEdgeConn setup_bdry_edge_connectivity(Mesh& neighbor_mesh)
+  FrontInitData collect_front_edges()
   {
-    BdryEdgeConn bdry_edge_connectivity {};
-    size_t n_init_edges = 0;
+    FrontInitData front_data {};
 
     for ( const auto& boundary : *domain_ )
     {
-      std::vector<EdgeVector> cur_bdry_edges {};
+      EdgeVector edges {};
+      IntVector  markers {};
+      BoolVector is_oriented {};
 
       for ( const auto& e : boundary->edges() )
       {
-        EdgeVector found_edges {};
+        EdgeVector nbr_edges = get_neighbor_mesh_edges(*e);
 
-        const Vec2d& c = e->xy();
-        double       r = TQMeshEdgeSearchFactor * e->length();
-
-        const Vec2d& v = e->v1().xy();
-        const Vec2d& w = e->v2().xy();
-
-        // Check boundary edges of neighboring mesh for overlap
-        // with current domain boundary edge
-        EdgeVector found = neighbor_mesh.get_bdry_edges(c, r);
-
-        // Get all edges, that are actually located on the segment
-        // of the current domain boundary edge 
-        for ( Edge* e_found : found )
+        if ( nbr_edges.size() > 0 )
         {
-          const Vec2d& p = e_found->v1().xy();
-          const Vec2d& q = e_found->v2().xy();
-
-          if ( in_on_segment(v,w,p) && in_on_segment(v,w,q) )
+          for ( Edge* nbr_e : nbr_edges )
           {
-            found_edges.push_back( e_found );
-            ++n_init_edges;
+            edges.push_back( nbr_e );
+            is_oriented.push_back( false );
+            markers.push_back( nbr_e->marker() );
           }
         }
-
-        // Sort all edges in the boundary data structure in 
-        // ascending order to the starting vertex
-        std::sort(found_edges.begin(), found_edges.end(), 
-        [v](Edge* e1, Edge* e2)
+        else
         {
-          double delta_1 = (e1->xy() - v).length_squared();
-          double delta_2 = (e2->xy() - v).length_squared();
-          return (delta_1 < delta_2);
-        });
-
-        /// Connect all found & sorted edges to the current 
-        //  domain boundary edge
-        cur_bdry_edges.push_back( found_edges );
+          edges.push_back( e.get() ) ;
+          is_oriented.push_back( true );
+          markers.push_back( e->marker() );
+        }
       }
 
-      /// Connect all found & sorted edges to the current 
-      //  domain boundary 
-      bdry_edge_connectivity.push_back( cur_bdry_edges );
+      front_data.edges.push_back( edges );
+      front_data.is_oriented.push_back( is_oriented );
+      front_data.markers.push_back( markers );
+
     }
 
-    MSG("MESH WILL BE INITIALIZED WITH " << n_init_edges 
-        << " EDGES FROM A NEIGHBORING MESH.");
+    return std::move(front_data); 
 
-    return std::move( bdry_edge_connectivity );
-
-  } // Mesh::setup_bdry_edge_connectivity()
+  } // Mesh::collect_front_edges()
 
   /*------------------------------------------------------------------
-  | This function creates a connectivity structure between the 
-  | domain of this mesh and the existing boundary edges of its
-  | neighbor meshes. 
+  | For a given edge <e>, search all boundary edges of a 
+  | neighboring mesh, that are contained within <e>.
+  | This function is used upon the initialization of the advancing
+  | front.
   ------------------------------------------------------------------*/
-  NbrMeshConn setup_neighbor_mesh_connectivity()
+  EdgeVector get_neighbor_mesh_edges(const Edge& e)
   {
-    NbrMeshConn connectivity {};
+    EdgeVector   nbr_edges {};
 
-    size_t n_init_edges = 0;
+    const Vec2d& c = e.xy();
+    double       r = TQMeshEdgeSearchFactor * e.length();
 
-    for ( const auto& boundary : *domain_ )
+    const Vec2d& v = e.v1().xy();
+    const Vec2d& w = e.v2().xy();
+
+    for ( Mesh* m : neighbor_meshes_ )
     {
-      std::vector<EdgeVector> bdry_conn {};
+      ASSERT( m, "Neighbor mesh data structure is invalid." );
 
-      for ( const auto& e : boundary->edges() )
+      // Get edges in the vicinity of the given edge
+      EdgeVector edges_in_vicinity = m->get_bdry_edges(c, r);
+
+      // Get all edges, that are actually located on the segment
+      // of the current domain boundary edge 
+      for ( Edge* e_vicinity : edges_in_vicinity )
       {
-        EdgeVector   nbr_edges {};
+        const Vec2d& p = e_vicinity->v1().xy();
+        const Vec2d& q = e_vicinity->v2().xy();
 
-        const Vec2d& c = e->xy();
-        double       r = TQMeshEdgeSearchFactor * e->length();
-
-        const Vec2d& v = e->v1().xy();
-        const Vec2d& w = e->v2().xy();
-
-        // Check boundary edges of neighboring mesh for overlap
-        // with current domain boundary edge
-        // --> First come, first serve
-        for ( Mesh* m : neighbor_meshes_ )
-        {
-          ASSERT( m, "Neighbor mesh data structure is invalid." );
-
-          EdgeVector found = m->get_bdry_edges(c, r);
-
-          // Get all edges, that are actually located on the segment
-          // of the current domain boundary edge 
-          for ( Edge* e_found : found )
-          {
-            const Vec2d& p = e_found->v1().xy();
-            const Vec2d& q = e_found->v2().xy();
-
-            if ( in_on_segment(v,w,p) && in_on_segment(v,w,q) )
-            {
-              nbr_edges.push_back( e_found );
-              ++n_init_edges;
-            }
-          }
-
-          // Sort all edges in the boundary data structure in 
-          // ascending order to the starting vertex
-          std::sort(nbr_edges.begin(), nbr_edges.end(), 
-          [v](Edge* e1, Edge* e2)
-          {
-            double delta_1 = (e1->xy() - v).length_squared();
-            double delta_2 = (e2->xy() - v).length_squared();
-            return (delta_1 < delta_2);
-          });
-
-          // If edges have been located, save pointer to the current 
-          // neighbor mesh and terminate search
-          if ( nbr_edges.size() > 0 )
-            break;
-        }
-
-        /// Connect all found & sorted edges to the current 
-        //  domain boundary edge
-        bdry_conn.push_back( nbr_edges );
+        if ( in_on_segment(v,w,p) && in_on_segment(v,w,q) )
+          nbr_edges.push_back( e_vicinity );
       }
 
-      /// Connect all found & sorted edges to the current 
-      //  domain boundary 
-      connectivity.push_back( bdry_conn );
+      // In case edges have been found, sort them in 
+      // ascending direction to the stating vertex
+      std::sort(nbr_edges.begin(), nbr_edges.end(), 
+      [v](Edge* e1, Edge* e2)
+      {
+        double delta_1 = (e1->xy() - v).length_squared();
+        double delta_2 = (e2->xy() - v).length_squared();
+        return (delta_1 < delta_2);
+      });
+
+      // If edges have been located, terminate the search
+      // --> First come, first serve
+      if ( nbr_edges.size() > 0 )
+        break;
     }
 
-    MSG("MESH WILL BE INITIALIZED WITH " << n_init_edges 
-        << " EDGES FROM A NEIGHBORING MESH.");
+    return std::move(nbr_edges);
+  }
 
-    return std::move( connectivity );
-
-  } // setup_neighbor_mesh_connectivity()
 
 
   /*------------------------------------------------------------------

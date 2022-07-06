@@ -26,6 +26,35 @@ using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
+* Helper function to create the data structure that is needed for 
+* the initialization of the advancing front
+*********************************************************************/
+FrontInitData collect_front_data(const Domain& domain)
+{
+  FrontInitData front_data {};
+
+  for ( const auto& boundary : domain )
+  {
+    std::vector<Edge*> edges {};
+    std::vector<bool>  is_oriented {};
+    std::vector<int>   markers {};
+
+    for ( const auto& e : boundary->edges() )
+    {
+      edges.push_back( e.get() ) ;
+      is_oriented.push_back( true );
+      markers.push_back( e->marker() );
+    }
+
+    front_data.edges.push_back( edges );
+    front_data.is_oriented.push_back( is_oriented );
+    front_data.markers.push_back( markers );
+  }
+
+  return std::move( front_data );
+}
+
+/*********************************************************************
 * Test Front initialization
 *********************************************************************/
 void Test_Front_initialization(bool export_data)
@@ -61,6 +90,9 @@ void Test_Front_initialization(bool export_data)
   b_int.add_edge( v7, v8, 2 );
   b_int.add_edge( v8, v5, 2 );
 
+  // Collect data for the initialization of the advancing front
+  FrontInitData front_data = collect_front_data( domain );
+
   // Advancing front requires initialized vertex container
   Vertices vertices { 10.0 };
 
@@ -69,7 +101,7 @@ void Test_Front_initialization(bool export_data)
     
   // Create advancing front
   Front front { }; 
-  front.init_front_edges( domain, vertices );
+  front.init_front_edges( domain, front_data, vertices );
   
   ASSERT( EQ(front.area(), domain.area()),
       "Front initialization failed.");
@@ -142,6 +174,9 @@ void Test_Front_sort_edges()
   b_int.add_edge( v7, v8, 2 );
   b_int.add_edge( v8, v5, 2 );
 
+  // Collect data for the initialization of the advancing front
+  FrontInitData front_data = collect_front_data( domain );
+
   // Advancing front requires initialized vertex container
   Vertices vertices { 10.0 };
 
@@ -150,7 +185,7 @@ void Test_Front_sort_edges()
 
   // Create advancing front
   Front front { };
-  front.init_front_edges( domain, vertices );
+  front.init_front_edges( domain, front_data, vertices );
 
   // Sort edges in ascending order
   front.sort_edges();
