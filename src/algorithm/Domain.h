@@ -312,13 +312,12 @@ public:
 
   } // Domain::remove_fixed_vertex()
 
-
-
   /*------------------------------------------------------------------
   | This function prints out the size function of the domain onto
   | a cartesian grid 
   ------------------------------------------------------------------*/
-  void export_size_function(const Vec2d& xy_min, const Vec2d& xy_max,
+  void export_size_function(std::ostream& os,
+                            const Vec2d& xy_min, const Vec2d& xy_max,
                             unsigned int Nx, unsigned int Ny)
   {
     const Vec2d len = xy_max - xy_min;
@@ -341,11 +340,11 @@ public:
       }
     }
 
-    std::cout << "SIZE-FUNCTION " 
-      << std::setprecision(5) << std::fixed 
-      << xy_min.x << " " << xy_min.y << " "
-      << xy_max.x << " " << xy_max.y << " "
-      << Nx << " " << Ny << "\n";
+    os << "SIZE-FUNCTION " 
+       << std::setprecision(5) << std::fixed 
+       << xy_min.x << " " << xy_min.y << " "
+       << xy_max.x << " " << xy_max.y << " "
+       << Nx << " " << Ny << "\n";
 
     // Print data to the user
     unsigned int nx = 10;
@@ -356,17 +355,17 @@ public:
     {
       for ( unsigned int i = 0; i < nx; ++i )
       {
-        std::cout << std::setprecision(5) << std::fixed 
-                  << values[index]  << ( (i==nx-1) ? "" : "," );
+        os << std::setprecision(5) << std::fixed 
+           << values[index]  << ( (i==nx-1) ? "" : "," );
         ++index;
       }
-      std::cout << "\n";
+      os << "\n";
     }
 
     for ( ; index < Nx * Ny; ++index )
-      std::cout << std::setprecision(5) << std::fixed 
+      os << std::setprecision(5) << std::fixed 
                 << values[index]  << ( (index==Nx*Ny-1) ? "" : "," );
-    std::cout << "\n";
+    os << "\n";
 
   } // Domain::export_size_function()
 
