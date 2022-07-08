@@ -5,6 +5,11 @@ add_executable( ${TESTS}
   tests_Triangle.cpp
   tests_Quad.cpp
   tests_Front.cpp
+  tests_EdgeList.cpp
+  tests_Boundary.cpp
+  tests_SizeFunction.cpp
+  tests_Smoother.cpp
+  tests_Mesh.cpp
   tests.cpp
   main.cpp
 )

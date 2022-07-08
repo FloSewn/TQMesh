@@ -11,6 +11,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <memory>
 
 namespace CppUtils {
 
@@ -42,11 +43,11 @@ static inline void ASSERT(bool cond, const std::string& msg)
 *   https://stackoverflow.com/questions/2212776/\
 *   overload-handling-of-stdendl
 *********************************************************************/
-class SimpleLogger: public std::ostream
+class SimpleLoggerImpl: public std::ostream
 {
 
 public:
-  SimpleLogger(std::ostream& str, std::string key)
+  SimpleLoggerImpl(std::ostream& str, const std::string& key)
   : std::ostream(&buffer_)
   , buffer_(str, std::move(key))
   {}
@@ -96,7 +97,32 @@ private:
 
   LogBuf buffer_;
 
-}; // SimpleLogger
+}; // SimpleLoggerImpl
+
+/*********************************************************************
+* The interface for the actual SimpleLogger
+*********************************************************************/
+class SimpleLogger
+{
+public:
+  SimpleLogger(std::ostream& str, const std::string& key)
+  {
+    logger_ = std::make_unique<SimpleLoggerImpl>( str, key );
+  }
+
+  template<typename T>
+  std::ostream& operator<<(T t)
+  { return *logger_ << t; }
+
+  void set_ostream(std::ostream& str, const std::string& key)
+  {
+    logger_.release();
+    logger_ = std::make_unique<SimpleLoggerImpl>( str, key );
+  }
+
+private:
+  std::unique_ptr<SimpleLoggerImpl> logger_;
+};
 
 
 } // namespace CppUtils

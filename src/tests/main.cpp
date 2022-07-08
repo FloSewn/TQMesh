@@ -24,14 +24,14 @@ int main(int argc, char* argv[])
 
   if ( argc < 2 )
   {
-    TESTMSG << std::endl;
+    TESTMSG << "" << std::endl;
     TESTMSG << "   -------------------------   " << std::endl;
     TESTMSG << "   |  TQMesh - Test suite  |   " << std::endl;
     TESTMSG << "   -------------------------   " << std::endl;
-    TESTMSG << std::endl;
+    TESTMSG << "" << std::endl;
     TESTMSG << "Usage: " << argv[0] << " <Test-Case>" << std::endl;
-    TESTMSG << std::endl;
-    TESTMSG << std::endl;
+    TESTMSG << "" << std::endl;
+    TESTMSG << "" << std::endl;
     return EXIT_FAILURE;
   }
 

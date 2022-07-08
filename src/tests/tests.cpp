@@ -64,7 +64,7 @@ int run_tests(const std::string& test_case)
     TESTMSG << "  Running tests for \"Front\" class..."
             << std::endl;
     run_tests_Front();
-  }/*
+  }
   else if ( !test_case.compare("EdgeList") )
   {
     TESTMSG << "  Running tests for \"EdgeList\" class..."
@@ -76,13 +76,13 @@ int run_tests(const std::string& test_case)
     TESTMSG << "  Running tests for \"Boundary\" class..."
             << std::endl;
     run_tests_Boundary();
-  }
+  } 
   else if ( !test_case.compare("SizeFunction") )
   {
     TESTMSG << "  Running tests for \"SizeFunction\" class..."
             << std::endl;
     run_tests_SizeFunction();
-  }
+  } 
   else if ( !test_case.compare("Smoother") )
   {
     TESTMSG << "  Running tests for \"Smoother\" class..."
@@ -94,13 +94,13 @@ int run_tests(const std::string& test_case)
     TESTMSG << "  Running tests for \"Mesh\" class..."
             << std::endl;
     run_tests_Mesh();
-  }*/
+  }
   else
   {
-    TESTMSG << std::endl;
+    TESTMSG << "" << std::endl;
     TESTMSG << RED "  No test case \"" << test_case 
             << "\" found" NC << std::endl;
-    TESTMSG << std::endl;
+    TESTMSG << "" << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -140,8 +140,8 @@ int run_tests(const std::string& test_case)
     TESTMSG << GRN "  --> (" << total_tests-error_count << "/" 
             << total_tests << ") tests succeeded." NC << std::endl;
   }
-  TESTMSG << std::endl;
-  TESTMSG << std::endl;
+  TESTMSG << "" << std::endl;
+  TESTMSG << "" << std::endl;
 
   if (!state)
     return EXIT_FAILURE;
