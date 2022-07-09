@@ -22,6 +22,15 @@
 #include "Domain.h"
 #include "QuadLayer.h"
 
+/*********************************************************************
+* ToDo:
+* - Add boolean to indicate if mesh elements have been generated yet
+* - Allow addition of neighbor meshes only when no mesh elements
+*   are generated yet
+* - Make ASSERT similar to CHECK
+* - User may only provide positive mesh color values
+*********************************************************************/
+
 namespace TQMesh {
 namespace TQAlgorithm {
 
@@ -65,6 +74,216 @@ public:
   , quads_      { qtree_scale, qtree_items, qtree_depth }
   , front_      { }
   { }
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  void merge_neighbor_mesh(Mesh& neighbor)
+  {
+    // Assign indices to neighbor mesh
+    neighbor.assign_mesh_indices();
+
+    // Search for vertices that are located on the inteface
+    // boundary between this mesh and the neighbor mesh
+    VertexVector new_vertices( neighbor.vertices().size(), nullptr );
+
+    for ( const auto& e_ptr : bdry_edges_ )
+    {
+      Edge* e_twin = e_ptr->twin_edge();
+
+      if ( !e_twin )
+        continue;
+
+      Facet* f_twin = e_twin->facet_l();
+      ASSERT( f_twin, "Invalid boundary edge connectivity." );
+
+      if ( f_twin->mesh() != &neighbor )
+        continue;
+
+      auto v1_index = e_twin->v1().index();
+      auto v2_index = e_twin->v2().index();
+
+      // Keep in mind, that both edges point in different directions
+      new_vertices[v2_index] = &(e_ptr->v1());
+      new_vertices[v1_index] = &(e_ptr->v2());
+    }
+
+    // Add the neighbor's vertices which are not located
+    // on the interface boundary
+    for ( const auto& v_ptr : neighbor.vertices() )
+    {
+      auto v_index = v_ptr->index();
+
+      if ( !new_vertices[v_index]  )
+      {
+        Vertex& v_new = add_vertex( v_ptr->xy() );
+        new_vertices[v_index] = &v_new;
+      }
+    }
+    
+    // Add the neighbor's triangle elements
+    for ( const auto& t_ptr : neighbor.triangles() )
+    {
+      auto v1_index = t_ptr->v1().index();
+      auto v2_index = t_ptr->v2().index();
+      auto v3_index = t_ptr->v3().index();
+
+      Vertex* v1 = new_vertices[v1_index];
+      Vertex* v2 = new_vertices[v2_index];
+      Vertex* v3 = new_vertices[v3_index];
+
+      ASSERT( v1, "Invalid data structure.");
+      ASSERT( v2, "Invalid data structure.");
+      ASSERT( v3, "Invalid data structure.");
+
+      add_triangle( *v1, *v2, *v3, t_ptr->color() );
+    }
+
+    // Add the neighbor's quad elements
+    for ( const auto& q_ptr : neighbor.quads() )
+    {
+      auto v1_index = q_ptr->v1().index();
+      auto v2_index = q_ptr->v2().index();
+      auto v3_index = q_ptr->v3().index();
+      auto v4_index = q_ptr->v4().index();
+
+      Vertex* v1 = new_vertices[v1_index];
+      Vertex* v2 = new_vertices[v2_index];
+      Vertex* v3 = new_vertices[v3_index];
+      Vertex* v4 = new_vertices[v4_index];
+
+      ASSERT( v1, "Invalid data structure.");
+      ASSERT( v2, "Invalid data structure.");
+      ASSERT( v3, "Invalid data structure.");
+      ASSERT( v4, "Invalid data structure.");
+
+      add_quad( *v1, *v2, *v3, *v4, q_ptr->color() );
+    }
+
+    // Add the neighbor's interior edges 
+    for ( const auto& e_ptr : neighbor.interior_edges() )
+    {
+      auto v1_index = e_ptr->v1().index();
+      auto v2_index = e_ptr->v2().index();
+
+      Vertex* v1 = new_vertices[v1_index];
+      Vertex* v2 = new_vertices[v2_index];
+
+      ASSERT( v1, "Invalid data structure.");
+      ASSERT( v2, "Invalid data structure.");
+
+      intr_edges_.add_edge( *v1, *v2 );
+    }
+
+    // Add the neighbor's boundary edges 
+    for ( const auto& e_ptr : neighbor.boundary_edges() )
+    {
+      Edge* e_twin = e_ptr->twin_edge();
+
+      // Skip if edge is an interface to this mesh
+      if ( e_twin && 
+           e_twin->facet_l() && 
+           e_twin->facet_l()->mesh() == this )
+        continue;
+
+      auto v1_index = e_ptr->v1().index();
+      auto v2_index = e_ptr->v2().index();
+
+      Vertex* v1 = new_vertices[v1_index];
+      Vertex* v2 = new_vertices[v2_index];
+
+      ASSERT( v1, "Invalid data structure.");
+      ASSERT( v2, "Invalid data structure.");
+
+      Edge& e_new = bdry_edges_.add_edge( *v1, *v2, e_ptr->marker() );
+
+      // Add interface to possible other neighbor meshes
+      if ( e_twin )
+      {
+        e_twin->twin_edge( &e_new );
+        e_new.twin_edge( e_twin );
+      }
+    }
+
+    // Find boundary inteface edges that should be turned into 
+    // interior edges
+    std::vector<std::pair<Vertex*, Vertex*>> new_intr_edges {};
+    EdgeVector bdry_edges_to_remove {};
+    
+    for ( const auto& e_ptr : bdry_edges_ )
+    {
+      Edge* e_twin = e_ptr->twin_edge();
+
+      if ( !e_twin )
+        continue;
+
+      Facet* f_twin = e_twin->facet_l();
+      ASSERT( f_twin, "Invalid boundary edge connectivity." );
+
+      if ( f_twin->mesh() != &neighbor )
+        continue;
+
+      auto v1_index = e_twin->v1().index();
+      auto v2_index = e_twin->v2().index();
+
+      Vertex* v1 = new_vertices[v1_index];
+      Vertex* v2 = new_vertices[v2_index];
+
+      ASSERT( v1, "Invalid data structure.");
+      ASSERT( v2, "Invalid data structure.");
+
+      new_intr_edges.push_back( {v2, v1} );
+      bdry_edges_to_remove.push_back( e_ptr.get() );
+    }
+
+    // Remove old edges
+    for ( Edge* e : bdry_edges_to_remove )
+      remove_boundary_edge( *e );
+
+    // Add new interior edges
+    for ( auto v : new_intr_edges )
+      intr_edges_.add_edge( *v.first, *v.second );
+
+    // Add neighbors of neighbor mesh
+    // --> Check if these neighbors are possibly already merged 
+    //     with this mesh
+    for ( Mesh* nbr : neighbor.neighbor_meshes_ )
+    {
+      if ( nbr == this )
+        continue;
+
+      // Check if neigbhor of neighbor is also adjacent to 
+      // this mesh
+      auto nbr_found = std::find(neighbor_meshes_.begin(), 
+                                 neighbor_meshes_.end(), nbr);
+
+      if( nbr_found != neighbor_meshes_.end() ) 
+        continue;
+
+      // Check if neigbhor of neighbor is already merged to 
+      // this mesh
+      nbr_found = std::find(merged_meshes_.begin(), 
+                            merged_meshes_.end(), nbr);
+
+      if( nbr_found != merged_meshes_.end() ) 
+        continue;
+
+      // Add neighbor mesh
+      add_neighbor_mesh( *nbr );
+    }
+
+    // Remove neighbor connectivity
+    neighbor.remove_neighbor_mesh(*this);
+    remove_neighbor_mesh(neighbor);
+    merged_meshes_.push_back( &neighbor );
+
+    // Re-initialize vertex-to-vertex connectivity
+    setup_vertex_connectivity();
+
+    // Update connectivity between elements and edges
+    setup_facet_connectivity();
+
+  } // Mesh::merge_neighbor_meshes()
 
   /*------------------------------------------------------------------
   | Initialize the advancing front structure of the mesh
@@ -162,17 +381,31 @@ public:
     return v_new;
   } 
 
-  Triangle& add_triangle(Vertex& v1, Vertex& v2, Vertex& v3)
+  Triangle& add_triangle(Vertex& v1, Vertex& v2, Vertex& v3, 
+                         int color=-1)
   {
     Triangle& t_new = tris_.push_back(v1, v2, v3);
-    t_new.color( elem_color_ );
+
+    if ( color < 0 )
+      t_new.color( elem_color_ );
+    else 
+      t_new.color( color );
+
+    t_new.mesh( this );
     return t_new;
   } 
 
-  Quad& add_quad(Vertex& v1, Vertex& v2, Vertex& v3, Vertex& v4)
+  Quad& add_quad(Vertex& v1, Vertex& v2, Vertex& v3, Vertex& v4,
+                 int color=-1)
   {
     Quad& q_new = quads_.push_back(v1, v2, v3, v4);
-    q_new.color( elem_color_ );
+
+    if ( color < 0 )
+      q_new.color( elem_color_ );
+    else
+      q_new.color( color );
+
+    q_new.mesh( this );
     return q_new;
   } 
 
@@ -2522,9 +2755,12 @@ private:
   EdgeList   intr_edges_ { Orientation::NONE };
   EdgeList   bdry_edges_ { Orientation::NONE };
 
-  MeshVector neighbor_meshes_ {};
-
   double     mesh_area_ { 0.0 };
+
+protected:
+  MeshVector neighbor_meshes_ {};
+  MeshVector merged_meshes_   {};
+
 
 }; // Mesh
 

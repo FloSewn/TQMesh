@@ -43,6 +43,24 @@ int run_examples(const std::string& example)
     LOG(INFO) << "";
     run_example_1();
   }
+  else if ( !example.compare("2") )
+  {
+    LOG(INFO) << "Running example 2...";
+    LOG(INFO) << "";
+    run_example_2();
+  }
+  else if ( !example.compare("3") )
+  {
+    LOG(INFO) << "Running example 3...";
+    LOG(INFO) << "";
+    run_example_3();
+  }
+  else if ( !example.compare("4") )
+  {
+    LOG(INFO) << "Running example 4...";
+    LOG(INFO) << "";
+    run_example_4();
+  }
   else
   {
     LOG(INFO) << "";

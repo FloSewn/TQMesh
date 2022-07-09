@@ -26,6 +26,8 @@ namespace TQAlgorithm {
 
 using namespace CppUtils;
 
+class Mesh;
+
 /*********************************************************************
 * A simple quadrilateral - Must be defined CCW
 * ============================================
@@ -134,6 +136,7 @@ public:
   const Vec2d& xy() const { return xy_; }
   const Vec2d& circumcenter() const { return circ_centr_; }
 
+  Mesh* mesh() const { return mesh_; }
   int color() const { return color_; }
   int index() const { return index_; }
   bool is_active() const { return active_; }
@@ -159,6 +162,7 @@ public:
   void nbr3(Facet* f) { f_[2] = f; }
   void nbr4(Facet* f) { f_[3] = f; }
 
+  void mesh(Mesh* m) { mesh_ = m; }
   void color(int i) { color_ = i; }
   void index(int i) { index_ = i; }
   void is_active(bool a) { active_ = a; }
@@ -194,7 +198,7 @@ public:
 
     return -1;
 
-  } //Mesh::get_vertex_index()
+  } //Quad::get_vertex_index()
 
   /*------------------------------------------------------------------
   | Returns the index of a quad edge for two given input vertices
@@ -497,6 +501,8 @@ private:
   int                  index_         {-1};
   bool                 active_        {false};
   bool                 marker_        {false};
+
+  Mesh*                mesh_          {nullptr};
 
   double               area_          {0.0};
   double               circ_radius_   {0.0};

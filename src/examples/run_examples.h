@@ -19,3 +19,6 @@ int run_examples(const std::string& library);
 * Test functions
 *********************************************************************/
 void run_example_1();
+void run_example_2();
+void run_example_3();
+void run_example_4();
