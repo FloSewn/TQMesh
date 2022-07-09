@@ -171,7 +171,7 @@ public:
   {
     if ( area_ <= 0.0 )
     {
-      DBG_MSG("  | NON-POSITIVE QUAD AREA " << area_);
+      DEBUG_LOG("  | NON-POSITIVE QUAD AREA " << area_);
       return false;
     }
     return true;

@@ -17,10 +17,10 @@
 #include "Vec2.h"
 #include "Geometry.h"
 #include "Helpers.h"
+#include "Log.h"
 
 namespace CppUtils {
 
-static SimpleLogger QuadTreeLogger { std::clog, "[QuadTree]: " };
 
 /*********************************************************************
 * This class refers to a quad tree for 2D simplices
@@ -59,14 +59,12 @@ public:
            size_t          max_depth, 
            const Vec2<V>&  center={0.0,0.0}, 
            size_t          depth=0,
-           SimpleLogger&   logger=QuadTreeLogger,
            QuadTree<T,V>*  parent=nullptr)
   : scale_      { scale     }
   , max_item_   { max_item  }
   , max_depth_  { max_depth }
   , center_     { center    }
   , depth_      { depth     }
-  , logger_     { &logger   }
   , parent_     { parent    }
   {  
     halfscale_ = 0.5 * scale_;
@@ -237,7 +235,7 @@ public:
       } 
       catch ( std::exception const& e ) 
       {
-        *logger_ << e.what() << std::endl; 
+        LOG(ERROR) << e.what(); 
       }
     }
 
@@ -372,19 +370,19 @@ private:
 
     // Child quad: NORTH-EAST (NE)
     children_[0] = new QuadTree<T,V> 
-    { halfscale_, max_item_, max_depth_, c0, child_depth, *logger_, this};
+    { halfscale_, max_item_, max_depth_, c0, child_depth, this};
                                
     // Child quad: NORTH-WEST (NW)
     children_[1] = new QuadTree<T,V> 
-    { halfscale_, max_item_, max_depth_, c1, child_depth, *logger_, this};
+    { halfscale_, max_item_, max_depth_, c1, child_depth, this};
 
     // Child quad: SOUTH-WEST (SW)
     children_[2] = new QuadTree<T,V> 
-    { halfscale_, max_item_, max_depth_, c2, child_depth, *logger_, this};
+    { halfscale_, max_item_, max_depth_, c2, child_depth, this};
 
     // Child quad: SOUTH-EAST (SE)
     children_[3] = new QuadTree<T,V> 
-    { halfscale_, max_item_, max_depth_, c3, child_depth, *logger_, this};
+    { halfscale_, max_item_, max_depth_, c3, child_depth, this};
 
     // Distribute items among children
     try 
@@ -454,8 +452,6 @@ private:
   bool           split_     { false };
   size_t         depth_     { 0 };
   size_t         n_items_   { 0 };
-
-  SimpleLogger*  logger_;
 
   List           items_;
   Array          children_  { nullptr };

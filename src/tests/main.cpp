@@ -10,28 +10,37 @@
 #include <string>
 #include <cstdlib>
 
-#include "Helpers.h"
+#include "Log.h"
 
 #include "tests.h"
 
+
+using CppUtils::LOG_PROPERTIES;
+using CppUtils::LOG;
+using CppUtils::LogLevel::INFO;
+using CppUtils::LogLevel::DEBUG;
 
 /*********************************************************************
 * The main function
 *********************************************************************/
 int main(int argc, char* argv[])
 {
-  CppUtils::SimpleLogger TESTMSG(std::clog, "  ");
+  LOG_PROPERTIES.set_level( DEBUG );
+  LOG_PROPERTIES.show_header( true );
+  LOG_PROPERTIES.use_color( true );
+  LOG_PROPERTIES.set_info_header( "  " );
+  LOG_PROPERTIES.set_debug_header( "# " );
 
   if ( argc < 2 )
   {
-    TESTMSG << "" << std::endl;
-    TESTMSG << "   -------------------------   " << std::endl;
-    TESTMSG << "   |  TQMesh - Test suite  |   " << std::endl;
-    TESTMSG << "   -------------------------   " << std::endl;
-    TESTMSG << "" << std::endl;
-    TESTMSG << "Usage: " << argv[0] << " <Test-Case>" << std::endl;
-    TESTMSG << "" << std::endl;
-    TESTMSG << "" << std::endl;
+    LOG(INFO) << "";
+    LOG(INFO) << "   -------------------------   ";
+    LOG(INFO) << "   |  TQMesh - Test suite  |   ";
+    LOG(INFO) << "   -------------------------   ";
+    LOG(INFO) << "";
+    LOG(INFO) << "Usage: " << argv[0] << " <Test-Case>";
+    LOG(INFO) << "";
+    LOG(INFO) << "";
     return EXIT_FAILURE;
   }
 

@@ -177,13 +177,13 @@ public:
   {
     if ( area_ <= 0.0 )
     {
-      DBG_MSG("  > NON-POSITIVE TRIANGLE AREA " << area_);
+      DEBUG_LOG("  > NON-POSITIVE TRIANGLE AREA " << area_);
       return false;
     }
 
     if ( edge_len_[0]<=0.0 || edge_len_[1]<=0.0 || edge_len_[2]<=0.0 )
     {
-      DBG_MSG("  > NON-POSITIVE TRIANGLE EDGE LENGTH ");
+      DEBUG_LOG("  > NON-POSITIVE TRIANGLE EDGE LENGTH ");
       return false;
     }
 

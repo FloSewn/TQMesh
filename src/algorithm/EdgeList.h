@@ -369,7 +369,8 @@ public:
     }
     else
     {
-      MSG("Invalid argument for function Vertex::get_edge_from_vertex()");
+      LOG(ERROR) << 
+      "Invalid argument for function Vertex::get_edge_from_vertex()";
     }
 
     return found;

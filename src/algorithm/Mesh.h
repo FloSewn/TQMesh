@@ -77,8 +77,9 @@ public:
       Edge& e_start = boundary->edges()[0];
       if ( !boundary->is_traversable(e_start, e_start) )
       {
-        MSG("Can not initialize advancing front. "
-            "Mesh boundaries are not traversable.");
+        LOG(ERROR) << 
+        "Can not initialize advancing front. "
+        "Mesh boundaries are not traversable.";
         return;
       }
     }
@@ -94,7 +95,8 @@ public:
     }
 
     if ( n_overlaps > 0 )
-      DBG_MSG("MESH WILL BE INITIALIZED FROM EXISTING MESHES.");
+      LOG(INFO) <<
+      "MESH WILL BE INITIALIZED FROM EXISTING MESHES.";
 
     // Get all edges that will define the advancing front
     FrontInitData front_data = collect_front_edges();
@@ -324,12 +326,13 @@ public:
     // If yes, do not refine
     if ( neighbor_meshes() > 0 )
     {
-      MSG("WARNING: CAN NOT REFINE MESH " << mesh_id_ << 
-          ", BECAUSE IT IS CONNECTED TO ANOTHER MESH.");
+      LOG(WARNING) << 
+      "WARNING: CAN NOT REFINE MESH " << mesh_id_ << 
+      ", BECAUSE IT IS CONNECTED TO ANOTHER MESH.";
       return false;
     }
 
-    MSG("START MESH REFINEMENT");
+    LOG(INFO) << "START MESH REFINEMENT";
     clear_waste();
 
     // Gather all coarse edges, quads and tris
@@ -471,7 +474,7 @@ public:
     // Update connectivity between elements and edges
     setup_facet_connectivity();
 
-    MSG("DONE!");
+    LOG(INFO) << "DONE!";
       
     return true;
       
@@ -527,7 +530,7 @@ public:
     if ( !base ) 
       return false;
 
-    MSG("START MESHING");
+    LOG(INFO) << "START MESHING";
 
     // Start advancing front loop
     while ( true )
@@ -567,14 +570,14 @@ public:
       // Update progress bar
       double state = std::ceil(100.0 * area() / domain_->area());
       progress_bar.update( static_cast<int>(state) );
-      progress_bar.show( std::clog );
+      progress_bar.show( LOG_PROPERTIES.get_ostream(INFO) );
 
       // No more edges in the advancing front
       // --> Meshing algorithm succeeded
       if ( front_.size() == 0 )
       {
-        MSG("[");
-        MSG("MESHING SUCCEEDED!");
+        LOG(INFO) << "[";
+        LOG(INFO) << "MESHING SUCCEEDED!";
         break;
       }
 
@@ -583,8 +586,8 @@ public:
       // --> Meshing algorithm failed
       if ( iter == front_.size() && wide_search )
       {
-        MSG("[");
-        MSG("MESHING FAILED.");
+        LOG(INFO) << "[";
+        LOG(INFO) << "MESHING FAILED.";
         return false;
       }
     }
@@ -618,7 +621,7 @@ public:
     if ( !base ) 
       return false;
 
-    MSG("START MESHING");
+    LOG(INFO ) << "START MESHING";
 
     // Start advancing front loop
     while ( true )
@@ -658,14 +661,14 @@ public:
       // Update progress bar
       double state = std::ceil(100.0 * area() / domain_->area());
       progress_bar.update( static_cast<int>(state) );
-      progress_bar.show( std::clog );
+      progress_bar.show( LOG_PROPERTIES.get_ostream(INFO) );
 
       // No more edges in the advancing front
       // --> Meshing algorithm succeeded
       if ( front_.size() == 0 )
       {
-        MSG("");
-        MSG("MESHING SUCCEEDED!");
+        LOG(INFO) << "";
+        LOG(INFO) << "MESHING SUCCEEDED!";
         break;
       }
 
@@ -674,8 +677,8 @@ public:
       // --> Meshing algorithm failed
       if ( iter == front_.size() && wide_search )
       {
-        MSG("");
-        MSG("MESHING FAILED.");
+        LOG(INFO) << "";
+        LOG(INFO) << "MESHING FAILED.";
         return false;
       }
     }
@@ -1094,8 +1097,10 @@ private:
     if ( new_triangles.size() < 1 )
       return nullptr;
 
-    DBG_MSG("VALID TRIANGLES IN NEIGHBORHOOD: " 
-            << new_triangles.size());
+    DEBUG_LOG(
+      "VALID TRIANGLES IN NEIGHBORHOOD: " 
+       << new_triangles.size()
+    );
 
     std::sort( new_triangles.begin(), new_triangles.end(),
     [this] ( Triangle* t1, Triangle* t2 )
@@ -1129,36 +1134,36 @@ private:
     const double rho   = domain_->size_function( tri.xy() );
     const double range = 2.0 * rho;
 
-    DBG_MSG("CHECK NEW TRIANGLE: " << tri);
+    DEBUG_LOG("CHECK NEW TRIANGLE: " << tri);
 
     if ( !tri.is_valid() )
       return false;
 
     if ( tri.intersects_front( front_, range ) )
     {
-      DBG_MSG("  > FRONT INTERSECTION");
+      DEBUG_LOG("  > FRONT INTERSECTION");
       return false;
     }
 
     if ( tri.intersects_vertex( verts_, range ) )
     {
-      DBG_MSG("  > VERTEX INTERSECTION");
+      DEBUG_LOG("  > VERTEX INTERSECTION");
       return false;
     }
 
     if ( tri.intersects_triangle( tris_, range ) )
     {
-      DBG_MSG("  > TRIANGLE INTERSECTION");
+      DEBUG_LOG("  > TRIANGLE INTERSECTION");
       return false;
     }
 
     if ( tri.intersects_quad( quads_, range ) )
     {
-      DBG_MSG("  > QUAD INTERSECTION");
+      DEBUG_LOG("  > QUAD INTERSECTION");
       return false;
     }
 
-    DBG_MSG("  > VALID");
+    DEBUG_LOG("  > VALID");
 
     return true;
 
@@ -1173,27 +1178,27 @@ private:
     const double rho   = domain_->size_function( v.xy() );
     const double range = 2.0 * rho;
 
-    DBG_MSG("CHECK NEW VERTEX: " << v);
+    DEBUG_LOG("CHECK NEW VERTEX: " << v);
 
     if ( !domain_->is_inside( v ) )
     {
-      DBG_MSG("  > OUTSIDE DOMAIN");
+      DEBUG_LOG("  > OUTSIDE DOMAIN");
       return false;
     }
 
     if ( v.intersects_facet(tris_, range) )
     {
-      DBG_MSG("  > TRIANGLE INTERSECTION");
+      DEBUG_LOG("  > TRIANGLE INTERSECTION");
       return false;
     }
 
     if ( v.intersects_facet(quads_, range) )
     {
-      DBG_MSG("  > QUAD INTERSECTION");
+      DEBUG_LOG("  > QUAD INTERSECTION");
       return false;
     }
 
-    DBG_MSG("  > VALID");
+    DEBUG_LOG("  > VALID");
 
     return true;
 
@@ -1835,8 +1840,9 @@ private:
 
     if (!v_start || !v_end)
     {
-      MSG("[ERROR]: Failed to create quad layer. "
-        "Provided starting or ending vertex pointer is NULL.");
+      LOG(ERROR) << 
+      "Failed to create quad layer. "
+      "Provided starting or ending vertex pointer is NULL.";
       return false;
     }
 
@@ -1846,8 +1852,9 @@ private:
 
     if ( !e_start || !e_end )
     {
-      MSG("Failed to find an advancing front edge that is adjacent"
-          " to the give input vertex for the quad layer creation.");
+      LOG(ERROR) << 
+      "Failed to find an advancing front edge that is adjacent"
+      " to the give input vertex for the quad layer creation.";
       return false;
     }
 
@@ -1856,8 +1863,9 @@ private:
 
     if ( !front_.is_traversable(*e_start, *e_end) )
     {
-      MSG("Failed to traverse the advancing front "
-          "for the given input vertices.");
+      LOG(ERROR) << 
+      "Failed to traverse the advancing front "
+      "for the given input vertices.";
       return false;
     }
 

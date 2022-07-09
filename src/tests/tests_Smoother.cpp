@@ -32,6 +32,13 @@ using namespace TQMesh::TQAlgorithm;
 *********************************************************************/
 void tri_mesh()
 {
+  // Log debug messages to specified output-file
+  std::string source_dir { TQMESH_SOURCE_DIR };
+  std::string file_name 
+  { source_dir + "/aux/test_data/SmootherTests.tri_mesh.log" };
+  LOG_PROPERTIES.set_info_ostream( TO_FILE, file_name );
+  LOG_PROPERTIES.set_debug_ostream( TO_FILE, file_name );
+
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
   { 
@@ -63,9 +70,7 @@ void tri_mesh()
   smoother.smooth(domain, mesh, 6, 0.5, 0.75, 0.95);
 
   // Export mesh
-  std::string source_dir { TQMESH_SOURCE_DIR };
-  std::string file_name 
-  { source_dir + "/aux/test_data/SmootherTests_tri_mesh.txt" };
+  file_name = source_dir + "/aux/test_data/SmootherTests.tri_mesh.txt";
 
   mesh.write_to_file( file_name, ExportType::txt );
 
@@ -80,5 +85,9 @@ void tri_mesh()
 void run_tests_Smoother()
 {
   SmootherTests::tri_mesh();
+
+  // Reset debug logging ostream
+  CppUtils::LOG_PROPERTIES.set_info_ostream( CppUtils::TO_COUT );
+  CppUtils::LOG_PROPERTIES.set_debug_ostream( CppUtils::TO_COUT );
 
 } // run_tests_Smoother()

@@ -17,29 +17,6 @@
 namespace TQMesh {
 namespace TQAlgorithm {
 
-
-/*********************************************************************
-* Output messages
-*********************************************************************/
-static CppUtils::SimpleLogger TQLogger { std::clog, "# " };
-#define MSG(str) \
-  do { TQMesh::TQAlgorithm::TQLogger << str << std::endl; } while(false)
-
-#ifndef NDEBUG
-#define DBG_MSG(str) \
-  MSG(str) 
-#else
-#define DBG_MSG(str) \
-  do { } while (false)
-#endif
-
-
-/*********************************************************************
-* GLOBALS
-*********************************************************************/
-// *** Marker for interior mesh edges ***
-//define TQ_INTR_EDGE_MARKER    (-1)
-
 /*********************************************************************
 * CONSTANTS
 *********************************************************************/

@@ -10,97 +10,84 @@
 #include <string>
 
 #include "tests.h"
-#include "Helpers.h"
+#include "Log.h"
 #include "Testing.h"
 
 /*********************************************************************
-* Color text
+* Log utils
 *********************************************************************/
-#define NC "\e[0m"
-#define RED "\e[0;31m"
-#define GRN "\e[0;32m"
-#define CYN "\e[0;36m"
-#define REDB "\e[41m"
+using CppUtils::LOG;
+using CppUtils::LogLevel::INFO;
+using CppUtils::LogColor::GREEN;
+using CppUtils::LogColor::RED;
 
 /*********************************************************************
 * The main test function
 *********************************************************************/
 int run_tests(const std::string& test_case)
 {
-  CppUtils::SimpleLogger TESTMSG(std::clog, "  ");
-
   /*------------------------------------------------------------------
   | Print header
   ------------------------------------------------------------------*/
-  TESTMSG << "" << std::endl;
-  TESTMSG << "   -------------------------   " << std::endl;
-  TESTMSG << "   |  TQMesh - Test suite  |   " << std::endl;
-  TESTMSG << "   -------------------------   " << std::endl;
-  TESTMSG << "" << std::endl;
+  LOG(INFO) << "";
+  LOG(INFO) << "   -------------------------   ";
+  LOG(INFO) << "   |  TQMesh - Test suite  |   ";
+  LOG(INFO) << "   -------------------------   ";
+  LOG(INFO) << "";
 
   /*------------------------------------------------------------------
   | Run all tests
   ------------------------------------------------------------------*/
   if ( !test_case.compare("Vertex") )
   {
-    TESTMSG << "  Running tests for \"Vertex\" class..."
-            << std::endl;
+    LOG(INFO) << "  Running tests for \"Vertex\" class...";
     run_tests_Vertex();
   }
   else if ( !test_case.compare("Triangle") )
   {
-    TESTMSG << "  Running tests for \"Triangle\" class..."
-            << std::endl;
+    LOG(INFO) << "  Running tests for \"Triangle\" class...";
     run_tests_Triangle();
   }
   else if ( !test_case.compare("Quad") )
   {
-    TESTMSG << "  Running tests for \"Quad\" class..."
-            << std::endl;
+    LOG(INFO) << "  Running tests for \"Quad\" class...";
     run_tests_Quad();
   }
   else if ( !test_case.compare("Front") )
   {
-    TESTMSG << "  Running tests for \"Front\" class..."
-            << std::endl;
+    LOG(INFO) << "  Running tests for \"Front\" class...";
     run_tests_Front();
   }
   else if ( !test_case.compare("EdgeList") )
   {
-    TESTMSG << "  Running tests for \"EdgeList\" class..."
-            << std::endl;
+    LOG(INFO) << "  Running tests for \"EdgeList\" class...";
     run_tests_EdgeList();
   }
   else if ( !test_case.compare("Boundary") )
   {
-    TESTMSG << "  Running tests for \"Boundary\" class..."
-            << std::endl;
+    LOG(INFO) << "  Running tests for \"Boundary\" class...";
     run_tests_Boundary();
   } 
   else if ( !test_case.compare("SizeFunction") )
   {
-    TESTMSG << "  Running tests for \"SizeFunction\" class..."
-            << std::endl;
+    LOG(INFO) << "  Running tests for \"SizeFunction\" class...";
     run_tests_SizeFunction();
   } 
   else if ( !test_case.compare("Smoother") )
   {
-    TESTMSG << "  Running tests for \"Smoother\" class..."
-            << std::endl;
+    LOG(INFO) << "  Running tests for \"Smoother\" class...";
     run_tests_Smoother();
   }
   else if ( !test_case.compare("Mesh") )
   {
-    TESTMSG << "  Running tests for \"Mesh\" class..."
-            << std::endl;
+    LOG(INFO) << "  Running tests for \"Mesh\" class...";
     run_tests_Mesh();
   }
   else
   {
-    TESTMSG << "" << std::endl;
-    TESTMSG << RED "  No test case \"" << test_case 
-            << "\" found" NC << std::endl;
-    TESTMSG << "" << std::endl;
+    LOG(INFO) << "";
+    LOG(INFO, RED) << "  No test case \"" << test_case  << "\" found";
+    LOG(INFO) << "";
     return EXIT_FAILURE;
   }
 
@@ -119,9 +106,9 @@ int run_tests(const std::string& test_case)
     if ( !data.state() )
     {
       ++error_count;
-      TESTMSG << RED "[ERROR] Test (" << error_count 
-              << "/" << total_tests << ") failed." NC << std::endl;
-      TESTMSG << "        --> " << data << std::endl;
+      LOG(INFO,RED) << "[ERROR] Test (" << error_count 
+              << "/" << total_tests << ") failed.";
+      LOG(INFO) << "        --> " << data;
     }
     state &= data.state();
   }
@@ -129,19 +116,19 @@ int run_tests(const std::string& test_case)
   /*------------------------------------------------------------------
   | Succeess / fail
   ------------------------------------------------------------------*/
-  TESTMSG << "" << std::endl;
+  LOG(INFO) << "";
   if (!state)
   {
-    TESTMSG << RED "  --> (" << error_count << "/" 
-            << total_tests << ") tests failed." NC  << std::endl;
+    LOG(INFO, RED) << "  --> (" << error_count << "/" 
+            << total_tests << ") tests failed." ;
   }
   else
   {
-    TESTMSG << GRN "  --> (" << total_tests-error_count << "/" 
-            << total_tests << ") tests succeeded." NC << std::endl;
+    LOG(INFO, GREEN) << "  --> (" << total_tests-error_count << "/" 
+            << total_tests << ") tests succeeded.";
   }
-  TESTMSG << "" << std::endl;
-  TESTMSG << "" << std::endl;
+  LOG(INFO) << "";
+  LOG(INFO) << "";
 
   if (!state)
     return EXIT_FAILURE;

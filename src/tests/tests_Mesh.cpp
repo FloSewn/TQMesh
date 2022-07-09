@@ -33,6 +33,13 @@ using namespace TQMesh::TQAlgorithm;
 *********************************************************************/
 void initialization()
 {
+  // Log debug messages to specified output-file
+  std::string source_dir { TQMESH_SOURCE_DIR };
+  std::string file_name 
+  { source_dir + "/aux/test_data/MeshTests.initialization.log" };
+  LOG_PROPERTIES.set_info_ostream( TO_FILE, file_name );
+  LOG_PROPERTIES.set_debug_ostream( TO_FILE, file_name );
+
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
   { return 1.0 + 0.15*sqrt(p.x*p.y); };
@@ -77,6 +84,13 @@ void initialization()
 *********************************************************************/
 void triangulate()
 {
+  // Log debug messages to specified output-file
+  std::string source_dir { TQMESH_SOURCE_DIR };
+  std::string file_name 
+  { source_dir + "/aux/test_data/MeshTests.triangulate.log" };
+  LOG_PROPERTIES.set_info_ostream( TO_FILE, file_name );
+  LOG_PROPERTIES.set_debug_ostream( TO_FILE, file_name );
+
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
   { return 2.5; };
@@ -111,9 +125,7 @@ void triangulate()
 
 
   // Export mesh
-  std::string source_dir { TQMESH_SOURCE_DIR };
-  std::string file_name 
-  { source_dir + "/aux/test_data/MeshTests_triangulate.txt" };
+  file_name =  source_dir + "/aux/test_data/MeshTests.triangulate.txt";
 
   mesh.write_to_file( file_name, ExportType::txt );
 
@@ -124,6 +136,13 @@ void triangulate()
 *********************************************************************/
 void pave()
 {
+  // Log debug messages to specified output-file
+  std::string source_dir { TQMESH_SOURCE_DIR };
+  std::string file_name 
+  { source_dir + "/aux/test_data/MeshTests.pave.log" };
+  LOG_PROPERTIES.set_info_ostream( TO_FILE, file_name );
+  LOG_PROPERTIES.set_debug_ostream( TO_FILE, file_name );
+
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
   { return 0.5; };
@@ -157,9 +176,7 @@ void pave()
   CHECK( EQ(mesh.area(), domain.area()) );
 
   // Export the mesh
-  std::string source_dir { TQMESH_SOURCE_DIR };
-  std::string file_name 
-  { source_dir + "/aux/test_data/MeshTests_pave.txt" };
+  file_name = source_dir + "/aux/test_data/MeshTests.pave.txt";
 
   mesh.write_to_file( file_name, ExportType::txt );
 
@@ -176,5 +193,9 @@ void run_tests_Mesh()
   MeshTests::initialization();
   MeshTests::triangulate();
   MeshTests::pave();
+
+  // Reset debug logging ostream
+  CppUtils::LOG_PROPERTIES.set_info_ostream( CppUtils::TO_COUT );
+  CppUtils::LOG_PROPERTIES.set_debug_ostream( CppUtils::TO_COUT );
 
 } // run_tests_Mesh()
