@@ -27,7 +27,7 @@ static exprtk::parser<double>       parser;
 UserSizeFunction init_size_function(const std::string& expr)
 {
   symbol_table.add_variable("x", x_size_function);
-  symbol_table.add_variable("y", x_size_function);
+  symbol_table.add_variable("y", y_size_function);
   expression.register_symbol_table(symbol_table);
   parser.compile(expr, expression);
 
