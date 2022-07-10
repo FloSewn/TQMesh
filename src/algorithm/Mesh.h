@@ -67,19 +67,926 @@ public:
        size_t    qtree_items=ContainerQuadTreeItems, 
        size_t    qtree_depth=ContainerQuadTreeDepth)
   : domain_     { &domain }
-  , mesh_id_    { mesh_id }
-  , elem_color_ { element_color }
+  , mesh_id_    { ABS(mesh_id) }
+  , elem_color_ { ABS(element_color) }
   , verts_      { qtree_scale, qtree_items, qtree_depth }
   , tris_       { qtree_scale, qtree_items, qtree_depth }
   , quads_      { qtree_scale, qtree_items, qtree_depth }
   , front_      { }
   { }
-
+  
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
+  friend std::ostream& operator<<(std::ostream& os, const Mesh& mesh);
+
+  /*------------------------------------------------------------------
+  | Return mesh entities within a given position and radius
+  ------------------------------------------------------------------*/
+  VertexVector 
+  get_vertices(const Vec2d& center, double radius) const
+  { return std::move( verts_.get_items(center, radius ) ); }
+
+  EdgeVector
+  get_intr_edges(const Vec2d& center, double radius) const
+  { return std::move( intr_edges_.get_edges(center, radius ) ); }
+
+  EdgeVector
+  get_bdry_edges(const Vec2d& center, double radius) const
+  { return std::move( bdry_edges_.get_edges(center, radius ) ); }
+
+  TriVector
+  get_triangles(const Vec2d& center, double radius) const
+  { return std::move( tris_.get_items(center, radius ) ); }
+
+  QuadVector
+  get_quads(const Vec2d& center, double radius) const
+  { return std::move( quads_.get_items(center, radius ) ); }
+
+  /*------------------------------------------------------------------
+  | Add new mesh vertices  
+  ------------------------------------------------------------------*/
+  Vertex& add_vertex(const Vec2d& xy)
+  {
+    Vertex& v_new = verts_.push_back( xy );
+    return v_new;
+  } 
+
+  /*------------------------------------------------------------------
+  | Add new mesh triangles  
+  ------------------------------------------------------------------*/
+  Triangle& add_triangle(Vertex& v1, Vertex& v2, Vertex& v3, 
+                         int color=-1)
+  {
+    Triangle& t_new = tris_.push_back(v1, v2, v3);
+
+    if ( color < 0 )
+      t_new.color( elem_color_ );
+    else 
+      t_new.color( color );
+
+    t_new.mesh( this );
+    return t_new;
+  } 
+
+  /*------------------------------------------------------------------
+  | Add new mesh quads  
+  ------------------------------------------------------------------*/
+  Quad& add_quad(Vertex& v1, Vertex& v2, Vertex& v3, Vertex& v4,
+                 int color=-1)
+  {
+    Quad& q_new = quads_.push_back(v1, v2, v3, v4);
+
+    if ( color < 0 )
+      q_new.color( elem_color_ );
+    else
+      q_new.color( color );
+
+    q_new.mesh( this );
+    return q_new;
+  } 
+
+  /*------------------------------------------------------------------
+  | Add another mesh to the neighbor-mesh-list. This is only 
+  | possible prior to the initialization of the advancing front.
+  ------------------------------------------------------------------*/
+  bool add_neighbor_mesh(Mesh& mesh)
+  { 
+    if ( mesh_initialized_ )
+    {
+      LOG(ERROR) << 
+      "The advancing front of mesh " << mesh_id_ << " " << 
+      "is already initialized. "
+      "Adding other meshes as neighbors is only possible prior to "
+      "the advancing front initialization.";
+      return false;
+    }
+
+    neighbor_meshes_.push_back( &mesh ); 
+
+    return true;
+  }
+
+  /*------------------------------------------------------------------
+  | Remove another mesh to the neighbor-mesh-list
+  ------------------------------------------------------------------*/
+  void remove_neighbor_mesh(Mesh& mesh)
+  {
+    auto it = std::find(neighbor_meshes_.begin(), 
+                        neighbor_meshes_.end(), 
+                        &mesh);
+    if ( it != neighbor_meshes_.end() )
+      neighbor_meshes_.erase( it );
+  }
+
+  /*------------------------------------------------------------------
+  | Initialize the advancing front structure of the mesh
+  ------------------------------------------------------------------*/
+  bool init_advancing_front()
+  {
+    // Check if domain boundaries are traversable
+    for ( const auto& boundary : *domain_ )
+    {
+      Edge& e_start = boundary->edges()[0];
+      if ( !boundary->is_traversable(e_start, e_start) )
+      {
+        LOG(ERROR) << 
+        "Can not initialize advancing front. "
+        "Mesh boundaries are not traversable.";
+        return false;
+      }
+    }
+
+    // Count the number of overlaps with other meshes
+    size_t n_overlaps = 0;
+
+    for ( auto neighbor_mesh : neighbor_meshes_ )
+    {
+      Domain& neighbor_domain = neighbor_mesh->domain();
+
+      n_overlaps += domain_->get_overlaps( neighbor_domain );
+    }
+
+    if ( n_overlaps > 0 )
+    {
+      LOG(INFO) <<
+      "Mesh " << mesh_id_ << " overlaps with " << n_overlaps << 
+      " edges of other meshes. These edges will be considered "
+      "in the meshing process.";
+    }
+
+    // Get all edges that will define the advancing front
+    FrontInitData front_data = collect_front_edges();
+
+    // Initialize edges in the advancing front
+    front_.init_front_edges(*domain_, front_data, verts_);
+     
+    // Setup the mesh boundary edges from the initial advancing front
+    for ( auto& e : front_ )
+    {
+      Vertex& v1 = e->v1();
+      Vertex& v2 = e->v2();
+      int marker = e->marker();
+      Edge& e_new = bdry_edges_.add_edge( v1, v2, marker );
+
+      // Connect boundary edges of this mesh and its parner mesh
+      Edge* e_twin = e->twin_edge();
+
+      if ( e_twin )
+      {
+        e_twin->twin_edge( &e_new );
+        e_new.twin_edge( e_twin );
+        e->twin_edge( nullptr );
+      }
+    }
+
+    // Set the mesh to be initialized
+    mesh_initialized_ = true;
+
+    return true;
+
+  } // Mesh::init_advancing_front()
+
+  /*------------------------------------------------------------------
+  | This function takes care of the garbage collection 
+  ------------------------------------------------------------------*/
+  void clear_waste()
+  {
+    verts_.clear_waste();
+    tris_.clear_waste();
+    quads_.clear_waste();
+    front_.clear_waste();
+    intr_edges_.clear_waste();
+    bdry_edges_.clear_waste();
+  }
+
+  /*------------------------------------------------------------------
+  | Getter
+  ------------------------------------------------------------------*/
+  const Domain& domain() const 
+  { ASSERT(domain_,"Invalid mesh domain"); return *domain_; }
+  Domain& domain() 
+  { ASSERT(domain_,"Invalid mesh domain"); return *domain_; }
+
+  const Front& front() const { return front_; }
+  Front& front() { return front_; }
+
+  const Triangles& triangles() const { return tris_; }
+  Triangles& triangles() { return tris_; }
+
+  const Quads& quads() const { return quads_; }
+  Quads& quads() { return quads_; }
+
+  const Vertices& vertices() const { return verts_; }
+  Vertices& vertices() { return verts_; }
+
+  const EdgeList& interior_edges() const { return intr_edges_; }
+  EdgeList& interior_edges() { return intr_edges_; }
+
+  const EdgeList& boundary_edges() const { return bdry_edges_; }
+  EdgeList& boundary_edges() { return bdry_edges_; }
+
+  double area() const { return mesh_area_; }
+  int id() const { return mesh_id_; }
+  int element_color() const { return elem_color_; }
+  size_t neighbor_meshes() const { return neighbor_meshes_.size(); }
+  bool completed() const { return mesh_completed_; }
+  bool initialized() const { return mesh_initialized_; }
+
+
+  /*------------------------------------------------------------------
+  | Export the mesh to a file
+  ------------------------------------------------------------------*/
+  void write_to_file(const std::string& path, ExportType type )
+  {
+    // Prepare all indices of mesh entities
+    assign_mesh_indices();
+
+    if ( type == ExportType::cout )
+      std::cout << (*this);
+
+    if ( type == ExportType::txt )
+      write_to_txt_file( path );
+
+    if ( type == ExportType::vtu )
+      write_to_vtu_file( path );
+
+    
+  } // Mesh::write_to_file()
+
+  /*------------------------------------------------------------------
+  | This function assigns a corresponding global index to each entity
+  | of the current mesh
+  | --> Quads are stored prior to triangles
+  ------------------------------------------------------------------*/
+  void assign_mesh_indices()
+  {
+    unsigned int v_index = 0; 
+    unsigned int e_index = 0;
+
+    // Vertices 
+    for ( const auto& v_ptr : verts_ )
+      v_ptr->index( v_index++ );
+
+    // Quads
+    for ( const auto& q_ptr : quads_ )
+      q_ptr->index( e_index++ );
+
+    // Triangles 
+    for ( const auto& t_ptr : tris_ )
+      t_ptr->index( e_index++ );
+
+  } // assign_mesh_indices()
+
+  /*------------------------------------------------------------------
+  | Every triangle is refined into three quads and every 
+  | quads is refined into four quads.
+  | This results in an all-quad mesh.
+  |
+  |                        
+  |          (v7)         (v6)      (v5)      qi... sub-quads 
+  |             o<--------o---------o         vi... vertices
+  |             |         |         ^
+  |             |  [q4]   |   [q3]  |
+  |             |         |         |
+  |             |         |(v9)     |  
+  |         (v8)o---------o---------o(v4) 
+  |             |         |         |
+  |             |         |         |
+  |             |  [q1]   |   [q2]  |
+  |             v         |         |
+  |             o---------o-------->o
+  |          (v1)        (v2)       (v3)
+  |                         
+  |                         
+  |                        (v5)                 
+  |                         o                   
+  |                       /   \
+  |                     / [q3]  \
+  |                   /           \
+  |           (v6)  /      (v7)     \  (v4)
+  |               o---------o---------o
+  |             /           |           \
+  |           /             |             \
+  |         /     [q1]      |      [q2]     \
+  |       /                 |                 \
+  |     o-------------------o-------------------o
+  |    (v1)                (v2)                 (v3)
+  |
+  ------------------------------------------------------------------*/
+  bool refine_to_quads()
+  {
+    // Check if the mesh was properly generated
+    if ( !mesh_completed_ )
+    {
+      LOG(ERROR) <<
+      "Unable to refine mesh " << mesh_id_ << ", " <<
+      "since the mesh elements have not yet been generated.";
+      return false;
+    }
+
+    // Check if this mesh is connected to any other meshes
+    // If yes, do not refine
+    if ( neighbor_meshes() > 0 )
+    {
+      LOG(ERROR) << 
+      "Mesh " << mesh_id_ << " can not be refined to quad elements, "
+      "since it is connected to other meshes. ";
+      return false;
+    }
+
+    LOG(INFO) << "Start with quad refinement of mesh " << mesh_id_;
+    clear_waste();
+
+    // Gather all coarse edges, quads and tris
+    EdgeVector coarse_intr_edges {};
+    EdgeVector coarse_bdry_edges {};
+    TriVector  coarse_tris {};
+    QuadVector coarse_quads {};
+
+    for ( auto& e : intr_edges_ )
+      coarse_intr_edges.push_back( e.get() );
+
+    for ( auto& e : bdry_edges_ )
+      coarse_bdry_edges.push_back( e.get() );
+
+    for ( auto& t_ptr : tris_ )
+      coarse_tris.push_back( t_ptr.get() );
+
+    for ( auto& q_ptr : quads_ )
+      coarse_quads.push_back( q_ptr.get() );
+
+    // Refine interior edges
+    for ( auto e : coarse_intr_edges )
+    {
+      Vertex& v = add_vertex( e->xy() );
+      intr_edges_.add_edge( e->v1(), v );
+      intr_edges_.add_edge( v, e->v2() );
+      e->sub_vertex( &v );
+
+      if ( e->v1().is_fixed() && e->v2().is_fixed() )
+        v.is_fixed( true );
+    }
+
+    // Refine boundary edges
+    for ( auto e : coarse_bdry_edges )
+    {
+      Vertex& v = add_vertex( e->xy() );
+      bdry_edges_.add_edge( e->v1(), v, e->marker() );
+      bdry_edges_.add_edge( v, e->v2(), e->marker() );
+      e->sub_vertex( &v );
+      v.on_boundary( true );
+
+      if ( e->v1().is_fixed() && e->v2().is_fixed() )
+        v.is_fixed( true );
+    }
+
+    // Refine all triangle elements
+    for ( auto t : coarse_tris )
+    {
+      Vertex& v1 = t->v1();
+      Vertex& v3 = t->v2();
+      Vertex& v5 = t->v3();
+
+      Edge* e13 = get_edge( v1, v3 );
+      Edge* e35 = get_edge( v3, v5 );
+      Edge* e51 = get_edge( v5, v1 );
+
+      Vertex* v2 = e13->sub_vertex();
+      Vertex* v4 = e35->sub_vertex();
+      Vertex* v6 = e51->sub_vertex();
+
+      // Create new vertex at center of quad
+      Vertex& v7 = add_vertex( t->xy() );
+
+      // Create new sub-quads 
+      Quad& q1 = add_quad( v1, *v2, v7, *v6 );
+      Quad& q2 = add_quad( v3, *v4, v7, *v2 );
+      Quad& q3 = add_quad( v5, *v6, v7, *v4 );
+
+      // New quads get assigned to colors of old element
+      q1.color( t->color() );
+      q2.color( t->color() );
+      q3.color( t->color() );
+
+      // Create new interior edges
+      intr_edges_.add_edge( *v2, v7 );
+      intr_edges_.add_edge( *v4, v7 );
+      intr_edges_.add_edge( *v6, v7 );
+
+    }
+
+    // Refine all quad elements
+    for ( auto q : coarse_quads )
+    {
+      Vertex& v1 = q->v1();
+      Vertex& v3 = q->v2();
+      Vertex& v5 = q->v3();
+      Vertex& v7 = q->v4();
+
+      Edge* e13 = get_edge( v1, v3 );
+      Edge* e35 = get_edge( v3, v5 );
+      Edge* e57 = get_edge( v5, v7 );
+      Edge* e71 = get_edge( v7, v1 );
+
+      Vertex* v2 = e13->sub_vertex();
+      Vertex* v4 = e35->sub_vertex();
+      Vertex* v6 = e57->sub_vertex();
+      Vertex* v8 = e71->sub_vertex();
+
+      // Create new vertex at center of quad
+      Vertex& v9 = add_vertex( q->xy() );
+
+      // Create new sub-quads 
+      Quad& q1 = add_quad( v1, *v2, v9, *v8 );
+      Quad& q2 = add_quad( v3, *v4, v9, *v2 );
+      Quad& q3 = add_quad( v5, *v6, v9, *v4 );
+      Quad& q4 = add_quad( v7, *v8, v9, *v6 );
+
+      // New quads get assigned to colors of old element
+      q1.color( q->color() );
+      q2.color( q->color() );
+      q3.color( q->color() );
+      q4.color( q->color() );
+
+      // Create new interior edges
+      intr_edges_.add_edge( *v2, v9 );
+      intr_edges_.add_edge( *v4, v9 );
+      intr_edges_.add_edge( *v6, v9 );
+      intr_edges_.add_edge( *v8, v9 );
+
+    }
+
+    // Remove old entitires
+    for ( auto e : coarse_intr_edges )
+      remove_interior_edge( *e );
+      
+    for ( auto e : coarse_bdry_edges )
+      remove_boundary_edge( *e );
+
+    for ( auto t : coarse_tris )
+      remove_triangle( *t );
+
+    for ( auto q : coarse_quads )
+      remove_quad( *q );
+
+
+    // Re-initialize vertex-to-vertex connectivity
+    setup_vertex_connectivity();
+
+    // Update connectivity between elements and edges
+    setup_facet_connectivity();
+
+    LOG(INFO) << "Mesh refinement is completed.";
+      
+    return true;
+      
+  } // Mesh::refine_to_quads()
+
+  /*------------------------------------------------------------------
+  | Algorithm to create a single quad layer for a connected list of
+  | advancing front edges that start with v_start and end with v_end
+  ------------------------------------------------------------------*/
+  bool create_quad_layers(Vertex& v_start, Vertex& v_end, 
+                          size_t n_layers, double first_height,
+                          double growth_ratio)
+  {
+    if ( !mesh_initialized_ )
+    {
+      LOG(ERROR) << 
+      "Unable to create quad layers for mesh " << mesh_id_ << ". " <<
+      "The mesh's advancing front has not yet been initialized.";
+      return false;
+    }
+
+    if ( mesh_completed_ )
+    {
+      LOG(ERROR) <<
+      "Unable to create quad layers for mesh " << mesh_id_ << ". " <<
+      "Quad layers must be created prior to the meshing process. ";
+    }
+
+    bool quads_generated;
+
+    double height = first_height;
+
+    Vertex* v1 = &v_start;
+    Vertex* v2 = &v_end;
+
+    for ( size_t i = 0; i < n_layers; ++i )
+    {
+      LOG(INFO) << 
+      "Generate quad layer (" << i+1 << 
+      "/" << n_layers << ") for mesh " << mesh_id_;
+      quads_generated = add_quad_layer( v1, v2, height );
+
+      if ( !quads_generated )
+      {
+        LOG(ERROR) <<
+        "Generation of quad layer (" << i+1 << 
+        "/" << n_layers << ") failed. " <<
+        "Quad layer generation is aborted.";
+
+        return false;
+      }
+
+      height *= growth_ratio;
+    }
+
+    setup_facet_connectivity();
+    merge_triangles_to_quads();
+
+    return true;
+
+  } // Mesh::create_quad_layers()
+
+  /*------------------------------------------------------------------
+  | Create a triangular mesh using the advancing front algorithm
+  ------------------------------------------------------------------*/
+  bool triangulate()
+  {
+    if ( !mesh_initialized_ )
+    {
+      LOG(ERROR) << 
+      "Unable to triangulate mesh " << mesh_id_ << ". " <<
+      "The mesh's advancing front has not yet been initialized.";
+      return false;
+    }
+
+    unsigned int iter = 0;
+    bool wide_search = false;
+
+    ProgressBar progress_bar {};
+
+    // Initialize base edge
+    front_.set_base_first();
+    Edge* base = &( front_.base() );
+
+    // Invalid base definition
+    if ( !base ) 
+    {
+      LOG(ERROR) << 
+      "Unable to triangulate mesh " << mesh_id_ << ". " <<
+      "The mesh's advancing front structure seems to corrupted.";
+      return false;
+    }
+
+    LOG(INFO) << "Start triangulation of mesh " << mesh_id_ << ".";
+
+    // Start advancing front loop
+    while ( true )
+    {
+      // Try to advance the current base edge
+      bool success = advance_front_triangle(*base, wide_search);
+
+      // If it worked, reset iteration counter and wide search
+      // and go to the next base edge
+      if ( success )
+      {
+        iter = 0;
+        wide_search = false;
+
+        front_.set_base_first();
+        base = &( front_.base() );
+
+        clear_waste();
+      }
+      // If it failed, go to the next base edge
+      else
+      {
+        front_.set_base_next();
+        base = &( front_.base() );
+        ++iter;
+      }
+
+      // All front edges failed to create new elements
+      // --> Activate wide search for neighboring vertices
+      //     and re-run the algorithm
+      if ( iter == front_.size() && !wide_search )
+      {
+        wide_search = true;
+        iter = 0;
+      }
+
+      // Update progress bar
+      double state = std::ceil(100.0 * area() / domain_->area());
+      progress_bar.update( static_cast<int>(state) );
+      progress_bar.show( LOG_PROPERTIES.get_ostream(INFO) );
+
+      // No more edges in the advancing front
+      // --> Meshing algorithm succeeded
+      if ( front_.size() == 0 )
+      {
+        LOG(INFO) << "[";
+        LOG(INFO) << "The meshing process succeeded.";
+        break;
+      }
+
+      // All front edges faild to create new elements, even
+      // when using the wide search 
+      // --> Meshing algorithm failed
+      if ( iter == front_.size() && wide_search )
+      {
+        LOG(INFO) << "[";
+        LOG(ERROR) << "The meshing process failed.";
+        return false;
+      }
+    }
+
+    // Initialize vertex-to-vertex connectivity
+    setup_vertex_connectivity();
+
+    // Initialize facet-to-facet connectivity
+    // as well as connectivity between edges and facets
+    setup_facet_connectivity();
+
+    // Set the mesh generation to be completed
+    mesh_completed_ = true;
+
+    return true;
+
+  } // Mesh::triangulate()
+
+  /*------------------------------------------------------------------
+  | Create a quadrilateral mesh using the advancing front algorithm
+  ------------------------------------------------------------------*/
+  bool pave()
+  {
+    if ( !mesh_initialized_ )
+    {
+      LOG(ERROR) << 
+      "Unable to pave mesh " << mesh_id_ << ". " <<
+      "The mesh's advancing front has not yet been initialized.";
+      return false;
+    }
+
+    unsigned int iter = 0;
+    bool wide_search = false;
+
+    ProgressBar progress_bar {};
+
+    // Initialize base edge
+    front_.set_base_first();
+    Edge* base = &( front_.base() );
+
+    // Invalid base definition
+    if ( !base ) 
+    {
+      LOG(ERROR) << 
+      "Unable to triangulate mesh " << mesh_id_ << ". " <<
+      "The mesh's advancing front structure seems to corrupted.";
+      return false;
+    }
+
+    LOG(INFO) << "Start paving of mesh " << mesh_id_ << ".";
+
+    // Start advancing front loop
+    while ( true )
+    {
+      // Try to advance the current base edge
+      bool success = advance_front_quad(*base, wide_search, -1.0);
+
+      // If it worked, reset iteration counter and wide search
+      // and go to the next base edge
+      if ( success )
+      {
+        iter = 0;
+        wide_search = false;
+
+        front_.set_base_first();
+        base = &( front_.base() );
+
+        clear_waste();
+      }
+      // If it failed, go to the next base edge
+      else
+      {
+        front_.set_base_next();
+        base = &( front_.base() );
+        ++iter;
+      }
+
+      // All front edges failed to create new elements
+      // --> Activate wide search for neighboring vertices
+      //     and re-run the algorithm
+      if ( iter == front_.size() && !wide_search )
+      {
+        wide_search = true;
+        iter = 0;
+      }
+
+      // Update progress bar
+      double state = std::ceil(100.0 * area() / domain_->area());
+      progress_bar.update( static_cast<int>(state) );
+      progress_bar.show( LOG_PROPERTIES.get_ostream(INFO) );
+
+      // No more edges in the advancing front
+      // --> Meshing algorithm succeeded
+      if ( front_.size() == 0 )
+      {
+        LOG(INFO) << "";
+        LOG(INFO) << "The meshing process succeeded.";
+        break;
+      }
+
+      // All front edges faild to create new elements, even
+      // when using the wide search 
+      // --> Meshing algorithm failed
+      if ( iter == front_.size() && wide_search )
+      {
+        LOG(INFO) << "";
+        LOG(ERROR) << "The meshing process failed.";
+        return false;
+      }
+    }
+
+    // Initialize vertex-to-vertex connectivity
+    setup_vertex_connectivity();
+
+    // Initialize facet-to-facet connectivity
+    // as well as connectivity between edges and facets
+    setup_facet_connectivity();
+
+    // Set the mesh generation to be completed
+    mesh_completed_ = true;
+
+    // Merge remaining triangles to quads
+    merge_triangles_to_quads();
+
+    return true;
+
+  } // Mesh::pave()
+
+  /*------------------------------------------------------------------
+  | This function loops over all internal edges and, if possible,
+  | merges two adjacent triangles to one quad element.
+  |
+  | -> This function requires a finalized mesh and that the functions
+  |    setup_vertex_connectivity() and setup_facet_connectivity()
+  |    have been called before.
+  ------------------------------------------------------------------*/
+  void merge_triangles_to_quads()
+  {
+    // Pick all internal edges, which are adjacent to two triangles
+    std::list<Edge*> tri_edges {};
+
+    for ( const auto& e_ptr : intr_edges_ )
+    {
+      Facet* f_l = e_ptr->facet_l();
+      Facet* f_r = e_ptr->facet_r();
+
+      if (  (f_l && f_l->n_vertices() == 3) 
+         && (f_r && f_r->n_vertices() == 3) )
+        tri_edges.push_back( e_ptr.get() );
+    }
+
+    // Sort edge list with increasing minimum angles of the 
+    // adjacent triangles
+    tri_edges.sort(
+    []( Edge* a, Edge* b )
+    {
+      const double a_l = ( a->facet_l() )
+                       ? a->facet_l()->min_angle() 
+                       : TQ_MAX;
+      const double a_r = ( a->facet_r() )
+                       ? a->facet_r()->min_angle() 
+                       : TQ_MAX;
+      const double a_ang = MIN(a_l, a_r);
+
+      const double b_l = ( b->facet_l() )
+                       ? b->facet_l()->min_angle() 
+                       : TQ_MAX;
+      const double b_r = ( b->facet_r() )
+                       ? b->facet_r()->min_angle() 
+                       : TQ_MAX;
+      const double b_ang = MIN(b_l, b_r);
+
+      return a_ang < b_ang;
+
+    });
+
+    // Loop over all chosen edges and merge the adjacent triangles
+    // to quadrilaterals. It may be, that the triangle of an 
+    // upcoming edge has already been merged in this process. Thus
+    // we have to make sure, that the triangles to merge still
+    // exist.
+    //
+    //   v2               q_r
+    //     *-------------*
+    //     | \           |
+    //     |   \   f_r   |
+    //     |     \       |
+    //     |       \     |
+    //     |  f_l    \   |
+    //     |           \ |
+    //     *-------------*
+    //    q_l             v1
+    //
+    for ( auto& e : tri_edges )
+    {
+      Facet* f_l = e->facet_l();
+      Facet* f_r = e->facet_r();
+
+      if ( f_l->n_vertices() != 3 || f_r->n_vertices() != 3 )
+        continue;
+
+      Vertex& v1 = e->v1();
+      Vertex& v2 = e->v2();
+
+
+      int i_l = f_l->get_edge_index(v1, v2);
+      int i_r = f_r->get_edge_index(v1, v2);
+
+      Vertex& q_l = f_l->vertex(i_l);
+      Vertex& q_r = f_r->vertex(i_r);
+
+      // Remove internal edge
+      remove_interior_edge( *e );
+      e = nullptr;
+
+      // Create new quadrilateral element
+      Quad& q_new = add_quad( q_l, v1, q_r, v2 );
+      q_new.is_active( true );
+
+      // Update internal edge connectivity to prevent bad memory 
+      // access for upcoming internal edges that are no longer 
+      // adjacent to two triangles due to the merge
+      for (int i = 0; i < 4; ++i)
+      {
+        int i1 = i;
+        int i2 = MOD(i+1, 4);
+
+        Vertex& q1 = q_new.vertex(i1);
+        Vertex& q2 = q_new.vertex(i2);
+
+        Edge* e_share = intr_edges_.get_edge(q1,q2);
+
+        if ( !e_share ) continue;
+
+        Facet* t_l = e_share->facet_l();
+        Facet* t_r = e_share->facet_r();
+
+        if ( t_l && (t_l == f_l || t_l == f_r) )
+          e_share->facet_l( &q_new );
+
+        if ( t_r && (t_r == f_l || t_r == f_r) )
+          e_share->facet_r( &q_new );
+      }
+
+      // Remove triangles
+      remove_triangle( *(static_cast<Triangle*>(f_l)) );
+      remove_triangle( *(static_cast<Triangle*>(f_r)) );
+
+    }
+
+    // Re-initialize facet-to-facet connectivity
+    setup_facet_connectivity();
+
+    // Bad elements may have been created up to this point
+    // due to the merging of triangles to quads
+    // The two upcoming function fix these bad elements
+    clean_double_quad_edges();
+    clean_double_triangle_edges();
+    
+    // Remove deleted entities
+    clear_waste();
+
+    // Re-initialize vertex-to-vertex connectivity
+    setup_vertex_connectivity();
+
+    // Re-initialize facet-to-facet connectivity
+    setup_facet_connectivity();
+
+  } // Mesh::merge_triangles_to_quads()
+
+  /*------------------------------------------------------------------
+  | Merge this mesh with one of its neighbor meshes. All elements, 
+  | edges and vertices of the neighbor mesh will be added to this 
+  | mesh. The other mesh will then be removed from this mesh's 
+  | neighbor list and instead will be placed in its list of merged
+  | meshes.
+  ------------------------------------------------------------------*/
   void merge_neighbor_mesh(Mesh& neighbor)
   {
+    if ( !mesh_completed_ || !mesh_initialized_ )
+    {
+      LOG(ERROR) <<
+      "Unable to merge mesh " << mesh_id_ << 
+      " and mesh " << neighbor.id() <<
+      ", since mesh << " << mesh_id_ << " is not yet completed.";
+    }
+
+    if ( !neighbor.completed() || !neighbor.initialized() )
+    {
+      LOG(ERROR) <<
+      "Unable to merge mesh " << mesh_id_ << 
+      " and mesh " << neighbor.id() <<
+      ", since mesh << " << neighbor.id() << " is not yet completed.";
+    }
+
+    LOG(INFO) <<
+    "Merging mesh " << mesh_id_ << " with mesh " << neighbor.id();
+
     // Assign indices to neighbor mesh
     neighbor.assign_mesh_indices();
 
@@ -269,669 +1176,28 @@ public:
         continue;
 
       // Add neighbor mesh
-      add_neighbor_mesh( *nbr );
+      neighbor_meshes_.push_back( nbr );
     }
 
     // Remove neighbor connectivity
     neighbor.remove_neighbor_mesh(*this);
     remove_neighbor_mesh(neighbor);
     merged_meshes_.push_back( &neighbor );
-
-    // Re-initialize vertex-to-vertex connectivity
-    setup_vertex_connectivity();
-
-    // Update connectivity between elements and edges
-    setup_facet_connectivity();
-
-  } // Mesh::merge_neighbor_meshes()
-
-  /*------------------------------------------------------------------
-  | Initialize the advancing front structure of the mesh
-  ------------------------------------------------------------------*/
-  void init_advancing_front()
-  {
-    // Check if domain boundaries are traversable
-    for ( const auto& boundary : *domain_ )
-    {
-      Edge& e_start = boundary->edges()[0];
-      if ( !boundary->is_traversable(e_start, e_start) )
-      {
-        LOG(ERROR) << 
-        "Can not initialize advancing front. "
-        "Mesh boundaries are not traversable.";
-        return;
-      }
-    }
-
-    // Count the number of overlaps with other meshes
-    size_t n_overlaps = 0;
-
-    for ( auto neighbor_mesh : neighbor_meshes_ )
-    {
-      Domain& neighbor_domain = neighbor_mesh->domain();
-
-      n_overlaps += domain_->get_overlaps( neighbor_domain );
-    }
-
-    if ( n_overlaps > 0 )
-      LOG(INFO) <<
-      "MESH WILL BE INITIALIZED FROM EXISTING MESHES.";
-
-    // Get all edges that will define the advancing front
-    FrontInitData front_data = collect_front_edges();
-
-    // Initialize edges in the advancing front
-    front_.init_front_edges(*domain_, front_data, verts_);
-     
-    // Setup the mesh boundary edges from the initial advancing front
-    for ( auto& e : front_ )
-    {
-      Vertex& v1 = e->v1();
-      Vertex& v2 = e->v2();
-      int marker = e->marker();
-      Edge& e_new = bdry_edges_.add_edge( v1, v2, marker );
-
-      // Connect boundary edges of this mesh and its parner mesh
-      Edge* e_twin = e->twin_edge();
-
-      if ( e_twin )
-      {
-        e_twin->twin_edge( &e_new );
-        e_new.twin_edge( e_twin );
-        e->twin_edge( nullptr );
-      }
-    }
-
-  } // Mesh::init_advancing_front()
-  
-  /*------------------------------------------------------------------
-  | 
-  ------------------------------------------------------------------*/
-  friend std::ostream& operator<<(std::ostream& os, const Mesh& mesh);
-
-  /*------------------------------------------------------------------
-  | Return mesh entities within a given position and radius
-  ------------------------------------------------------------------*/
-  VertexVector 
-  get_vertices(const Vec2d& center, double radius) const
-  { return std::move( verts_.get_items(center, radius ) ); }
-
-  EdgeVector
-  get_intr_edges(const Vec2d& center, double radius) const
-  { return std::move( intr_edges_.get_edges(center, radius ) ); }
-
-  EdgeVector
-  get_bdry_edges(const Vec2d& center, double radius) const
-  { return std::move( bdry_edges_.get_edges(center, radius ) ); }
-
-  TriVector
-  get_triangles(const Vec2d& center, double radius) const
-  { return std::move( tris_.get_items(center, radius ) ); }
-
-  QuadVector
-  get_quads(const Vec2d& center, double radius) const
-  { return std::move( quads_.get_items(center, radius ) ); }
-
-  /*------------------------------------------------------------------
-  | Add mesh new entities 
-  ------------------------------------------------------------------*/
-  Vertex& add_vertex(const Vec2d& xy)
-  {
-    Vertex& v_new = verts_.push_back( xy );
-    return v_new;
-  } 
-
-  Triangle& add_triangle(Vertex& v1, Vertex& v2, Vertex& v3, 
-                         int color=-1)
-  {
-    Triangle& t_new = tris_.push_back(v1, v2, v3);
-
-    if ( color < 0 )
-      t_new.color( elem_color_ );
-    else 
-      t_new.color( color );
-
-    t_new.mesh( this );
-    return t_new;
-  } 
-
-  Quad& add_quad(Vertex& v1, Vertex& v2, Vertex& v3, Vertex& v4,
-                 int color=-1)
-  {
-    Quad& q_new = quads_.push_back(v1, v2, v3, v4);
-
-    if ( color < 0 )
-      q_new.color( elem_color_ );
-    else
-      q_new.color( color );
-
-    q_new.mesh( this );
-    return q_new;
-  } 
-
-  /*------------------------------------------------------------------
-  | Add another mesh to the neighbor-mesh-list
-  ------------------------------------------------------------------*/
-  void add_neighbor_mesh(Mesh& mesh)
-  { neighbor_meshes_.push_back( &mesh ); }
-
-  /*------------------------------------------------------------------
-  | Remove another mesh to the neighbor-mesh-list
-  ------------------------------------------------------------------*/
-  void remove_neighbor_mesh(Mesh& mesh)
-  {
-    auto it = std::find(neighbor_meshes_.begin(), 
-                        neighbor_meshes_.end(), 
-                        &mesh);
-    if ( it != neighbor_meshes_.end() )
-      neighbor_meshes_.erase( it );
-  }
-
-
-  /*------------------------------------------------------------------
-  | This function takes care of the garbage collection 
-  ------------------------------------------------------------------*/
-  void clear_waste()
-  {
-    verts_.clear_waste();
-    tris_.clear_waste();
-    quads_.clear_waste();
-    front_.clear_waste();
-    intr_edges_.clear_waste();
-    bdry_edges_.clear_waste();
-  }
-
-  /*------------------------------------------------------------------
-  | Getter
-  ------------------------------------------------------------------*/
-  const Domain& domain() const 
-  { ASSERT(domain_,"Invalid mesh domain"); return *domain_; }
-  Domain& domain() 
-  { ASSERT(domain_,"Invalid mesh domain"); return *domain_; }
-
-  const Front& front() const { return front_; }
-  Front& front() { return front_; }
-
-  const Triangles& triangles() const { return tris_; }
-  Triangles& triangles() { return tris_; }
-
-  const Quads& quads() const { return quads_; }
-  Quads& quads() { return quads_; }
-
-  const Vertices& vertices() const { return verts_; }
-  Vertices& vertices() { return verts_; }
-
-  const EdgeList& interior_edges() const { return intr_edges_; }
-  EdgeList& interior_edges() { return intr_edges_; }
-
-  const EdgeList& boundary_edges() const { return bdry_edges_; }
-  EdgeList& boundary_edges() { return bdry_edges_; }
-
-  double area() const { return mesh_area_; }
-  int id() const { return mesh_id_; }
-  int element_color() const { return elem_color_; }
-  size_t neighbor_meshes() const { return neighbor_meshes_.size(); }
-
-
-  /*------------------------------------------------------------------
-  | Export the mesh to a file
-  ------------------------------------------------------------------*/
-  void write_to_file(const std::string& path, ExportType type )
-  {
-    // Prepare all indices of mesh entities
-    assign_mesh_indices();
-
-    if ( type == ExportType::cout )
-      std::cout << (*this);
-
-    if ( type == ExportType::txt )
-      write_to_txt_file( path );
-
-    if ( type == ExportType::vtu )
-      write_to_vtu_file( path );
-
-    
-  } // Mesh::write_to_file()
-
-  /*------------------------------------------------------------------
-  | This function assigns a corresponding global index to each entity
-  | of the current mesh
-  | --> Quads are stored prior to triangles
-  ------------------------------------------------------------------*/
-  void assign_mesh_indices()
-  {
-    unsigned int v_index = 0; 
-    unsigned int e_index = 0;
-
-    // Vertices 
-    for ( const auto& v_ptr : verts_ )
-      v_ptr->index( v_index++ );
-
-    // Quads
-    for ( const auto& q_ptr : quads_ )
-      q_ptr->index( e_index++ );
-
-    // Triangles 
-    for ( const auto& t_ptr : tris_ )
-      t_ptr->index( e_index++ );
-
-  } // assign_mesh_indices()
-
-  /*------------------------------------------------------------------
-  | Every triangle is refined into three quads and every 
-  | quads is refined into four quads.
-  | This results in an all-quad mesh.
-  |
-  |                        
-  |          (v7)         (v6)      (v5)      qi... sub-quads 
-  |             o<--------o---------o         vi... vertices
-  |             |         |         ^
-  |             |  [q4]   |   [q3]  |
-  |             |         |         |
-  |             |         |(v9)     |  
-  |         (v8)o---------o---------o(v4) 
-  |             |         |         |
-  |             |         |         |
-  |             |  [q1]   |   [q2]  |
-  |             v         |         |
-  |             o---------o-------->o
-  |          (v1)        (v2)       (v3)
-  |                         
-  |                         
-  |                        (v5)                 
-  |                         o                   
-  |                       /   \
-  |                     / [q3]  \
-  |                   /           \
-  |           (v6)  /      (v7)     \  (v4)
-  |               o---------o---------o
-  |             /           |           \
-  |           /             |             \
-  |         /     [q1]      |      [q2]     \
-  |       /                 |                 \
-  |     o-------------------o-------------------o
-  |    (v1)                (v2)                 (v3)
-  |
-  ------------------------------------------------------------------*/
-  bool refine_to_quads()
-  {
-    // Check if this mesh is connected to any other meshes
-    // If yes, do not refine
-    if ( neighbor_meshes() > 0 )
-    {
-      LOG(WARNING) << 
-      "WARNING: CAN NOT REFINE MESH " << mesh_id_ << 
-      ", BECAUSE IT IS CONNECTED TO ANOTHER MESH.";
-      return false;
-    }
-
-    LOG(INFO) << "START MESH REFINEMENT";
     clear_waste();
 
-    // Gather all coarse edges, quads and tris
-    EdgeVector coarse_intr_edges {};
-    EdgeVector coarse_bdry_edges {};
-    TriVector  coarse_tris {};
-    QuadVector coarse_quads {};
-
-    for ( auto& e : intr_edges_ )
-      coarse_intr_edges.push_back( e.get() );
-
-    for ( auto& e : bdry_edges_ )
-      coarse_bdry_edges.push_back( e.get() );
-
-    for ( auto& t_ptr : tris_ )
-      coarse_tris.push_back( t_ptr.get() );
-
-    for ( auto& q_ptr : quads_ )
-      coarse_quads.push_back( q_ptr.get() );
-
-    // Refine interior edges
-    for ( auto e : coarse_intr_edges )
-    {
-      Vertex& v = add_vertex( e->xy() );
-      intr_edges_.add_edge( e->v1(), v );
-      intr_edges_.add_edge( v, e->v2() );
-      e->sub_vertex( &v );
-
-      if ( e->v1().is_fixed() && e->v2().is_fixed() )
-        v.is_fixed( true );
-    }
-
-    // Refine boundary edges
-    for ( auto e : coarse_bdry_edges )
-    {
-      Vertex& v = add_vertex( e->xy() );
-      bdry_edges_.add_edge( e->v1(), v, e->marker() );
-      bdry_edges_.add_edge( v, e->v2(), e->marker() );
-      e->sub_vertex( &v );
-      v.on_boundary( true );
-
-      if ( e->v1().is_fixed() && e->v2().is_fixed() )
-        v.is_fixed( true );
-    }
-
-    // Refine all triangle elements
-    for ( auto t : coarse_tris )
-    {
-      Vertex& v1 = t->v1();
-      Vertex& v3 = t->v2();
-      Vertex& v5 = t->v3();
-
-      Edge* e13 = get_edge( v1, v3 );
-      Edge* e35 = get_edge( v3, v5 );
-      Edge* e51 = get_edge( v5, v1 );
-
-      Vertex* v2 = e13->sub_vertex();
-      Vertex* v4 = e35->sub_vertex();
-      Vertex* v6 = e51->sub_vertex();
-
-      // Create new vertex at center of quad
-      Vertex& v7 = add_vertex( t->xy() );
-
-      // Create new sub-quads 
-      Quad& q1 = add_quad( v1, *v2, v7, *v6 );
-      Quad& q2 = add_quad( v3, *v4, v7, *v2 );
-      Quad& q3 = add_quad( v5, *v6, v7, *v4 );
-
-      // New quads get assigned to colors of old element
-      q1.color( t->color() );
-      q2.color( t->color() );
-      q3.color( t->color() );
-
-      // Create new interior edges
-      intr_edges_.add_edge( *v2, v7 );
-      intr_edges_.add_edge( *v4, v7 );
-      intr_edges_.add_edge( *v6, v7 );
-
-    }
-
-    // Refine all quad elements
-    for ( auto q : coarse_quads )
-    {
-      Vertex& v1 = q->v1();
-      Vertex& v3 = q->v2();
-      Vertex& v5 = q->v3();
-      Vertex& v7 = q->v4();
-
-      Edge* e13 = get_edge( v1, v3 );
-      Edge* e35 = get_edge( v3, v5 );
-      Edge* e57 = get_edge( v5, v7 );
-      Edge* e71 = get_edge( v7, v1 );
-
-      Vertex* v2 = e13->sub_vertex();
-      Vertex* v4 = e35->sub_vertex();
-      Vertex* v6 = e57->sub_vertex();
-      Vertex* v8 = e71->sub_vertex();
-
-      // Create new vertex at center of quad
-      Vertex& v9 = add_vertex( q->xy() );
-
-      // Create new sub-quads 
-      Quad& q1 = add_quad( v1, *v2, v9, *v8 );
-      Quad& q2 = add_quad( v3, *v4, v9, *v2 );
-      Quad& q3 = add_quad( v5, *v6, v9, *v4 );
-      Quad& q4 = add_quad( v7, *v8, v9, *v6 );
-
-      // New quads get assigned to colors of old element
-      q1.color( q->color() );
-      q2.color( q->color() );
-      q3.color( q->color() );
-      q4.color( q->color() );
-
-      // Create new interior edges
-      intr_edges_.add_edge( *v2, v9 );
-      intr_edges_.add_edge( *v4, v9 );
-      intr_edges_.add_edge( *v6, v9 );
-      intr_edges_.add_edge( *v8, v9 );
-
-    }
-
-    // Remove old entitires
-    for ( auto e : coarse_intr_edges )
-      remove_interior_edge( *e );
-      
-    for ( auto e : coarse_bdry_edges )
-      remove_boundary_edge( *e );
-
-    for ( auto t : coarse_tris )
-      remove_triangle( *t );
-
-    for ( auto q : coarse_quads )
-      remove_quad( *q );
-
-
     // Re-initialize vertex-to-vertex connectivity
     setup_vertex_connectivity();
 
     // Update connectivity between elements and edges
     setup_facet_connectivity();
 
-    LOG(INFO) << "DONE!";
-      
-    return true;
-      
-  } // Mesh::refine_to_quads()
+    LOG(INFO) << "Meshes have been merged successfully";
 
+  } // Mesh::merge_neighbor_mesh()
+
+private:
   /*------------------------------------------------------------------
-  | Algorithm to create a single quad layer for a connected list of
-  | advancing front edges that start with v_start and end with v_end
-  ------------------------------------------------------------------*/
-  bool create_quad_layers(Vertex& v_start, Vertex& v_end, 
-                          size_t n_layers, double first_height,
-                          double growth_ratio)
-  {
-    bool quads_generated;
-
-    double height = first_height;
-
-    Vertex* v1 = &v_start;
-    Vertex* v2 = &v_end;
-
-    for ( size_t i = 0; i < n_layers; ++i )
-    {
-      quads_generated = add_quad_layer( v1, v2, height );
-
-      if ( !quads_generated )
-        return false;
-
-      height *= growth_ratio;
-    }
-
-    setup_facet_connectivity();
-    merge_triangles_to_quads();
-
-    return true;
-
-  } // Mesh::create_quad_layers()
-
-  /*------------------------------------------------------------------
-  | Create a triangular mesh using the advancing front algorithm
-  ------------------------------------------------------------------*/
-  bool triangulate()
-  {
-    unsigned int iter = 0;
-    bool wide_search = false;
-
-    ProgressBar progress_bar {};
-
-    // Initialize base edge
-    front_.set_base_first();
-    Edge* base = &( front_.base() );
-
-    // Invalid base definition
-    if ( !base ) 
-      return false;
-
-    LOG(INFO) << "START MESHING";
-
-    // Start advancing front loop
-    while ( true )
-    {
-      // Try to advance the current base edge
-      bool success = advance_front_triangle(*base, wide_search);
-
-      // If it worked, reset iteration counter and wide search
-      // and go to the next base edge
-      if ( success )
-      {
-        iter = 0;
-        wide_search = false;
-
-        front_.set_base_first();
-        base = &( front_.base() );
-
-        clear_waste();
-      }
-      // If it failed, go to the next base edge
-      else
-      {
-        front_.set_base_next();
-        base = &( front_.base() );
-        ++iter;
-      }
-
-      // All front edges failed to create new elements
-      // --> Activate wide search for neighboring vertices
-      //     and re-run the algorithm
-      if ( iter == front_.size() && !wide_search )
-      {
-        wide_search = true;
-        iter = 0;
-      }
-
-      // Update progress bar
-      double state = std::ceil(100.0 * area() / domain_->area());
-      progress_bar.update( static_cast<int>(state) );
-      progress_bar.show( LOG_PROPERTIES.get_ostream(INFO) );
-
-      // No more edges in the advancing front
-      // --> Meshing algorithm succeeded
-      if ( front_.size() == 0 )
-      {
-        LOG(INFO) << "[";
-        LOG(INFO) << "MESHING SUCCEEDED!";
-        break;
-      }
-
-      // All front edges faild to create new elements, even
-      // when using the wide search 
-      // --> Meshing algorithm failed
-      if ( iter == front_.size() && wide_search )
-      {
-        LOG(INFO) << "[";
-        LOG(INFO) << "MESHING FAILED.";
-        return false;
-      }
-    }
-
-    // Initialize vertex-to-vertex connectivity
-    setup_vertex_connectivity();
-
-    // Initialize facet-to-facet connectivity
-    // as well as connectivity between edges and facets
-    setup_facet_connectivity();
-
-    return true;
-
-  } // Mesh::triangulate()
-
-  /*------------------------------------------------------------------
-  | Create a quadrilateral mesh using the advancing front algorithm
-  ------------------------------------------------------------------*/
-  bool pave()
-  {
-    unsigned int iter = 0;
-    bool wide_search = false;
-
-    ProgressBar progress_bar {};
-
-    // Initialize base edge
-    front_.set_base_first();
-    Edge* base = &( front_.base() );
-
-    // Invalid base definition
-    if ( !base ) 
-      return false;
-
-    LOG(INFO ) << "START MESHING";
-
-    // Start advancing front loop
-    while ( true )
-    {
-      // Try to advance the current base edge
-      bool success = advance_front_quad(*base, wide_search, -1.0);
-
-      // If it worked, reset iteration counter and wide search
-      // and go to the next base edge
-      if ( success )
-      {
-        iter = 0;
-        wide_search = false;
-
-        front_.set_base_first();
-        base = &( front_.base() );
-
-        clear_waste();
-      }
-      // If it failed, go to the next base edge
-      else
-      {
-        front_.set_base_next();
-        base = &( front_.base() );
-        ++iter;
-      }
-
-      // All front edges failed to create new elements
-      // --> Activate wide search for neighboring vertices
-      //     and re-run the algorithm
-      if ( iter == front_.size() && !wide_search )
-      {
-        wide_search = true;
-        iter = 0;
-      }
-
-      // Update progress bar
-      double state = std::ceil(100.0 * area() / domain_->area());
-      progress_bar.update( static_cast<int>(state) );
-      progress_bar.show( LOG_PROPERTIES.get_ostream(INFO) );
-
-      // No more edges in the advancing front
-      // --> Meshing algorithm succeeded
-      if ( front_.size() == 0 )
-      {
-        LOG(INFO) << "";
-        LOG(INFO) << "MESHING SUCCEEDED!";
-        break;
-      }
-
-      // All front edges faild to create new elements, even
-      // when using the wide search 
-      // --> Meshing algorithm failed
-      if ( iter == front_.size() && wide_search )
-      {
-        LOG(INFO) << "";
-        LOG(INFO) << "MESHING FAILED.";
-        return false;
-      }
-    }
-
-    // Initialize vertex-to-vertex connectivity
-    setup_vertex_connectivity();
-
-    // Initialize facet-to-facet connectivity
-    // as well as connectivity between edges and facets
-    setup_facet_connectivity();
-
-    // Merge remaining triangles to quads
-    merge_triangles_to_quads();
-
-    return true;
-
-  } // Mesh::pave()
-
-  /*------------------------------------------------------------------
-  | Let the advancing front create a new quad
+  | Let the advancing front create a new quad element
   ------------------------------------------------------------------*/
   bool advance_front_quad(Edge& base, bool wide_search=false,
                           double height = -1.0)
@@ -1109,150 +1375,6 @@ public:
 
   } // Mesh::advance_front_triangle()
 
-  /*------------------------------------------------------------------
-  | This function loops over all internal edges and, if possible,
-  | merges two adjacent triangles to one quad element.
-  |
-  | -> This function requires a finalized mesh and that the functions
-  |    setup_vertex_connectivity() and setup_facet_connectivity()
-  |    have been called before.
-  ------------------------------------------------------------------*/
-  void merge_triangles_to_quads()
-  {
-    // Pick all internal edges, which are adjacent to two triangles
-    std::list<Edge*> tri_edges {};
-
-    for ( const auto& e_ptr : intr_edges_ )
-    {
-      Facet* f_l = e_ptr->facet_l();
-      Facet* f_r = e_ptr->facet_r();
-
-      if (  (f_l && f_l->n_vertices() == 3) 
-         && (f_r && f_r->n_vertices() == 3) )
-        tri_edges.push_back( e_ptr.get() );
-    }
-
-    // Sort edge list with increasing minimum angles of the 
-    // adjacent triangles
-    tri_edges.sort(
-    []( Edge* a, Edge* b )
-    {
-      const double a_l = ( a->facet_l() )
-                       ? a->facet_l()->min_angle() 
-                       : TQ_MAX;
-      const double a_r = ( a->facet_r() )
-                       ? a->facet_r()->min_angle() 
-                       : TQ_MAX;
-      const double a_ang = MIN(a_l, a_r);
-
-      const double b_l = ( b->facet_l() )
-                       ? b->facet_l()->min_angle() 
-                       : TQ_MAX;
-      const double b_r = ( b->facet_r() )
-                       ? b->facet_r()->min_angle() 
-                       : TQ_MAX;
-      const double b_ang = MIN(b_l, b_r);
-
-      return a_ang < b_ang;
-
-    });
-
-    // Loop over all chosen edges and merge the adjacent triangles
-    // to quadrilaterals. It may be, that the triangle of an 
-    // upcoming edge has already been merged in this process. Thus
-    // we have to make sure, that the triangles to merge still
-    // exist.
-    //
-    //   v2               q_r
-    //     *-------------*
-    //     | \           |
-    //     |   \   f_r   |
-    //     |     \       |
-    //     |       \     |
-    //     |  f_l    \   |
-    //     |           \ |
-    //     *-------------*
-    //    q_l             v1
-    //
-    for ( auto& e : tri_edges )
-    {
-      Facet* f_l = e->facet_l();
-      Facet* f_r = e->facet_r();
-
-      if ( f_l->n_vertices() != 3 || f_r->n_vertices() != 3 )
-        continue;
-
-      Vertex& v1 = e->v1();
-      Vertex& v2 = e->v2();
-
-
-      int i_l = f_l->get_edge_index(v1, v2);
-      int i_r = f_r->get_edge_index(v1, v2);
-
-      Vertex& q_l = f_l->vertex(i_l);
-      Vertex& q_r = f_r->vertex(i_r);
-
-      // Remove internal edge
-      remove_interior_edge( *e );
-      e = nullptr;
-
-      // Create new quadrilateral element
-      Quad& q_new = add_quad( q_l, v1, q_r, v2 );
-      q_new.is_active( true );
-
-      // Update internal edge connectivity to prevent bad memory 
-      // access for upcoming internal edges that are no longer 
-      // adjacent to two triangles due to the merge
-      for (int i = 0; i < 4; ++i)
-      {
-        int i1 = i;
-        int i2 = MOD(i+1, 4);
-
-        Vertex& q1 = q_new.vertex(i1);
-        Vertex& q2 = q_new.vertex(i2);
-
-        Edge* e_share = intr_edges_.get_edge(q1,q2);
-
-        if ( !e_share ) continue;
-
-        Facet* t_l = e_share->facet_l();
-        Facet* t_r = e_share->facet_r();
-
-        if ( t_l && (t_l == f_l || t_l == f_r) )
-          e_share->facet_l( &q_new );
-
-        if ( t_r && (t_r == f_l || t_r == f_r) )
-          e_share->facet_r( &q_new );
-      }
-
-      // Remove triangles
-      remove_triangle( *(static_cast<Triangle*>(f_l)) );
-      remove_triangle( *(static_cast<Triangle*>(f_r)) );
-
-    }
-
-    // Re-initialize facet-to-facet connectivity
-    setup_facet_connectivity();
-
-    // Bad elements may have been created up to this point
-    // due to the merging of triangles to quads
-    // The two upcoming function fix these bad elements
-    clean_double_quad_edges();
-    clean_double_triangle_edges();
-    
-    // Remove deleted entities
-    clear_waste();
-
-    // Re-initialize vertex-to-vertex connectivity
-    setup_vertex_connectivity();
-
-    // Re-initialize facet-to-facet connectivity
-    setup_facet_connectivity();
-
-  } // Mesh::merge_triangles_to_quads()
-
-
-private:
 
   /*------------------------------------------------------------------
   | This function is part of the advancing front loop.
@@ -2048,10 +2170,10 @@ private:
                       double height)
   {
     // Find closest vertices to given input vertices
-    Vertex* v_start = nullptr;
-    Vertex* v_end = nullptr;
+    Vertex* v_start     = nullptr;
+    Vertex* v_end       = nullptr;
     double d2_start_min = 1.0E+10;
-    double d2_end_min = 1.0E+10;
+    double d2_end_min   = 1.0E+10;
 
     for ( const auto& v : verts_ )
     {
@@ -2074,8 +2196,8 @@ private:
     if (!v_start || !v_end)
     {
       LOG(ERROR) << 
-      "Failed to create quad layer. "
-      "Provided starting or ending vertex pointer is NULL.";
+      "Failed to create quad layer for mesh " << mesh_id_ << ", "
+      "due to invalid provided starting or ending vertices.";
       return false;
     }
 
@@ -2086,8 +2208,10 @@ private:
     if ( !e_start || !e_end )
     {
       LOG(ERROR) << 
-      "Failed to find an advancing front edge that is adjacent"
-      " to the give input vertex for the quad layer creation.";
+      "During the generation of a quad layer for mesh " << mesh_id_ << 
+      " it was not possible to locate an advancing front edge that " <<
+      "is adjacent to the given input vertex, that was provided for " <<
+      "the layer generation. Thus, the process is aborted.";
       return false;
     }
 
@@ -2097,8 +2221,9 @@ private:
     if ( !front_.is_traversable(*e_start, *e_end) )
     {
       LOG(ERROR) << 
-      "Failed to traverse the advancing front "
-      "for the given input vertices.";
+      "During the generation of a quad layer for mesh " << mesh_id_ << 
+      " it was not possible to traverse the advancing front with "
+      "the given input vertex. Thus, the process is aborted.";
       return false;
     }
 
@@ -2743,9 +2868,12 @@ private:
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
-  Domain*    domain_     {nullptr};
-  int        mesh_id_    { 0 };
-  int        elem_color_ { TQMeshDefaultElementColor };
+  Domain*    domain_      {nullptr};
+  int        mesh_id_     { 0 };
+  int        elem_color_  { TQMeshDefaultElementColor };
+
+  bool       mesh_initialized_  { false };
+  bool       mesh_completed_    { false };
 
   Vertices   verts_;
   Triangles  tris_;

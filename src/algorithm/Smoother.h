@@ -50,7 +50,7 @@ public:
   void smooth(const Domain& domain, Mesh& mesh, int iterations,
               double a_fac=0.5, double eps=0.75, double decay=1.0)
   {
-    LOG(INFO) << "START MESH SMOOTHING";
+    LOG(INFO) << "Start with smoothing of mesh " << mesh.id();
 
     ProgressBar progress_bar {};
 
@@ -72,7 +72,7 @@ public:
     }
 
     LOG(INFO) << "";
-    LOG(INFO) << "DONE!";
+    LOG(INFO) << "Smoothing is completed.";
 
   } // Smoother::smooth()
 

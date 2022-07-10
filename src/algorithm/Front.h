@@ -145,12 +145,8 @@ public:
       }
     }
 
-    // Check for correct orientation
-    ASSERT( check_orientation(), "Invalid edge list orientation." );
-
-    // Refine the front edges
-    // -> But do not refine sub-edges!
-    refine(domain, edges_to_refine, mesh_vertices);
+    // Refine the front edges, but do not refine sub-edges!
+    this->refine(domain, edges_to_refine, mesh_vertices);
     
   } // Front::init_front_edges()
 
