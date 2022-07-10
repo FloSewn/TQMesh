@@ -26,11 +26,15 @@ using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
-* This example covers the generation of a simple triangular mesh
+* This example covers the generation of a simple mixed 
+* triangle / quad mesh which features quad layers at specified 
+* boundaries.
 *********************************************************************/
 void run_example_2()
 {
-  // Define a variable size function
+  /*------------------------------------------------------------------
+  | Define the size function
+  ------------------------------------------------------------------*/
   UserSizeFunction f = [](const Vec2d& p) 
   { 
     return 0.1;
@@ -38,10 +42,23 @@ void run_example_2()
 
   Domain domain   { f };
 
+  /*------------------------------------------------------------------
+  | Build the mesh domain boundaries
+  |
+  |       v4                                             v3     
+  |      *----------------------------------------------* 
+  |      |      v6    v7                                |
+  |      |       *---*                                  |
+  |      |       |   |                                  |
+  |      |       *---*                                  |
+  |      |      v5    v8                                |
+  |      *----------------------------------------------*
+  |       v1                                             v2
+  ------------------------------------------------------------------*/
   Boundary&  b_ext = domain.add_exterior_boundary();
   Boundary&  b_int = domain.add_interior_boundary();
 
-  // Build exterior boundary
+  // Exterior boundary
   Vertex& v1 = domain.add_vertex(  0.0,  0.0, 1.0, 1.0 );
   Vertex& v2 = domain.add_vertex(  4.0,  0.0, 1.0, 1.0 );
   Vertex& v3 = domain.add_vertex(  4.0,  1.0, 1.0, 1.0 );
@@ -57,25 +74,47 @@ void run_example_2()
   b_ext.add_edge( v3, v4, 2 );
   b_ext.add_edge( v4, v1, 1 );
 
-  // Build interior boundary
+  // Interior boundary
   b_int.add_edge( v5, v6, 4 );
   b_int.add_edge( v6, v7, 4 );
   b_int.add_edge( v7, v8, 4 );
   b_int.add_edge( v8, v5, 4 );
 
-  // Create the mesh
-  Mesh mesh { domain, 0, 0, 10.0 };
+  /*------------------------------------------------------------------
+  | Initialize the mesh
+  ------------------------------------------------------------------*/
+  Mesh mesh { domain };
   mesh.init_advancing_front();
 
-  mesh.create_quad_layers(v1, v2, 5, 0.005, 1.25);
-  mesh.create_quad_layers(v3, v4, 5, 0.005, 1.25);
-  mesh.create_quad_layers(v5, v5, 6, 0.005, 1.10);
+  /*------------------------------------------------------------------
+  | Next we will create several quad layers at the following domain 
+  | boundary edges:
+  | 1) Edge (v1,v2)
+  | 2) Edge (v3,v3)
+  | 3) Edges (v5,v6), (v6,v7), (v7,v8), (v8,v5)
+  |    -> by providing vertex v5 twice to "create_quad_layers()",
+  |       all edge segments that are connected to v5 in a traversable
+  |       group will be used for the quad layer generation
+  ------------------------------------------------------------------*/
+  mesh.create_quad_layers(v1, v2, 3, 0.01, 2.0);
+  mesh.create_quad_layers(v3, v4, 3, 0.01, 2.0);
+  mesh.create_quad_layers(v5, v5, 3, 0.01, 1.3);
 
+  /*------------------------------------------------------------------
+  | Finally, we will create the mesh with the "paving()" method.
+  | It will create a mixed mesh that consists mainly of quads and 
+  | maybe some triangles 
+  ------------------------------------------------------------------*/
   mesh.pave();
 
   /*------------------------------------------------------------------
-  | Here we use a smoother, in order to improve the mesh quality.
-  | The smoothing is applied for four iterations. 
+  | In order to obtain a mesh that only consists of quad elements,
+  | we will refine the mesh
+  ------------------------------------------------------------------*/
+  mesh.refine_to_quads();
+
+  /*------------------------------------------------------------------
+  | Smooth the mesh for four iterations
   ------------------------------------------------------------------*/
   Smoother smoother {};
   smoother.smooth(domain, mesh, 4);
@@ -87,7 +126,6 @@ void run_example_2()
   std::string file_name 
   { source_dir + "/aux/example_data/Example_2" };
 
-  mesh.write_to_file( file_name, ExportType::vtu );
-
+  mesh.write_to_file( file_name, ExportType::txt );
 
 } // run_example_2()

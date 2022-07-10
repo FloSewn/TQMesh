@@ -26,83 +26,64 @@ using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
-* This example covers the generation of a simple triangular mesh
+* 
 *********************************************************************/
 void run_example_3()
 {
-  // Define a variable size function
-  UserSizeFunction f1 = [](const Vec2d& p) { return 0.5; };
-  UserSizeFunction f2 = [](const Vec2d& p) { return 0.5; };
-  UserSizeFunction f3 = [](const Vec2d& p) { return 0.5; };
+  /*------------------------------------------------------------------
+  | Define the size function
+  ------------------------------------------------------------------*/
+  UserSizeFunction f = [](const Vec2d& p) 
+  { 
+    return 0.4;
+  };
 
-  // First domain = major domain 
-  Domain domain_1 { f1, 20.0 };
-  Domain domain_2 { f2, 20.0 };
-  Domain domain_3 { f3, 20.0 };
+  Domain domain   { f };
 
-  Boundary&  b_1 = domain_1.add_exterior_boundary();
-  Boundary&  b_2 = domain_2.add_exterior_boundary();
-  Boundary&  b_3 = domain_3.add_exterior_boundary();
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  Boundary& b_ext = domain.add_exterior_boundary();
+  b_ext.set_shape_rectangle( domain.vertices(), 1, {1.0,1.0}, 8.0, 8.0 );
 
+  Boundary& b_shape_1 = domain.add_interior_boundary();
+  b_shape_1.set_shape_circle( domain.vertices(), 2, {0.0,1.0}, 1.25, 30 );
 
-  // Build exterior boundary of domain 1
-  Vertex& v1_1 = domain_1.add_vertex(  0.0,  0.0 );
-  Vertex& v2_1 = domain_1.add_vertex(  1.0,  0.0 );
-  Vertex& v3_1 = domain_1.add_vertex(  1.0,  0.5 );
-  Vertex& v4_1 = domain_1.add_vertex(  1.0,  1.0 );
-  Vertex& v5_1 = domain_1.add_vertex(  0.0,  1.0 );
+  Boundary& b_shape_2 = domain.add_interior_boundary();
+  b_shape_2.set_shape_square( domain.vertices(), 3, {3.0,2.5}, 1.75);
 
-  b_1.add_edge( v1_1, v2_1, 1 );
-  b_1.add_edge( v2_1, v3_1, 1 );
-  b_1.add_edge( v3_1, v4_1, 1 );
-  b_1.add_edge( v4_1, v5_1, 1 );
-  b_1.add_edge( v5_1, v1_1, 1 );
+  Boundary& b_shape_3 = domain.add_interior_boundary();
+  b_shape_3.set_shape_triangle( domain.vertices(), 4, {3.0,-0.5}, 1.75 );
 
+  /*------------------------------------------------------------------
+  | Initialize the mesh
+  ------------------------------------------------------------------*/
+  Mesh mesh { domain };
+  mesh.init_advancing_front();
 
-  // Build exterior boundary of domain 2
-  Vertex& v1_2 = domain_2.add_vertex(  1.0,  0.0 );
-  Vertex& v2_2 = domain_2.add_vertex(  1.5,  0.0 );
-  Vertex& v3_2 = domain_2.add_vertex(  1.5,  0.5 );
-  Vertex& v4_2 = domain_2.add_vertex(  1.0,  0.5 );
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  Vertex& v5 = domain.vertices()[4];
+  mesh.create_quad_layers(v5, v5, 3, 0.05, 1.3);
 
-  b_2.add_edge( v1_2, v2_2, 2 );
-  b_2.add_edge( v2_2, v3_2, 2 );
-  b_2.add_edge( v3_2, v4_2, 2 );
-  b_2.add_edge( v4_2, v1_2, 2 );
+  Vertex& v35 = domain.vertices()[34];
+  Vertex& v37 = domain.vertices()[36];
+  mesh.create_quad_layers(v37, v35, 1, 0.25, 1.0);
 
+  Vertex& v39 = domain.vertices()[38];
+  mesh.create_quad_layers(v39, v39, 1, 0.30, 1.0);
 
-  // Build exterior boundary of domain 3
-  Vertex& v1_3 = domain_3.add_vertex(  1.0,  0.5 );
-  Vertex& v2_3 = domain_3.add_vertex(  1.5,  0.5 );
-  Vertex& v3_3 = domain_3.add_vertex(  1.5,  1.0 );
-  Vertex& v4_3 = domain_3.add_vertex(  1.0,  1.0 );
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  mesh.triangulate();
 
-  b_3.add_edge( v1_3, v2_3, 3 );
-  b_3.add_edge( v2_3, v3_3, 3 );
-  b_3.add_edge( v3_3, v4_3, 3 );
-  b_3.add_edge( v4_3, v1_3, 3 );
-
-  // Create meshes
-  Mesh mesh_1 { domain_1, 0, 0, 5.0 };
-  mesh_1.init_advancing_front();
-  mesh_1.triangulate();
-  //mesh_1.refine_to_quads();
-
-  Mesh mesh_2 { domain_2, 1, 1, 5.0 };
-  mesh_2.add_neighbor_mesh( mesh_1 );
-  mesh_2.init_advancing_front();
-  mesh_2.triangulate();
-
-  Mesh mesh_3 { domain_3, 2, 2, 5.0 };
-  mesh_3.add_neighbor_mesh( mesh_1 );
-  mesh_3.add_neighbor_mesh( mesh_2 );
-  mesh_3.init_advancing_front();
-  mesh_3.triangulate();
-
-  LOG(INFO) << "MERGE MESH: ";
-  mesh_1.merge_neighbor_mesh( mesh_2 );
-  mesh_1.merge_neighbor_mesh( mesh_3 );
-  mesh_1.refine_to_quads();
+  /*------------------------------------------------------------------
+  | Smooth the mesh for four iterations
+  ------------------------------------------------------------------*/
+  Smoother smoother {};
+  smoother.smooth(domain, mesh, 4);
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in VTU format.
@@ -111,6 +92,6 @@ void run_example_3()
   std::string file_name 
   { source_dir + "/aux/example_data/Example_3" };
 
-  mesh_1.write_to_file( file_name, ExportType::txt );
+  mesh.write_to_file( file_name, ExportType::txt );
 
 } // run_example_3()

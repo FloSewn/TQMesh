@@ -141,6 +141,6 @@ void run_example_1()
   std::string file_name 
   { source_dir + "/aux/example_data/Example_1" };
 
-  mesh.write_to_file( file_name, ExportType::vtu );
+  mesh.write_to_file( file_name, ExportType::txt );
 
 } // run_example_1()

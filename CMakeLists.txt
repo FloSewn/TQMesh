@@ -27,7 +27,7 @@ add_subdirectory( src/utils )
 add_subdirectory( src/algorithm )
 add_subdirectory( src/tests )
 add_subdirectory( src/examples )
-#add_subdirectory( src/app )
+add_subdirectory( src/app )
 
 
 #---------------------------------------------------------------------
