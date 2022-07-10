@@ -24,6 +24,7 @@
 #include "ParaReader.h"
 #include "Vec2.h"
 #include "Helpers.h"
+#include "Log.h"
 #include "Container.h"
 
 #include "size_function.h"
@@ -55,7 +56,7 @@ public:
   /*------------------------------------------------------------------
   | Function for error handling
   ------------------------------------------------------------------*/
-  void error(std::string msg) { throw Invalid{ "[ERROR] " + msg}; }
+  void error(std::string msg) { throw Invalid{ msg }; }
 
   /*------------------------------------------------------------------
   | Constructor
@@ -65,9 +66,19 @@ public:
   {}
 
   /*------------------------------------------------------------------
+  | Getters
+  ------------------------------------------------------------------*/
+  Mesh* mesh_ptr() 
+  { 
+    if ( mesh_ )
+      return mesh_.get(); 
+    return nullptr;
+  }
+
+  /*------------------------------------------------------------------
   | Read a new mesh from the input file and create it
   ------------------------------------------------------------------*/
-  bool create_new_mesh(SimpleLogger& logger, 
+  bool create_new_mesh(Mesh* base_mesh,
                        ParaReader& mesh_reader,
                        const std::string& prefix,
                        const std::string& format)
@@ -75,21 +86,22 @@ public:
     try
     {
       query_mandatory_parameters( mesh_reader );
-      init_mesh_vertices( logger, mesh_reader );
-      init_mesh_domain( logger, mesh_reader );
+      init_mesh_vertices( mesh_reader );
+      init_mesh_domain( mesh_reader );
       init_domain_vertices( mesh_reader );
-      init_exterior_boundary( logger, mesh_reader );
-      init_interior_boundaries( logger, mesh_reader );
-      init_fixed_vertices( logger, mesh_reader );
-      init_quad_layers( logger, mesh_reader );
-      init_meshing_algorithm( logger, mesh_reader );
-      init_quad_refinements( logger, mesh_reader );
+      init_exterior_boundary( mesh_reader );
+      init_interior_boundaries( mesh_reader );
+      init_fixed_vertices( mesh_reader );
+      init_quad_layers( mesh_reader );
+      init_element_color( mesh_reader );
+      init_meshing_algorithm( mesh_reader );
+      init_quad_refinements( mesh_reader );
 
-      generate_mesh(prefix, format);
+      generate_mesh(base_mesh, prefix, format);
     }
     catch(const Invalid& inv)
     {
-      std::cerr << inv.what() << std::endl;
+      LOG(ERROR) << inv.what();
       return false;
     }
 
@@ -101,8 +113,7 @@ public:
   | Print out parameters 
   ------------------------------------------------------------------*/
   template<typename T>
-  void print_parameter(SimpleLogger& logger,
-                       ParaReader& reader, 
+  void print_parameter(ParaReader& reader, 
                        const std::string& name)
   {
     auto para = reader.get_parameter<T>(name);
@@ -124,8 +135,8 @@ public:
           ss << ", ";
       }
 
-      logger << key << " " << ss.str() << std::endl;
-      logger << std::endl;
+      LOG(INFO) << key << " " << ss.str();
+      LOG(INFO) << "";
 
     }
     else
@@ -136,7 +147,7 @@ public:
       size_t n_rows = para.rows();
       size_t n_cols = para.columns();
 
-      logger << start_key << std::endl;
+      LOG(INFO) << start_key;
 
       for ( size_t j = 0; j < n_rows; ++j )
       {
@@ -150,11 +161,11 @@ public:
             ss << ", ";
         }
         
-        logger << ss.str() << std::endl;
+        LOG(INFO) << ss.str();
       }
 
-      logger << end_key << std::endl;
-      logger << std::endl;;
+      LOG(INFO) << end_key;
+      LOG(INFO) << "";
     }
 
   } // MeshGenerator::print_parameter()
@@ -182,8 +193,7 @@ private:
   /*------------------------------------------------------------------
   | Initialize the mesh vertices and estimate the domain extent
   ------------------------------------------------------------------*/
-  void init_mesh_vertices(SimpleLogger& logger,
-                          ParaReader& mesh_reader)
+  void init_mesh_vertices(ParaReader& mesh_reader)
   {
     auto para_vertices = mesh_reader.get_parameter<double>("vertices");
 
@@ -212,14 +222,14 @@ private:
     const double dy = xy_max.y - xy_min.y;
     domain_extent_  = ABS(10.0 * MAX(dx, dy));
 
-    print_parameter<double>(logger, mesh_reader, "vertices");
+    print_parameter<double>(mesh_reader, "vertices");
 
   } // MeshGenerator::init_mesh_vertices()
 
   /*------------------------------------------------------------------
   | Initialize the mesh domain
   ------------------------------------------------------------------*/
-  void init_mesh_domain(SimpleLogger& logger, ParaReader& mesh_reader)
+  void init_mesh_domain(ParaReader& mesh_reader)
   {
     // Initialize element size function
     UserSizeFunction size_fun = init_size_function( 
@@ -229,7 +239,7 @@ private:
     // Initialize domain
     domain_ = std::make_unique<Domain>(size_fun, domain_extent_ );
 
-    print_parameter<std::string>(logger, mesh_reader, "size_function");
+    print_parameter<std::string>(mesh_reader, "size_function");
 
   } // MeshGenerator::init_mesh_domain()
 
@@ -254,8 +264,7 @@ private:
   /*------------------------------------------------------------------
   | Initialize the domain's exterior boundary 
   ------------------------------------------------------------------*/
-  void init_exterior_boundary(SimpleLogger& logger, 
-                              ParaReader& mesh_reader)
+  void init_exterior_boundary(ParaReader& mesh_reader)
   {
     ASSERT( domain_.get(), "DOMAIN NOT PROPERLY INITIALIZED" );
 
@@ -277,15 +286,14 @@ private:
       b_ext.add_edge( v1, v2, m );
     }
 
-    print_parameter<int>(logger, mesh_reader, "extr_bdry");
+    print_parameter<int>(mesh_reader, "extr_bdry");
 
   } // MeshGenerator::init_exterior_boundary()
 
   /*------------------------------------------------------------------
   | Initialize the domain's interior boundaries
   ------------------------------------------------------------------*/
-  void init_interior_boundaries(SimpleLogger& logger, 
-                                ParaReader& mesh_reader)
+  void init_interior_boundaries(ParaReader& mesh_reader)
   {
     ASSERT( domain_.get(), "DOMAIN NOT PROPERLY INITIALIZED" );
 
@@ -298,7 +306,7 @@ private:
       Boundary& b_int = domain.add_interior_boundary();
 
       auto para_intr_bdry = mesh_reader.get_parameter<int>("intr_bdry");
-      print_parameter<int>(logger, mesh_reader, "intr_bdry");
+      print_parameter<int>(mesh_reader, "intr_bdry");
 
       for ( size_t i = 0; i < para_intr_bdry.rows(); ++i )
       {
@@ -321,7 +329,7 @@ private:
 
       auto para_intr_bdry_rect 
         = mesh_reader.get_parameter<double>("intr_bdry_rect");
-      print_parameter<double>(logger, mesh_reader, "intr_bdry_rect");
+      print_parameter<double>(mesh_reader, "intr_bdry_rect");
 
       int    m = static_cast<int>( para_intr_bdry_rect.get_value(0) );
       double x = para_intr_bdry_rect.get_value(1);
@@ -340,7 +348,7 @@ private:
 
       auto para_intr_bdry_circ 
         = mesh_reader.get_parameter<double>("intr_bdry_circ");
-      print_parameter<double>(logger, mesh_reader, "intr_bdry_circ");
+      print_parameter<double>(mesh_reader, "intr_bdry_circ");
 
       int    m = static_cast<int>( para_intr_bdry_circ.get_value(0) );
       double x = para_intr_bdry_circ.get_value(1);
@@ -356,8 +364,7 @@ private:
   /*------------------------------------------------------------------
   | Initialize the domain's fixed vertices
   ------------------------------------------------------------------*/
-  void init_fixed_vertices(SimpleLogger& logger, 
-                           ParaReader& mesh_reader)
+  void init_fixed_vertices(ParaReader& mesh_reader)
   {
     ASSERT( domain_.get(), "DOMAIN NOT PROPERLY INITIALIZED" );
 
@@ -367,7 +374,7 @@ private:
     {
       auto para_fixed_vertices 
         = mesh_reader.get_parameter<double>("fixed_vertices");
-      print_parameter<double>(logger, mesh_reader, "fixed_vertices");
+      print_parameter<double>(mesh_reader, "fixed_vertices");
 
       for ( size_t i = 0; i < para_fixed_vertices.rows(); ++i )
       {
@@ -385,8 +392,7 @@ private:
   /*------------------------------------------------------------------
   | Initialize quad layers 
   ------------------------------------------------------------------*/
-  void init_quad_layers(SimpleLogger& logger, 
-                        ParaReader& mesh_reader)
+  void init_quad_layers(ParaReader& mesh_reader)
   {
     ASSERT( domain_.get(), "DOMAIN NOT PROPERLY INITIALIZED" );
 
@@ -397,7 +403,7 @@ private:
     {
       auto para_quad_layers 
         = mesh_reader.get_parameter<double>("quad_layers");
-      print_parameter<double>(logger, mesh_reader, "quad_layers");
+      print_parameter<double>(mesh_reader, "quad_layers");
 
         int   i1 = static_cast<int>( para_quad_layers.get_value(0) );
         int   i2 = static_cast<int>( para_quad_layers.get_value(1) );
@@ -416,15 +422,14 @@ private:
   /*------------------------------------------------------------------
   | Initialize the meshing algorithm
   ------------------------------------------------------------------*/
-  void init_meshing_algorithm(SimpleLogger& logger, 
-                              ParaReader& mesh_reader)
+  void init_meshing_algorithm(ParaReader& mesh_reader)
   {
     algorithm_ = "Triangulation";
 
     if ( mesh_reader.query<std::string>("algorithm") )
     {
       algorithm_ = mesh_reader.get_value<std::string>("algorithm");
-      print_parameter<std::string>(logger, mesh_reader, "algorithm");
+      print_parameter<std::string>(mesh_reader, "algorithm");
     }
 
   } // MeshGenerator::init_meshing_algorithm()
@@ -432,8 +437,7 @@ private:
   /*------------------------------------------------------------------
   | Initialize the number of quad refinements
   ------------------------------------------------------------------*/
-  void init_quad_refinements(SimpleLogger& logger, 
-                             ParaReader& mesh_reader)
+  void init_quad_refinements(ParaReader& mesh_reader)
   {
     quad_refinements_ = 0;
 
@@ -441,7 +445,7 @@ private:
     {
       quad_refinements_ = mesh_reader.get_value<size_t>(
           "quad_refinements");
-      print_parameter<size_t>(logger, mesh_reader, "quad_refinements");
+      print_parameter<size_t>(mesh_reader, "quad_refinements");
     }
 
   } // MeshGenerator::init_quad_refinements()
@@ -449,15 +453,14 @@ private:
   /*------------------------------------------------------------------
   | Initialize the element color
   ------------------------------------------------------------------*/
-  void init_element_color(SimpleLogger& logger, 
-                          ParaReader& mesh_reader)
+  void init_element_color(ParaReader& mesh_reader)
   {
     element_color_ = 0;
 
     if ( mesh_reader.query<int>("elem_color") )
     {
       element_color_ = mesh_reader.get_value<int>( "elem_color" );
-      print_parameter<int>(logger, mesh_reader, "elem_color");
+      print_parameter<int>(mesh_reader, "elem_color");
     }
 
   } // MeshGenerator::init_quad_refinements()
@@ -466,7 +469,8 @@ private:
   /*------------------------------------------------------------------
   | Generate the mesh
   ------------------------------------------------------------------*/
-  void generate_mesh(const std::string& prefix, 
+  void generate_mesh(Mesh* base_mesh, 
+                     const std::string& prefix, 
                      const std::string& format)
   {
     ASSERT( domain_.get(), "DOMAIN NOT PROPERLY INITIALIZED" );
@@ -478,8 +482,9 @@ private:
                                    domain_extent_ );
     Mesh& mesh = *( mesh_.get() );
 
-    // Connect mesh to all previously generated meshes
-    // --> MISSING!
+    // Connect mesh to base mesh
+    if ( base_mesh )
+      mesh.add_neighbor_mesh( *base_mesh );
 
     // Initialize the advancing front structure
     mesh.init_advancing_front();
@@ -515,33 +520,34 @@ private:
       error("Invalid meshing algorithm provided: " + algorithm_ );
     }
 
+    if ( base_mesh )
+      mesh.merge_neighbor_mesh( *base_mesh );
+
     // Apply mesh refinements
     for ( int i = 0; i < quad_refinements_; ++i )
       mesh.refine_to_quads();
 
     // Apply mesh smoothing
     Smoother smoother {};
-    smoother.smooth( domain, mesh, 6, 0.5, 0.75, 0.95 );
+    smoother.smooth( domain, mesh, 4, 0.5, 0.75, 0.95 );
 
     // Export the mesh
     std::string file_name = prefix + "_" + std::to_string(mesh_id_);
 
     if ( format == "VTU" || format == "vtu" )
     {
+      LOG(INFO) << "Write mesh file to " << file_name << ".vtu";
       mesh.write_to_file( file_name + ".vtu", ExportType::vtu );
     }
     else if ( format == "TXT" || format == "txt" )
     {
+      LOG(INFO) << "Write mesh file to " << file_name << ".txt";
       mesh.write_to_file( file_name + ".txt", ExportType::txt );
     }
     else
     {
       mesh.write_to_file( file_name, ExportType::cout );
     }
-
-    //mesh.write_to_file( );
-    //domain.export_size_function(xy_min, xy_max, 100, 100);
-
 
   } // MeshGenerator::generate_mesh()
 
@@ -568,8 +574,6 @@ private:
 
   std::unique_ptr<Mesh>                     mesh_;
 
-
-
 }; // MeshGenerator
 
 
@@ -590,7 +594,6 @@ public:
   ------------------------------------------------------------------*/
   TQMeshApp(const std::string& input_file)
   : reader_ { input_file }
-  , logger_ { std::clog, "# " }
   {
     init_para_reader();
   }
@@ -606,25 +609,37 @@ public:
     }
     catch(const Invalid& inv)
     {
-      std::cerr << inv.what() << std::endl;
+      LOG(ERROR) << inv.what();
       return false;
     }
 
     ParaReader& mesh_reader = reader_.get_block("mesh_reader");
     int mesh_id = 0; 
 
+    Mesh* base_mesh = nullptr;
+
     while( reader_.query( "mesh_reader" ) )
     {
-      logger_ << "============== Create mesh " << mesh_id 
-              << " ==============" << std::endl;
+      LOG(INFO) << "";
+      LOG(INFO) << "============== "
+                << "Create mesh " << mesh_id 
+                << " ==============";
 
       meshes_.push_back( mesh_id );
 
       MeshGenerator& new_mesh = meshes_.back();
 
-      if ( !new_mesh.create_new_mesh( logger_, mesh_reader, 
-                                      output_prefix_, output_format_ ) )
+      bool success = new_mesh.create_new_mesh( base_mesh,
+                                               mesh_reader, 
+                                               output_prefix_, 
+                                               output_format_ );
+
+      if ( !success )
         return false;
+
+      base_mesh = new_mesh.mesh_ptr();
+
+      ++mesh_id;
     }
 
 
@@ -709,16 +724,11 @@ private:
   | Attributes
   ------------------------------------------------------------------*/
   ParaReader                 reader_;
-  SimpleLogger               logger_;
 
   std::string                output_prefix_;
   std::string                output_format_;
 
   std::vector<MeshGenerator> meshes_;
-
-
-
-
 
 }; // TQMeshApp
 

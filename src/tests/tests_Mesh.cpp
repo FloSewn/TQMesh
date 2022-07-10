@@ -73,6 +73,7 @@ void initialization()
 
   // Create the mesh
   Mesh mesh { domain, 0, 0, 10.0 };
+
   mesh.init_advancing_front();
 
   CHECK( EQ(mesh.front().area(), domain.area()) );

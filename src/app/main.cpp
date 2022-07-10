@@ -11,24 +11,31 @@
 
 #include <TQMeshConfig.h>
 
-#include "utils.h"
+#include "Log.h"
 
 #include "TQMeshApp.h"
+
+
+using CppUtils::LOG_PROPERTIES;
+using CppUtils::LOG;
+using CppUtils::LogLevel::INFO;
+using CppUtils::LogLevel::DEBUG;
 
 /*********************************************************************
 * Print TQMesh header
 *********************************************************************/
 static void print_header()
 {
-  MSG("");
-  MSG("   - - - - - - - - - - - - - - - - - - -  ");
-  MSG("  | TQMesh - A simple 2D mesh generator | ");
-  MSG("   - - - - - - - - - - - - - - - - - - -  ");
-  MSG("");
-  MSG("  by Florian Setzwein");
-  MSG("");
-  MSG("  Version " << TQMESH_VERSION_MAJOR << "." << TQMESH_VERSION_MINOR );
-  MSG("");
+  LOG(INFO) << "";
+  LOG(INFO) << "   - - - - - - - - - - - - - - - - - - -  ";
+  LOG(INFO) << "  | TQMesh - A simple 2D mesh generator | ";
+  LOG(INFO) << "   - - - - - - - - - - - - - - - - - - -  ";
+  LOG(INFO) << "";
+  LOG(INFO) << "  by Florian Setzwein";
+  LOG(INFO) << "";
+  LOG(INFO) << "  Version " 
+            << TQMESH_VERSION_MAJOR << "." << TQMESH_VERSION_MINOR ;
+  LOG(INFO) << "";
 
 } // print_header()
 
@@ -38,15 +45,23 @@ using namespace TQMesh;
 
 int main(int argc, char* argv[])
 {
+  LOG_PROPERTIES.set_level( INFO );
+  LOG_PROPERTIES.show_header( true );
+  LOG_PROPERTIES.use_color( true );
+  LOG_PROPERTIES.set_info_header( "  " );
+  LOG_PROPERTIES.set_debug_header( "# " );
+  LOG_PROPERTIES.set_error_header( "  [ERROR] " );
+  LOG_PROPERTIES.set_warn_header( "  [WARNING] " );
+
   /*------------------------------------------------------------------
   | Handle command line arguments
   ------------------------------------------------------------------*/
   print_header();
   if ( argc < 2 )
   {
-    MSG("Usage: " );
-    MSG( argv[0] << " \"Input-File\" > \"Output-Mesh\"" );
-    MSG("");
+    LOG(INFO) << "Usage: ";
+    LOG(INFO) <<  argv[0] << " \"Input-File\" > \"Output-Mesh\"" ;
+    LOG(INFO) << "";
     return EXIT_SUCCESS;
   }
 
