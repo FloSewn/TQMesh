@@ -19,6 +19,7 @@ class TQMesh:
         self.boundary, self.boundary_elements, self.boundary_markers = io_read_boundary( mesh_id, lines, self.vertices )
         self.triangles, self.tri_colors = io_read_triangles( mesh_id, lines, self.vertices )
         self.quads, self.quad_colors = io_read_quads( mesh_id, lines, self.vertices )
+        self.size_func = np.array( io_read_sizefunction( mesh_id, lines ) )
 
     def get_extent(self):
         ''' Return the mesh extents
@@ -99,7 +100,15 @@ class TQMesh:
                 c = np.mean( q, axis=0 )
                 ax.text(c[0], c[1], str(i), c=(.3,.3,.3))
 
-
+    def plot_sizefunction(self, ax):
+        tris = np.array(self.triangles)
+        s = self.size_func
+        x = self.vertices[:,0]
+        y = self.vertices[:,1]
+        cont = ax.tricontourf(x, y, s, levels=50, cmap='Spectral')
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        plt.colorbar(cont, cax=cax)
 
 
 
@@ -303,7 +312,32 @@ def io_read_qtree(lines):
 
     return quads
 
-def io_read_sizefunction(lines):
+def io_read_sizefunction(mesh_id, lines):
+    ''' Read the size function from the input string
+    '''
+    size_fun = []
+    start, n_lines = 0, 0
+    mesh_passed = False
+
+    # Estimate start and ending line to read the size function
+    for i, line in enumerate(lines):
+        line = line.split(" ")
+        if line[0] == "MESH":
+            if int(line[1]) == mesh_id:
+                mesh_passed = True
+        if mesh_passed and line[0] == "SIZEFUNCTION":
+            start  = i + 1
+            n_lines = int(line[1])
+            break
+
+    # Read the size function values
+    for i in range(start, start+n_lines):
+        line = lines[i]
+        size_fun.append( float(line) )
+
+    return size_fun
+
+def io_read_sizefunction_DEPRECATED(lines):
     ''' Read the size function from the input string
     '''
     start, n_lines = 0, 0
@@ -357,10 +391,8 @@ def main():
     for i in mesh_ids:
         meshes.append( TQMesh(i, lines) )
 
-
+    # Read the quadtree structure
     qtree = io_read_qtree( lines )
-    X,Y,Z = io_read_sizefunction( lines )
-
 
     # Initialize face colors for mesh entities
     element_colors = []
@@ -374,12 +406,6 @@ def main():
     if '-q' in sys.argv:
         qtree_collection = mc.PolyCollection( qtree, edgecolors=['b'], facecolors=['None'], lw=1, ls='--' )
         ax.add_collection( qtree_collection )
-
-    if '-s' in sys.argv:
-        size_fun = ax.contourf(X,Y,Z, levels=50, cmap='Spectral')
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.05)
-        plt.colorbar(size_fun, cax=cax)
 
 
     xy_min, xy_max = [], []
@@ -397,6 +423,9 @@ def main():
 
         if '-b' in sys.argv:
             mesh.plot_boundaries(ax)
+
+        if '-s' in sys.argv:
+            mesh.plot_sizefunction(ax)
 
         mesh.plot_triangles(ax, element_colors, '-e' in sys.argv)
         mesh.plot_quads(ax, element_colors, '-e' in sys.argv)

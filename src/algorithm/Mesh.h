@@ -3057,6 +3057,12 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
       << nbr3_index << "\n";
   }
 
+  os << "SIZEFUNCTION " << mesh.vertices().size() << "\n";
+  for ( const auto& v_ptr : mesh.vertices() )
+  {
+    os << std::setprecision(5) << std::fixed 
+       << mesh.domain().size_function( v_ptr->xy() ) << "\n";
+  }
 
   return os;
 } 
