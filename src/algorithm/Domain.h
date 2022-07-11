@@ -53,8 +53,8 @@ public:
           double qtree_scale = ContainerQuadTreeScale,
           size_t qtree_items = ContainerQuadTreeItems, 
           size_t qtree_depth = ContainerQuadTreeDepth,
-          double min_size    = TQMeshMinimumElementSize,
-          double min_scaling = TQMeshMinimumElementScaling )
+          double min_size    = CONSTANTS.minimum_element_size(),
+          double min_scaling = CONSTANTS.minimum_element_scaling() )
   : f_ { f }
   , verts_ { qtree_scale, qtree_items, qtree_depth }
   , min_size_ { min_size }
@@ -184,7 +184,7 @@ public:
         // search in vicinity of current edge for edges of the 
         // neighboring domain. 
         const Vec2d c  = e->xy();
-        double radius  = TQMeshEdgeSearchFactor * e->length();
+        double radius  = CONSTANTS.edge_search_factor() * e->length();
 
         std::vector<Edge*> nbr_edges = nbr_domain.get_edges(c, radius);
 

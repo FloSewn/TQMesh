@@ -182,7 +182,7 @@ private:
     // create a wedge in between. In this case we use the default 
     // projection coordinates p1_xy and p2_xy that were already 
     // calculated in the constructor
-    if ( is_left(p, r, q) && alpha <= TQMeshQuadLayerAngle )
+    if ( is_left(p, r, q) && alpha <= CONSTANTS.quad_layer_angle() )
       return;
 
     // Otherwise, the projected vertex coordinate will be placed

@@ -128,7 +128,7 @@ public:
   | or if it is in the interior of the domain
   ------------------------------------------------------------------*/
   bool on_boundary() const 
-  { return ( marker_ != TQMeshInteriorEdgeMarker ); }
+  { return ( marker_ != CONSTANTS.interior_edge_marker() ); }
   bool is_interior() const
   { return !on_boundary(); }
 

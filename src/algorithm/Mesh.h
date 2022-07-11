@@ -61,8 +61,8 @@ public:
   | Constructor
   ------------------------------------------------------------------*/
   Mesh(Domain&   domain,
-       int       mesh_id=TQMeshDefaultMeshId,
-       int       element_color=TQMeshDefaultElementColor,
+       int       mesh_id=CONSTANTS.default_mesh_id(),
+       int       element_color=CONSTANTS.default_element_color(),
        double    qtree_scale=ContainerQuadTreeScale,
        size_t    qtree_items=ContainerQuadTreeItems, 
        size_t    qtree_depth=ContainerQuadTreeDepth)
@@ -1235,8 +1235,8 @@ private:
 
     if ( height > 0 )
     {
-      r1 = TQMeshQuadRangeFactor * height;
-      r2 = TQMeshQuadRangeFactor * height;
+      r1 = CONSTANTS.quad_range_factor() * height;
+      r2 = CONSTANTS.quad_range_factor() * height;
     }
 
     // ****** Create first triangle *******
@@ -1345,8 +1345,9 @@ private:
     const double r      = domain_->size_function( v_xy );
 
     // Find all vertices in the vicinity of the current base edge
+    const double range_factor = CONSTANTS.mesh_range_factor() * r;
     VertexVector vertex_candidates 
-      = find_local_vertices(v_xy, TQMeshRangeFactor * r, wide_search);
+      = find_local_vertices(v_xy, range_factor, wide_search);
 
     // Create potential triangles with all found vertices
     TriVector new_triangles {};
@@ -1389,7 +1390,7 @@ private:
                                    bool wide_search=false )
   {
     if (wide_search)
-      dist *= TQMeshWideSearchFactor;
+      dist *= CONSTANTS.wide_search_factor();
 
     // Get vertices in vicinity of xy  
     VertexVector vertex_candidates = verts_.get_items(xy, dist);
@@ -2238,7 +2239,7 @@ private:
 
       Edge *e_next = e_start->get_next_edge();
 
-      if ( e_next && ang <= TQMeshQuadLayerAngle )
+      if ( e_next && ang <= CONSTANTS.quad_layer_angle() )
       {
         e_end = e_start;
         e_start = e_next; 
@@ -2325,7 +2326,7 @@ private:
     {
       // Search radius for vertices in the vicinity of the 
       // projected coordinates
-      const double r = TQMeshQuadLayerRange * heights[i];
+      const double r = CONSTANTS.quad_layer_range() * heights[i];
 
       // Create first triangle (b1,b2,p1)
       Edge* base = bases[i];
@@ -2466,7 +2467,7 @@ private:
       const double alpha = angle(l1,l2);
 
       // Don't add a new vertex and instead only connect (a,b,c)
-      if ( alpha <= TQMeshQuadLayerAngle )
+      if ( alpha <= CONSTANTS.quad_layer_angle() )
       {
         Triangle* t_new = &( add_triangle(a, b, c) );
 
@@ -2551,8 +2552,8 @@ private:
       const double h = MIN( l, height );
 
       if (   !( is_lefton(p1.xy(), p2.xy(), c.xy()) ) 
-          && delta <= 4.0 * h  
-          && alpha <= TQMeshQuadLayerAngle )
+          && delta <= h * CONSTANTS.quad_layer_factor() 
+          && alpha <= CONSTANTS.quad_layer_angle() )
       {
         Edge* e_buf = e_next->get_next_edge();
 
@@ -2664,7 +2665,7 @@ private:
     EdgeVector   nbr_edges {};
 
     const Vec2d& c = e.xy();
-    double       r = TQMeshEdgeSearchFactor * e.length();
+    double       r = CONSTANTS.edge_search_factor() * e.length();
 
     const Vec2d& v = e.v1().xy();
     const Vec2d& w = e.v2().xy();
@@ -2870,7 +2871,7 @@ private:
   ------------------------------------------------------------------*/
   Domain*    domain_      {nullptr};
   int        mesh_id_     { 0 };
-  int        elem_color_  { TQMeshDefaultElementColor };
+  int        elem_color_  { CONSTANTS.default_element_color() };
 
   bool       mesh_initialized_  { false };
   bool       mesh_completed_    { false };

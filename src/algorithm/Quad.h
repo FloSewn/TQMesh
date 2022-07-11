@@ -497,7 +497,7 @@ private:
   Vec2d                xy_            {0.0, 0.0};
   Vec2d                circ_centr_    {0.0,0.0};
 
-  int                  color_         {TQMeshDefaultElementColor};
+  int                  color_         {CONSTANTS.default_element_color()};
   int                  index_         {-1};
   bool                 active_        {false};
   bool                 marker_        {false};
