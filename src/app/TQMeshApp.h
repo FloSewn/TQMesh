@@ -274,11 +274,19 @@ private:
 
     auto para_extr_bdry = mesh_reader.get_parameter<int>("extr_bdry");
 
+    size_t n_vertices = vertices.size();
+
     for ( size_t i = 0; i < para_extr_bdry.rows(); ++i )
     {
       size_t i1 = para_extr_bdry.get_value(0, i);
       size_t i2 = para_extr_bdry.get_value(1, i);
       int    m  = para_extr_bdry.get_value(2, i);
+
+      // Throw error if indices are larger than number of vertices
+      if ( i1 > n_vertices || i2 > n_vertices )
+        error("Invalid exterior boundary definition: " 
+              "Some vertex index is larger that the number of "
+              "provided input vertices.");
 
       Vertex& v1 = vertices[i1];
       Vertex& v2 = vertices[i2];
@@ -300,6 +308,8 @@ private:
     Domain&   domain   = *( domain_.get() );
     Vertices& vertices = domain.vertices();
 
+    size_t n_vertices = vertices.size();
+
     // Query and initialize interior boundary definitions
     while( mesh_reader.query<int>("intr_bdry") )
     {
@@ -313,6 +323,12 @@ private:
         size_t i1 = para_intr_bdry.get_value(0, i);
         size_t i2 = para_intr_bdry.get_value(1, i);
         int     m = para_intr_bdry.get_value(2, i);
+
+        // Throw error if indices are larger than number of vertices
+        if ( i1 > n_vertices || i2 > n_vertices )
+          error("Invalid exterior boundary definition: " 
+                "Some vertex index is larger that the number of "
+                "provided input vertices.");
 
         Vertex& v1 = vertices[i1];
         Vertex& v2 = vertices[i2];
