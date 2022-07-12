@@ -45,40 +45,40 @@ void run_example_2()
   /*------------------------------------------------------------------
   | Build the mesh domain boundaries
   |
-  |       v4                                             v3     
+  |       v3                                             v2     
   |      *----------------------------------------------* 
-  |      |      v6    v7                                |
+  |      |      v5    v6                                |
   |      |       *---*                                  |
   |      |       |   |                                  |
   |      |       *---*                                  |
-  |      |      v5    v8                                |
+  |      |      v4    v7                                |
   |      *----------------------------------------------*
-  |       v1                                             v2
+  |       v0                                             v1
   ------------------------------------------------------------------*/
   Boundary&  b_ext = domain.add_exterior_boundary();
   Boundary&  b_int = domain.add_interior_boundary();
 
   // Exterior boundary
-  Vertex& v1 = domain.add_vertex(  0.0,  0.0, 1.0, 1.0 );
-  Vertex& v2 = domain.add_vertex(  4.0,  0.0, 1.0, 1.0 );
-  Vertex& v3 = domain.add_vertex(  4.0,  1.0, 1.0, 1.0 );
-  Vertex& v4 = domain.add_vertex(  0.0,  1.0, 1.0, 1.0 );
+  Vertex& v0 = domain.add_vertex(  0.0,  0.0, 1.0, 1.0 );
+  Vertex& v1 = domain.add_vertex(  4.0,  0.0, 1.0, 1.0 );
+  Vertex& v2 = domain.add_vertex(  4.0,  1.0, 1.0, 1.0 );
+  Vertex& v3 = domain.add_vertex(  0.0,  1.0, 1.0, 1.0 );
 
-  Vertex& v5 = domain.add_vertex( 0.35, 0.35, 0.8, 1.2 );
-  Vertex& v6 = domain.add_vertex( 0.35, 0.65, 0.8, 1.2 );
-  Vertex& v7 = domain.add_vertex( 0.65, 0.65, 0.8, 1.2 );
-  Vertex& v8 = domain.add_vertex( 0.65, 0.35, 0.8, 1.2 );
+  Vertex& v4 = domain.add_vertex( 0.35, 0.35, 0.8, 1.2 );
+  Vertex& v5 = domain.add_vertex( 0.35, 0.65, 0.8, 1.2 );
+  Vertex& v6 = domain.add_vertex( 0.65, 0.65, 0.8, 1.2 );
+  Vertex& v7 = domain.add_vertex( 0.65, 0.35, 0.8, 1.2 );
 
-  b_ext.add_edge( v1, v2, 2 );
-  b_ext.add_edge( v2, v3, 3 );
-  b_ext.add_edge( v3, v4, 2 );
-  b_ext.add_edge( v4, v1, 1 );
+  b_ext.add_edge( v0, v1, 2 );
+  b_ext.add_edge( v1, v2, 3 );
+  b_ext.add_edge( v2, v3, 2 );
+  b_ext.add_edge( v3, v0, 1 );
 
   // Interior boundary
+  b_int.add_edge( v4, v5, 4 );
   b_int.add_edge( v5, v6, 4 );
   b_int.add_edge( v6, v7, 4 );
-  b_int.add_edge( v7, v8, 4 );
-  b_int.add_edge( v8, v5, 4 );
+  b_int.add_edge( v7, v4, 4 );
 
   /*------------------------------------------------------------------
   | Initialize the mesh
@@ -89,16 +89,16 @@ void run_example_2()
   /*------------------------------------------------------------------
   | Next we will create several quad layers at the following domain 
   | boundary edges:
-  | 1) Edge (v1,v2)
-  | 2) Edge (v3,v3)
-  | 3) Edges (v5,v6), (v6,v7), (v7,v8), (v8,v5)
+  | 1) Edge (v0,v1)
+  | 2) Edge (v2,v3)
+  | 3) Edges (v4,v5), (v5,v6), (v6,v7), (v7,v4)
   |    -> by providing vertex v5 twice to "create_quad_layers()",
   |       all edge segments that are connected to v5 in a traversable
   |       group will be used for the quad layer generation
   ------------------------------------------------------------------*/
-  mesh.create_quad_layers(v1, v2, 3, 0.01, 2.0);
-  mesh.create_quad_layers(v3, v4, 3, 0.01, 2.0);
-  mesh.create_quad_layers(v5, v5, 3, 0.01, 1.3);
+  mesh.create_quad_layers(v0, v1, 3, 0.01, 2.0);
+  mesh.create_quad_layers(v2, v3, 3, 0.01, 2.0);
+  mesh.create_quad_layers(v4, v4, 3, 0.01, 1.3);
 
   /*------------------------------------------------------------------
   | Finally, we will create the mesh with the "paving()" method.

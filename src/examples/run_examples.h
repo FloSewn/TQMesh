@@ -22,3 +22,6 @@ void run_example_1();
 void run_example_2();
 void run_example_3();
 void run_example_4();
+void run_example_5();
+void run_example_6();
+void run_example_7();

@@ -63,10 +63,13 @@ class TQMesh:
         ''' Plot all mesh triangles
         '''
         n_colors = len(element_colors)
-
+        tri_colors = np.array(self.tri_colors).astype(int)
         if n_colors > 0:
             colors = plt.cm.Set1( np.linspace(0.0,1.0,n_colors) )
-            elem_colors = colors[self.tri_colors]
+            color_map = np.zeros( tri_colors.shape ).astype(int)
+            for i, c in enumerate(np.unique(tri_colors)):
+                color_map[tri_colors == c] = i
+            elem_colors = colors[color_map]
         else:
             elem_colors = ['None']
 
@@ -84,10 +87,13 @@ class TQMesh:
         ''' Plot all mesh quads
         '''
         n_colors = len(element_colors)
-
+        quad_colors = np.array(self.quad_colors).astype(int)
         if n_colors > 0:
             colors = plt.cm.Set1( np.linspace(0.0,1.0,n_colors) )
-            elem_colors = colors[self.quad_colors]
+            color_map = np.zeros( quad_colors.shape ).astype(int)
+            for i, c in enumerate(np.unique(quad_colors)):
+                color_map[quad_colors == c] = i
+            elem_colors = colors[color_map]
         else:
             elem_colors = ['None']
 

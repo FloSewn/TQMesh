@@ -261,7 +261,7 @@ public:
   }
 
   /*------------------------------------------------------------------
-  | Getter
+  | Getters
   ------------------------------------------------------------------*/
   const Domain& domain() const 
   { ASSERT(domain_,"Invalid mesh domain"); return *domain_; }
@@ -293,6 +293,10 @@ public:
   bool completed() const { return mesh_completed_; }
   bool initialized() const { return mesh_initialized_; }
 
+  /*------------------------------------------------------------------
+  | Setters
+  ------------------------------------------------------------------*/
+  void element_color(int c) { elem_color_ = c; }
 
   /*------------------------------------------------------------------
   | Export the mesh to a file
@@ -973,7 +977,7 @@ public:
       LOG(ERROR) <<
       "Unable to merge mesh " << mesh_id_ << 
       " and mesh " << neighbor.id() <<
-      ", since mesh << " << mesh_id_ << " is not yet completed.";
+      ", since mesh " << mesh_id_ << " is not yet completed.";
     }
 
     if ( !neighbor.completed() || !neighbor.initialized() )
@@ -981,7 +985,7 @@ public:
       LOG(ERROR) <<
       "Unable to merge mesh " << mesh_id_ << 
       " and mesh " << neighbor.id() <<
-      ", since mesh << " << neighbor.id() << " is not yet completed.";
+      ", since mesh " << neighbor.id() << " is not yet completed.";
     }
 
     LOG(INFO) <<
