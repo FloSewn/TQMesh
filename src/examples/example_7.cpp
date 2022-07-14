@@ -162,9 +162,7 @@ const std::vector<Vec2d> AIRFOIL_1 {
 
 
 /*********************************************************************
-* This example covers the generation of a simple mixed 
-* triangle / quad mesh which features quad layers at specified 
-* boundaries.
+* This example covers the mesh generation for an airfoil  
 *********************************************************************/
 void run_example_7()
 {
@@ -204,7 +202,7 @@ void run_example_7()
   for ( size_t i = 0; i < AIRFOIL_1.size(); i += 4)
   {
     const Vec2d& p = AIRFOIL_1[i];
-    Vertex& v = domain.add_vertex( p.x, p.y, 1.0, 1.0 );
+    Vertex& v = domain.add_vertex( p.x, p.y, 1.05, 0.2 );
     v_af1.push_back( &v );
   }
 
@@ -220,13 +218,17 @@ void run_example_7()
   /*------------------------------------------------------------------
   | Initialize the mesh
   ------------------------------------------------------------------*/
+  CONSTANTS.quad_layer_factor( 4.0 );
+  CONSTANTS.quad_layer_range( 1.0 );
+  CONSTANTS.quad_layer_angle( M_PI );
+
   Mesh mesh { domain };
   mesh.init_advancing_front();
 
   /*------------------------------------------------------------------
   |
   ------------------------------------------------------------------*/
-  mesh.create_quad_layers(*v_af1[0], *v_af1[0], 6, 0.0007, 1.3);
+  mesh.create_quad_layers(*v_af1[0], *v_af1[0], 6, 0.0007, 1.2);
 
   /*------------------------------------------------------------------
   |
@@ -237,7 +239,7 @@ void run_example_7()
   | Smooth the mesh for four iterations
   ------------------------------------------------------------------*/
   Smoother smoother {};
-  smoother.smooth(domain, mesh, 2);
+  smoother.smooth(domain, mesh, 6);
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in VTU format.
@@ -246,6 +248,6 @@ void run_example_7()
   std::string file_name 
   { source_dir + "/aux/example_data/Example_7" };
 
-  mesh.write_to_file( file_name, ExportType::vtu );
+  mesh.write_to_file( file_name, ExportType::txt );
 
 } // run_example_7()

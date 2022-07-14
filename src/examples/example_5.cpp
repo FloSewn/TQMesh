@@ -26,182 +26,162 @@ using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
+* This example shows how to generate and merge several meshes with
+* different colors and size function.
 * 
+*   x-----------------------x
+*   |  Outer                |
+*   |  mesh                 |
+*   |       x-------x       |
+*   |       | Inner |       |
+*   |       | mesh  |       |
+*   |       |       |       |
+*   |       x-------x       |
+*   |                       |
+*   |                       |
+*   x-----------------------x
+*
 *********************************************************************/
 void run_example_5()
 {
   /*------------------------------------------------------------------
-  | Define the size function
+  | Define the size function of the outer mesh
   ------------------------------------------------------------------*/
-  UserSizeFunction f = [](const Vec2d& p) 
+  UserSizeFunction f_outer = [](const Vec2d& p) 
   { 
-    const double x0 = 6.0; 
-    const double y0 = 3.0; 
-    const double Rx = 15.0;
-    const double Ry = 8.0;
-    const double R  = 9.5;
-    const double h  = 0.20;
-    const double alpha = 0.4 * M_PI;
-
-    double rho = 0.55;
-    const double rho_min = 0.125;
-
-    for (int i=0; i<5; i++)
-    {
-      const double idbl = (double)i;
-      const double xi = x0 + Rx * cos(0.5*M_PI+idbl*alpha);
-      const double yi = y0 + Ry * sin(0.5*M_PI+idbl*alpha);
-      const double dx = p.x - xi;
-      const double dy = p.y - yi;
-      const double ri = sqrt(dx*dx +dy*dy);
-      const double rho_i = h * fabs(ri - R) + rho_min;
-
-      rho = MIN(rho, rho_i);
-    }
-
-    return rho;
+    return 0.5;
   };
 
-  Domain domain   { f };
+  Domain outer_domain   { f_outer };
 
   /*------------------------------------------------------------------
-  | 
+  | Exterior boundary of the outer mesh
   ------------------------------------------------------------------*/
-  Boundary&  b_ext = domain.add_exterior_boundary();
-  Boundary&  b_T   = domain.add_interior_boundary();
-  Boundary&  b_Q   = domain.add_interior_boundary();
-  Boundary&  b_M   = domain.add_interior_boundary();
+  Boundary&  b_outer_ext = outer_domain.add_exterior_boundary();
+
+  Vertex& v0_out = outer_domain.add_vertex(  0.0,  0.0, 1.0, 1.0 );
+  Vertex& v1_out = outer_domain.add_vertex(  5.0,  0.0, 1.0, 1.0 );
+  Vertex& v2_out = outer_domain.add_vertex(  5.0,  5.0, 1.0, 1.0 );
+  Vertex& v3_out = outer_domain.add_vertex(  0.0,  5.0, 1.0, 1.0 );
+
+  b_outer_ext.add_edge( v0_out, v1_out, 1 );
+  b_outer_ext.add_edge( v1_out, v2_out, 1 );
+  b_outer_ext.add_edge( v2_out, v3_out, 1 );
+  b_outer_ext.add_edge( v3_out, v0_out, 1 );
 
   /*------------------------------------------------------------------
-  | Vertices for exterior boundary 
+  | Interior boundary of the outer mesh
   ------------------------------------------------------------------*/
-  Vertex& b0  = domain.add_vertex( -22.0, -10.00,  0.5,  2.0 );
-  Vertex& b1  = domain.add_vertex(  22.0, -10.00,  0.5,  2.0 );
-  Vertex& b2  = domain.add_vertex(  22.0,  10.00,  0.5,  2.0 );
-  Vertex& b3  = domain.add_vertex( -22.0,  10.00,  0.5,  2.0 );
+  Boundary&  b_outer_int = outer_domain.add_interior_boundary();
 
-  b_ext.add_edge( b0, b1, 1 );
-  b_ext.add_edge( b1, b2, 1 );
-  b_ext.add_edge( b2, b3, 1 );
-  b_ext.add_edge( b3, b0, 1 );
+  Vertex& v4_out = outer_domain.add_vertex(  1.5,  1.5, 1.0, 1.0 );
+  Vertex& v5_out = outer_domain.add_vertex(  3.5,  1.5, 1.0, 1.0 );
+  Vertex& v6_out = outer_domain.add_vertex(  3.5,  3.5, 1.0, 1.0 );
+  Vertex& v7_out = outer_domain.add_vertex(  1.5,  3.5, 1.0, 1.0 );
+
+  b_outer_int.add_edge( v4_out, v7_out, 2 );
+  b_outer_int.add_edge( v7_out, v6_out, 2 );
+  b_outer_int.add_edge( v6_out, v5_out, 2 );
+  b_outer_int.add_edge( v5_out, v4_out, 2 );
 
   /*------------------------------------------------------------------
-  | Vertices for letter "T"
+  | Initialize the outer mesh
   ------------------------------------------------------------------*/
-  Vertex& T0  = domain.add_vertex( -14.0,  -6.00,  1.0,  1.0 );
-  Vertex& T1  = domain.add_vertex( -14.0,   3.00,  0.7,  2.0 );
-  Vertex& T2  = domain.add_vertex( -18.0,   3.00,  1.0,  1.0 );
-  Vertex& T3  = domain.add_vertex( -18.0,   6.00,  1.0,  1.0 );
-  Vertex& T4  = domain.add_vertex(  -7.0,   6.00,  0.7,  2.0 );
-  Vertex& T5  = domain.add_vertex(  -7.0,   3.00,  0.7,  2.0 );
-  Vertex& T6  = domain.add_vertex( -11.0,   3.00,  1.0,  1.0 );
-  Vertex& T7  = domain.add_vertex( -11.0,  -6.00,  1.0,  1.0 );
-
-  b_T.add_edge( T0, T1, 2 );
-  b_T.add_edge( T1, T2, 2 );
-  b_T.add_edge( T2, T3, 2 );
-  b_T.add_edge( T3, T4, 2 );
-  b_T.add_edge( T4, T5, 2 );
-  b_T.add_edge( T5, T6, 2 );
-  b_T.add_edge( T6, T7, 2 );
-  b_T.add_edge( T7, T0, 2 );
+  int outer_mesh_id = 1;
+  int outer_mesh_color = 1;
+  Mesh outer_mesh { outer_domain, outer_mesh_id, outer_mesh_color };
+  outer_mesh.init_advancing_front();
 
   /*------------------------------------------------------------------
-  | Vertices for letter "Q"
+  | Create two quad layers for the outer mesh
   ------------------------------------------------------------------*/
-  Vertex& Q0  = domain.add_vertex(  -3.0,  -6.00,  1.0,  1.0 );
-  Vertex& Q1  = domain.add_vertex(  -5.0,  -5.00,  1.0,  1.0 );
-  Vertex& Q2  = domain.add_vertex(  -5.0,   4.00,  1.0,  1.0 );
-  Vertex& Q3  = domain.add_vertex(  -3.0,   6.00,  1.0,  1.0 );
-  Vertex& Q4  = domain.add_vertex(   3.0,   6.00,  1.0,  1.0 );
-  Vertex& Q5  = domain.add_vertex(   5.0,   4.00,  1.0,  1.0 );
-  Vertex& Q6  = domain.add_vertex(   5.0,  -4.00,  1.0,  1.0 );
-  Vertex& Q7  = domain.add_vertex(   2.0,   0.00,  1.0,  1.0 );
-  Vertex& Q8  = domain.add_vertex(   2.0,   3.00,  1.0,  1.0 );
-  Vertex& Q9  = domain.add_vertex(  -2.0,   3.00,  1.0,  1.0 );
-  Vertex& Q10 = domain.add_vertex(  -2.0,  -3.00,  1.0,  1.0 );
-  Vertex& Q11 = domain.add_vertex(   2.0,  -3.00,  0.7,  2.0 );
-  Vertex& Q12 = domain.add_vertex(   4.0,  -6.00,  1.0,  1.0 );
-
-  b_Q.add_edge( Q0,  Q1, 3 );
-  b_Q.add_edge( Q1,  Q2, 3 );
-  b_Q.add_edge( Q2,  Q3, 3 );
-  b_Q.add_edge( Q3,  Q4, 3 );
-  b_Q.add_edge( Q4,  Q5, 3 );
-  b_Q.add_edge( Q5,  Q6, 3 );
-  b_Q.add_edge( Q6,  Q7, 3 );
-  b_Q.add_edge( Q7,  Q8, 3 );
-  b_Q.add_edge( Q8,  Q9, 3 );
-  b_Q.add_edge( Q9,  Q10, 3 );
-  b_Q.add_edge( Q10, Q11, 3 );
-  b_Q.add_edge( Q11, Q12, 3 );
-  b_Q.add_edge( Q12, Q0, 3 );
+  outer_mesh.create_quad_layers(v0_out, v0_out, 2, 0.05, 1.5);
 
   /*------------------------------------------------------------------
-  | Vertices for letter "M"
+  | Generate the remaining elements of the outer mesh
   ------------------------------------------------------------------*/
-  Vertex& M0  = domain.add_vertex(   7.0,  -6.00,  1.0,  1.0 );
-  Vertex& M1  = domain.add_vertex(   7.0,   6.00,  1.0,  1.0 );
-  Vertex& M2  = domain.add_vertex(  10.0,   6.00,  1.0,  1.0 );
-  Vertex& M3  = domain.add_vertex(  12.0,   3.00,  1.0,  1.0 );
-  Vertex& M4  = domain.add_vertex(  14.0,   3.00,  1.0,  1.0 );
-  Vertex& M5  = domain.add_vertex(  16.0,   6.00,  1.0,  1.0 );
-  Vertex& M6  = domain.add_vertex(  19.0,   6.00,  1.0,  1.0 );
-  Vertex& M7  = domain.add_vertex(  19.0,  -6.00,  1.0,  1.0 );
-  Vertex& M8  = domain.add_vertex(  16.0,  -6.00,  1.0,  1.0 );
-  Vertex& M9  = domain.add_vertex(  16.0,   1.00,  0.7,  2.0 );
-  Vertex& M10 = domain.add_vertex(  14.0,  -1.00,  1.0,  1.0 );
-  Vertex& M11 = domain.add_vertex(  12.0,  -1.00,  1.0,  1.0 );
-  Vertex& M12 = domain.add_vertex(  10.0,   1.00,  0.7,  2.0 );
-  Vertex& M13 = domain.add_vertex(  10.0,  -6.00,  1.0,  1.0 );
-
-  b_M.add_edge( M0,   M1, 4 );
-  b_M.add_edge( M1,   M2, 4 );
-  b_M.add_edge( M2,   M3, 4 );
-  b_M.add_edge( M3,   M4, 4 );
-  b_M.add_edge( M4,   M5, 4 );
-  b_M.add_edge( M5,   M6, 4 );
-  b_M.add_edge( M6,   M7, 4 );
-  b_M.add_edge( M7,   M8, 4 );
-  b_M.add_edge( M8,   M9, 4 );
-  b_M.add_edge( M9,   M10, 4 );
-  b_M.add_edge( M10,  M11, 4 );
-  b_M.add_edge( M11,  M12, 4 );
-  b_M.add_edge( M12,  M13, 4 );
-  b_M.add_edge( M13,  M0, 4 );
+  outer_mesh.triangulate();
 
   /*------------------------------------------------------------------
-  | Initialize the mesh
-  ------------------------------------------------------------------*/
-  Mesh mesh { domain };
-  mesh.init_advancing_front();
-
-  /*------------------------------------------------------------------
-  | 
-  ------------------------------------------------------------------*/
-  mesh.create_quad_layers(b0, b0, 2, 0.5, 1.0);
-  mesh.create_quad_layers(Q0, Q0, 2, 0.3, 1.0);
-  mesh.create_quad_layers(M0, M0, 3, 0.1, 1.5);
-  mesh.create_quad_layers(T0, T0, 2, 0.3, 1.0);
-
-  /*------------------------------------------------------------------
-  | Now generate the mesh elements
-  ------------------------------------------------------------------*/
-  mesh.triangulate();
-
-  /*------------------------------------------------------------------
-  | Smooth the mesh for four iterations
+  | Smooth the elements of the outer mesh
   ------------------------------------------------------------------*/
   Smoother smoother {};
-  smoother.smooth(domain, mesh, 4);
+  smoother.smooth(outer_domain, outer_mesh, 4);
+
+
+
+  /*------------------------------------------------------------------
+  | Define the size function of the inner mesh
+  ------------------------------------------------------------------*/
+  UserSizeFunction f_inner = [](const Vec2d& p) 
+  { 
+    return 0.02 + 0.5 * ( pow(p.x-2.5, 2) + pow(p.y-2.5, 2) );
+  };
+
+  Domain inner_domain   { f_inner };
+
+
+  /*------------------------------------------------------------------
+  | Exterior boundary of the inner mesh
+  | This boundary overlaps with the interior boundary of the outer 
+  | mesh. It is thus important, that it features the same number of 
+  | edges and vertex coordinates - but it must be defined in 
+  | the opposite direction.
+  ------------------------------------------------------------------*/
+  Boundary&  b_inner = inner_domain.add_exterior_boundary();
+
+  Vertex& v4_in = inner_domain.add_vertex(  1.5,  1.5, 1.0, 1.0 );
+  Vertex& v5_in = inner_domain.add_vertex(  3.5,  1.5, 1.0, 1.0 );
+  Vertex& v6_in = inner_domain.add_vertex(  3.5,  3.5, 1.0, 1.0 );
+  Vertex& v7_in = inner_domain.add_vertex(  1.5,  3.5, 1.0, 1.0 );
+
+  b_inner.add_edge( v4_in, v5_in, 3 );
+  b_inner.add_edge( v5_in, v6_in, 3 );
+  b_inner.add_edge( v6_in, v7_in, 3 );
+  b_inner.add_edge( v7_in, v4_in, 3 );
+
+
+  /*------------------------------------------------------------------
+  | Initialize the inner mesh
+  ------------------------------------------------------------------*/
+  int inner_mesh_id = 2;
+  int inner_mesh_color = 2;
+  Mesh inner_mesh { inner_domain, inner_mesh_id, inner_mesh_color };
+
+  /*------------------------------------------------------------------
+  | Before the initialization of the advancing front, we pass 
+  | the outer mesh as a "neighbor" to the inner mesh  
+  | In this way, the inner mesh's exterior boundary edges will be 
+  | conforming to the outer mesh's interior boundary edges
+  ------------------------------------------------------------------*/
+  inner_mesh.add_neighbor_mesh( outer_mesh );
+
+  inner_mesh.init_advancing_front();
+
+  /*------------------------------------------------------------------
+  | Generate the inner mesh
+  ------------------------------------------------------------------*/
+  inner_mesh.triangulate();
+
+  /*------------------------------------------------------------------
+  | Finally, merge both meshes. In this way, the outer mesh's 
+  | elements will be added to the inner mesh, whereas the outer 
+  | mesh won't change.
+  ------------------------------------------------------------------*/
+  inner_mesh.merge_neighbor_mesh( outer_mesh );
+
+  /*------------------------------------------------------------------
+  | Smooth the final mesh for four iterations
+  ------------------------------------------------------------------*/
+  smoother.smooth(inner_domain, inner_mesh, 4);
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in VTU format.
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-  { source_dir + "/aux/example_data/Example_5" };
+  { source_dir + "/aux/example_data/example_5" };
 
-  mesh.write_to_file( file_name, ExportType::txt );
+  inner_mesh.write_to_file( file_name, ExportType::txt );
 
 } // run_example_5()
