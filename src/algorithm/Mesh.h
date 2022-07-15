@@ -184,9 +184,24 @@ public:
   ------------------------------------------------------------------*/
   bool init_advancing_front()
   {
-    // Check if domain boundaries are traversable
+    // Check if boundaries are defined 
+    if ( domain_->size() < 1 )
+    {
+      LOG(ERROR) << 
+      "Can not initialize the mesh's advancing front, "
+      "since no domain boundaries are defined.";
+      return false;
+    }
+
+    // Check if domain boundaries are traversable and 
+    // if an exterior boundary exists
+    bool extr_bdry_found = false;
+
     for ( const auto& boundary : *domain_ )
     {
+      if ( boundary->is_exterior() )
+        extr_bdry_found = true;
+
       Edge& e_start = boundary->edges()[0];
       if ( !boundary->is_traversable(e_start, e_start) )
       {
@@ -195,6 +210,14 @@ public:
         "Mesh boundaries are not traversable.";
         return false;
       }
+    }
+
+    if ( !extr_bdry_found )
+    {
+      LOG(ERROR) << 
+      "Can not initialize advancing front. "
+      "No exterior mesh boundary found.";
+      return false;
     }
 
     // Count the number of overlaps with other meshes

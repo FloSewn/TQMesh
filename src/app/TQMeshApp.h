@@ -182,11 +182,8 @@ private:
     if ( !mesh_reader.query<std::string>("size_function") )
       error("Invalid size function definition for mesh " + mesh_id_);
 
-    if ( !mesh_reader.query<int>("extr_bdry") )
-      error("Invalid exterior boundary definition for mesh " + mesh_id_);
-
     if ( !mesh_reader.query<double>("vertices") )
-      error("Invalid definition for vertices of mesh " + mesh_id_);
+      error("Invalid definition of vertices for mesh " + mesh_id_);
 
   } // MeshGenerator::query_mandatory_parameters()
 
@@ -270,31 +267,126 @@ private:
 
     Domain&   domain   = *( domain_.get() );
     Vertices& vertices = domain.vertices();
-    Boundary& b_ext    = domain.add_exterior_boundary();
 
+    // External boundary definition via direct edge placement
+    mesh_reader.query<int>("extr_bdry");
     auto para_extr_bdry = mesh_reader.get_parameter<int>("extr_bdry");
 
-    size_t n_vertices = vertices.size();
-
-    for ( size_t i = 0; i < para_extr_bdry.rows(); ++i )
+    if ( para_extr_bdry.found() )
     {
-      size_t i1 = para_extr_bdry.get_value(0, i);
-      size_t i2 = para_extr_bdry.get_value(1, i);
-      int    m  = para_extr_bdry.get_value(2, i);
+      Boundary& b_ext    = domain.add_exterior_boundary();
 
-      // Throw error if indices are larger than number of vertices
-      if ( i1 > n_vertices || i2 > n_vertices )
-        error("Invalid exterior boundary definition: " 
-              "Some vertex index is larger that the number of "
-              "provided input vertices.");
+      size_t n_vertices = vertices.size();
 
-      Vertex& v1 = vertices[i1];
-      Vertex& v2 = vertices[i2];
+      for ( size_t i = 0; i < para_extr_bdry.rows(); ++i )
+      {
+        size_t i1 = para_extr_bdry.get_value(0, i);
+        size_t i2 = para_extr_bdry.get_value(1, i);
+        int    m  = para_extr_bdry.get_value(2, i);
 
-      b_ext.add_edge( v1, v2, m );
+        // Throw error if indices are larger than number of vertices
+        if ( i1 > n_vertices || i2 > n_vertices )
+          error("Invalid exterior boundary definition: " 
+                "Some vertex index is larger that the number of "
+                "provided input vertices.");
+
+        Vertex& v1 = vertices[i1];
+        Vertex& v2 = vertices[i2];
+
+        b_ext.add_edge( v1, v2, m );
+      }
+
+      print_parameter<int>(mesh_reader, "extr_bdry");
+
+      return;
     }
 
-    print_parameter<int>(mesh_reader, "extr_bdry");
+    // External boundary via rectangular boundary shape
+    mesh_reader.query<double>("extr_bdry_rect");
+    auto para_extr_bdry_rect
+      = mesh_reader.get_parameter<double>("extr_bdry_rect");
+
+    if ( para_extr_bdry_rect.found() )
+    {
+      Boundary& b_ext    = domain.add_exterior_boundary();
+      
+      print_parameter<double>(mesh_reader, "extr_bdry_rect");
+
+      int    m = static_cast<int>( para_extr_bdry_rect.get_value(0) );
+      double x = para_extr_bdry_rect.get_value(1);
+      double y = para_extr_bdry_rect.get_value(2);
+      double w = para_extr_bdry_rect.get_value(3);
+      double h = para_extr_bdry_rect.get_value(4);
+
+      b_ext.set_shape_rectangle( vertices, m, {x,y}, w, h );
+
+      return;
+    }
+
+    // External boundary via circular boundary shape
+    mesh_reader.query<double>("extr_bdry_circ");
+    auto para_extr_bdry_circ
+      = mesh_reader.get_parameter<double>("extr_bdry_circ");
+
+    if ( para_extr_bdry_circ.found() )
+    {
+      Boundary& b_ext    = domain.add_exterior_boundary();
+      
+      print_parameter<double>(mesh_reader, "extr_bdry_circ");
+
+      int    m = static_cast<int>( para_extr_bdry_circ.get_value(0) );
+      double x = para_extr_bdry_circ.get_value(1);
+      double y = para_extr_bdry_circ.get_value(2);
+      double r = para_extr_bdry_circ.get_value(3);
+      double n = static_cast<int>( para_extr_bdry_circ.get_value(4) );
+
+      b_ext.set_shape_circle( vertices, m, {x,y}, r, n );
+
+      return;
+    }
+
+    // External boundary via squared boundary shape
+    mesh_reader.query<double>("extr_bdry_square");
+    auto para_extr_bdry_square
+      = mesh_reader.get_parameter<double>("extr_bdry_square");
+
+    if ( para_extr_bdry_square.found() )
+    {
+      Boundary& b_ext    = domain.add_exterior_boundary();
+      
+      print_parameter<double>(mesh_reader, "extr_bdry_square");
+
+      int    m = static_cast<int>( para_extr_bdry_square.get_value(0) );
+      double x = para_extr_bdry_square.get_value(1);
+      double y = para_extr_bdry_square.get_value(2);
+      double h = para_extr_bdry_square.get_value(3);
+
+      b_ext.set_shape_square( vertices, m, {x,y}, h );
+
+      return;
+    }
+
+    // External boundary via triangular boundary shape
+    mesh_reader.query<double>("extr_bdry_triangle");
+    auto para_extr_bdry_triangle
+      = mesh_reader.get_parameter<double>("extr_bdry_triangle");
+
+    if ( para_extr_bdry_triangle.found() )
+    {
+      Boundary& b_ext    = domain.add_exterior_boundary();
+      
+      print_parameter<double>(mesh_reader, "extr_bdry_triangle");
+
+      int    m = static_cast<int>( para_extr_bdry_triangle.get_value(0) );
+      double x = para_extr_bdry_triangle.get_value(1);
+      double y = para_extr_bdry_triangle.get_value(2);
+      double h = para_extr_bdry_triangle.get_value(3);
+
+      b_ext.set_shape_triangle( vertices, m, {x,y}, h );
+
+      return;
+    }
+
 
   } // MeshGenerator::init_exterior_boundary()
 
@@ -370,9 +462,43 @@ private:
       double x = para_intr_bdry_circ.get_value(1);
       double y = para_intr_bdry_circ.get_value(2);
       double r = para_intr_bdry_circ.get_value(3);
-      double n = static_cast<int>( para_intr_bdry_circ.get_value(4) );
+      int    n = static_cast<int>( para_intr_bdry_circ.get_value(4) );
 
       b_int.set_shape_circle( vertices, m, {x,y}, r, n );
+    }
+
+    // Query and initialize interior boundary squares
+    while( mesh_reader.query<double>("intr_bdry_square") )
+    {
+      Boundary& b_int = domain.add_interior_boundary();
+
+      auto para_intr_bdry_square 
+        = mesh_reader.get_parameter<double>("intr_bdry_square");
+      print_parameter<double>(mesh_reader, "intr_bdry_square");
+
+      int    m = static_cast<int>( para_intr_bdry_square.get_value(0) );
+      double x = para_intr_bdry_square.get_value(1);
+      double y = para_intr_bdry_square.get_value(2);
+      double h = para_intr_bdry_square.get_value(3);
+
+      b_int.set_shape_square( vertices, m, {x,y}, h );
+    }
+
+    // Query and initialize interior boundary triangle
+    while( mesh_reader.query<double>("intr_bdry_triangle") )
+    {
+      Boundary& b_int = domain.add_interior_boundary();
+
+      auto para_intr_bdry_triangle 
+        = mesh_reader.get_parameter<double>("intr_bdry_triangle");
+      print_parameter<double>(mesh_reader, "intr_bdry_triangle");
+
+      int    m = static_cast<int>( para_intr_bdry_triangle.get_value(0) );
+      double x = para_intr_bdry_triangle.get_value(1);
+      double y = para_intr_bdry_triangle.get_value(2);
+      double h = para_intr_bdry_triangle.get_value(3);
+
+      b_int.set_shape_triangle( vertices, m, {x,y}, h );
     }
 
   } // MeshGenerator::init_interior_boundaries() 
@@ -724,6 +850,18 @@ private:
     mesh_reader.new_matrix_parameter<int>(
         "extr_bdry", "Define exterior boundary:", "End exterior boundary", 3);
 
+    mesh_reader.new_vector_parameter<double>(
+        "extr_bdry_rect", "Define exterior rectangular boundary:", 5);
+    
+    mesh_reader.new_vector_parameter<double>(
+        "extr_bdry_circ", "Define exterior circular boundary:", 5);
+
+    mesh_reader.new_vector_parameter<double>(
+        "extr_bdry_square", "Define exterior squared boundary:", 4);
+
+    mesh_reader.new_vector_parameter<double>(
+        "extr_bdry_triangle", "Define exterior triangular boundary:", 4);
+
     mesh_reader.new_matrix_parameter<int>(
         "intr_bdry", "Define interior boundary:", "End interior boundary", 3);
 
@@ -732,6 +870,12 @@ private:
     
     mesh_reader.new_vector_parameter<double>(
         "intr_bdry_circ", "Define interior circular boundary:", 5);
+
+    mesh_reader.new_vector_parameter<double>(
+        "intr_bdry_square", "Define interior squared boundary:", 4);
+
+    mesh_reader.new_vector_parameter<double>(
+        "intr_bdry_triangle", "Define interior triangular boundary:", 4);
 
   } // TQMeshApp::init_para_reader()
 
