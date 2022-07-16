@@ -79,9 +79,7 @@ public:
   | Read a new mesh from the input file and create it
   ------------------------------------------------------------------*/
   bool create_new_mesh(Mesh* base_mesh,
-                       ParaReader& mesh_reader,
-                       const std::string& prefix,
-                       const std::string& format)
+                       ParaReader& mesh_reader)
   {
     try
     {
@@ -97,7 +95,7 @@ public:
       init_meshing_algorithm( mesh_reader );
       init_quad_refinements( mesh_reader );
 
-      generate_mesh(base_mesh, prefix, format);
+      generate_mesh( base_mesh );
     }
     catch(const Invalid& inv)
     {
@@ -179,11 +177,18 @@ private:
   ------------------------------------------------------------------*/
   void query_mandatory_parameters(ParaReader& mesh_reader)
   {
+    if ( !mesh_reader.query<std::string>("output_prefix") )
+      error("No output file prefix defined for mesh " + mesh_id_ );
+
+    if ( !mesh_reader.query<std::string>("output_format") )
+      error("No output format defined for mesh " + mesh_id_ ); 
+
+    output_prefix_ = mesh_reader.get_value<std::string>("output_prefix");
+    output_format_ = mesh_reader.get_value<std::string>("output_format");
+
+
     if ( !mesh_reader.query<std::string>("size_function") )
       error("Invalid size function definition for mesh " + mesh_id_);
-
-    if ( !mesh_reader.query<double>("vertices") )
-      error("Invalid definition of vertices for mesh " + mesh_id_);
 
   } // MeshGenerator::query_mandatory_parameters()
 
@@ -192,34 +197,47 @@ private:
   ------------------------------------------------------------------*/
   void init_mesh_vertices(ParaReader& mesh_reader)
   {
-    auto para_vertices = mesh_reader.get_parameter<double>("vertices");
-
-    Vec2d xy_min {  DBL_MAX,  DBL_MAX };
-    Vec2d xy_max { -DBL_MAX, -DBL_MAX };
-
-    for ( size_t i = 0; i < para_vertices.rows(); ++i )
+    // Vertices are given in the input file
+    // -> Put vertex coordinates and properties into arrays 
+    //    and set domain extents
+    if ( mesh_reader.query<double>("vertices") )
     {
-      double x = para_vertices.get_value(0, i);
-      double y = para_vertices.get_value(1, i);
-      double s = para_vertices.get_value(2, i);
-      double r = para_vertices.get_value(3, i);
+      auto para_vertices 
+        = mesh_reader.get_parameter<double>("vertices");
 
-      vertex_pos_.push_back( {x,y} );
-      vertex_props_.push_back( {s, r} );
+      Vec2d xy_min {  DBL_MAX,  DBL_MAX };
+      Vec2d xy_max { -DBL_MAX, -DBL_MAX };
 
-      // Estimate domain extents
-      xy_min.x = MIN(xy_min.x, x);
-      xy_min.y = MIN(xy_min.y, y);
+      for ( size_t i = 0; i < para_vertices.rows(); ++i )
+      {
+        double x = para_vertices.get_value(0, i);
+        double y = para_vertices.get_value(1, i);
+        double s = para_vertices.get_value(2, i);
+        double r = para_vertices.get_value(3, i);
 
-      xy_max.x = MAX(xy_max.x, x);
-      xy_max.y = MAX(xy_max.y, y);
+        vertex_pos_.push_back( {x,y} );
+        vertex_props_.push_back( {s, r} );
+
+        // Estimate domain extents
+        xy_min.x = MIN(xy_min.x, x);
+        xy_min.y = MIN(xy_min.y, y);
+
+        xy_max.x = MAX(xy_max.x, x);
+        xy_max.y = MAX(xy_max.y, y);
+      }
+
+      const double dx = xy_max.x - xy_min.x;
+      const double dy = xy_max.y - xy_min.y;
+      domain_extent_  = ABS(10.0 * MAX(dx, dy));
+
+      print_parameter<double>(mesh_reader, "vertices");
     }
-
-    const double dx = xy_max.x - xy_min.x;
-    const double dy = xy_max.y - xy_min.y;
-    domain_extent_  = ABS(10.0 * MAX(dx, dy));
-
-    print_parameter<double>(mesh_reader, "vertices");
+    // No input vertices given 
+    // -> Set domain extent to large value
+    else
+    {
+      domain_extent_  = TQ_MAX;
+    }
 
   } // MeshGenerator::init_mesh_vertices()
 
@@ -611,9 +629,7 @@ private:
   /*------------------------------------------------------------------
   | Generate the mesh
   ------------------------------------------------------------------*/
-  void generate_mesh(Mesh* base_mesh, 
-                     const std::string& prefix, 
-                     const std::string& format)
+  void generate_mesh(Mesh* base_mesh)
   {
     ASSERT( domain_.get(), "DOMAIN NOT PROPERLY INITIALIZED" );
 
@@ -674,21 +690,19 @@ private:
     smoother.smooth( domain, mesh, 4, 0.5, 0.75, 0.95 );
 
     // Export the mesh
-    std::string file_name = prefix + "_" + std::to_string(mesh_id_);
-
-    if ( format == "VTU" || format == "vtu" )
+    if ( output_format_ == "VTU" || output_format_ == "vtu" )
     {
-      LOG(INFO) << "Write mesh file to " << file_name << ".vtu";
-      mesh.write_to_file( file_name + ".vtu", ExportType::vtu );
+      LOG(INFO) << "Write mesh file to " << output_prefix_ << ".vtu";
+      mesh.write_to_file( output_prefix_ + ".vtu", ExportType::vtu );
     }
-    else if ( format == "TXT" || format == "txt" )
+    else if ( output_format_ == "TXT" || output_format_ == "txt" )
     {
-      LOG(INFO) << "Write mesh file to " << file_name << ".txt";
-      mesh.write_to_file( file_name + ".txt", ExportType::txt );
+      LOG(INFO) << "Write mesh file to " << output_prefix_ << ".txt";
+      mesh.write_to_file( output_prefix_ + ".txt", ExportType::txt );
     }
     else
     {
-      mesh.write_to_file( file_name, ExportType::cout );
+      mesh.write_to_file( output_prefix_, ExportType::cout );
     }
 
   } // MeshGenerator::generate_mesh()
@@ -698,6 +712,9 @@ private:
   | Attributes
   ------------------------------------------------------------------*/
   int                                       mesh_id_;
+
+  std::string                               output_prefix_;
+  std::string                               output_format_;
 
   std::vector<Vec2d>                        vertex_pos_;
   std::vector<Vec2d>                        vertex_props_;
@@ -772,9 +789,7 @@ public:
       MeshGenerator& new_mesh = meshes_.back();
 
       bool success = new_mesh.create_new_mesh( base_mesh,
-                                               mesh_reader, 
-                                               output_prefix_, 
-                                               output_format_ );
+                                               mesh_reader );
 
       if ( !success )
         return false;
@@ -797,14 +812,6 @@ private:
   ------------------------------------------------------------------*/
   void query_mandatory_parameters()
   {
-    if ( !reader_.query<std::string>("output_prefix") )
-      error("Invalid output file prefix" );
-
-    if ( !reader_.query<std::string>("output_format") )
-      error("Invalid mesh output format" );
-
-    output_prefix_ = reader_.get_value<std::string>("output_prefix");
-    output_format_ = reader_.get_value<std::string>("output_format");
 
   } // TQMeshApp::query_mandatory_parameters()
 
@@ -814,17 +821,18 @@ private:
   ------------------------------------------------------------------*/
   void init_para_reader()
   {
-    reader_.new_scalar_parameter<std::string>(
-        "output_prefix", "Prefix for mesh output file:");
-
-    reader_.new_scalar_parameter<std::string>(
-        "output_format", "Output format:");
 
     reader_.new_block_parameter(
         "mesh_reader", "Define mesh:", "End mesh");
 
     // Create sub-reader for mesh properties
     ParaReader& mesh_reader = reader_.get_block("mesh_reader");
+
+    mesh_reader.new_scalar_parameter<std::string>(
+        "output_prefix", "Output file prefix:");
+
+    mesh_reader.new_scalar_parameter<std::string>(
+        "output_format", "Output file format:");
 
     mesh_reader.new_matrix_parameter<double>(
         "vertices", "Define vertices:", "End vertices", 4);
@@ -884,9 +892,6 @@ private:
   | Attributes
   ------------------------------------------------------------------*/
   ParaReader                 reader_;
-
-  std::string                output_prefix_;
-  std::string                output_format_;
 
   std::vector<MeshGenerator> meshes_;
 

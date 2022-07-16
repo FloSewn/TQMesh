@@ -16,6 +16,8 @@
 #include <memory>
 #include <map>
 
+#include "Log.h"
+
 namespace CppUtils {
 
 /*--------------------------------------------------------------------
@@ -324,7 +326,7 @@ public:
   {
   public:
     Invalid(const string& msg){ error_message = msg; }
-    string& what() { return error_message; }
+    const string& what() const { return error_message; }
   private:
     string error_message;
   };
@@ -342,7 +344,15 @@ public:
   : ParameterBase( ParaType::block )
   { 
     // Read the file content
-    content_ = read_content( file_path );
+    try
+    {
+      content_ = read_content( file_path );
+    }
+    catch(const Invalid& inv)
+    {
+      LOG(ERROR) << inv.what();
+      exit(0);
+    }
 
     // Set bounds of top ParaBlock
     block_start( 0 );

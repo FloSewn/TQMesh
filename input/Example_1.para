@@ -1,10 +1,6 @@
 #===========================================================
 #                         TQMESH     
 #===========================================================
-Prefix for mesh output file: ./Example_1
-
-# Output formats: COUT, TXT, VTU
-Output format: VTU
  
 #-----------------------------------------------------------
 #                          Mesh #1 
@@ -14,6 +10,10 @@ Define mesh:
   Element color: 1
   Meshing algorithm: Triangulation
   Number of quad refinements: 0
+
+  # Output formats: COUT, TXT, VTU
+  Output file format: VTU
+  Output file prefix: ./Example_1
 
   #---------------------------------------------------------
   #                         VERTICES     

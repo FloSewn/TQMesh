@@ -6,14 +6,14 @@
 #                          Mesh #1 
 #-----------------------------------------------------------
 Define mesh:
-  Element size: 0.1 
+  Element size: 0.5-0.49*exp(-0.03*((1.-x)*(2.-x)+(9.-y)*(9.-y)))
   Element color: 1
-  Meshing algorithm: Paving
-  Number of quad refinements: 1
+  Meshing algorithm: Triangulation
+  Number of quad refinements: 0
 
   # Output formats: COUT, TXT, VTU
   Output file format: VTU
-  Output file prefix: ./Example_2
+  Output file prefix: ./Example_4
 
   #---------------------------------------------------------
   #                         VERTICES     
@@ -24,14 +24,14 @@ Define mesh:
   #   4) Range parameter
   #---------------------------------------------------------
   Define vertices:
-    0.0,   0.0,   1.0,  1.0     # 0
-    4.0,   0.0,   1.0,  1.0     # 1
-    4.0,   1.0,   1.0,  1.0     # 2
-    0.0,   1.0,   1.0,  1.0     # 3
-    0.35,  0.35,  0.8,  1.2     # 4
-    0.35,  0.65,  0.8,  1.2     # 5
-    0.65,  0.65,  0.8,  1.2     # 6
-    0.65,  0.35,  0.8,  1.2     # 7
+    0.0,   0.0,   1.0,   1.0     # 0
+    1.0,   0.0,   1.0,   1.0     # 1
+    1.0,   2.0,   0.5,   1.5     # 2
+    2.0,   2.0,   0.5,   1.5     # 3
+    2.0,   1.0,   0.5,   1.2     # 4
+    3.0,   1.0,   0.5,   1.2     # 5
+    3.0,   3.0,   1.0,   1.0     # 6
+    0.0,   3.0,   1.0,   1.0     # 7
   End vertices
 
   #---------------------------------------------------------
@@ -45,21 +45,18 @@ Define mesh:
   # > Exterior boundaries must be defined counter-clockwise
   # > Interior boundaries must be defined clockwise
   #---------------------------------------------------------
-  Define exterior boundary:
-   0,  1,  2 # WALL 
-   1,  2,  3 # OUTLET
-   2,  3,  2 # WALL
-   3,  0,  1 # INLET
+  Define exterior boundary: 
+   0,  1,  1
+   1,  2,  1
+   2,  3,  1
+   3,  4,  1
+   4,  5,  1
+   5,  6,  1
+   6,  7,  1
+   7,  0,  1
   End exterior boundary
 
-  Define interior boundary:
-   4,  5,  4  
-   5,  6,  4  
-   6,  7,  4  
-   7,  4,  4  
-  End interior boundary
-
-  #---------------------------------------------------------
+  #-----------------------------------------------------------
   #                       QUAD-LAYERS     
   # Arguments: 
   #   1) Starting vertex
@@ -73,10 +70,21 @@ Define mesh:
   # > A closed layer of quadrilateral elements will be
   #   generated if the same start and ending vertex is 
   #   provided
-  #---------------------------------------------------------
-  Add quad layers: 0, 1, 3, 0.01, 2.0
-  Add quad layers: 2, 3, 3, 0.01, 2.0
-  Add quad layers: 4, 4, 3, 0.01, 1.3
+  #-----------------------------------------------------------
+  Add quad layers: 0, 7, 3, 0.02, 1.5,
+
+  #-----------------------------------------------------------
+  #                      FIXED VERTICES     
+  # Arguments:
+  #   1) X-coordinate
+  #   2) Y-coordinate
+  #   3) Scale parameter
+  #   4) Range parameter
+  #-----------------------------------------------------------
+  Define fixed vertices:
+      0.50, 1.00, 0.1, 0.5
+      0.50, 2.00, 0.1, 0.5
+  End fixed vertices
 
 End mesh
 
