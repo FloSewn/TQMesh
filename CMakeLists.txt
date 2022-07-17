@@ -23,6 +23,7 @@ set( BIN ${CMAKE_SOURCE_DIR}/bin )
 configure_file(aux/TQMeshConfig.h.in ${CMAKE_BINARY_DIR}/TQMeshConfig.h)
 include_directories(${CMAKE_BINARY_DIR})
 
+add_subdirectory( src/extern_libs )
 add_subdirectory( src/utils )
 add_subdirectory( src/algorithm )
 add_subdirectory( src/tests )

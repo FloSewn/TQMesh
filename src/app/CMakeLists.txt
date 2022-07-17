@@ -1,13 +1,14 @@
-set( TESTS TQMesh )
+set( TQMESH_APP TQMesh )
 
-add_executable( ${TESTS}
+add_executable( ${TQMESH_APP}
   size_function.cpp
   main.cpp
 )
 
-target_link_libraries( ${TESTS}
+target_link_libraries( ${TQMESH_APP}
   util
   algorithm
+  extern_libs
 )
 
-install( TARGETS ${TESTS} RUNTIME DESTINATION ${BIN} )
+install( TARGETS ${TQMESH_APP} RUNTIME DESTINATION ${BIN} )

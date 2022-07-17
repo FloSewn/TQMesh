@@ -2982,7 +2982,7 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
       << std::setw(4) << marker << "\n";
   }
 
-  os << "INTERFACEDGES " << n_interface_edges << "\n";
+  os << "INTERFACEEDGES " << n_interface_edges << "\n";
   for ( const auto& e_ptr : mesh.boundary_edges() )
   {
     if (e_ptr->twin_edge() == nullptr)
