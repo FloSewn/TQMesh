@@ -140,6 +140,7 @@ void run_example_1()
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
   { source_dir + "/aux/example_data/Example_1" };
+  LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
 
   mesh.write_to_file( file_name, ExportType::txt );
 
