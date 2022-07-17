@@ -175,6 +175,7 @@ python scipts/plot_mesh.py Mesh.txt (-s -v -e -b -f)
 ```
 Optional flags: 
 * `-s`: Add a contour plot of the underlying size-function
+* `-c`: Plot elements with their respective color values
 * `-v`: Add the mesh vertices and their indices to the plot
 * `-e`: Add the mesh element indices to the plot
 * `-b`: Highlight the mesh boundaries 
