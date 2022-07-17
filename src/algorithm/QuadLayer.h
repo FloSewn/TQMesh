@@ -182,7 +182,7 @@ private:
     // create a wedge in between. In this case we use the default 
     // projection coordinates p1_xy and p2_xy that were already 
     // calculated in the constructor
-    if ( is_left(p, r, q) && alpha <= TQMeshQuadLayerAngle )
+    if ( is_left(p, r, q) && alpha <= CONSTANTS.quad_layer_angle() )
       return;
 
     // Otherwise, the projected vertex coordinate will be placed
@@ -342,7 +342,7 @@ private:
     // The current ending base vertex
     Vertex& v_end = *b2_.back();
 
-    ASSERT( (e_nxt) && (e_nxt->v2() == v_end),
+    ASSERT( (e_nxt) && (e_nxt->v1() == v_end),
     "During the generation of a QuadLayer, an invalid data\n"
     "structure of the advancing front has been provided.\n"
     "It seems that the given advancing front is not a connected\n"

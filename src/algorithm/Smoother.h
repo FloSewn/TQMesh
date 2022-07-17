@@ -50,7 +50,7 @@ public:
   void smooth(const Domain& domain, Mesh& mesh, int iterations,
               double a_fac=0.5, double eps=0.75, double decay=1.0)
   {
-    MSG("START MESH SMOOTHING");
+    LOG(INFO) << "Start with smoothing of mesh " << mesh.id();
 
     ProgressBar progress_bar {};
 
@@ -63,7 +63,7 @@ public:
     {
       double progress = std::ceil(100.0 * (i+1.0) / iterations);
       progress_bar.update( static_cast<int>(progress) );
-      progress_bar.show( std::clog );
+      progress_bar.show( LOG_PROPERTIES.get_ostream(INFO) );
 
       smooth_torsion(domain, mesh, v_conn, 2, a_fac, eps, decay);
       smooth_laplace(domain, mesh, v_conn, 4, eps, decay);
@@ -71,8 +71,8 @@ public:
       eps *= decay;
     }
 
-    MSG("");
-    MSG("DONE!");
+    LOG(INFO) << "";
+    LOG(INFO) << "Smoothing is completed.";
 
   } // Smoother::smooth()
 

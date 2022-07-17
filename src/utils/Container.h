@@ -15,13 +15,13 @@
 #include "QuadTree.h"
 #include "Vec2.h"
 #include "Helpers.h"
+#include "Log.h"
 
 namespace CppUtils {
 
 constexpr double ContainerQuadTreeScale = 10000.0;
 constexpr size_t ContainerQuadTreeItems = 100;
 constexpr size_t ContainerQuadTreeDepth = 25;
-static SimpleLogger ContainerLogger { std::clog, "[Container]: " };
 
 /*********************************************************************
 * This class is a container for two-dimensional objects that also 
@@ -50,10 +50,8 @@ public:
   ----------------------------------------------------------------------------*/
   Container(double        qtree_scale = ContainerQuadTreeScale,
             size_t        qtree_items = ContainerQuadTreeItems, 
-            size_t        qtree_depth = ContainerQuadTreeDepth,
-            SimpleLogger& logger      = ContainerLogger)
+            size_t        qtree_depth = ContainerQuadTreeDepth)
   : qtree_ { qtree_scale, qtree_items, qtree_depth }  
-  , logger_ { &logger }
   {}
 
 
@@ -64,7 +62,6 @@ public:
   : qtree_ { c.qtree().scale(),
              c.qtree().max_items(),
              c.qtree().max_depth() }  
-  , logger_ { c.logger_ }
   {
     // Copy the list items
     for (auto& obj : c)
@@ -82,10 +79,9 @@ public:
   | Move constructor
   ------------------------------------------------------------------*/
   Container(Container<T>&& c) 
-  : qtree_ { c.qtree().scale(),
-             c.qtree().max_items(),
-             c.qtree().max_depth() }  
-  , logger_ { c.logger_ }
+  : qtree_ { c.quad_tree().scale(),
+             c.quad_tree().max_items(),
+             c.quad_tree().max_depth() }  
   {
     items_ = std::move(c.items_);
     qtree_ = std::move(c.qtree_);
@@ -106,7 +102,7 @@ public:
   /*------------------------------------------------------------------
   | Get reference to the  container qtreee
   ------------------------------------------------------------------*/
-  const QuadTree<T,double>& qtree() const { return qtree_; }
+  const QuadTree<T,double>& quad_tree() const { return qtree_; }
 
   /*------------------------------------------------------------------
   | Get all items in a specified rectangle
@@ -147,9 +143,9 @@ public:
     // Failed to add element to qtree -> cleanup
     if (!in_qtree)
     {
-      *logger_ << "Failed to add element to the quad tree. "
-                "Maybe the element is outside of the defined domain."
-               << std::endl;
+      LOG(ERROR) << 
+        "Failed to add element to the quad tree. "
+        "Maybe the element is outside of the defined domain.";
     }
     
     return *ptr;
@@ -263,7 +259,6 @@ private:
   List               items_;
   QuadTree<T,double> qtree_;
   List               waste_;
-  SimpleLogger*      logger_;
 
 
 }; // Container

@@ -1,13 +1,20 @@
-#include <iostream>
-#include <vector>
-#include <list>
-#include <cassert>
-#include <iomanip>   
-#include <cmath>
-#include <cstdlib>
-#include <memory>       
+/*
+* This file is part of the TQMesh library.  
+* This code was written by Florian Setzwein in 2022, 
+* and is covered under the MIT License
+* Refer to the accompanying documentation for details
+* on usage and license.
+*/
 
-#include "run_tests.h"
+#include <iostream>
+#include <cassert>
+
+#include <TQMeshConfig.h>
+
+#include "tests.h"
+
+#include "Vec2.h"
+#include "Testing.h"
 
 #include "Vertex.h"
 #include "Edge.h"
@@ -15,17 +22,23 @@
 #include "Mesh.h"
 #include "Smoother.h"
 
-namespace SmootherTests
+namespace SmootherTests 
 {
-
 using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
 * Test Smoother::smooth() for a pure triangle mesh
 *********************************************************************/
-void Test_Smoother_TriMesh(bool export_mesh)
+void tri_mesh()
 {
+  // Log debug messages to specified output-file
+  std::string source_dir { TQMESH_SOURCE_DIR };
+  std::string file_name 
+  { source_dir + "/aux/test_data/SmootherTests.tri_mesh.log" };
+  LOG_PROPERTIES.set_info_ostream( TO_FILE, file_name );
+  LOG_PROPERTIES.set_debug_ostream( TO_FILE, file_name );
+
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
   { 
@@ -48,39 +61,33 @@ void Test_Smoother_TriMesh(bool export_mesh)
   b_ext.add_edge( v4, v1, 4 );
 
   // Create the mesh
-  Mesh mesh { domain, 50.0 };
+  Mesh mesh { domain, 0, 0, 50.0 };
   Smoother smoother {};
 
-  mesh.pave();
-  mesh.refine_to_quads();
-  mesh.refine_to_quads();
+  mesh.init_advancing_front();
+  mesh.triangulate();
   mesh.refine_to_quads();
   smoother.smooth(domain, mesh, 6, 0.5, 0.75, 0.95);
 
-  // Export the mesh
-  if (export_mesh)
-  {
-    // Make sure that all vertex / element indices are assigned
-    mesh.assign_mesh_indices();
+  // Export mesh
+  file_name = source_dir + "/aux/test_data/SmootherTests.tri_mesh.txt";
 
-    std::cout << mesh;
-    //domain.export_size_function({0.0,0.0}, {5.0,5.0}, 100, 100);
-  }
+  mesh.write_to_file( file_name, ExportType::txt );
 
-  DBG_MSG("Tests for Smoother::smooth() succeeded");
-
-} // Test_Smoother_TriMesh() */
+} // tri_mesh() 
 
 } // namespace SmootherTests
 
 
 /*********************************************************************
-* 
+* Run tests for: Smoother.h
 *********************************************************************/
-void run_smoother_tests()
+void run_tests_Smoother()
 {
-  MSG("\n#===== Smoother tests =====");
+  SmootherTests::tri_mesh();
 
-  //SmootherTests::Test_Smoother_TriMesh(false);
-}
+  // Reset debug logging ostream
+  CppUtils::LOG_PROPERTIES.set_info_ostream( CppUtils::TO_COUT );
+  CppUtils::LOG_PROPERTIES.set_debug_ostream( CppUtils::TO_COUT );
 
+} // run_tests_Smoother()

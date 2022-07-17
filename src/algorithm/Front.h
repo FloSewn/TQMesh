@@ -28,6 +28,39 @@ namespace TQAlgorithm {
 
 using namespace CppUtils;
 
+/*********************************************************************
+* The advancing front - defined by a list of edges
+* > Must be defined counter-clockwise
+*********************************************************************/
+struct FrontInitData
+{
+  using IntVector    = std::vector<int>;
+  using BoolVector   = std::vector<bool>;
+  using EdgeVector   = std::vector<Edge*>;
+
+  FrontInitData() = default;
+  ~FrontInitData() = default;
+
+  FrontInitData(FrontInitData&& f)
+  : edges { std::move(f.edges) }
+  , markers { std::move(f.markers) }
+  , is_oriented { std::move(f.is_oriented) }
+  {}
+  
+  FrontInitData& operator=(FrontInitData&& f)
+  {
+    edges = std::move(f.edges);
+    markers = std::move(f.markers);
+    is_oriented = std::move(f.is_oriented);
+    return *this;
+  }
+
+  std::vector<EdgeVector> edges;
+  std::vector<IntVector>  markers {};
+  std::vector<BoolVector> is_oriented {};
+
+}; // FrontInitData
+
 
 /*********************************************************************
 * The advancing front - defined by a list of edges
@@ -35,6 +68,14 @@ using namespace CppUtils;
 *********************************************************************/
 class Front : public EdgeList
 {
+  using BoolVector   = std::vector<bool>;
+  using IntVector    = std::vector<int>;
+  using VertexVector = std::vector<Vertex*>;
+  using EdgeVector   = std::vector<Edge*>;
+  using BdryEdgeConn = std::vector<std::vector<EdgeVector>>;
+  using NbrMeshConn  = std::vector<std::vector<EdgeVector>>;
+  using FrontData    = std::pair<EdgeVector,BoolVector>;
+
 public:
 
   /*------------------------------------------------------------------
@@ -44,95 +85,70 @@ public:
   {}
 
   /*------------------------------------------------------------------
-  | Init the front edges from a domain and refine them
-  | Since the advancing front is part if the mesh, this function
-  | requires the mesh's vertices to setup the edges
+  |
   ------------------------------------------------------------------*/
-  void init_front_edges(const Domain& domain, Vertices &mesh_vertices)
+  void init_front_edges(const Domain&         domain, 
+                        const FrontInitData&  front_data,
+                        Vertices&             mesh_vertices)
   {
-    // Check for correct number of vertices of domain and mesh
-    ASSERT( domain.vertices().size() == mesh_vertices.size(), 
-        "Domain and mesh vertex numbers differ." );
+    BoolVector edges_to_refine {};
 
-    // Initialize indices of original domain vertices
-    size_t v_index = 0; 
-    for ( const auto& v_ptr : domain.vertices() )
-      v_ptr->index( v_index++ );
-
-
-    // Initialize array with pointers to the mesh vertices
-    std::vector<Vertex*> v_ptrs {};
-
-    for ( const auto& v_ptr : mesh_vertices )
-      v_ptrs.push_back( v_ptr.get() );
-
-
-    // Create list edge-vertex-connectivity given in the domain
-    std::vector<std::vector<std::pair<size_t,size_t>>> connectivity {};
-
-    size_t i_bdry = 0;
-    for ( const auto& boundary : domain )
+    for ( size_t i_bdry = 0; i_bdry < domain.size(); ++i_bdry )
     {
-      connectivity.push_back( {} );
+      const EdgeVector& front_edges = front_data.edges[i_bdry];
+      const BoolVector& is_oriented = front_data.is_oriented[i_bdry];
+      const IntVector&  markers     = front_data.markers[i_bdry];
 
-      for ( const auto& e : boundary.get()->edges() )
+      VertexVector new_vertices {};
+
+      for ( size_t i = 0; i < front_edges.size(); ++i )
       {
-        connectivity[i_bdry].push_back( 
-            {e->v1().index(), e->v2().index()} 
-        );
+        Edge* e = front_edges[i];
+
+        Vertex& v1 = ( is_oriented[i] ) ? e->v1() : e->v2();
+
+        Vertex& v_new = mesh_vertices.push_back( v1.xy(), 
+                                                 v1.sizing(), 
+                                                 v1.range() );
+        v_new.on_front( true );
+        v_new.on_boundary( true );
+        v_new.is_fixed( true );
+
+        new_vertices.push_back( &v_new );
       }
 
-      // Counter for boundaries
-      ++i_bdry;
-    }
+      int n_verts = static_cast<int>( new_vertices.size() );
 
-
-    // Initialize the advancing front edges
-    i_bdry = 0;
-
-    for ( const auto& boundary : domain )
-    {
-      size_t i_edge = 0;
-
-      for ( const auto& e : boundary.get()->edges() )
+      for ( size_t i_edge = 0; i_edge < front_edges.size(); ++i_edge )
       {
-        // Get mesh vertices of current edge
-        size_t i1 = connectivity[i_bdry][i_edge].first;
-        size_t i2 = connectivity[i_bdry][i_edge].second;
+        int i1 = static_cast<int>( i_edge );
+        int i2 = MOD( i1+1, n_verts );
 
-        Vertex* v1 = v_ptrs[i1];
-        Vertex* v2 = v_ptrs[i2];
+        Vertex* v1 = new_vertices[i1];
+        Vertex* v2 = new_vertices[i2];
 
-        // All advancing front edges are assigned to a specified 
-        // edge marker
-        this->add_edge( *v1, *v2, e->marker() );
+        Edge& e_new = this->add_edge( *v1, *v2, markers[i_edge] );
 
-        // We fix the position of all initial boundary vertices,
-        // such that they won't be shifted during the grid 
-        // smoothing process
-        v1->is_fixed(true);
-        v2->is_fixed(true);
-
-        // Keep track of the original domain boundary
-        v1->on_boundary( true );
-        v2->on_boundary( true );
-
-        // Counter for boundary edges
-        ++i_edge;
+        // Connect the boundary edge of the neighbor mesh
+        // and the new front edge
+        if ( !is_oriented[i_edge] )
+        {
+          Edge* twin_edge = front_edges[i_edge];
+          e_new.twin_edge( twin_edge );
+          twin_edge->twin_edge( &e_new );
+          edges_to_refine.push_back( false );
+        }
+        else
+        {
+          edges_to_refine.push_back( true );
+        }
       }
-
-      // Counter for boundaries
-      ++i_bdry;
     }
 
-
-    // Check for correct orientation
-    ASSERT( check_orientation(), "Invalid edge list orientation." );
-
-    // Refine the front based on the underlying size function
-    this->refine(domain, mesh_vertices);
-
-  } // init_front_edges()
+    // Refine the front edges, but do not refine sub-edges!
+    this->refine(domain, edges_to_refine, mesh_vertices);
+    
+  } // Front::init_front_edges()
 
   /*------------------------------------------------------------------
   | Getters
@@ -149,15 +165,23 @@ public:
   | Refine the advancing front 
   | Returns the number of new edges
   ------------------------------------------------------------------*/
-  int refine(const Domain& domain, Vertices& vertices)
+  int refine(const Domain& domain, 
+             const BoolVector& edges_to_refine,
+             Vertices& vertices)
   {
     int n_before = edges_.size();
 
     std::vector<Edge*> marked {};
 
+    size_t i_edge = 0;
+
     // Loop over all edge segments
     for ( const auto& e_ptr : edges_ )
     {
+      // Ignore edges that should not be refined
+      if ( !edges_to_refine[i_edge] )
+        continue;
+
       Edge* e = e_ptr.get();
 
       const double rho_1 = domain.size_function( e->v1().xy() );
@@ -182,6 +206,8 @@ public:
 
       // Create new vertices and edges
       create_sub_edges( *e, xy_new, vertices );
+
+      ++i_edge;
     }
 
     // Remove old boundary segments
@@ -193,7 +219,7 @@ public:
 
     return ( edges_.size() - n_before );
 
-  }
+  } // Front::refine()
 
   /*------------------------------------------------------------------
   | Let base point to first edge in container

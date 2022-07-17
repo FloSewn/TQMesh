@@ -66,7 +66,15 @@ public:
   { 
     ASSERT( (marker >= 0), 
             "Boundary markers must be greater than zero");
-    return EdgeList::insert_edge(pos, v1, v2, marker); 
+
+    Edge& new_edge = EdgeList::insert_edge(pos, v1, v2, marker); 
+
+    // Initialize the boundary data structure of the new edge,
+    // which keeps track of all mesh edges that will be created 
+    // on it
+    //new_edge.init_bdry_data();
+
+    return new_edge;
   }
 
   /*------------------------------------------------------------------
@@ -75,11 +83,7 @@ public:
   | marker (integers > 0)
   ------------------------------------------------------------------*/
   Edge& add_edge(Vertex& v1, Vertex& v2, int marker)
-  { 
-    ASSERT( (marker >= 0), 
-            "Boundary markers must be greater than zero");
-    return EdgeList::add_edge(v1, v2, marker); 
-  }
+  { return this->insert_edge( edges_.end(), v1, v2, marker ); }
 
   /*------------------------------------------------------------------
   | Set the boundary to square shape

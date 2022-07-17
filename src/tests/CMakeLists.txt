@@ -1,15 +1,16 @@
 set( TESTS run_tests )
 
 add_executable( ${TESTS}
-  vertex_test.cpp
-  edgelist_test.cpp
-  boundary_test.cpp
-  sizefunction_test.cpp
-  front_test.cpp
-  triangle_test.cpp
-  quad_test.cpp
-  mesh_test.cpp
-  smoother_test.cpp
+  tests_Vertex.cpp
+  tests_Triangle.cpp
+  tests_Quad.cpp
+  tests_Front.cpp
+  tests_EdgeList.cpp
+  tests_Boundary.cpp
+  tests_SizeFunction.cpp
+  tests_Smoother.cpp
+  tests_Mesh.cpp
+  tests.cpp
   main.cpp
 )
 

@@ -53,8 +53,8 @@ public:
           double qtree_scale = ContainerQuadTreeScale,
           size_t qtree_items = ContainerQuadTreeItems, 
           size_t qtree_depth = ContainerQuadTreeDepth,
-          double min_size    = TQMeshMinimumElementSize,
-          double min_scaling = TQMeshMinimumElementScaling )
+          double min_size    = CONSTANTS.minimum_element_size(),
+          double min_scaling = CONSTANTS.minimum_element_scaling() )
   : f_ { f }
   , verts_ { qtree_scale, qtree_items, qtree_depth }
   , min_size_ { min_size }
@@ -67,10 +67,34 @@ public:
   size_type size() const { return boundaries_.size(); }
 
   /*------------------------------------------------------------------
+  | Get edges within a given point and radius
+  ------------------------------------------------------------------*/
+  std::vector<Edge*> 
+  get_edges (const Vec2d& center, double radius) const 
+  {
+    std::vector<Edge*> found {};
+
+    for ( const auto& boundary : *this )
+    {
+      auto cur_found = boundary->get_edges(center, radius);
+      found.insert(found.end(), cur_found.begin(), cur_found.end());
+    }
+
+    return std::move( found );
+  }
+
+  /*------------------------------------------------------------------
   | Getter
   ------------------------------------------------------------------*/
   const Vertices& vertices() const { return verts_; }
   Vertices& vertices() { return verts_; }
+
+  const UserSizeFunction& size_function() const { return f_; }
+  UserSizeFunction& size_function() { return f_; }
+
+  double min_size() const { return min_size_; }
+  double min_scaling() const { return min_scaling_; }
+
 
   /*------------------------------------------------------------------
   | Insert any boundary through constructor behind 
@@ -142,6 +166,42 @@ public:
 
     return inside;
   }
+
+  /*------------------------------------------------------------------
+  | Count the number of edge overlaps between this and another domain
+  ------------------------------------------------------------------*/
+  size_t get_overlaps(const Domain& nbr_domain)
+  {
+    size_t n_overlaps = 0;
+
+    for ( const auto& boundary : *this )
+    {
+      for ( const auto& e : boundary->edges() )
+      {
+        const Vec2d v1 = e->v1().xy();
+        const Vec2d w1 = e->v2().xy();
+
+        // search in vicinity of current edge for edges of the 
+        // neighboring domain. 
+        const Vec2d c  = e->xy();
+        double radius  = CONSTANTS.edge_search_factor() * e->length();
+
+        std::vector<Edge*> nbr_edges = nbr_domain.get_edges(c, radius);
+
+        for ( Edge* e_nbr : nbr_edges )
+        {
+          const Vec2d v2 = e_nbr->v1().xy();
+          const Vec2d w2 = e_nbr->v2().xy();
+
+          if ( segment_overlap(v1,w1, v2,w2) )
+            ++n_overlaps;
+        }
+      }
+    }
+
+    return n_overlaps;
+
+  } // Domain::overlaps()
 
   /*------------------------------------------------------------------
   | Evaluate the domain's size function at a given point
@@ -252,13 +312,12 @@ public:
 
   } // Domain::remove_fixed_vertex()
 
-
-
   /*------------------------------------------------------------------
   | This function prints out the size function of the domain onto
   | a cartesian grid 
   ------------------------------------------------------------------*/
-  void export_size_function(const Vec2d& xy_min, const Vec2d& xy_max,
+  void export_size_function(std::ostream& os,
+                            const Vec2d& xy_min, const Vec2d& xy_max,
                             unsigned int Nx, unsigned int Ny)
   {
     const Vec2d len = xy_max - xy_min;
@@ -281,11 +340,11 @@ public:
       }
     }
 
-    std::cout << "SIZE-FUNCTION " 
-      << std::setprecision(5) << std::fixed 
-      << xy_min.x << " " << xy_min.y << " "
-      << xy_max.x << " " << xy_max.y << " "
-      << Nx << " " << Ny << "\n";
+    os << "SIZE-FUNCTION " 
+       << std::setprecision(5) << std::fixed 
+       << xy_min.x << " " << xy_min.y << " "
+       << xy_max.x << " " << xy_max.y << " "
+       << Nx << " " << Ny << "\n";
 
     // Print data to the user
     unsigned int nx = 10;
@@ -296,17 +355,17 @@ public:
     {
       for ( unsigned int i = 0; i < nx; ++i )
       {
-        std::cout << std::setprecision(5) << std::fixed 
-                  << values[index]  << ( (i==nx-1) ? "" : "," );
+        os << std::setprecision(5) << std::fixed 
+           << values[index]  << ( (i==nx-1) ? "" : "," );
         ++index;
       }
-      std::cout << "\n";
+      os << "\n";
     }
 
     for ( ; index < Nx * Ny; ++index )
-      std::cout << std::setprecision(5) << std::fixed 
+      os << std::setprecision(5) << std::fixed 
                 << values[index]  << ( (index==Nx*Ny-1) ? "" : "," );
-    std::cout << "\n";
+    os << "\n";
 
   } // Domain::export_size_function()
 

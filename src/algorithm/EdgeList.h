@@ -75,6 +75,14 @@ public:
   }
 
   /*------------------------------------------------------------------
+  | Return all edges that within a given position and radius
+  ------------------------------------------------------------------*/
+  std::vector<Edge*>
+  get_edges(const Vec2d& center, const double radius) const
+  { return std::move( edges_.get_items(center, radius) ); }
+  
+
+  /*------------------------------------------------------------------
   | Getters
   ------------------------------------------------------------------*/
   size_t size() const { return edges_.size(); }
@@ -98,7 +106,7 @@ public:
   | Boundary edges are assumed to be defined with a marker > 0
   ------------------------------------------------------------------*/
   virtual Edge& insert_edge(const_iterator pos, Vertex& v1, Vertex& v2, 
-                            int marker=TQMeshInteriorEdgeMarker)
+                            int marker=CONSTANTS.interior_edge_marker())
   {
     Edge& e = edges_.insert(pos, v1, v2, *this, marker);
     if ( orient_ != Orientation::NONE )
@@ -123,7 +131,7 @@ public:
   |   connected to more than two edges of this list type
   ------------------------------------------------------------------*/
   virtual Edge& add_edge(Vertex& v1, Vertex& v2, 
-                         int marker=TQMeshInteriorEdgeMarker)
+                         int marker=CONSTANTS.interior_edge_marker())
   { 
     if ( orient_ == Orientation::NONE || edges_.size() < 1 )
       return insert_edge( edges_.end(), v1, v2, marker ); 
@@ -361,7 +369,8 @@ public:
     }
     else
     {
-      MSG("Invalid argument for function Vertex::get_edge_from_vertex()");
+      LOG(ERROR) << 
+      "Invalid argument for function Vertex::get_edge_from_vertex()";
     }
 
     return found;

@@ -29,6 +29,7 @@ using namespace CppUtils;
 class Facet;
 class EdgeList;
 
+
 /*********************************************************************
 * A simple edge class that is stored in the Container
 * The edge is defined by two vertices v1 and v2. It is directed from
@@ -77,6 +78,15 @@ public:
   }
 
   /*------------------------------------------------------------------
+  | Initialize the boundary data structure 
+  ------------------------------------------------------------------*
+  BdryEdgeData* init_bdry_data() 
+  {
+    bdry_data_ = std::make_unique<BdryEdgeData>();
+    return bdry_data_.get();
+  } */
+
+  /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
   const Vec2d& xy() const { return xy_; }
@@ -102,6 +112,7 @@ public:
   Facet* facet_r() { return face_r_; }
 
   Vertex* sub_vertex() const { return sub_vertex_; }
+  Edge* twin_edge() const { return twin_edge_; }
 
   /*------------------------------------------------------------------
   | Setters 
@@ -110,13 +121,14 @@ public:
   void facet_r(Facet* f) { face_r_ = f; }
 
   void sub_vertex(Vertex* v) { sub_vertex_ = v; }
+  void twin_edge(Edge* e) { twin_edge_ = e; }
 
   /*------------------------------------------------------------------
   | Function returns, if edges is located on a boundary
   | or if it is in the interior of the domain
   ------------------------------------------------------------------*/
   bool on_boundary() const 
-  { return ( marker_ != TQMeshInteriorEdgeMarker ); }
+  { return ( marker_ != CONSTANTS.interior_edge_marker() ); }
   bool is_interior() const
   { return !on_boundary(); }
 
@@ -202,15 +214,21 @@ private:
   EdgeList*           edgelist_ { nullptr };
   int                 marker_   { -1 };
 
+  // Edge properties
   Vec2d               xy_          { 0.0, 0.0 };
   double              length_      { 0.0 };
   Vec2d               tang_        { 0.0, 0.0 };
   Vec2d               norm_        { 0.0, 0.0 };
 
+  // Pointer to adjacent facets
   Facet*              face_l_ {nullptr};
   Facet*              face_r_ {nullptr};
 
+  // Sub vertex for quad refinement of the mesh
   Vertex*             sub_vertex_    {nullptr};
+
+  // Twin edge of a neighbor mesh
+  Edge*               twin_edge_ {nullptr};
 
   // Mandatory container attributes
   ContainerIterator   pos_;

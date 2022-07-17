@@ -26,6 +26,8 @@ namespace TQAlgorithm {
 
 using namespace CppUtils;
 
+class Mesh;
+
 /*********************************************************************
 * A simple quadrilateral - Must be defined CCW
 * ============================================
@@ -134,9 +136,11 @@ public:
   const Vec2d& xy() const { return xy_; }
   const Vec2d& circumcenter() const { return circ_centr_; }
 
+  Mesh* mesh() const { return mesh_; }
+  int color() const { return color_; }
   int index() const { return index_; }
   bool is_active() const { return active_; }
-  int color() const { return color_; }
+  bool marker() const { return marker_; }
 
   double area() const { return area_; }
   double circumradius() const { return circ_radius_; }
@@ -158,9 +162,11 @@ public:
   void nbr3(Facet* f) { f_[2] = f; }
   void nbr4(Facet* f) { f_[3] = f; }
 
+  void mesh(Mesh* m) { mesh_ = m; }
+  void color(int i) { color_ = i; }
   void index(int i) { index_ = i; }
   void is_active(bool a) { active_ = a; }
-  void color(int c){ color_ = c; }
+  void marker(bool c){ marker_ = c; }
 
   /*------------------------------------------------------------------
   | Returns true if the quad is valid
@@ -169,7 +175,7 @@ public:
   {
     if ( area_ <= 0.0 )
     {
-      DBG_MSG("  | NON-POSITIVE QUAD AREA " << area_);
+      DEBUG_LOG("  | NON-POSITIVE QUAD AREA " << area_);
       return false;
     }
     return true;
@@ -192,7 +198,7 @@ public:
 
     return -1;
 
-  } //Mesh::get_vertex_index()
+  } //Quad::get_vertex_index()
 
   /*------------------------------------------------------------------
   | Returns the index of a quad edge for two given input vertices
@@ -491,9 +497,12 @@ private:
   Vec2d                xy_            {0.0, 0.0};
   Vec2d                circ_centr_    {0.0,0.0};
 
+  int                  color_         {CONSTANTS.default_element_color()};
   int                  index_         {-1};
   bool                 active_        {false};
-  int                  color_         {0};
+  bool                 marker_        {false};
+
+  Mesh*                mesh_          {nullptr};
 
   double               area_          {0.0};
   double               circ_radius_   {0.0};

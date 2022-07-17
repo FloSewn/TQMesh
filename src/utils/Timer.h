@@ -22,14 +22,20 @@ public:
   using Second = std::chrono::duration<double, std::ratio<1> >;
   using Timepoint = std::chrono::time_point<Clock>;
   using Timevector = std::vector<Timepoint>;
+  using Msgvector = std::vector<std::string>;
 
   Timer() = default;
 
   // Getter
   const Timevector& times() const { return tv_; }
+  const Msgvector& messages() const { return msg_; }
 
   // Measure time
-  void count() { tv_.push_back( Clock::now() ); }
+  void count(const std::string& msg="") 
+  { 
+    tv_.push_back( Clock::now() ); 
+    msg_.push_back( msg );
+  }
 
   // Get delta between timepoints in seconds
   double delta(int i) const
@@ -47,6 +53,7 @@ public:
 private:
 
   Timevector tv_;
+  Msgvector  msg_;
 
 
 }; // Timer
