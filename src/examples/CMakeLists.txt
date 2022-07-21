@@ -1,6 +1,7 @@
 set( EXAMPLES run_examples )
 
 add_executable( ${EXAMPLES}
+  example_8.cpp
   example_7.cpp
   example_6.cpp
   example_5.cpp

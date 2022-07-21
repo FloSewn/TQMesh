@@ -79,6 +79,12 @@ int run_examples(const std::string& example)
     LOG(INFO) << "";
     run_example_7();
   }
+  else if ( !example.compare("8") )
+  {
+    LOG(INFO) << "Running example 8...";
+    LOG(INFO) << "";
+    run_example_8();
+  }
   else
   {
     LOG(INFO) << "";
