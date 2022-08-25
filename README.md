@@ -116,7 +116,8 @@ VERTICES 9            # The total number of mesh vertices
 1.00000,1.00000
 1.00000,0.50000
 1.50000,0.33319
-INTERIOREDGES 5       # The total number of interior mesh edges 5,   7,   1,   4   # The first edge connects vertex 5 & 7 and has the
+INTERIOREDGES 5       # The total number of interior mesh edges 
+   5,   7,   1,   4   # The first edge connects vertex 5 & 7 and has the
    7,   8,   1,   0   # adjacent elements (1,4) to the left and right of it
    3,   5,   1,   3   # ...
    3,   8,   2,   1
