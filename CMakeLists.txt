@@ -2,22 +2,24 @@
 #
 #***********************************************************
 cmake_minimum_required(VERSION 3.10)
+
+# --- C++ standard ---
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# --- Compiler flags ---
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-variable")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG")
+
+set( BIN ${CMAKE_SOURCE_DIR}/bin )
+
 project(TQMesh
         LANGUAGES CXX
         VERSION   1.1)
-
-# Set C++ flags
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-#set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wunused-variable -std=c++17 -O3 -DNDEBUG -pg -fconcepts")
-set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wunused-variable -std=c++17 -O3 -DNDEBUG -fconcepts")
-#set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -std=c++17 -O0 -g -pg -fconcepts")
-#set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wunused-variable -std=c++17 -O0 -g -fconcepts")
-#set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wunused-variable -std=c++17 -O0 -g -fconcepts -DNDEBUG")
-
-set(CMAKE_CXX_COMPILER "g++-10")
-
-set( BIN ${CMAKE_SOURCE_DIR}/bin )
 
 # Add config file
 configure_file(aux/TQMeshConfig.h.in ${CMAKE_BINARY_DIR}/TQMeshConfig.h)
@@ -45,3 +47,5 @@ add_test(NAME Boundary COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Boundary")
 add_test(NAME SizeFunction COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "SizeFunction")
 add_test(NAME Smoother COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Smoother")
 add_test(NAME Mesh COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Mesh")
+
+

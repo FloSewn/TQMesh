@@ -131,7 +131,7 @@ public:
   | a specified position
   ------------------------------------------------------------------*/
   template <typename... Args>
-  T& insert( auto pos, Args&&... args )
+  T& insert( const_iterator pos, Args&&... args )
   {
     std::unique_ptr<T> u_ptr = std::make_unique<T>(args...);
     T* ptr = u_ptr.get();

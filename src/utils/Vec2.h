@@ -14,6 +14,8 @@
 #include <stdexcept>
 #include <float.h>
 
+#include "MathUtility.h"
+
 namespace CppUtils {
 
 namespace Vec2Def
@@ -207,7 +209,7 @@ template <typename T>
 inline T angle(const Vec2<T> &u, const Vec2<T> &v)
 { 
   const T cos_a = dot(u,v) / ( u.length() * v.length() );
-  return acos( std::clamp( cos_a ,-1.0, 1.0 ) ); 
+  return acos( CLAMP( cos_a ,-1.0, 1.0 ) ); 
 }
 
 // Unit-vector

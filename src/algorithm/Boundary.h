@@ -61,7 +61,7 @@ public:
   | boundary edges must be defined with an appropriate boundary 
   | marker (integers > 0)
   ------------------------------------------------------------------*/
-  Edge& insert_edge(auto pos, Vertex& v1, Vertex& v2, 
+  Edge& insert_edge(const_iterator pos, Vertex& v1, Vertex& v2, 
                     int marker)
   { 
     ASSERT( (marker >= 0), 

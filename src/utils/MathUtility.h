@@ -47,5 +47,8 @@ template <typename T>
 static inline T MOD(T n, T M)
 { return ((n % M) + M) % M;  }
 
+template <typename T>
+static inline T CLAMP(T x, T lower, T upper)
+{ return MAX(lower, MIN(upper, x)); }
 
 } // namespace CppUtils

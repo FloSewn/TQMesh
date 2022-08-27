@@ -101,7 +101,7 @@ public:
   | a specified position
   ------------------------------------------------------------------*/
   template <typename... Args>
-  Boundary& insert_boundary( auto pos, Args&&... args )
+  Boundary& insert_boundary( const_iterator pos, Args&&... args )
   {
     std::unique_ptr<Boundary> b_ptr 
       = std::make_unique<Boundary>(args...);

@@ -18,6 +18,12 @@ cmake ..
 make install
 ```
 
+To use other compilers (e.g. clang), specify during the CMake configuration:
+```sh
+cmake -D CMAKE_CXX_COMPILER=<your-compiler> ..
+make install
+```
+
 ## Usage of the TQMesh library
 Several examples on how to use the **TQMesh**-library functions are given in the *src/examples* directory.
 After installation, you can run them simply with 
