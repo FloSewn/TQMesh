@@ -1,0 +1,43 @@
+name: CMake
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: Release
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build_and_test:
+    name: Build & test TQMesh on ${{ matrix.os }} with ${{ matrix.compiler }}.
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix: 
+        os: [ubuntu-latest, macos-latest]
+        compiler: [ g++-10, clang++-10 ]
+        include:
+          - os: windows-latest
+            compiler: cl
+            target: windows
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Add msbuild to PATH
+      if: ${{ matrix.os == 'windows-latest' }}
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Compile a release build of TQMesh
+      run: ./scripts/compile_tqmesh.sh ${{ matrix.compiler }} ${{env.BUILD_TYPE}} 2
+
+    - name: Run all of tqmeshs tests.
+      run: ./scripts/test_tqmesh.sh
+
