@@ -22,10 +22,10 @@ jobs:
       matrix: 
         os: [ubuntu-latest, macos-latest]
         compiler: [ g++-10, clang++-10 ]
-        include:
-          - os: windows-latest
-            compiler: cl
-            target: windows
+        #include:
+        #  - os: windows-latest
+        #    compiler: cl
+        #    target: windows
 
     steps:
     - name: Checkout Repository
