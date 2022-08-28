@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix: 
         os: [ubuntu-latest, macos-latest]
-        compiler: [ g++-10, clang++-14 ]
+        compiler: [ g++, clang++ ]
         #include:
         #  - os: windows-latest
         #    compiler: cl
