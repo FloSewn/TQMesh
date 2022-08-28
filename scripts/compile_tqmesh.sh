@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$#" -ne 3 ]; then
-    echo "setup.sh <compiler> <build type> <cores>"
+    echo "$0 <compiler> <build type> <cores>"
     exit 1
 fi
 
