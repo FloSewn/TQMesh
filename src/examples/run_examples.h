@@ -26,3 +26,4 @@ void run_example_5();
 void run_example_6();
 void run_example_7();
 void run_example_8();
+void run_example_9();
