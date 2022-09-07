@@ -53,11 +53,26 @@ public:
   void mesh_range_factor(double s) 
   { mesh_range_factor_ = s; }
 
+  void base_height_factor(double s) 
+  { base_height_factor_ = s; }
+
+  void base_vertex_factor(double s) 
+  { base_vertex_factor_ = s; }
+
+  void min_cell_quality(double s) 
+  { min_cell_quality_ = s; }
+
+  void max_cell_angle(double s) 
+  { max_cell_angle_ = s; }
+
   void wide_search_factor(double s) 
   { wide_search_factor_ = s; }
 
   void edge_search_factor(double s) 
   { edge_search_factor_ = s; }
+
+  void sort_triangulation_front(int s) 
+  { sort_triangulation_front_ = s; }
 
   /*------------------------------------------------------------------
   | Getters 
@@ -83,11 +98,26 @@ public:
   double mesh_range_factor() const
   { return mesh_range_factor_; }
 
+  double base_height_factor() const
+  { return base_height_factor_; }
+
+  double base_vertex_factor() const
+  { return base_vertex_factor_; }
+
+  double min_cell_quality() const
+  { return min_cell_quality_; }
+  
+  double max_cell_angle() const
+  { return max_cell_angle_; }
+
   double wide_search_factor() const
   { return wide_search_factor_; }
 
   double edge_search_factor() const
   { return edge_search_factor_; }
+
+  int sort_triangulation_front() const
+  { return sort_triangulation_front_; }
 
 
   int interior_edge_marker() const
@@ -113,11 +143,20 @@ private:
 
   double quad_range_factor_       = 0.50;
   double mesh_range_factor_       = 1.0;
+  double base_height_factor_      = 0.43; // ~ sqrt(3) / 4
+  double base_vertex_factor_      = 1.00;
+
+  double min_cell_quality_        = 0.0;
+  double max_cell_angle_          = M_PI;
 
   double wide_search_factor_      = 10.0;
 
   // This value is used to enlarge the search radius for edges
   double edge_search_factor_      = 1.5;
+
+  // This parameter controls, when the advancing front should be 
+  // sorted in every iteration of the triangulation
+  int sort_triangulation_front_   = -1;
 
   /*------------------------------------------------------------------
   | Fixed attributes 

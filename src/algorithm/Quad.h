@@ -95,7 +95,6 @@ public:
     calc_edgelengths();
     calc_angles();
     calc_shape_factor();
-    calc_quality();
 
     v_[0]->add_facet( *this );
     v_[1]->add_facet( *this );
@@ -152,6 +151,32 @@ public:
 
   double min_edge_length() const { return min_edge_len_; }
   double max_edge_length() const { return max_edge_len_; }
+
+  double quality(const double h) const 
+  { 
+    const double e1 = edge_len_[0];
+    const double e2 = edge_len_[1];
+    const double e3 = edge_len_[2];
+    const double e4 = edge_len_[3];
+
+    const double f1_1 = e1 / h;
+    const double f1_2 = e2 / h;
+    const double f1_3 = e3 / h;
+    const double f1_4 = e4 / h;
+
+    const double f2_1 = h / e1;
+    const double f2_2 = h / e2;
+    const double f2_3 = h / e3;
+    const double f2_4 = h / e4;
+
+    const double q1 = MIN(f1_1, f2_1);
+    const double q2 = MIN(f1_2, f2_2);
+    const double q3 = MIN(f1_3, f2_3);
+    const double q4 = MIN(f1_4, f2_4);
+    
+    return shape_fac_ * q1 * q2 * q3 * q4; 
+  }
+
 
   /*------------------------------------------------------------------
   | Setters
@@ -462,13 +487,21 @@ private:
   ------------------------------------------------------------------*/
   void calc_shape_factor()
   {
-  } 
+    // --> WARNING: Use same formulation as for triangles
+    //--------------------------------------------------
+    // The norm_factor is used, in order to get:
+    // Shape factor -> 1 for equilateral triangles
+    // Shape factor -> 0 for bad triangles
+    const double norm_factor  = 3.4641016151377544;
+    const double edge_sum_sqr = edge_len_[0] * edge_len_[0]
+                              + edge_len_[1] * edge_len_[1]
+                              + edge_len_[2] * edge_len_[2]
+                              + edge_len_[3] * edge_len_[3];
 
-  /*------------------------------------------------------------------
-  | Compute quad quality factor
-  ------------------------------------------------------------------*/
-  void calc_quality()
-  { 
+    if ( edge_sum_sqr > 0.0 )
+      shape_fac_ = norm_factor * area_ / edge_sum_sqr;
+    else
+      shape_fac_ = 0.0;
   } 
 
   /*------------------------------------------------------------------
