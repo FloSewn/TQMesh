@@ -11,6 +11,7 @@
 #include <cassert>
 #include <float.h>
 #include <limits.h>
+#include <cmath>
 
 #include "Helpers.h"
 
