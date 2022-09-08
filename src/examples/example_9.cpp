@@ -79,13 +79,6 @@ void run_example_9()
   ------------------------------------------------------------------*/
   UserSizeFunction f = [elem_size,R,h](const Vec2d& p) 
   { 
-    //const Vec2d centroid { h+R, h+R };
-
-    //const double d = 3.0 * R;
-
-    //if ( (p-centroid).length_squared() < d*d )
-    //  return 0.75*elem_size;
-
     return elem_size;
   };
 
@@ -100,10 +93,10 @@ void run_example_9()
   Vertex& v2 = domain.add_vertex(    L,    H, 1.0, H/2 );
   Vertex& v3 = domain.add_vertex(  0.0,    H, 1.0, H/2 );
 
-  b_ext.add_edge( v0, v1, marker_inlet );
-  b_ext.add_edge( v1, v2, marker_walls );
+  b_ext.add_edge( v0, v1, marker_walls );
+  b_ext.add_edge( v1, v2, marker_outlet );
   b_ext.add_edge( v2, v3, marker_walls );
-  b_ext.add_edge( v3, v0, marker_outlet );
+  b_ext.add_edge( v3, v0, marker_inlet );
 
   // Interior boundary - Circle
   Boundary& b_circ = domain.add_interior_boundary();
@@ -140,11 +133,6 @@ void run_example_9()
   mesh.triangulate();
 
   /*------------------------------------------------------------------
-  | Refinement
-  ------------------------------------------------------------------*/
-  //mesh.refine_to_quads();
-
-  /*------------------------------------------------------------------
   | Smooth the mesh for four iterations
   ------------------------------------------------------------------*/
   Smoother smoother {};
@@ -156,8 +144,8 @@ void run_example_9()
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
   { source_dir + "/aux/example_data/Example_9" };
-  LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
+  LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
 
-  mesh.write_to_file( file_name, ExportType::vtu );
+  mesh.write_to_file( file_name, ExportType::txt );
 
 } // run_example_9()
