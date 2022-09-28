@@ -36,7 +36,7 @@ void initialization()
   // Log debug messages to specified output-file
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-  { source_dir + "/aux/test_data/MeshTests.initialization.log" };
+  { source_dir + "/auxiliary/test_data/MeshTests.initialization.log" };
   LOG_PROPERTIES.set_info_ostream( TO_FILE, file_name );
   LOG_PROPERTIES.set_debug_ostream( TO_FILE, file_name );
 
@@ -88,7 +88,7 @@ void triangulate()
   // Log debug messages to specified output-file
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-  { source_dir + "/aux/test_data/MeshTests.triangulate.log" };
+  { source_dir + "/auxiliary/test_data/MeshTests.triangulate.log" };
   LOG_PROPERTIES.set_info_ostream( TO_FILE, file_name );
   LOG_PROPERTIES.set_debug_ostream( TO_FILE, file_name );
 
@@ -126,7 +126,7 @@ void triangulate()
 
 
   // Export mesh
-  file_name =  source_dir + "/aux/test_data/MeshTests.triangulate.txt";
+  file_name =  source_dir + "/auxiliary/test_data/MeshTests.triangulate.txt";
 
   mesh.write_to_file( file_name, ExportType::txt );
 
@@ -140,7 +140,7 @@ void pave()
   // Log debug messages to specified output-file
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-  { source_dir + "/aux/test_data/MeshTests.pave.log" };
+  { source_dir + "/auxiliary/test_data/MeshTests.pave.log" };
   LOG_PROPERTIES.set_info_ostream( TO_FILE, file_name );
   LOG_PROPERTIES.set_debug_ostream( TO_FILE, file_name );
 
@@ -177,7 +177,7 @@ void pave()
   CHECK( EQ(mesh.area(), domain.area()) );
 
   // Export the mesh
-  file_name = source_dir + "/aux/test_data/MeshTests.pave.txt";
+  file_name = source_dir + "/auxiliary/test_data/MeshTests.pave.txt";
 
   mesh.write_to_file( file_name, ExportType::txt );
 
