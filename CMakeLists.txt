@@ -20,19 +20,27 @@ endif()
 
 # --- Compiler flags ---
 if (CMAKE_BUILD_TYPE MATCHES "Release")
+if (WIN32)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -bigobj")
+else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-variable")
+endif()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG")
 endif()
 
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
+if (WIN32)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -bigobj")
+else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-variable")
+endif()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 endif()
 
 # Add config file
-configure_file(aux/TQMeshConfig.h.in ${CMAKE_BINARY_DIR}/TQMeshConfig.h)
+configure_file(auxiliary/TQMeshConfig.h.in ${CMAKE_BINARY_DIR}/TQMeshConfig.h)
 include_directories(${CMAKE_BINARY_DIR})
 
 # Directories
