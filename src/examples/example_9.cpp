@@ -56,7 +56,7 @@ void run_example_9()
   const double L = 2.20; // [m]
   const double R = 0.5 * D;
 
-  const double refinement = 0.50;
+  const double refinement = 2.00;
   const double growth = 1.5;
 
   const double elem_size = refinement * H / 25.;
@@ -125,7 +125,8 @@ void run_example_9()
   /*------------------------------------------------------------------
   | Use fixed vertex to maintain triangle size around circle
   ------------------------------------------------------------------*/
-  domain.add_fixed_vertex(h+R, h+R, 0.5, 0.5*H);
+  //domain.add_fixed_vertex(h+R, h+R, 0.5, 0.5*H);
+  CONSTANTS.base_vertex_factor(1.0);
 
   /*------------------------------------------------------------------
   | Triangulate
@@ -136,7 +137,7 @@ void run_example_9()
   | Smooth the mesh for four iterations
   ------------------------------------------------------------------*/
   Smoother smoother {};
-  smoother.smooth(domain, mesh, 4);
+  smoother.smooth(domain, mesh, 4, 0.5);
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in VTU format.
@@ -144,8 +145,8 @@ void run_example_9()
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
   { source_dir + "/aux/example_data/Example_9" };
-  LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
+  LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
 
-  mesh.write_to_file( file_name, ExportType::txt );
+  mesh.write_to_file( file_name, ExportType::vtu );
 
 } // run_example_9()

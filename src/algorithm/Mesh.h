@@ -1678,15 +1678,15 @@ private:
     // Half of the factor h for height of equlateral triangle
     // h := sqrt(3) / 2  -   h_fac := h / 2
     constexpr double h_fac = 0.4330127019; 
-    const double v_fac = CONSTANTS.base_vertex_factor();
+    const double v_fac = h_fac * CONSTANTS.base_vertex_factor();
 
     // Obtain size function value at the centroid of an equlateral
     // triangle, created from the current base edge
-    Vec2d c = base.xy() + base.normal() * base.length() * h_fac;
+    Vec2d c = base.xy() + base.normal() * base.length() * v_fac;
     const double rho = domain_->size_function(c);
 
     // Coordinate of new vertex 
-    Vec2d xy = base.xy() + base.normal() * rho * v_fac;
+    Vec2d xy = base.xy() + base.normal() * rho;
 
     return add_vertex( xy );
 
