@@ -12,6 +12,10 @@
 #include <float.h>
 #include <limits.h>
 
+#ifdef WIN32
+#include <corecrt_math_defines.h>
+#endif
+
 #include "Helpers.h"
 
 namespace TQMesh {

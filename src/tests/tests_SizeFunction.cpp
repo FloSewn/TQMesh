@@ -70,7 +70,7 @@ void evaluation()
   // Export the size function
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-  { source_dir + "/aux/test_data/SizeFunctionTests.evaluation.txt" };
+  { source_dir + "/auxiliary/test_data/SizeFunctionTests.evaluation.txt" };
 
   std::ofstream outfile;
   outfile.open( file_name );

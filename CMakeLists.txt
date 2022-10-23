@@ -12,7 +12,11 @@ project(TQMesh
         VERSION   1.1)
 
 set( BIN ${CMAKE_SOURCE_DIR}/bin )
-
+if(WIN32)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "$<0:>${CMAKE_SOURCE_DIR}/bin") # .exe and .dll
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "$<0:>${CMAKE_SOURCE_DIR}/lib") # .so and .dylib
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "$<0:>${CMAKE_SOURCE_DIR}/lib") # .lib and .a
+endif()
 # Default to Release build type
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
@@ -20,19 +24,29 @@ endif()
 
 # --- Compiler flags ---
 if (CMAKE_BUILD_TYPE MATCHES "Release")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-variable")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+  if (WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -bigobj")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+  else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-variable")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+  endif()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG")
 endif()
 
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-variable")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
+  if (WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -bigobj")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Od")
+  else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-variable")
+  endif()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 endif()
 
 # Add config file
-configure_file(aux/TQMeshConfig.h.in ${CMAKE_BINARY_DIR}/TQMeshConfig.h)
+configure_file(auxiliary/TQMeshConfig.h.in ${CMAKE_BINARY_DIR}/TQMeshConfig.h)
 include_directories(${CMAKE_BINARY_DIR})
 
 # Directories
