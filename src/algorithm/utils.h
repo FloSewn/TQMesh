@@ -11,7 +11,10 @@
 #include <cassert>
 #include <float.h>
 #include <limits.h>
-#include <cmath>
+
+#ifdef WIN32
+#include <corecrt_math_defines.h>
+#endif
 
 #include "Helpers.h"
 

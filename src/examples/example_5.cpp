@@ -176,11 +176,11 @@ void run_example_5()
   smoother.smooth(inner_domain, inner_mesh, 4);
 
   /*------------------------------------------------------------------
-  | Finally, the mesh is exportet to a file in VTU format.
+  | Finally, the mesh is exportet to a file in TXT format.
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-  { source_dir + "/aux/example_data/Example_5" };
+  { source_dir + "/auxiliary/example_data/Example_5" };
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
 
   inner_mesh.write_to_file( file_name, ExportType::txt );

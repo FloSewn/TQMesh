@@ -5,3 +5,4 @@ doc/*.txt
 scripts/__pycache__
 scripts/*.png
 NotForGit
+.vs
