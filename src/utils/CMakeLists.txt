@@ -9,8 +9,7 @@ target_include_directories( ${MODULE_UTIL}
   INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} )
 
 if (NOT WIN32)
-target_link_libraries( ${MODULE_MESH}
-  INTERFACE m
-  INTERFACE util )
+target_link_libraries( ${MODULE_UTIL}
+  INTERFACE m )
 endif()
 
