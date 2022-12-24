@@ -211,20 +211,25 @@ private:
 
         Vec2d xy_m { 0.0, 0.0 };
 
+        for ( int j = 0; j < n_nbrs; ++j )
+          xy_m += nbrs[j]->xy();
+
+        /*
         const Vec2d& xy = v->xy();
         const double r_xy = domain.size_function( xy );
 
         for ( int j = 0; j < n_nbrs; ++j )
         {
           const Vec2d& xy_nb = nbrs[j]->xy();
-          const double l = ( xy_nb-xy ).length();
-          const double r_nb = domain.size_function( xy_nb );
-          const double r = 0.5 * (r_nb + r_xy);
-          const double fac = r / l;
-          const Vec2d dxy = xy_nb - xy;
+          const Vec2d dxy    = xy_nb - xy;
+          const double l     = dxy.length();
+          const double r_nb  = domain.size_function( xy_nb );
+          const double r     = 0.5 * (r_nb + r_xy);
+          const double fac   = r / l;
 
           xy_m += xy + fac * dxy;
         }
+        */
 
         xy_m /= static_cast<double>( n_nbrs );
 
