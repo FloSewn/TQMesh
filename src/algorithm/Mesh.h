@@ -864,6 +864,175 @@ public:
 
   } // Mesh::pave()
 
+
+  /*------------------------------------------------------------------
+  |    
+  ------------------------------------------------------------------*/
+  void merge_degenerate_triangles()
+  {
+    // Collect all vertices, that are adjacent to exactly three 
+    // triangles
+    std::list<Vertex*> bad_vertices {};
+
+    for ( const auto& vertex_ptr : verts_ )
+    {
+      if ( vertex_ptr->facets().size() != 3 )
+        continue;
+      if ( vertex_ptr->edges().size() != 3 )
+        continue;
+      if ( vertex_ptr->facets(0).n_vertices() != 3 )
+        continue;
+      if ( vertex_ptr->facets(1).n_vertices() != 3 )
+        continue;
+      if ( vertex_ptr->facets(2).n_vertices() != 3 )
+        continue;
+
+      auto color = vertex_ptr->facets(0).color();
+
+      if ( vertex_ptr->facets(1).color() != color )
+        continue;
+      if ( vertex_ptr->facets(2).color() != color )
+        continue;
+
+      bad_vertices.push_back( vertex_ptr.get() );
+    }
+
+
+    for ( auto& bad_vertex : bad_vertices )
+    {
+      const Triangle* t0 = static_cast<const Triangle*>(
+          &bad_vertex->facets(0));
+
+      const Triangle* t1 = static_cast<const Triangle*>(
+          &bad_vertex->facets(1));
+
+      const Triangle* t2 = static_cast<const Triangle*>(
+          &bad_vertex->facets(2));
+
+      auto color = t0->color();
+
+      // Get surrounding vertices
+      int i0 = t0->get_vertex_index( *bad_vertex );
+      int i1 = t1->get_vertex_index( *bad_vertex );
+      int i2 = t2->get_vertex_index( *bad_vertex );
+
+      Vertex& v0 = const_cast<Vertex&>( t0->vertex(MOD(i0+1,3)) );
+      Vertex& v1 = const_cast<Vertex&>( t1->vertex(MOD(i1+1,3)) );
+      Vertex& v2 = const_cast<Vertex&>( t2->vertex(MOD(i2+1,3)) );
+
+      // Remove interior edges 
+      Edge* e0 = intr_edges_.get_edge(*bad_vertex, v0);
+      Edge* e1 = intr_edges_.get_edge(*bad_vertex, v1);
+      Edge* e2 = intr_edges_.get_edge(*bad_vertex, v2);
+
+      ASSERT( e0, "Interior edge not defined.\n" );
+      remove_interior_edge( *e0 );
+
+      ASSERT( e1, "Interior edge not defined.\n" );
+      remove_interior_edge( *e1 );
+
+      ASSERT( e2, "Interior edge not defined.\n" );
+      remove_interior_edge( *e2 );
+
+      // Remove triangles
+      remove_triangle(const_cast<Triangle&>(*t0));
+      remove_triangle(const_cast<Triangle&>(*t1));
+      remove_triangle(const_cast<Triangle&>(*t2));
+
+      // Remove vertex
+      remove_vertex( *bad_vertex );
+
+      // Add new triangle
+      auto o = orientation(v0.xy(), v1.xy(), v2.xy());
+
+      if ( o == Orientation::CCW ) 
+        add_triangle( v0, v1, v2, color );
+      else
+        add_triangle( v0, v2, v1, color );
+    }
+
+    // Remove deleted entities
+    clear_waste();
+
+    // Re-initialize vertex-to-vertex connectivity
+    setup_vertex_connectivity();
+
+    // Re-initialize facet-to-facet connectivity
+    setup_facet_connectivity();
+
+  } // Mesh::merge_degenerate_triangles() 
+
+  /*------------------------------------------------------------------
+  |   
+  ------------------------------------------------------------------*
+  void merge_degenerate_triangles(double max_angle)
+  {
+    // Initialize all triangle markers to false
+    for ( auto& triangle_ptr : tris_ )
+      triangle_ptr->marker(false);
+
+
+    // Collect triangles with bad maximum angles
+    std::list<Triangle*> bad_triangles {};
+    double max_angle_rad = max_angle * M_PI / 180.0;
+
+    for ( const auto& triangle_ptr : tris_ )
+      if (triangle_ptr->max_angle() >= max_angle_rad)
+        bad_triangles.push_back( triangle_ptr.get() );
+
+
+    // Sort triangle list with decreasing maximumg angles
+    bad_triangles.sort(
+    []( Triangle* a, Triangle* b )
+    {
+      const double ang_a = a->max_angle();
+      const double ang_b = b->max_angle();
+
+      return ang_a > ang_b;
+    });
+
+
+    // Merge bad triangles with neighbors
+    for ( auto& bad_triangle : bad_triangles )
+    {
+      // Skip triangles, that are already marked to be merged 
+      if ( bad_triangle->marker() )
+        continue;
+
+      // Search for neighboring triangle with maximum angle
+      double max_neighbor_angle = 0.0;
+      Triangle *max_neighbor = nullptr;
+
+      for ( std::size_t i = 0; i < 3; ++i )
+      {
+        Facet* neighbor = bad_triangle->neighbor(i);
+
+        if ( neighbor == nullptr )
+          continue;
+
+        if ( neighbor->n_vertices() == 4 )
+          continue;
+
+        if ( neighbor->max_angle() > max_neighbor_angle )
+        {
+          max_neighbor_angle = neighbor->max_angle();
+          max_neighbor = static_cast<Triangle*>(neighbor);
+        }
+      }
+
+      // Go on, if no neighbor has been found (triangle is surrounded
+      // by quads or domain boundaries) 
+      if ( max_neighbor == nullptr )
+        continue;
+
+      // Mark the found neighbor 
+      max_neighbor->marker( true );
+    }
+
+
+
+  } // Mesh::merge_degenerate_triangles() */
+
   /*------------------------------------------------------------------
   | This function loops over all internal edges and, if possible,
   | merges two adjacent triangles to one quad element.

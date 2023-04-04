@@ -56,23 +56,37 @@ void run_example_9()
   const double L = 2.20; // [m]
   const double R = 0.5 * D;
 
-  const double refinement = 2.00;
-  const double growth = 1.5;
 
-  const double elem_size = refinement * H / 25.;
-  const double layer_height = 0.35 * elem_size;
-  const int n_circ = static_cast<int>( M_PI / asin(0.5*elem_size/D) );
+  // --- 21,000 vertices ---
+  const double size_factor        = 0.45;
+  const double first_height_circ  = 0.0003;
+  const double first_height_wall  = 0.001;
+  const int    n_layers_circ      = 6;
+  const int    n_layers_wall      = 5;
 
-  int    n_layers = 1;
-  double layer_fac = (1.0 - pow(growth, n_layers)) / (1.0 - growth);
-  double first_height = layer_height / layer_fac;
+  // --- 13,000 vertices ---
+  // const double size_factor        = 0.58;
+  // const double first_height_circ  = 0.0004;
+  // const double first_height_wall  = 0.0013;
+  // const int    n_layers_circ      = 6;
+  // const int    n_layers_wall      = 4;
+    
+  // --- 8,000 vertices ---
+  // const double size_factor        = 0.75;
+  // const double first_height_circ  = 0.0005;
+  // const double first_height_wall  = 0.0016;
+  // const int    n_layers_circ      = 6;
+  // const int    n_layers_wall      = 4;
 
-  while ( first_height / elem_size > 0.2 )
-  {
-    ++n_layers;
-    layer_fac = (1.0 - pow(growth, n_layers)) / (1.0 - growth);
-    first_height = layer_height / layer_fac;
-  }
+  // --- 5,000 vertices ---
+  // const double size_factor        = 0.98;
+  // const double first_height_circ  = 0.0006;
+  // const double first_height_wall  = 0.002;
+  // const int    n_layers_circ      = 6;
+  // const int    n_layers_wall      = 4;
+
+  const double elem_size  = size_factor * H / 25.;
+  const int    n_circ     = static_cast<int>( M_PI / asin(0.4*elem_size/D) );
 
   /*------------------------------------------------------------------
   | Define the size function
@@ -103,7 +117,7 @@ void run_example_9()
   b_circ.set_shape_circle( domain.vertices(), 
                            marker_circle, 
                            {h+R, h+R}, R, n_circ,
-                           1.0, 2.5*layer_height);
+                           1.0, 0.25*h);
 
   /*------------------------------------------------------------------
   | Initialize the mesh
@@ -116,22 +130,24 @@ void run_example_9()
   ------------------------------------------------------------------*/
   Vertex& v_circ = domain.vertices()[4];
   mesh.create_quad_layers(v_circ, v_circ, 
-                          n_layers, first_height, growth);
+                          n_layers_circ, first_height_circ, 1.25);
   mesh.create_quad_layers(v0, v1, 
-                          n_layers, first_height, growth);
+                          n_layers_wall, first_height_wall, 1.2);
   mesh.create_quad_layers(v2, v3,
-                          n_layers, first_height, growth);
+                          n_layers_wall, first_height_wall, 1.2);
 
   /*------------------------------------------------------------------
   | Use fixed vertex to maintain triangle size around circle
   ------------------------------------------------------------------*/
   //domain.add_fixed_vertex(h+R, h+R, 0.5, 0.5*H);
+  domain.add_fixed_vertex(h+3.5*R, h+R, 0.9, 0.10*H);
   CONSTANTS.base_vertex_factor(1.0);
 
   /*------------------------------------------------------------------
   | Triangulate
   ------------------------------------------------------------------*/
   mesh.triangulate();
+  mesh.merge_degenerate_triangles();
 
   /*------------------------------------------------------------------
   | Smooth the mesh for four iterations
