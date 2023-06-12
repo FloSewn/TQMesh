@@ -223,6 +223,56 @@ void sort_edges()
 } // sort_edges()
 
 
+/*********************************************************************
+* Test the Advacing Front edge size
+*********************************************************************/
+void edge_size()
+{
+  const double edge_size = 0.23;
+
+  // Define a variable size function
+  UserSizeFunction f = [edge_size](const Vec2d& p) 
+  { return edge_size; };
+
+  Domain           domain   { f, 10.0 };
+
+  // Build exterior boundary
+  Boundary&  b_ext = domain.add_exterior_boundary();
+
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
+  Vertex& v2 = domain.add_vertex(  1.0,  0.0 );
+  Vertex& v3 = domain.add_vertex(  1.0,  1.0 );
+  Vertex& v4 = domain.add_vertex(  0.0,  1.0 );
+
+  b_ext.add_edge( v1, v2, 1 );
+  b_ext.add_edge( v2, v3, 1 );
+  b_ext.add_edge( v3, v4, 1 );
+  b_ext.add_edge( v4, v1, 1 );
+
+
+  // Collect data for the initialization of the advancing front
+  FrontInitData front_data = collect_front_data( domain );
+
+  // Advancing front requires initialized vertex container
+  Vertices vertices {};
+
+  for ( const auto& v_ptr : domain.vertices() )
+    vertices.push_back( v_ptr->xy(), v_ptr->sizing(), v_ptr->range() );
+
+  // Create advancing front
+  Front front { };
+  front.init_front_edges( domain, front_data, vertices );
+
+  // Check if all edge lengths are more or less in accordance to
+  // the global size parameter
+  for ( const auto& e : front )
+  {
+    const double error = ABS(e->length() - edge_size) / edge_size;
+    CHECK( error < 0.25 );
+  }
+
+} // edge_size()
+
 
 } // namespace FrontTests
 
@@ -234,5 +284,6 @@ void run_tests_Front()
 {
   FrontTests::initialization();
   FrontTests::sort_edges();
+  FrontTests::edge_size();
 
 } // run_tests_Front()

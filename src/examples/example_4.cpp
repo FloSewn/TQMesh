@@ -122,7 +122,7 @@ void run_example_4()
   smoother.smooth(domain, mesh, 4);
 
   /*------------------------------------------------------------------
-  | Finally, the mesh is exportet to a file in VTU format.
+  | Finally, the mesh is exportet to a file in TXT format.
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 

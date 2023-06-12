@@ -678,6 +678,8 @@ private:
       error("Invalid meshing algorithm provided: " + algorithm_ );
     }
 
+    mesh.merge_degenerate_triangles();
+
     if ( base_mesh )
       mesh.merge_neighbor_mesh( *base_mesh );
 

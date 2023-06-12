@@ -8,6 +8,7 @@
 #pragma once
 
 #include <algorithm>
+#include <limits.h>
 
 #include "Vec2.h"
 #include "utils.h"
@@ -642,6 +643,7 @@ public:
 
     unsigned int iter = 0;
     bool wide_search = false;
+    int sort_iter = 0;
 
     ProgressBar progress_bar {};
 
@@ -660,6 +662,9 @@ public:
 
     LOG(INFO) << "Start triangulation of mesh " << mesh_id_ << ".";
 
+    // Sort the advancing front edges
+    front_.sort_edges( false );
+
     // Start advancing front loop
     while ( true )
     {
@@ -670,8 +675,23 @@ public:
       // and go to the next base edge
       if ( success )
       {
+        // Sort front edges after a wide search
+        if ( wide_search )
+          front_.sort_edges( false );
+
         iter = 0;
         wide_search = false;
+
+        // Sort the advancing front edges
+        if ( sort_iter == CONSTANTS.sort_triangulation_front() )
+        {
+          front_.sort_edges( false );
+          sort_iter = 0;
+        }
+        else
+        {
+          sort_iter = MOD( sort_iter+1, INT_MAX-1 );
+        }
 
         front_.set_base_first();
         base = &( front_.base() );
@@ -843,6 +863,104 @@ public:
     return true;
 
   } // Mesh::pave()
+
+
+  /*------------------------------------------------------------------
+  |    
+  ------------------------------------------------------------------*/
+  void merge_degenerate_triangles()
+  {
+    // Collect all vertices, that are adjacent to exactly three 
+    // triangles
+    std::list<Vertex*> bad_vertices {};
+
+    for ( const auto& vertex_ptr : verts_ )
+    {
+      if ( vertex_ptr->facets().size() != 3 )
+        continue;
+      if ( vertex_ptr->edges().size() != 3 )
+        continue;
+      if ( vertex_ptr->facets(0).n_vertices() != 3 )
+        continue;
+      if ( vertex_ptr->facets(1).n_vertices() != 3 )
+        continue;
+      if ( vertex_ptr->facets(2).n_vertices() != 3 )
+        continue;
+
+      auto color = vertex_ptr->facets(0).color();
+
+      if ( vertex_ptr->facets(1).color() != color )
+        continue;
+      if ( vertex_ptr->facets(2).color() != color )
+        continue;
+
+      bad_vertices.push_back( vertex_ptr.get() );
+    }
+
+
+    for ( auto& bad_vertex : bad_vertices )
+    {
+      const Triangle* t0 = static_cast<const Triangle*>(
+          &bad_vertex->facets(0));
+
+      const Triangle* t1 = static_cast<const Triangle*>(
+          &bad_vertex->facets(1));
+
+      const Triangle* t2 = static_cast<const Triangle*>(
+          &bad_vertex->facets(2));
+
+      auto color = t0->color();
+
+      // Get surrounding vertices
+      int i0 = t0->get_vertex_index( *bad_vertex );
+      int i1 = t1->get_vertex_index( *bad_vertex );
+      int i2 = t2->get_vertex_index( *bad_vertex );
+
+      Vertex& v0 = const_cast<Vertex&>( t0->vertex(MOD(i0+1,3)) );
+      Vertex& v1 = const_cast<Vertex&>( t1->vertex(MOD(i1+1,3)) );
+      Vertex& v2 = const_cast<Vertex&>( t2->vertex(MOD(i2+1,3)) );
+
+      // Remove interior edges 
+      Edge* e0 = intr_edges_.get_edge(*bad_vertex, v0);
+      Edge* e1 = intr_edges_.get_edge(*bad_vertex, v1);
+      Edge* e2 = intr_edges_.get_edge(*bad_vertex, v2);
+
+      ASSERT( e0, "Interior edge not defined.\n" );
+      remove_interior_edge( *e0 );
+
+      ASSERT( e1, "Interior edge not defined.\n" );
+      remove_interior_edge( *e1 );
+
+      ASSERT( e2, "Interior edge not defined.\n" );
+      remove_interior_edge( *e2 );
+
+      // Remove triangles
+      remove_triangle(const_cast<Triangle&>(*t0));
+      remove_triangle(const_cast<Triangle&>(*t1));
+      remove_triangle(const_cast<Triangle&>(*t2));
+
+      // Remove vertex
+      remove_vertex( *bad_vertex );
+
+      // Add new triangle
+      auto o = orientation(v0.xy(), v1.xy(), v2.xy());
+
+      if ( o == Orientation::CCW ) 
+        add_triangle( v0, v1, v2, color );
+      else
+        add_triangle( v0, v2, v1, color );
+    }
+
+    // Remove deleted entities
+    clear_waste();
+
+    // Re-initialize vertex-to-vertex connectivity
+    setup_vertex_connectivity();
+
+    // Re-initialize facet-to-facet connectivity
+    setup_facet_connectivity();
+
+  } // Mesh::merge_degenerate_triangles() 
 
   /*------------------------------------------------------------------
   | This function loops over all internal edges and, if possible,
@@ -1229,6 +1347,9 @@ private:
   bool advance_front_quad(Edge& base, bool wide_search=false,
                           double height = -1.0)
   {
+    // Constants
+    const double fq = CONSTANTS.quad_range_factor();
+
     Vertex& b1 = base.v1();
     Vertex& b2 = base.v2();
 
@@ -1262,8 +1383,8 @@ private:
 
     if ( height > 0 )
     {
-      r1 = CONSTANTS.quad_range_factor() * height;
-      r2 = CONSTANTS.quad_range_factor() * height;
+      r1 = fq * height;
+      r2 = fq * height;
     }
 
     // ****** Create first triangle *******
@@ -1365,16 +1486,19 @@ private:
   ------------------------------------------------------------------*/
   bool advance_front_triangle(Edge& base, bool wide_search=false)
   {
+    // Constants
+    const double f1 = CONSTANTS.base_height_factor();
+    const double f2 = CONSTANTS.mesh_range_factor();
+
     // Obtain the position of a potential new vertex and the radius 
     // to search around it for potential existing vertices
     const double height = domain_->size_function( base.xy() );
-    const Vec2d  v_xy   = base.xy() + height * base.normal();
+    const Vec2d  v_xy   = base.xy() + f1 * height * base.normal();
     const double r      = domain_->size_function( v_xy );
 
     // Find all vertices in the vicinity of the current base edge
-    const double range_factor = CONSTANTS.mesh_range_factor() * r;
     VertexVector vertex_candidates 
-      = find_local_vertices(v_xy, range_factor, wide_search);
+      = find_local_vertices(v_xy, f2 * r, wide_search);
 
     // Create potential triangles with all found vertices
     TriVector new_triangles {};
@@ -1546,6 +1670,19 @@ private:
       return false;
     }
 
+    if ( tri.quality(rho) < CONSTANTS.min_cell_quality() )
+    {
+      DEBUG_LOG("  > BAD TRIANGLE QUALITY");
+      return false;
+    }
+
+    if ( tri.max_angle() > CONSTANTS.max_cell_angle() )
+    {
+      DEBUG_LOG("  > BAD MAXIMUM ANGLE");
+      return false;
+    }
+
+
     DEBUG_LOG("  > VALID");
 
     return true;
@@ -1639,10 +1776,11 @@ private:
     // Half of the factor h for height of equlateral triangle
     // h := sqrt(3) / 2  -   h_fac := h / 2
     constexpr double h_fac = 0.4330127019; 
+    const double v_fac = h_fac * CONSTANTS.base_vertex_factor();
 
     // Obtain size function value at the centroid of an equlateral
     // triangle, created from the current base edge
-    Vec2d c = base.xy() + base.normal() * base.length() * h_fac;
+    Vec2d c = base.xy() + base.normal() * base.length() * v_fac;
     const double rho = domain_->size_function(c);
 
     // Coordinate of new vertex 
@@ -2839,6 +2977,9 @@ private:
     std::vector<size_t> types {};
     std::vector<double> size_function {};
     std::vector<int>    element_color {};
+    std::vector<double> edge_length {};
+    std::vector<double> max_angle {};
+    std::vector<double> cell_quality {};
 
     size_t i_offset = 0;
 
@@ -2865,6 +3006,12 @@ private:
       types.push_back( 9 );
 
       element_color.push_back( q_ptr->color() );
+
+      edge_length.push_back( q_ptr->max_edge_length() );
+      max_angle.push_back( q_ptr->max_angle() * 180. / M_PI );
+
+      const double s = domain_->size_function(q_ptr->xy());
+      cell_quality.push_back( q_ptr->quality(s) );
     }
 
     for ( const auto& t_ptr : tris_ )
@@ -2880,6 +3027,12 @@ private:
       types.push_back( 5 );
 
       element_color.push_back( t_ptr->color() );
+
+      edge_length.push_back( t_ptr->max_edge_length() );
+      max_angle.push_back( t_ptr->max_angle() * 180. / M_PI );
+
+      const double s = domain_->size_function(t_ptr->xy());
+      cell_quality.push_back( t_ptr->quality(s) );
     }
 
 
@@ -2887,6 +3040,9 @@ private:
 
     writer.add_point_data( size_function, "size_function", 1 );
     writer.add_cell_data( element_color, "element_color", 1 );
+    writer.add_cell_data( edge_length, "edge_length", 1 );
+    writer.add_cell_data( max_angle, "max_angle", 1 );
+    writer.add_cell_data( cell_quality, "cell_quality", 1 );
 
     writer.write( file_name );
 

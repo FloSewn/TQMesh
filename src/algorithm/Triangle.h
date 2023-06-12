@@ -89,7 +89,6 @@ public:
     calc_edgelengths();
     calc_angles();
     calc_shape_factor();
-    //calc_quality();
 
     v_[0]->add_facet( *this );
     v_[1]->add_facet( *this );
@@ -160,6 +159,9 @@ public:
 
   double edgelength(unsigned int i) const { return edge_len_[i]; }
   double angle(unsigned int i) const { return angles_[i]; }
+
+  double min_edge_length() const { return min_edge_len_; }
+  double max_edge_length() const { return max_edge_len_; }
 
   /*------------------------------------------------------------------
   | Setters

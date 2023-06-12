@@ -397,8 +397,7 @@ private:
 
     for ( int i = 1; i < xy_new.size()-1; i++ )
     {
-      Vertex& v_n = vertices.insert( e.v2().pos(), 
-                                      xy_new[i], 1.0 );
+      Vertex& v_n = vertices.insert( e.v2().pos(), xy_new[i], 1.0 );
 
       // We fix the position of all new vertices on the front,
       // such that they won't be shifted during grid smoothing 
