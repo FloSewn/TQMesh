@@ -150,7 +150,7 @@ private:
   double quad_range_factor_       = 0.50;
   double mesh_range_factor_       = 1.0;
   double base_height_factor_      = 0.43; // ~ sqrt(3) / 4
-  double base_vertex_factor_      = 1.00;
+  double base_vertex_factor_      = 2.00;
 
   double min_cell_quality_        = 0.0;
   double max_cell_angle_          = M_PI;
