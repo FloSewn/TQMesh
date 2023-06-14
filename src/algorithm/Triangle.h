@@ -67,12 +67,10 @@ class Mesh;
 *
 *
 *********************************************************************/
-class Triangle : public Facet
+class Triangle : public Facet, public ContainerEntry<Triangle>
 {
 public:
 
-  friend Container<Triangle>;
-  using ContainerIterator = Container<Triangle>::List::iterator;
   using DoubleArray = std::array<double,3>;
   using FacetArray = std::array<Facet*,3>;
   using VertexArray = std::array<Vertex*,3>;
@@ -81,9 +79,10 @@ public:
   | Constructor
   ------------------------------------------------------------------*/
   Triangle(Vertex& v1, Vertex& v2, Vertex& v3)
-  : v_ {&v1, &v2, &v3}
+  : ContainerEntry<Triangle> { (v1.xy() + v2.xy() + v3.xy())/3.0 }
+  , v_ {&v1, &v2, &v3}
   {
-    calc_centroid();
+    //calc_centroid();
     calc_area();
     calc_circumcenter();
     calc_edgelengths();
@@ -98,8 +97,6 @@ public:
   /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
-  const ContainerIterator& pos() const { return pos_; }
-
   const Vertex& vertex(size_t i) const { return *v_[i]; }
   const Vertex& v1() const { return *v_[0]; }
   const Vertex& v2() const { return *v_[1]; }
@@ -121,8 +118,7 @@ public:
   Facet* nbr2() { return f_[1]; }
   Facet* nbr3() { return f_[2]; }
 
-
-  const Vec2d& xy() const { return xy_; }
+  const Vec2d& xy() const override { return ContainerEntry<Quad>::xy_; }
   const Vec2d& circumcenter() const { return circ_centr_; }
 
   Mesh* mesh() const { return mesh_; }
@@ -403,10 +399,20 @@ public:
 
   } // intersects_vertex()
 
+    
   /*------------------------------------------------------------------
-  | Mandatory container functions 
+  | Container destructor function
   ------------------------------------------------------------------*/
-  bool in_container() const { return in_container_; }
+  void container_destructor() override
+  {
+    if (v_[0]) v_[0]->remove_facet( *this );
+    if (v_[1]) v_[1]->remove_facet( *this );
+    if (v_[2]) v_[2]->remove_facet( *this );
+
+    v_[0] = nullptr;
+    v_[1] = nullptr;
+    v_[2] = nullptr;
+  }
 
 private:
 
@@ -511,19 +517,6 @@ private:
 
   } // Triangle::calc_shape_factor()
 
-  /*------------------------------------------------------------------
-  | Mandatory container functions 
-  ------------------------------------------------------------------*/
-  void container_destructor() 
-  {
-    if (v_[0]) v_[0]->remove_facet( *this );
-    if (v_[1]) v_[1]->remove_facet( *this );
-    if (v_[2]) v_[2]->remove_facet( *this );
-
-    v_[0] = nullptr;
-    v_[1] = nullptr;
-    v_[2] = nullptr;
-  }
 
   /*------------------------------------------------------------------
   | 
@@ -554,8 +547,6 @@ private:
   DoubleArray          edge_len_     {0.0};
   DoubleArray          angles_       {0.0};
 
-  ContainerIterator    pos_;
-  bool                 in_container_;
 
 }; // Triangle
 

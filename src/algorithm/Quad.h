@@ -73,12 +73,10 @@ class Mesh;
 *
 *
 *********************************************************************/
-class Quad : public Facet
+class Quad : public Facet, public ContainerEntry<Quad>
 {
 public:
 
-  friend Container<Quad>;
-  using ContainerIterator = Container<Quad>::List::iterator;
   using DoubleArray = std::array<double,4>;
   using FacetArray = std::array<Facet*,4>;
   using VertexArray = std::array<Vertex*,4>;
@@ -87,9 +85,10 @@ public:
   | Constructor
   ------------------------------------------------------------------*/
   Quad(Vertex& v1, Vertex& v2, Vertex& v3, Vertex& v4)
-  : v_ {&v1, &v2, &v3, &v4}
+  : ContainerEntry<Quad> { 0.25 * (v1.xy() + v2.xy() + v3.xy() + v4.xy()) }
+  , v_ {&v1, &v2, &v3, &v4}
   {
-    calc_centroid();
+    //calc_centroid();
     calc_area();
     calc_circumcenter();
     calc_edgelengths();
@@ -105,8 +104,6 @@ public:
   /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
-  const ContainerIterator& pos() const { return pos_; }
-
   const Vertex& vertex(size_t i) const { return *v_[i]; }
   const Vertex& v1() const { return *v_[0]; }
   const Vertex& v2() const { return *v_[1]; }
@@ -132,7 +129,7 @@ public:
   Facet* nbr3() { return f_[2]; }
   Facet* nbr4() { return f_[3]; }
 
-  const Vec2d& xy() const { return xy_; }
+  const Vec2d& xy() const override { return ContainerEntry<Quad>::xy_; }
   const Vec2d& circumcenter() const { return circ_centr_; }
 
   Mesh* mesh() const { return mesh_; }
@@ -392,11 +389,22 @@ public:
 
   } // Quad::intersects_front()
 
-  /*------------------------------------------------------------------
-  | Mandatory container functions 
-  ------------------------------------------------------------------*/
-  bool in_container() const { return in_container_; }
 
+  /*------------------------------------------------------------------
+  | Container destructor function
+  ------------------------------------------------------------------*/
+  void container_destructor() override
+  {
+    if (v_[0]) v_[0]->remove_facet( *this );
+    if (v_[1]) v_[1]->remove_facet( *this );
+    if (v_[2]) v_[2]->remove_facet( *this );
+    if (v_[3]) v_[3]->remove_facet( *this );
+
+    v_[0] = nullptr;
+    v_[1] = nullptr;
+    v_[2] = nullptr;
+    v_[3] = nullptr;
+  }
 
 private:
 
@@ -504,22 +512,6 @@ private:
       shape_fac_ = 0.0;
   } 
 
-  /*------------------------------------------------------------------
-  | Mandatory container functions 
-  ------------------------------------------------------------------*/
-  void container_destructor() 
-  {
-    if (v_[0]) v_[0]->remove_facet( *this );
-    if (v_[1]) v_[1]->remove_facet( *this );
-    if (v_[2]) v_[2]->remove_facet( *this );
-    if (v_[3]) v_[3]->remove_facet( *this );
-
-    v_[0] = nullptr;
-    v_[1] = nullptr;
-    v_[2] = nullptr;
-    v_[3] = nullptr;
-  }
-
 
   /*------------------------------------------------------------------
   | 
@@ -549,8 +541,6 @@ private:
   DoubleArray          edge_len_      {0.0};
   DoubleArray          angles_        {0.0};
 
-  ContainerIterator    pos_;
-  bool                 in_container_;
 
 }; // Quad
 
