@@ -29,12 +29,9 @@ class Facet;
 /*********************************************************************
 * This class describes a Vertex in a 2 dimensional domain
 *********************************************************************/
-class Vertex
+class Vertex : public ContainerEntry<Vertex>
 {
 public:
-
-  friend Container<Vertex>;
-  using ContainerIterator = Container<Vertex>::List::iterator;
   using EdgeList = std::list<Edge*>;
   using FacetList = std::list<Facet*>;
   using VertexVector = std::vector<Vertex*>;
@@ -43,10 +40,10 @@ public:
   | Constructor 
   ------------------------------------------------------------------*/
   Vertex(double x, double y, double s=1.0, double r=1.0) 
-  : xy_ {x, y}, sizing_ {s}, range_ {r}
+  : ContainerEntry(x,y), sizing_ {s}, range_ {r}
   {}
   Vertex(const Vec2d& c, double s=1.0, double r=1.0) 
-  : xy_ {c}, sizing_ {s}, range_ {r}
+  : ContainerEntry(c), sizing_ {s}, range_ {r}
   {}
 
   /*------------------------------------------------------------------
@@ -55,16 +52,13 @@ public:
   void index (unsigned int i) { index_ = i; }
   void on_front( bool f ) { on_front_ = f; }
   void on_boundary( bool b ) { on_bdry_ = b; }
-  void xy(const Vec2d& c) { xy_ = c; }
   void is_fixed( bool f ) { is_fixed_ = f; }
 
   /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
-  const Vec2d xy() const { return xy_; }
   double sizing() const { return sizing_; }
   double range() const { return range_; }
-  const ContainerIterator& pos() const { return pos_; }
   unsigned int index() const { return index_; }
   bool on_front() const { return on_front_; }
   bool on_boundary() const { return on_bdry_; }
@@ -132,7 +126,7 @@ public:
   bool intersects_facet(const Container<T>& facets,
                         const double range) const
   {
-    for ( const auto& f : facets.get_items(xy_, range) )
+    for ( const auto& f : facets.get_items(this->xy_, range) )
       if ( f->intersects_vertex( *this ) )
         return true;
 
@@ -140,43 +134,10 @@ public:
 
   } // intersects_facet()
 
-  /*------------------------------------------------------------------
-  | Check if the facets that are adjacent to the vertex do interesect
-  | with each other 
-  ------------------------------------------------------------------*/
-  template <typename T>
-  bool adjacent_facet_intersection(const std::list<T*>& facets) const
-  {
-    for ( const auto& f : facets )
-    {
-      for ( const auto& n : facets )
-      {
-        if ( f == n ) 
-          continue;
-
-        for (size_t i = 0; i < f->n_vertices(); ++i)
-          if ( n->intersects_vertex( f->vertex(i) ) )
-            return true;
-      }
-    }
-    return false;
-  }
-
-  /*------------------------------------------------------------------
-  | Mandatory container functions 
-  ------------------------------------------------------------------*/
-  bool in_container() const { return in_container_; }
-
 private:
-  /*------------------------------------------------------------------
-  | Mandatory container functions 
-  ------------------------------------------------------------------*/
-  void container_destructor() {}
-
   /*------------------------------------------------------------------
   | Vertex attributes 
   ------------------------------------------------------------------*/
-  Vec2d               xy_;
   EdgeList            edges_    { };
   FacetList           facets_   { };
   VertexVector        verts_    { };
@@ -187,10 +148,6 @@ private:
   bool                on_front_ { false };
   bool                on_bdry_  { false };
   bool                is_fixed_ { false };
-
-  // Mandatory container attributes
-  ContainerIterator   pos_;
-  bool                in_container_;
 
 }; // Vertex 
 
@@ -206,9 +163,9 @@ static std::ostream& operator<<(std::ostream& os,
                                 const Vertex& v)
 { return os << v.xy(); }
 
-/***********************************************************
+/*********************************************************************
 * Vertex equality operator 
-***********************************************************/
+*********************************************************************/
 static bool operator==(const Vertex& v1, const Vertex& v2)
 { return &v1 == &v2; }
 static bool operator!=(const Vertex& v1, const Vertex& v2)

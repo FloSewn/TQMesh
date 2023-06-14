@@ -264,4 +264,38 @@ private:
 }; // Container
 
 
+/*********************************************************************
+* 
+*********************************************************************/
+template<typename Derived>
+class ContainerEntry
+{
+public:
+  friend Container<Derived>;
+  using List = typename Container<Derived>::List;
+  using Iterator = typename List::iterator;
+
+  // Constructors
+  ContainerEntry(double x, double y) : xy_ {x, y} {}
+  ContainerEntry(const Vec2d& xy) : xy_ {xy} {}
+
+  // Setters
+  void xy(const Vec2d& c) { xy_ = c; }
+
+  // Getters
+  const Vec2d xy() const { return xy_; }
+  const Iterator& pos() const { return pos_; }
+  bool in_container() const { return in_container_; }
+
+  // Destructor for container garbage collector
+  virtual void container_destructor() {}
+
+protected:
+  Vec2d    xy_            {};
+  Iterator pos_           {};
+  bool     in_container_  {false};
+
+}; 
+
+
 } // namespace CppUtils

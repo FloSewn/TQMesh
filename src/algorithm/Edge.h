@@ -7,7 +7,6 @@
 */
 #pragma once
 
-#include <list>
 #include <iomanip>   
 #include <algorithm>   
 
@@ -43,20 +42,15 @@ class EdgeList;
 *
 *
 *********************************************************************/
-class Edge
+class Edge : public ContainerEntry<Edge>
 {
 public:
-
-  friend Container<Edge>;
-  using List = typename Container<Edge>::List;
-  using ContainerIterator = typename Container<Edge>::List::iterator;
-  using EdgeArray = std::array<Edge*,2>;
-
   /*------------------------------------------------------------------
   | Constructor 
   ------------------------------------------------------------------*/
   Edge(Vertex& v1, Vertex& v2, EdgeList& edgelist, int m) 
-  : v1_       {&v1}
+  : ContainerEntry<Edge>( 0.5 * ( v1.xy()+v2.xy() ) )
+  , v1_       {&v1}
   , v2_       {&v2}
   , edgelist_ {&edgelist} 
   , marker_   {m}
@@ -66,7 +60,6 @@ public:
       
     const Vec2d d_xy = v2_->xy() - v1_->xy();
 
-    xy_     = 0.5 * ( v1_->xy() + v2_->xy() );
     length_ = d_xy.length();
     tang_   = d_xy / length_;
 
@@ -78,24 +71,12 @@ public:
   }
 
   /*------------------------------------------------------------------
-  | Initialize the boundary data structure 
-  ------------------------------------------------------------------*
-  BdryEdgeData* init_bdry_data() 
-  {
-    bdry_data_ = std::make_unique<BdryEdgeData>();
-    return bdry_data_.get();
-  } */
-
-  /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
-  const Vec2d& xy() const { return xy_; }
   int marker() const { return marker_; }
 
   EdgeList& edgelist() { return *edgelist_; }
   const EdgeList& edgelist() const { return *edgelist_; }
-
-  const ContainerIterator& pos() const { return pos_; }
 
   const Vertex& v1() const { return *v1_; };
   const Vertex& v2() const { return *v2_; };
@@ -189,15 +170,9 @@ public:
   } // get_prev_edge()
 
   /*------------------------------------------------------------------
-  | Mandatory container functions 
+  | Destructor function for container garbage collection
   ------------------------------------------------------------------*/
-  bool in_container() const { return in_container_; }
-
-private:
-  /*------------------------------------------------------------------
-  | Mandatory container functions 
-  ------------------------------------------------------------------*/
-  void container_destructor() 
+  void container_destructor() override
   { 
     if (v1_) v1_->remove_edge( *this );
     if (v2_) v2_->remove_edge( *this );
@@ -206,6 +181,8 @@ private:
     v2_ = nullptr;
   }
 
+
+private:
   /*------------------------------------------------------------------
   | Edge attributes 
   ------------------------------------------------------------------*/
@@ -215,7 +192,6 @@ private:
   int                 marker_   { -1 };
 
   // Edge properties
-  Vec2d               xy_          { 0.0, 0.0 };
   double              length_      { 0.0 };
   Vec2d               tang_        { 0.0, 0.0 };
   Vec2d               norm_        { 0.0, 0.0 };
@@ -229,10 +205,6 @@ private:
 
   // Twin edge of a neighbor mesh
   Edge*               twin_edge_ {nullptr};
-
-  // Mandatory container attributes
-  ContainerIterator   pos_;
-  bool                in_container_;
 
 }; // Edge 
 
