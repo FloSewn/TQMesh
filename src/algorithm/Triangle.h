@@ -79,19 +79,29 @@ public:
   | Constructor
   ------------------------------------------------------------------*/
   Triangle(Vertex& v1, Vertex& v2, Vertex& v3)
-  : ContainerEntry<Triangle> { (v1.xy() + v2.xy() + v3.xy())/3.0 }
+  : ContainerEntry<Triangle> { calc_centroid(v1, v2, v3) }
   , v_ {&v1, &v2, &v3}
   {
-    //calc_centroid();
-    calc_area();
-    calc_circumcenter();
-    calc_edgelengths();
-    calc_angles();
-    calc_shape_factor();
+    area_            = calc_area( v1, v2, v3 );
+    circumcenter_    = calc_circumcenter( v1, v2, v3 );
+    circumradius_    = calc_circumradius( v1, circumcenter_ );
+    edge_lengths_[0] = calc_edge_length( v1, v2 );
+    edge_lengths_[1] = calc_edge_length( v2, v3 );
+    edge_lengths_[2] = calc_edge_length( v3, v1 );
+    min_edge_length_ = calc_minimum_edge_length( edge_lengths_ );
+    max_edge_length_ = calc_maximum_edge_length( edge_lengths_ );
+    angles_          = calc_angles( v1, v2, v3, edge_lengths_ );
+    min_angle_       = calc_minimum_angle(angles_);
+    max_angle_       = calc_maximum_angle(angles_);
+    shape_factor_    = calc_shape_factor(edge_lengths_, area_);
 
     v_[0]->add_facet( *this );
     v_[1]->add_facet( *this );
     v_[2]->add_facet( *this );
+
+    ASSERT( (edge_lengths_[0] > 0.0), "Invalid triangle: Vertices collapse.");
+    ASSERT( (edge_lengths_[1] > 0.0), "Invalid triangle: Vertices collapse.");
+    ASSERT( (edge_lengths_[2] > 0.0), "Invalid triangle: Vertices collapse.");
   }
 
   /*------------------------------------------------------------------
@@ -118,8 +128,8 @@ public:
   Facet* nbr2() { return f_[1]; }
   Facet* nbr3() { return f_[2]; }
 
-  const Vec2d& xy() const override { return ContainerEntry<Quad>::xy_; }
-  const Vec2d& circumcenter() const { return circ_centr_; }
+  const Vec2d& xy() const override { return ContainerEntry<Triangle>::xy_; }
+  const Vec2d& circumcenter() const { return circumcenter_; }
 
   Mesh* mesh() const { return mesh_; }
   int color() const { return color_; }
@@ -128,15 +138,15 @@ public:
   bool marker() const { return marker_; }
 
   double area() const { return area_; }
-  double circumradius() const { return circ_radius_; }
+  double circumradius() const { return circumradius_; }
   double min_angle() const { return min_angle_; }
   double max_angle() const { return max_angle_; }
 
   double quality(const double h) const 
   { 
-    const double e1 = edge_len_[0];
-    const double e2 = edge_len_[1];
-    const double e3 = edge_len_[2];
+    const double e1 = edge_lengths_[0];
+    const double e2 = edge_lengths_[1];
+    const double e3 = edge_lengths_[2];
 
     const double f1_1 = e1 / h;
     const double f1_2 = e2 / h;
@@ -150,14 +160,14 @@ public:
     const double q2 = MIN(f1_2, f2_2);
     const double q3 = MIN(f1_3, f2_3);
     
-    return shape_fac_ * q1 * q2 * q3; 
+    return shape_factor_ * q1 * q2 * q3; 
   }
 
-  double edgelength(unsigned int i) const { return edge_len_[i]; }
+  double edgelength(unsigned int i) const { return edge_lengths_[i]; }
   double angle(unsigned int i) const { return angles_[i]; }
 
-  double min_edge_length() const { return min_edge_len_; }
-  double max_edge_length() const { return max_edge_len_; }
+  double min_edge_length() const { return min_edge_length_; }
+  double max_edge_length() const { return max_edge_length_; }
 
   /*------------------------------------------------------------------
   | Setters
@@ -184,7 +194,9 @@ public:
       return false;
     }
 
-    if ( edge_len_[0]<=0.0 || edge_len_[1]<=0.0 || edge_len_[2]<=0.0 )
+    if ( edge_lengths_[0]<=0.0 || 
+         edge_lengths_[1]<=0.0 || 
+         edge_lengths_[2]<=0.0  )
     {
       DEBUG_LOG("  > NON-POSITIVE TRIANGLE EDGE LENGTH ");
       return false;
@@ -414,138 +426,147 @@ public:
     v_[2] = nullptr;
   }
 
-private:
 
   /*------------------------------------------------------------------
   | Compute triangle centroid
   ------------------------------------------------------------------*/
-  void calc_centroid()
-  { 
-    xy_ = ( v_[0]->xy() + v_[1]->xy() + v_[2]->xy() ) / 3.0; 
-  } 
+  static inline Vec2d
+  calc_centroid(const Vertex& v1, const Vertex& v2, const Vertex& v3) 
+  { return (v1.xy() + v2.xy() + v3.xy()) / 3.0; }
 
   /*------------------------------------------------------------------
   | Compute triangle area
   ------------------------------------------------------------------*/
-  void calc_area()
+  static inline double 
+  calc_area(const Vertex& v1, const Vertex& v2, const Vertex& v3)
   {
-    const Vec2d& e1 = v_[1]->xy() - v_[0]->xy();
-    const Vec2d& e2 = v_[2]->xy() - v_[0]->xy();
-    area_ = 0.5 * cross(e1, e2); 
+    const Vec2d& e1 = v2.xy() - v1.xy();
+    const Vec2d& e2 = v3.xy() - v1.xy();
+    return 0.5 * cross(e1, e2); 
   }
 
   /*------------------------------------------------------------------
   | Compute triangle circumcenter
   ------------------------------------------------------------------*/
-  void calc_circumcenter()
+  static inline Vec2d
+  calc_circumcenter(const Vertex& v1, const Vertex& v2, const Vertex& v3)
   {
-    const Vec2d& B = v_[1]->xy() - v_[0]->xy();
-    const Vec2d& C = v_[2]->xy() - v_[0]->xy();
+    const Vec2d& B = v2.xy() - v1.xy();
+    const Vec2d& C = v3.xy() - v1.xy();
+
     double D = 2.0 * cross(B, C);
     double Ux = ( C.y * (B.x*B.x + B.y*B.y) 
                 - B.y * (C.x*C.x + C.y*C.y) ) / D;
     double Uy = ( B.x * (C.x*C.x + C.y*C.y) 
                 - C.x * (B.x*B.x + B.y*B.y) ) / D;
 
-    circ_centr_.x = Ux + v_[0]->xy().x;
-    circ_centr_.y = Uy + v_[0]->xy().y;
+    return { Ux + v1.xy().x, 
+             Uy + v1.xy().y };
+  }
 
-    circ_radius_ = sqrt( Ux * Ux + Uy * Uy );
+  /*------------------------------------------------------------------
+  | Compute triangle circumference radius
+  ------------------------------------------------------------------*/
+  static inline double
+  calc_circumradius(const Vertex& v1, const Vec2d& circumcenter)
+  {
+    double ux = circumcenter.x - v1.xy().x;
+    double uy = circumcenter.y - v1.xy().y;
+    return sqrt(ux * ux + uy * uy);
   }
 
   /*------------------------------------------------------------------
   | Compute triangle edge lengths
   ------------------------------------------------------------------*/
-  void calc_edgelengths()
-  {
-    edge_len_[0] = ( v_[1]->xy() - v_[0]->xy() ).length();
-    edge_len_[1] = ( v_[2]->xy() - v_[1]->xy() ).length();
-    edge_len_[2] = ( v_[0]->xy() - v_[2]->xy() ).length();
+  static inline double
+  calc_edge_length(const Vertex& v1, const Vertex& v2) 
+  { return ( v2.xy() - v1.xy() ).length(); }
 
-    min_edge_len_ = *std::min_element(edge_len_.begin(),
-                                      edge_len_.end()  );
-    max_edge_len_ = *std::max_element(edge_len_.begin(),
-                                      edge_len_.end()  );
-  }
+  static inline double 
+  calc_minimum_edge_length(const DoubleArray& edge_lengths)
+  { return *std::min_element(edge_lengths.begin(), edge_lengths.end()); }
+
+  static inline double 
+  calc_maximum_edge_length(const DoubleArray& edge_lengths)
+  { return *std::max_element(edge_lengths.begin(), edge_lengths.end()); }
 
   /*------------------------------------------------------------------
   | Compute triangle angles
   ------------------------------------------------------------------*/
-  void calc_angles()
+  static inline DoubleArray 
+  calc_angles(const Vertex& v1, const Vertex& v2, const Vertex& v3,
+              const DoubleArray& edge_lengths)
   {
-    const Vec2d& p = v_[0]->xy();
-    const Vec2d& q = v_[1]->xy();
-    const Vec2d& r = v_[2]->xy();
+    const Vec2d& p = v1.xy();
+    const Vec2d& q = v2.xy();
+    const Vec2d& r = v3.xy();
 
-    double l1 = edge_len_[0];
-    double l2 = edge_len_[1];
-    double l3 = edge_len_[2];
+    double l1 = edge_lengths[0];
+    double l2 = edge_lengths[1];
+    double l3 = edge_lengths[2];
 
     double a1 = acos( dot( q-p,  r-p ) / (l1*l3) );
     double a2 = acos( dot( p-q,  r-q ) / (l1*l2) );
     double a3 = acos( dot( p-r,  q-r ) / (l2*l3) );
 
-    angles_[0] = a1;
-    angles_[1] = a2;
-    angles_[2] = a3;
-
-    min_angle_ = *std::min_element(angles_.begin(), 
-                                   angles_.end()  );
-
-    max_angle_ = *std::max_element(angles_.begin(), 
-                                   angles_.end()  );
+    return { a1, a2, a3 };
   }
+
+  static inline double 
+  calc_minimum_angle(const DoubleArray& angles)
+  { return *std::min_element(angles.begin(), angles.end()); }
+
+  static inline double 
+  calc_maximum_angle(const DoubleArray& angles)
+  { return *std::max_element(angles.begin(), angles.end()); }
 
   /*------------------------------------------------------------------
   | Compute triangle shape factor
   ------------------------------------------------------------------*/
-  void calc_shape_factor()
+  static inline double calc_shape_factor(DoubleArray& edge_lengths,
+                                         double area)
   {
     // The norm_factor is used, in order to get:
     // Shape factor -> 1 for equilateral triangles
     // Shape factor -> 0 for bad triangles
 
     const double norm_factor  = 3.4641016151377544;
-    const double edge_sum_sqr = edge_len_[0] * edge_len_[0]
-                              + edge_len_[1] * edge_len_[1]
-                              + edge_len_[2] * edge_len_[2];
+    const double edge_sum_sqr = edge_lengths[0] * edge_lengths[0]
+                              + edge_lengths[1] * edge_lengths[1]
+                              + edge_lengths[2] * edge_lengths[2];
 
     if ( edge_sum_sqr > 0.0 )
-      shape_fac_ = norm_factor * area_ / edge_sum_sqr;
-    else
-      shape_fac_ = 0.0;
+      return norm_factor * area / edge_sum_sqr;
 
-  } // Triangle::calc_shape_factor()
+    return 0.0;
+  } 
 
-
+private:
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  VertexArray          v_ { nullptr };
-  FacetArray           f_ { nullptr };
+  VertexArray          v_               { nullptr };
+  FacetArray           f_               { nullptr };
 
+  int                  color_           {CONSTANTS.default_element_color()};
+  int                  index_           {-1};
+  bool                 active_          {false};
+  bool                 marker_          {false};
 
-  Vec2d                xy_           {0.0, 0.0};
-  Vec2d                circ_centr_   {0.0,0.0};
+  Mesh*                mesh_            {nullptr};
 
-  int                  color_        {CONSTANTS.default_element_color()};
-  int                  index_        {-1};
-  bool                 active_       {false};
-  bool                 marker_       {false};
-
-  Mesh*                mesh_         {nullptr};
-
-  double               area_         {0.0};
-  double               circ_radius_  {0.0};
-  double               min_angle_    {0.0};
-  double               max_angle_    {0.0};
-  double               shape_fac_    {0.0};
-  double               quality_      {0.0};
-  double               min_edge_len_ {0.0};
-  double               max_edge_len_ {0.0};
+  Vec2d                circumcenter_    {0.0,0.0};
+  double               area_            {0.0};
+  double               circumradius_    {0.0};
+  double               min_angle_       {0.0};
+  double               max_angle_       {0.0};
+  double               shape_factor_    {0.0};
+  double               quality_         {0.0};
+  double               min_edge_length_ {0.0};
+  double               max_edge_length_ {0.0};
  
-  DoubleArray          edge_len_     {0.0};
-  DoubleArray          angles_       {0.0};
+  DoubleArray          edge_lengths_    {0.0};
+  DoubleArray          angles_          {0.0};
 
 
 }; // Triangle
