@@ -11,7 +11,7 @@
 
 #include "tests.h"
 
-#include "Vec2.h"
+#include "VecND.h"
 #include "Testing.h"
 #include "Timer.h"
 #include "Container.h"
@@ -165,9 +165,9 @@ void split_edge()
 
   const Vec2d xy_new = 0.5 * (v1.xy() + v2.xy());
 
-  CHECK( ((e1_new->v2().xy() - xy_new).length() < TQ_SMALL) );
+  CHECK( ((e1_new->v2().xy() - xy_new).norm() < TQ_SMALL) );
 
-  CHECK( ((e2_new->v1().xy() - xy_new).length() < TQ_SMALL) );
+  CHECK( ((e2_new->v1().xy() - xy_new).norm() < TQ_SMALL) );
 
 
   // Check for correct order of new edges

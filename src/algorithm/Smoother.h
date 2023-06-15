@@ -7,7 +7,7 @@
 */
 #pragma once
 
-#include "Vec2.h"
+#include "VecND.h"
 #include "utils.h"
 #include "ProgressBar.h"
 

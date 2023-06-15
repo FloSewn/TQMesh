@@ -9,7 +9,7 @@
 
 #include <algorithm>
 
-#include "Vec2.h"
+#include "VecND.h"
 
 #include "utils.h"
 #include "Vertex.h"
@@ -193,9 +193,9 @@ private:
     const Vec2d& n2 = bases_[j]->normal();
     const double l2 = heights_[j];
 
-    const Vec2d  norm  = 0.5 * (n1 + n2);
-    const double l     = 0.5 * (l1 + l2);
-    const Vec2d  nn    = norm / norm.length();
+    const Vec2d  normal  = 0.5 * (n1 + n2);
+    const double l       = 0.5 * (l1 + l2);
+    const Vec2d  nn      = normal / normal.norm();
 
     Vec2d xy_proj = q + nn * l / sin(0.5*alpha);
 
@@ -238,7 +238,7 @@ private:
     // coordinate intersects with the previous edge 
     // If yes, merge them
     const double h     = heights_[0];
-    const double d_fac = (v_prev.xy() - p1_xy_[0]).length() / h;
+    const double d_fac = (v_prev.xy() - p1_xy_[0]).norm() / h;
 
     if ( d_fac < 1.0 )
     {
@@ -363,7 +363,7 @@ private:
     // coordinate intersects with the previous edge 
     // If yes, merge them
     const double h     = heights_.back();
-    const double d_fac = (v_next.xy() - p2_xy_.back()).length() / h;
+    const double d_fac = (v_next.xy() - p2_xy_.back()).norm() / h;
 
     if ( d_fac < 1.0 )
     {

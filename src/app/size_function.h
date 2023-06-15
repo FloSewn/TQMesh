@@ -8,7 +8,7 @@
 #pragma once
 
 #include "utils.h"
-#include "Vec2.h"
+#include "VecND.h"
 #include "Domain.h"
 
 using namespace CppUtils;

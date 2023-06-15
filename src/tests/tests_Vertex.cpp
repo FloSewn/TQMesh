@@ -11,7 +11,7 @@
 
 #include "tests.h"
 
-#include "Vec2.h"
+#include "VecND.h"
 #include "Vertex.h"
 #include "Testing.h"
 

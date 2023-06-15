@@ -7,7 +7,7 @@
 */
 #pragma once
 
-#include "Vec2.h"
+#include "VecND.h"
 #include "Geometry.h"
 #include "Container.h"
 #include "utils.h"

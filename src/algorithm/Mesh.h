@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <limits.h>
 
-#include "Vec2.h"
+#include "VecND.h"
 #include "utils.h"
 #include "VtkIO.h"
 #include "ProgressBar.h"
@@ -1550,8 +1550,8 @@ private:
     std::sort( vertex_candidates.begin(), vertex_candidates.end(), 
     [xy] ( const Vertex* a, const Vertex* b )
     {
-      return ( (a->xy()-xy).length_squared() 
-             < (b->xy()-xy).length_squared() );
+      return ( (a->xy()-xy).norm_sqr() 
+             < (b->xy()-xy).norm_sqr() );
     });
 
     return std::move( vertex_candidates ); 
@@ -2343,8 +2343,8 @@ private:
 
     for ( const auto& v : verts_ )
     {
-      double d2_start = (v_start_in->xy() - v->xy()).length_squared();
-      double d2_end   = (v_end_in->xy() - v->xy()).length_squared();
+      double d2_start = (v_start_in->xy() - v->xy()).norm_sqr();
+      double d2_end   = (v_end_in->xy() - v->xy()).norm_sqr();
 
       if (d2_start < d2_start_min)
       {
@@ -2711,7 +2711,7 @@ private:
       const Vec2d d2 = p2.xy() - c.xy();
 
       const double alpha = angle(d1,d2);
-      const double delta = ( p2.xy() - p1.xy() ).length();
+      const double delta = ( p2.xy() - p1.xy() ).norm();
 
       const double l = 0.5 * ( e_cur->length() + e_next->length() );
       const double h = MIN( l, height );
@@ -2858,8 +2858,8 @@ private:
       std::sort(nbr_edges.begin(), nbr_edges.end(), 
       [v](Edge* e1, Edge* e2)
       {
-        double delta_1 = (e1->xy() - v).length_squared();
-        double delta_2 = (e2->xy() - v).length_squared();
+        double delta_1 = (e1->xy() - v).norm_sqr();
+        double delta_2 = (e2->xy() - v).norm_sqr();
         return (delta_1 < delta_2);
       });
 

@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <numeric>
 
-#include "Vec2.h"
+#include "VecND.h"
 #include "Geometry.h"
 
 #include "utils.h"
@@ -328,7 +328,7 @@ private:
       const Vec2d  dxy_c = 0.5 * ( rho + rho_p ) * tang;
       const Vec2d  xy_c  = xy + dxy_c;
 
-      const double l = ( xy_c - v_a.xy() ).length();
+      const double l = ( xy_c - v_a.xy() ).norm();
       const double s = l / e.length();
 
       xy_new.push_back( xy_c );

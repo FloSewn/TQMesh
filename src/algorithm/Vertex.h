@@ -12,7 +12,7 @@
 #include <algorithm>   
 
 #include "Geometry.h"
-#include "Vec2.h"
+#include "VecND.h"
 #include "Container.h"
 
 namespace TQMesh {

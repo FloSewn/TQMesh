@@ -11,7 +11,7 @@
 #include <list>
 #include <array>
 
-#include "Vec2.h"
+#include "VecND.h"
 #include "Geometry.h"
 
 #include "utils.h"
@@ -390,10 +390,10 @@ public:
       if ( v == *v_[0] || v == *v_[1] || v == *v_[2] || v == *v_[3] )
         continue;
 
-      if (vertex_edge_dist_sqr(v_xy, q1,q2) < min_dist_sqr ||
-          vertex_edge_dist_sqr(v_xy, q2,q3) < min_dist_sqr ||
-          vertex_edge_dist_sqr(v_xy, q3,q4) < min_dist_sqr ||
-          vertex_edge_dist_sqr(v_xy, q4,q1) < min_dist_sqr  )
+      if (distance_point_edge_sqr(v_xy, q1,q2) < min_dist_sqr ||
+          distance_point_edge_sqr(v_xy, q2,q3) < min_dist_sqr ||
+          distance_point_edge_sqr(v_xy, q3,q4) < min_dist_sqr ||
+          distance_point_edge_sqr(v_xy, q4,q1) < min_dist_sqr  )
         return true;
     }
 
@@ -457,10 +457,10 @@ public:
                     const Vertex& v3, const Vertex& v4,
                     const Vec2d& circumcenter)
   {
-    DoubleArray r = { ( circumcenter - v1.xy() ).length(),
-                      ( circumcenter - v2.xy() ).length(),
-                      ( circumcenter - v3.xy() ).length(),
-                      ( circumcenter - v4.xy() ).length() };
+    DoubleArray r = { ( circumcenter - v1.xy() ).norm(),
+                      ( circumcenter - v2.xy() ).norm(),
+                      ( circumcenter - v3.xy() ).norm(),
+                      ( circumcenter - v4.xy() ).norm() };
 
     return *std::max_element( r.begin(), r.end() );
   }
@@ -470,7 +470,7 @@ public:
   ------------------------------------------------------------------*/
   static inline double
   calc_edge_length(const Vertex& v1, const Vertex& v2)
-  { return ( v2.xy() - v1.xy() ).length(); }
+  { return ( v2.xy() - v1.xy() ).norm(); }
 
   static inline double 
   calc_minimum_edge_length(const DoubleArray& edge_lengths)

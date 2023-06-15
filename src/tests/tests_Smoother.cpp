@@ -13,7 +13,7 @@
 
 #include "tests.h"
 
-#include "Vec2.h"
+#include "VecND.h"
 #include "Testing.h"
 
 #include "Vertex.h"

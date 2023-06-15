@@ -8,7 +8,7 @@
 #pragma once
 
 #include "MathUtility.h"
-#include "Vec2.h"
+#include "VecND.h"
 
 namespace CppUtils {
 
@@ -95,7 +95,7 @@ static inline bool in_segment(const Vec2<T>& p,
   const Vec2<T> d_qp  = q-p;
   const Vec2<T> d_rp  = r-p;
   const T t = dot(d_rp, d_qp); 
-  const T l2 = d_qp.length_squared();
+  const T l2 = d_qp.norm_sqr();
 
   if ( t > 0 && t < l2)
     return true;
@@ -118,7 +118,7 @@ static inline bool in_on_segment(const Vec2<T>& p,
   const Vec2<T> d_qp  = q-p;
   const Vec2<T> d_rp  = r-p;
   const T t = dot(d_rp, d_qp); 
-  const T l2 = d_qp.length_squared();
+  const T l2 = d_qp.norm_sqr();
 
   if ( t >= 0 && t <= l2)
     return true;
@@ -411,35 +411,38 @@ inline bool in_quad(const Vec2<T>& v,
 }
 
 /*--------------------------------------------------------------------
-| Function returns the squared normal distance between an
-| edge and a node.
-| The edge is defined through its vertices (v,w)
-| The node is defined through its coordinates p
+| This function returns the squared normal distance between a point p
+| and a line segment defined by its vertices (e1,e2).
 | 
 | Reference:
 | https://stackoverflow.com/questions/849211/shortest-\
 | distance-between-a-point-and-a-line-segment
 --------------------------------------------------------------------*/
-template <typename T>
-inline double vertex_edge_dist_sqr(const Vec2<T>& p,
-                                   const Vec2<T>& v,
-                                   const Vec2<T>& w)
+template <typename CoordType, std::size_t Dim>
+inline double distance_point_edge_sqr(const VecND<CoordType,Dim>& p,
+                                      const VecND<CoordType,Dim>& e1,
+                                      const VecND<CoordType,Dim>& e2)
 {
-  const Vec2<T> d_wv = w - v;
-  const Vec2<T> d_pv = p - v;
+  const VecND<CoordType,Dim> delta_edge = e2 - e1;
+  const VecND<CoordType,Dim> delta_p = p - e1;
 
-  // Project p onto segment v->w
-  const T dot_p = dot(d_pv, d_wv) / d_wv.length_squared();
+  const CoordType zero {};
+  const CoordType one {static_cast<CoordType>(1)};
+
+  // Project p onto segment e1->e2
+  const CoordType dot_p = dot(delta_p, delta_edge) / delta_edge.norm_sqr();
 
   // Clip projection onto the segment 
-  const T t = MAX(0.0, MIN(1.0, dot_p) );
+  const CoordType t = std::clamp(dot_p, zero, one); 
 
   // Projected p 
-  const Vec2<T> proj_p = v + t * d_wv;
+  const VecND<CoordType,Dim> proj_p = e1 + t * delta_edge;
 
   // Squared distance between projected and actual vertex
-  return (p - proj_p).length_squared();
+  return (p - proj_p).norm_sqr();
 }
+
+
 
 /*--------------------------------------------------------------------
 | Check if two segments (which are defined by their ending vertices 

@@ -12,7 +12,7 @@
 #include "tests.h"
 
 #include "utils.h"
-#include "Vec2.h"
+#include "VecND.h"
 #include "Timer.h"
 #include "Container.h"
 #include "Testing.h"
@@ -62,9 +62,9 @@ void initialization()
   CHECK( EQ( t1.max_angle(), 0.5*M_PI) );
   CHECK( EQ( t1.min_angle(), 0.25*M_PI) );
 
-  double dr1 = (t1.v1().xy()-t1.circumcenter()).length();
-  double dr2 = (t1.v1().xy()-t1.circumcenter()).length();
-  double dr3 = (t1.v1().xy()-t1.circumcenter()).length();
+  double dr1 = (t1.v1().xy()-t1.circumcenter()).norm();
+  double dr2 = (t1.v1().xy()-t1.circumcenter()).norm();
+  double dr3 = (t1.v1().xy()-t1.circumcenter()).norm();
 
   CHECK( EQ( dr1, t1.circumradius() ) ); 
   CHECK( EQ( dr2, t1.circumradius() ) ); 

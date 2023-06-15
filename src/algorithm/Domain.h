@@ -230,7 +230,7 @@ public:
 
         const double range = v1.range();
         const double l2 = range * range; 
-        const double r2 = ( xy - v1.xy() ).length_squared();
+        const double r2 = ( xy - v1.xy() ).norm_sqr();
         const double fac  = exp( -r2 / l2);
         scaling *= 1.0 + fac * (s_e*s_v - 1.0);
       }
@@ -243,7 +243,7 @@ public:
       const double range = v->range();
 
       const double l2 = range * range; 
-      const double r2 = ( xy - v->xy() ).length_squared();
+      const double r2 = ( xy - v->xy() ).norm_sqr();
       const double fac  = exp( -r2 / l2);
       scaling *= 1.0 + fac * (s_v - 1.0);
     }

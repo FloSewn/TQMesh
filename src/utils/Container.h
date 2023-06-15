@@ -13,7 +13,7 @@
 #include <utility>        // std::move
 
 #include "QuadTree.h"
-#include "Vec2.h"
+#include "VecND.h"
 #include "Helpers.h"
 #include "Log.h"
 

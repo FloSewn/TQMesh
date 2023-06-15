@@ -11,7 +11,7 @@
 #include <list>
 #include <array>
 
-#include "Vec2.h"
+#include "VecND.h"
 #include "Geometry.h"
 
 #include "utils.h"
@@ -480,7 +480,7 @@ public:
   ------------------------------------------------------------------*/
   static inline double
   calc_edge_length(const Vertex& v1, const Vertex& v2) 
-  { return ( v2.xy() - v1.xy() ).length(); }
+  { return ( v2.xy() - v1.xy() ).norm(); }
 
   static inline double 
   calc_minimum_edge_length(const DoubleArray& edge_lengths)

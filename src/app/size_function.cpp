@@ -6,7 +6,7 @@
 * on usage and license.
 */
 #include "utils.h"
-#include "Vec2.h"
+#include "VecND.h"
 #include "Domain.h"
 
 #include "size_function.h"

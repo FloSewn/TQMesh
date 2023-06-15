@@ -12,7 +12,7 @@
 
 #include "utils.h"
 #include "Geometry.h"
-#include "Vec2.h"
+#include "VecND.h"
 #include "Container.h"
 
 #include "Vertex.h"
@@ -60,7 +60,7 @@ public:
       
     const Vec2d d_xy = v2_->xy() - v1_->xy();
 
-    length_ = d_xy.length();
+    length_ = d_xy.norm();
     tang_   = d_xy / length_;
 
     norm_.x = -tang_.y;

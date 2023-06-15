@@ -11,7 +11,7 @@
 
 #include "Container.h"
 #include "utils.h"
-#include "Vec2.h"
+#include "VecND.h"
 #include "Geometry.h"
 
 #include "Edge.h"

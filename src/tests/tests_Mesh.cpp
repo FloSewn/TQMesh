@@ -13,7 +13,7 @@
 
 #include "tests.h"
 
-#include "Vec2.h"
+#include "VecND.h"
 #include "Testing.h"
 #include "Timer.h"
 #include "Container.h"
@@ -94,7 +94,7 @@ void triangulate()
 
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
-  { return 2.5; };
+  { return 0.5; };
 
   Domain domain   { f, 20.0 };
 

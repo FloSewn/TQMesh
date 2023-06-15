@@ -12,12 +12,11 @@
 #include "tests.h"
 
 #include "Testing.h"
-#include "Vec2.h"
+#include "VecND.h"
 #include "Timer.h"
 #include "Container.h"
 
 #include "utils.h"
-#include "Vec2.h"
 #include "Vertex.h"
 #include "Edge.h"
 #include "Domain.h"
