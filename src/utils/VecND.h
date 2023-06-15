@@ -474,9 +474,9 @@ using Vec2i = VecND<int,2>;
 using Vec2d = VecND<double,2>;
 using Vec2f = VecND<float,2>;
 
-using Vec3i = VecND<int,2>;
-using Vec3d = VecND<double,2>;
-using Vec3f = VecND<float,2>;
+using Vec3i = VecND<int,3>;
+using Vec3d = VecND<double,3>;
+using Vec3f = VecND<float,3>;
 
 template <typename T>
 using Vec2 = VecND<T,2>;
