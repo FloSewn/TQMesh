@@ -80,7 +80,7 @@ public:
   ------------------------------------------------------------------*/
   Triangle(Vertex& v1, Vertex& v2, Vertex& v3)
   : ContainerEntry<Triangle> { TriangleGeometry::calc_centroid(v1, v2, v3) }
-  , v_ {&v1, &v2, &v3}
+  , vertices_ {&v1, &v2, &v3}
   {
     area_            = TriangleGeometry::calc_area( v1, v2, v3 );
     circumcenter_    = TriangleGeometry::calc_circumcenter( v1, v2, v3 );
@@ -88,94 +88,81 @@ public:
     edge_lengths_[0] = TriangleGeometry::calc_edge_length( v1, v2 );
     edge_lengths_[1] = TriangleGeometry::calc_edge_length( v2, v3 );
     edge_lengths_[2] = TriangleGeometry::calc_edge_length( v3, v1 );
-    min_edge_length_ = TriangleGeometry::calc_minimum_edge_length( edge_lengths_ );
-    max_edge_length_ = TriangleGeometry::calc_maximum_edge_length( edge_lengths_ );
+    min_edge_length_ = edge_lengths_.min(); 
+    max_edge_length_ = edge_lengths_.max(); 
     angles_          = TriangleGeometry::calc_angles( v1, v2, v3, edge_lengths_ );
-    min_angle_       = TriangleGeometry::calc_minimum_angle(angles_);
-    max_angle_       = TriangleGeometry::calc_maximum_angle(angles_);
+    min_angle_       = angles_.min(); 
+    max_angle_       = angles_.max(); 
     shape_factor_    = TriangleGeometry::calc_shape_factor(edge_lengths_, area_);
 
-    v_[0]->add_facet( *this );
-    v_[1]->add_facet( *this );
-    v_[2]->add_facet( *this );
+    vertices_[0]->add_facet( *this );
+    vertices_[1]->add_facet( *this );
+    vertices_[2]->add_facet( *this );
 
     ASSERT( (edge_lengths_[0] > 0.0), "Invalid triangle: Vertices collapse.");
     ASSERT( (edge_lengths_[1] > 0.0), "Invalid triangle: Vertices collapse.");
     ASSERT( (edge_lengths_[2] > 0.0), "Invalid triangle: Vertices collapse.");
   }
+    
+  /*------------------------------------------------------------------
+  | Container destructor function
+  ------------------------------------------------------------------*/
+  void container_destructor() override
+  {
+    if (vertices_[0]) vertices_[0]->remove_facet( *this );
+    if (vertices_[1]) vertices_[1]->remove_facet( *this );
+    if (vertices_[2]) vertices_[2]->remove_facet( *this );
+
+    vertices_[0] = nullptr;
+    vertices_[1] = nullptr;
+    vertices_[2] = nullptr;
+  }
 
   /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
-  const Vertex& vertex(size_t i) const { return *v_[i]; }
-  const Vertex& v1() const { return *v_[0]; }
-  const Vertex& v2() const { return *v_[1]; }
-  const Vertex& v3() const { return *v_[2]; }
-  size_t n_vertices() const { return 3; }
+  const Vertex& vertex(size_t i) const { return *vertices_[i]; }
+  Vertex&       vertex(size_t i)       { return *vertices_[i]; }
+  const Vertex& v1() const { return *vertices_[0]; }
+  Vertex&       v1()       { return *vertices_[0]; }
+  const Vertex& v2() const { return *vertices_[1]; }
+  Vertex&       v2()       { return *vertices_[1]; }
+  const Vertex& v3() const { return *vertices_[2]; }
+  Vertex&       v3()       { return *vertices_[2]; }
 
-  Vertex& vertex(size_t i) { return *v_[i]; }
-  Vertex& v1() { return *v_[0]; }
-  Vertex& v2() { return *v_[1]; }
-  Vertex& v3() { return *v_[2]; }
+  const Facet*  neighbor(size_t i) const { return facets_[i]; }
+  Facet*        neighbor(size_t i)       { return facets_[i]; }
+  const Facet*  nbr1() const { return facets_[0]; }
+  Facet*        nbr1()       { return facets_[0]; }
+  const Facet*  nbr2() const { return facets_[1]; }
+  Facet*        nbr2()       { return facets_[1]; }
+  const Facet*  nbr3() const { return facets_[2]; }
+  Facet*        nbr3()       { return facets_[2]; }
 
-  const Facet* neighbor(size_t i) const { return f_[i]; }
-  const Facet* nbr1() const { return f_[0]; }
-  const Facet* nbr2() const { return f_[1]; }
-  const Facet* nbr3() const { return f_[2]; }
-
-  Facet* neighbor(size_t i) { return f_[i]; }
-  Facet* nbr1() { return f_[0]; }
-  Facet* nbr2() { return f_[1]; }
-  Facet* nbr3() { return f_[2]; }
-
-  const Vec2d& xy() const override { return ContainerEntry<Triangle>::xy_; }
-  const Vec2d& circumcenter() const { return circumcenter_; }
-
-  Mesh* mesh() const { return mesh_; }
-  int color() const { return color_; }
-  int index() const { return index_; }
-  bool is_active() const { return active_; }
-  bool marker() const { return marker_; }
-
-  double area() const { return area_; }
-  double circumradius() const { return circumradius_; }
-  double min_angle() const { return min_angle_; }
-  double max_angle() const { return max_angle_; }
-
-  double quality(const double h) const 
-  { 
-    const double e1 = edge_lengths_[0];
-    const double e2 = edge_lengths_[1];
-    const double e3 = edge_lengths_[2];
-
-    const double f1_1 = e1 / h;
-    const double f1_2 = e2 / h;
-    const double f1_3 = e3 / h;
-
-    const double f2_1 = h / e1;
-    const double f2_2 = h / e2;
-    const double f2_3 = h / e3;
-
-    const double q1 = MIN(f1_1, f2_1);
-    const double q2 = MIN(f1_2, f2_2);
-    const double q3 = MIN(f1_3, f2_3);
-    
-    return shape_factor_ * q1 * q2 * q3; 
-  }
-
-  double edgelength(unsigned int i) const { return edge_lengths_[i]; }
-  double angle(unsigned int i) const { return angles_[i]; }
-
-  double min_edge_length() const { return min_edge_length_; }
-  double max_edge_length() const { return max_edge_length_; }
+  size_t        n_vertices() const { return 3; }
+  const  Vec2d& xy() const override { return ContainerEntry<Triangle>::xy_; }
+  const  Vec2d& circumcenter() const { return circumcenter_; }
+  Mesh*         mesh() const { return mesh_; }
+  int           color() const { return color_; }
+  int           index() const { return index_; }
+  bool          is_active() const { return active_; }
+  bool          marker() const { return marker_; }
+  double        area() const { return area_; }
+  double        circumradius() const { return circumradius_; }
+  double        min_angle() const { return min_angle_; }
+  double        max_angle() const { return max_angle_; }
+  double        edgelength(unsigned int i) const { return edge_lengths_[i]; }
+  double        angle(unsigned int i) const { return angles_[i]; }
+  double        min_edge_length() const { return min_edge_length_; }
+  double        max_edge_length() const { return max_edge_length_; }
 
   /*------------------------------------------------------------------
   | Setters
   ------------------------------------------------------------------*/
-  void neighbor(size_t i, Facet* f) { f_[i] = f; }
-  void nbr1(Facet* f) { f_[0] = f; }
-  void nbr2(Facet* f) { f_[1] = f; }
-  void nbr3(Facet* f) { f_[2] = f; }
+  void neighbor(size_t i, Facet* f) { facets_[i] = f; }
+  void nbr1(Facet* f) { facets_[0] = f; }
+  void nbr2(Facet* f) { facets_[1] = f; }
+  void nbr3(Facet* f) { facets_[2] = f; }
 
   void mesh(Mesh* m) { mesh_ = m; }
   void color(int i) { color_ = i; }
@@ -184,49 +171,22 @@ public:
   void marker(bool c){ marker_ = c; }
 
   /*------------------------------------------------------------------
-  | Returns true if the triangle is valid
-  ------------------------------------------------------------------*/
-  bool is_valid() const
-  {
-    if ( area_ <= 0.0 )
-    {
-      DEBUG_LOG("  > NON-POSITIVE TRIANGLE AREA " << area_);
-      return false;
-    }
-
-    if ( edge_lengths_[0]<=0.0 || 
-         edge_lengths_[1]<=0.0 || 
-         edge_lengths_[2]<=0.0  )
-    {
-      DEBUG_LOG("  > NON-POSITIVE TRIANGLE EDGE LENGTH ");
-      return false;
-    }
-
-    return true;
-  }
-
-  /*------------------------------------------------------------------
   | Returns the index of a triangle vertex for a given input vertex
   | Returns -1 if no vertex is found
   ------------------------------------------------------------------*/
   int get_vertex_index(const Vertex& v) const
   {
-    if ( &v == v_[0] )
-      return 0;
-    if ( &v == v_[1] )
-      return 1;
-    if ( &v == v_[2] )
-      return 2;
-
+    if ( &v == vertices_[0] ) return 0;
+    if ( &v == vertices_[1] ) return 1;
+    if ( &v == vertices_[2] ) return 2;
     return -1;
-
-  } //Triangle::get_vertex_index()
+  } 
 
   /*------------------------------------------------------------------
   | Returns the index of a triangle edge for two given input vertices
   | Returns -1 if no edge is found
   |
-  |                   v_[2]
+  |                   vertices_[2]
   |                  x
   |                 / \
   |                /   \
@@ -237,24 +197,25 @@ public:
   |           /             \
   |          /               \
   |         x-----------------x
-  |        v_[0]     e2       v_[1]
+  |   vertices_[0]   e2    vertices_[1]
   |
   ------------------------------------------------------------------*/
   int get_edge_index(const Vertex& v1, const Vertex& v2) const
   {
-    if ( (&v1==v_[0] && &v2==v_[1]) || (&v1==v_[1] && &v2==v_[0]) )
+    if ( (&v1==vertices_[0] && &v2==vertices_[1]) || 
+         (&v1==vertices_[1] && &v2==vertices_[0]) )
       return 2;
 
-    if ( (&v1==v_[1] && &v2==v_[2]) || (&v1==v_[2] && &v2==v_[1]) )
+    if ( (&v1==vertices_[1] && &v2==vertices_[2]) || 
+         (&v1==vertices_[2] && &v2==vertices_[1]) )
       return 0;
 
-    if ( (&v1==v_[2] && &v2==v_[0]) || (&v1==v_[0] && &v2==v_[2]) )
+    if ( (&v1==vertices_[2] && &v2==vertices_[0]) || 
+         (&v1==vertices_[0] && &v2==vertices_[2]) )
       return 1;
 
     return -1;
-
-  } // get_edge_index()
-
+  } 
 
   /*------------------------------------------------------------------
   | Returns true if the triangle intersects with a vertex 
@@ -262,14 +223,7 @@ public:
   |     edges
   ------------------------------------------------------------------*/
   bool intersects_vertex(const Vertex& v) const
-  {
-    if (  v == *v_[0] || v == *v_[1] || v == *v_[2] )
-      return false;
-
-    return in_on_triangle(v.xy(), 
-        v_[0]->xy(), v_[1]->xy(), v_[2]->xy());
-
-  } // Triangle::intersects_vertex() 
+  { return TriangleGeometry::check_intersection(*this, v); }
 
   /*------------------------------------------------------------------
   | Returns true, if any triangle vertex is not within a given domain.
@@ -277,12 +231,7 @@ public:
   | Domain vertices are allowed to be placed on triangle edges.
   ------------------------------------------------------------------*/
   bool intersects_domain(const Domain& domain) const 
-  {
-    return !( domain.is_inside( *v_[0] ) 
-           && domain.is_inside( *v_[1] ) 
-           && domain.is_inside( *v_[2] ) );
-
-  } // Triangle::intersects_domain()
+  { return TriangleGeometry::check_intersection(*this, domain); }
 
   /*------------------------------------------------------------------
   | Returns true if the triangle intersects with a triangle 
@@ -293,38 +242,7 @@ public:
   template <typename T>
   bool intersects_triangle(const Container<T>& tris,
                            const double range) const
-  {
-    for ( const auto& t : tris.get_items(xy_, range) )
-    {
-      // Ignore same triangles
-      if (t == this) continue;
-
-      // Ignore inactive elements
-      if ( !t->is_active() ) continue;
-
-      const Vec2d& p1 = t->v1().xy();
-      const Vec2d& q1 = t->v2().xy();
-      const Vec2d& r1 = t->v3().xy();
-      const Vec2d& c1 = t->xy();
-
-      const Vec2d& p2 = v_[0]->xy();
-      const Vec2d& q2 = v_[1]->xy();
-      const Vec2d& r2 = v_[2]->xy();
-      const Vec2d& c2 = this->xy();
-
-      // Check for triangle edge intersection
-      if ( tri_tri_intersection( p1,q1,r1, p2,q2,r2 ) )
-        return true;
-
-      // Check if one triangle contains the other
-      if (  in_triangle( c1, p2,q2,r2 ) 
-         || in_triangle( c2, p1,q1,r1 ) )
-        return true;
-    }
-
-    return false;
-
-  } // Triangle::intersects_tri() 
+  { return TriangleGeometry::check_intersection(*this, tris, range); }
 
   /*------------------------------------------------------------------
   | Returns true if the triangle intersects with a quad 
@@ -335,28 +253,7 @@ public:
   template <typename T>
   bool intersects_quad(const Container<T>& quads,
                        const double range) const
-  {
-    for ( const auto& q : quads.get_items(xy_, range) )
-    {
-      // Ignore inactive elements
-      if ( !q->is_active() ) continue;
-
-      const Vec2d& p1 = q->v1().xy();
-      const Vec2d& q1 = q->v2().xy();
-      const Vec2d& r1 = q->v3().xy();
-      const Vec2d& s1 = q->v4().xy();
-
-      const Vec2d& p2 = v_[0]->xy();
-      const Vec2d& q2 = v_[1]->xy();
-      const Vec2d& r2 = v_[2]->xy();
-
-      if ( tri_quad_intersection( p2,q2,r2, p1,q1,r1,s1 ) )
-        return true;
-    }
-
-    return false;
-
-  } // Triangle::intersects_quad() 
+  { return TriangleGeometry::check_intersection(*this, quads, range); }
 
   /*------------------------------------------------------------------
   | Returns true if a triangle edge intersects with an edge of 
@@ -364,25 +261,8 @@ public:
   | The factor range scales the vicinity range from which 
   | front edges to pick from
   ------------------------------------------------------------------*/
-  bool intersects_front(const Front& front,
-                        const double range) const 
-  {
-    for (const auto& e : front.edges().get_items(xy_, range))
-    {
-      const Vec2d& e1 = e->v1().xy();
-      const Vec2d& e2 = e->v2().xy();
-
-      const Vec2d& t1   = v_[0]->xy();
-      const Vec2d& t2   = v_[1]->xy();
-      const Vec2d& t3   = v_[2]->xy();
-
-      if ( line_tri_intersection( e1,e2, t1,t2,t3 ) )
-        return true;
-    }
-
-    return false;
-
-  } // Triangle::intersects_front()
+  bool intersects_front(const Front& front, const double range) const 
+  { return TriangleGeometry::check_intersection(*this, front, range); }
 
   /*------------------------------------------------------------------
   | Returns true if the triangle encloses an advancing front vertex.
@@ -391,48 +271,26 @@ public:
   ------------------------------------------------------------------*/
   bool intersects_vertex(const Vertices& verts,
                          const double range) const 
-  {
-    for (const auto& v : verts.get_items(xy_, range))
-    {
-      if (  v == v_[0] || v == v_[1] || v == v_[2] )
-        continue;
+  { return TriangleGeometry::check_intersection(*this, verts, range); }
 
-      const Vec2d& t1   = v_[0]->xy();
-      const Vec2d& t2   = v_[1]->xy();
-      const Vec2d& t3   = v_[2]->xy();
-
-      const Vec2d& xy   = v->xy();
-
-      if ( in_on_triangle( xy, t1,t2,t3 ) )
-        return true;
-    }
-
-    return false;
-
-  } // intersects_vertex()
-
-    
   /*------------------------------------------------------------------
-  | Container destructor function
+  | Compute the triangle quality based on the local mesh scale h
   ------------------------------------------------------------------*/
-  void container_destructor() override
-  {
-    if (v_[0]) v_[0]->remove_facet( *this );
-    if (v_[1]) v_[1]->remove_facet( *this );
-    if (v_[2]) v_[2]->remove_facet( *this );
+  double quality(const double h) const 
+  { return TriangleGeometry::calc_quality(edge_lengths_, shape_factor_, h); }
 
-    v_[0] = nullptr;
-    v_[1] = nullptr;
-    v_[2] = nullptr;
-  }
-
+  /*------------------------------------------------------------------
+  | Returns true if the triangle is valid
+  ------------------------------------------------------------------*/
+  bool is_valid() const
+  { return TriangleGeometry::check_validity(area_, edge_lengths_); }
 
 private:
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  VertexArray          v_               { nullptr };
-  FacetArray           f_               { nullptr };
+  VertexArray          vertices_        { nullptr };
+  FacetArray           facets_          { nullptr };
 
   int                  color_           {CONSTANTS.default_element_color()};
   int                  index_           {-1};
@@ -454,7 +312,6 @@ private:
   Vec3d                edge_lengths_    {0.0};
   Vec3d                angles_          {0.0};
 
-
 }; // Triangle
 
 /*********************************************************************
@@ -465,13 +322,8 @@ using Triangles = Container<Triangle>;
 /*********************************************************************
 * Triangle ostream overload 
 *********************************************************************/
-static std::ostream& operator<<(std::ostream& os, 
-                                const Triangle& t)
-{
-  return os << t.v1() << " -> " << t.v2() << " -> "
-            << t.v3();
-}
-
+static std::ostream& operator<<(std::ostream& os, const Triangle& t)
+{ return os << t.v1() << " -> " << t.v2() << " -> " << t.v3(); }
 
 /*********************************************************************
 * Edge equality operator 

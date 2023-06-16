@@ -9,6 +9,7 @@
 
 #include "VecND.h"
 #include "Geometry.h"
+
 #include "Vertex.h"
 
 namespace TQMesh {
@@ -22,6 +23,8 @@ using namespace CppUtils;
 class TriangleGeometry 
 {
 public:
+
+  using VertexArray = std::array<Vertex*,3>;
 
   /*------------------------------------------------------------------
   | Compute triangle centroid
@@ -78,14 +81,6 @@ public:
   calc_edge_length(const Vertex& v1, const Vertex& v2) 
   { return ( v2.xy() - v1.xy() ).norm(); }
 
-  static inline double 
-  calc_minimum_edge_length(const Vec3d& edge_lengths)
-  { return *std::min_element(edge_lengths.begin(), edge_lengths.end()); }
-
-  static inline double 
-  calc_maximum_edge_length(const Vec3d& edge_lengths)
-  { return *std::max_element(edge_lengths.begin(), edge_lengths.end()); }
-
   /*------------------------------------------------------------------
   | Compute triangle angles
   ------------------------------------------------------------------*/
@@ -108,14 +103,6 @@ public:
     return { a1, a2, a3 };
   }
 
-  static inline double 
-  calc_minimum_angle(const Vec3d& angles)
-  { return *std::min_element(angles.begin(), angles.end()); }
-
-  static inline double 
-  calc_maximum_angle(const Vec3d& angles)
-  { return *std::max_element(angles.begin(), angles.end()); }
-
   /*------------------------------------------------------------------
   | Compute triangle shape factor
   ------------------------------------------------------------------*/
@@ -136,6 +123,201 @@ public:
 
     return 0.0;
   } 
+
+  /*------------------------------------------------------------------
+  | Compute triangle quality value
+  ------------------------------------------------------------------*/
+  static inline double calc_quality(const Vec3d& edge_lengths, 
+                                    const double shape_factor,
+                                    const double mesh_size)
+  {
+    const double f1_1 = edge_lengths[0] / mesh_size;
+    const double f1_2 = edge_lengths[1] / mesh_size;
+    const double f1_3 = edge_lengths[2] / mesh_size;
+
+    const double f2_1 = mesh_size / edge_lengths[0];
+    const double f2_2 = mesh_size / edge_lengths[1];
+    const double f2_3 = mesh_size / edge_lengths[2];
+
+    const double q1 = MIN(f1_1, f2_1);
+    const double q2 = MIN(f1_2, f2_2);
+    const double q3 = MIN(f1_3, f2_3);
+    
+    return shape_factor * q1 * q2 * q3; 
+  }
+
+  /*------------------------------------------------------------------
+  | Check if a triangle is valid
+  ------------------------------------------------------------------*/
+  static inline bool check_validity(const double area, 
+                                    const Vec3d& edge_lengths)
+  {
+    if ( area <= 0.0 )
+    {
+      DEBUG_LOG("  > NON-POSITIVE TRIANGLE AREA " << area);
+      return false;
+    }
+
+    if ( edge_lengths[0]<=0.0 || edge_lengths[1]<=0.0 || 
+         edge_lengths[2]<=0.0  )
+    {
+      DEBUG_LOG("  > NON-POSITIVE TRIANGLE EDGE LENGTH ");
+      return false;
+    }
+
+    return true;
+  }
+
+  /*------------------------------------------------------------------
+  | Check intersection between a triangle <tri> and a vertex <v>
+  ------------------------------------------------------------------*/
+  template <typename T>
+  static inline bool check_intersection(const T& tri,
+                                        const Vertex& v)
+  {
+    if (  v == tri.v1() || v == tri.v2() || v == tri.v3() )
+      return false;
+    return in_on_triangle(v.xy(), tri.v1().xy(), tri.v2().xy(), tri.v3().xy());
+  }
+
+  /*------------------------------------------------------------------
+  | Check intersection between a triangle <tri> and a <domain>
+  ------------------------------------------------------------------*/
+  template <typename T, typename D>
+  static inline bool check_intersection(const T& tri,
+                                        const D& domain)
+  { return !( domain.is_inside( tri.v1() ) 
+           && domain.is_inside( tri.v2() ) 
+           && domain.is_inside( tri.v3() ) ); }
+
+  /*------------------------------------------------------------------
+  | Check intersection between a triangle <tri> and all triangles of a 
+  | given container <container> that are located within <range> 
+  ------------------------------------------------------------------*/
+  template <typename T>
+  static inline bool check_intersection(const T& tri,
+                                        const Container<T>& container,
+                                        const double range)
+  {
+    for ( const auto& t : container.get_items(tri.xy(), range) )
+    {
+      // Ignore same triangles
+      if (t == &tri) continue;
+
+      // Ignore inactive elements
+      if ( !t->is_active() ) continue;
+
+      const Vec2d& p1 = t->v1().xy();
+      const Vec2d& q1 = t->v2().xy();
+      const Vec2d& r1 = t->v3().xy();
+      const Vec2d& c1 = t->xy();
+
+      const Vec2d& p2 = tri.v1().xy();
+      const Vec2d& q2 = tri.v2().xy();
+      const Vec2d& r2 = tri.v3().xy();
+      const Vec2d& c2 = tri.xy();
+
+      // Check for triangle edge intersection
+      if ( tri_tri_intersection( p1,q1,r1, p2,q2,r2 ) )
+        return true;
+
+      // Check if one triangle contains the other
+      if ( in_triangle( c1, p2,q2,r2 ) || in_triangle( c2, p1,q1,r1 ) )
+        return true;
+    }
+
+    return false;
+  }
+
+  /*------------------------------------------------------------------
+  | Check intersection between a triangle <tri> and all quads of a 
+  | given container <container> that are located within <range> 
+  ------------------------------------------------------------------*/
+  template <typename T, typename Q>
+  static inline bool check_intersection(const T& tri,
+                                        const Container<Q>& container,
+                                        const double range)
+  {
+    for ( const auto& q : container.get_items(tri.xy(), range) )
+    {
+      // Ignore inactive elements
+      if ( !q->is_active() ) continue;
+
+      const Vec2d& p1 = q->v1().xy();
+      const Vec2d& q1 = q->v2().xy();
+      const Vec2d& r1 = q->v3().xy();
+      const Vec2d& s1 = q->v4().xy();
+      const Vec2d& c1 = q->xy();
+
+      const Vec2d& p2 = tri.v1().xy();
+      const Vec2d& q2 = tri.v2().xy();
+      const Vec2d& r2 = tri.v3().xy();
+      const Vec2d& c2 = tri.xy();
+
+      // Check for edge intersection
+      if ( tri_quad_intersection( p2,q2,r2, p1,q1,r1,s1 ) )
+        return true;
+
+      // Check if one element contains the other
+      if ( in_triangle( c1, p2,q2,r2 ) || in_quad( c2, p1,q1,r1,s1 ) )
+        return true;
+    }
+
+    return false;
+  }
+
+  /*------------------------------------------------------------------
+  | Check intersection between a triangle <tri> and edges of a 
+  | given advancing front structure that are located within <range> 
+  ------------------------------------------------------------------*/
+  template <typename T, typename F>
+  static inline bool check_intersection(const T& tri, const F& front,
+                                        const double range)
+  {
+    for (const auto& e : front.edges().get_items(tri.xy(), range))
+    {
+      const Vec2d& e1 = e->v1().xy();
+      const Vec2d& e2 = e->v2().xy();
+
+      const Vec2d& t1 = tri.v1().xy();
+      const Vec2d& t2 = tri.v2().xy();
+      const Vec2d& t3 = tri.v3().xy();
+
+      if ( line_tri_intersection( e1,e2, t1,t2,t3 ) )
+        return true;
+    }
+
+    return false;
+  } 
+
+  /*------------------------------------------------------------------
+  | Check intersection between a triangle <tri> and all vertices of a 
+  | given container <container> that are located within <range> 
+  ------------------------------------------------------------------*/
+  template <typename T>
+  static inline bool check_intersection(const T& tri,
+                                        const Vertices& container,
+                                        const double range)
+  {
+    for (const auto& v : container.get_items(tri.xy(), range))
+    {
+      if (  v == &tri.v1() || v == &tri.v2() || v == &tri.v3() )
+        continue;
+
+      const Vec2d& t1 = tri.v1().xy();
+      const Vec2d& t2 = tri.v2().xy();
+      const Vec2d& t3 = tri.v3().xy();
+
+      const Vec2d& xy = v->xy();
+
+      if ( in_on_triangle( xy, t1,t2,t3 ) )
+        return true;
+    }
+
+    return false;
+  }
+
+
 
 }; // TriangleGeometry
 
