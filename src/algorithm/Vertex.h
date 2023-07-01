@@ -57,16 +57,18 @@ public:
   /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
-  double sizing() const { return sizing_; }
-  double range() const { return range_; }
+  double       sizing() const { return sizing_; }
+  double       range() const { return range_; }
   unsigned int index() const { return index_; }
-  bool on_front() const { return on_front_; }
-  bool on_boundary() const { return on_bdry_; }
-  bool is_fixed() const { return is_fixed_; }
+  bool         on_front() const { return on_front_; }
+  bool         on_boundary() const { return on_bdry_; }
+  bool         is_fixed() const { return is_fixed_; }
 
+  /*------------------------------------------------------------------
+  | Access edges that are adjacent to this vertex 
+  ------------------------------------------------------------------*/
   EdgeList& edges() { return edges_;}
   const EdgeList& edges() const { return edges_;}
-
   const Edge& edges(size_t i) const 
   { 
     ASSERT(!( i < 0 || i >= edges_.size() ),
@@ -77,6 +79,9 @@ public:
     return *(*iter);
   }
 
+  /*------------------------------------------------------------------
+  | Access facets that are adjacent to this vertex 
+  ------------------------------------------------------------------*/
   const FacetList& facets() const { return facets_;}
   const Facet& facets(size_t i) const
   {
@@ -88,6 +93,9 @@ public:
     return *(*iter);
   }
 
+  /*------------------------------------------------------------------
+  | Access vertices that are adjacent to this vertex 
+  ------------------------------------------------------------------*/
   const VertexVector& vertices() const { return verts_; }
   VertexVector& vertices() { return verts_; }
   const Vertex* adjacent_vertex(size_t i) const { return verts_[i]; }
@@ -96,6 +104,10 @@ public:
   /*------------------------------------------------------------------
   | Add / remove adjacent simplices 
   ------------------------------------------------------------------*/
+  void add_vertex(Vertex& v) { verts_.push_back(&v); }
+  void remove_vertex(Vertex& v) 
+  { verts_.erase(std::remove(verts_.begin(), verts_.end(), &v), verts_.end()); }
+
   void add_edge(Edge& e) { edges_.push_back(&e); }
   void remove_edge(Edge& e) { edges_.remove(&e); }
 
@@ -105,6 +117,13 @@ public:
   /*------------------------------------------------------------------
   | Functions for adjacency checks
   ------------------------------------------------------------------*/
+  bool is_adjacent(const Vertex& q) 
+  {
+    for ( auto v : verts_ )
+      if ( &q == v ) return true;
+    return false;
+  }
+
   bool is_adjacent(const Edge& q) 
   {
     for ( auto e : edges_ )
