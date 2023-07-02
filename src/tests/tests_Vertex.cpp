@@ -53,7 +53,7 @@ void facets()
   Vertex v1 { 0.0, 0.0 };
   Vertex v2 { 1.0, 0.0 };
   Vertex v3 { 1.0, 1.0 };
-  Vertex v4 { 1.0, 1.0 };
+  Vertex v4 { 0.0, 1.0 };
 
   Triangle t { v1, v2, v3 };
   Quad q { v1, v2, v3, v4 };

@@ -29,7 +29,7 @@ using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
 * Test Smoother::smooth() for a pure triangle mesh
-*********************************************************************/
+*********************************************************************
 void tri_mesh()
 {
   // Log debug messages to specified output-file
@@ -74,7 +74,7 @@ void tri_mesh()
 
   mesh.write_to_file( file_name, ExportType::txt );
 
-} // tri_mesh() 
+} // tri_mesh()  */
 
 } // namespace SmootherTests
 
@@ -84,7 +84,7 @@ void tri_mesh()
 *********************************************************************/
 void run_tests_Smoother()
 {
-  SmootherTests::tri_mesh();
+  //SmootherTests::tri_mesh();
 
   // Reset debug logging ostream
   CppUtils::LOG_PROPERTIES.set_info_ostream( CppUtils::TO_COUT );

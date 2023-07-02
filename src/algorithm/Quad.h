@@ -88,6 +88,8 @@ public:
   : ContainerEntry<Quad> { QuadGeometry::calc_centroid(v1, v2, v3, v4) }
   , vertices_ {&v1, &v2, &v3, &v4}
   {
+    std::fill(facets_.begin(), facets_.end(), &NullFacet::get_instance()); 
+
     area_            = QuadGeometry::calc_area( v1, v2, v3, v4 );
     circumcenter_    = QuadGeometry::calc_circumcenter( v1, v2, v3, v4 );
     circumradius_    = QuadGeometry::calc_circumradius( v1, v2, v3, v4, circumcenter_ );
@@ -154,14 +156,14 @@ public:
   const Facet*  nbr4() const { return facets_[3]; }
   Facet*        nbr4() { return facets_[3]; }
 
-  size_t        n_vertices() const { return 4; }
+  size_t        n_vertices() const override { return 4; }
   const Vec2d&  xy() const override { return ContainerEntry<Quad>::xy_; }
   const Vec2d&  circumcenter() const { return circumcenter_; }
   Mesh*         mesh() const { return mesh_; }
-  int           color() const { return color_; }
-  int           index() const { return index_; }
+  int           color() const override { return color_; }
+  int           index() const override { return index_; }
   bool          is_active() const { return active_; }
-  bool          marker() const { return marker_; }
+  //bool          marker() const { return marker_; }
   double        area() const { return area_; }
   double        circumradius() const { return circumradius_; }
   double        min_angle() const { return min_angle_; }
@@ -175,23 +177,23 @@ public:
   /*------------------------------------------------------------------
   | Setters
   ------------------------------------------------------------------*/
-  void neighbor(size_t i, Facet* f) { facets_[i] = f; }
+  void neighbor(size_t i, Facet* f) override { facets_[i] = f; }
   void nbr1(Facet* f) { facets_[0] = f; }
   void nbr2(Facet* f) { facets_[1] = f; }
   void nbr3(Facet* f) { facets_[2] = f; }
   void nbr4(Facet* f) { facets_[3] = f; }
 
   void mesh(Mesh* m) { mesh_ = m; }
-  void color(int i) { color_ = i; }
-  void index(int i) { index_ = i; }
+  void color(int i) override { color_ = i; }
+  void index(int i) override { index_ = i; }
   void is_active(bool a) { active_ = a; }
-  void marker(bool c){ marker_ = c; }
+  //void marker(bool c){ marker_ = c; }
 
   /*------------------------------------------------------------------
   | Returns the index of a quad vertex for a given input vertex
   | Returns -1 if no vertex is found
   ------------------------------------------------------------------*/
-  int get_vertex_index(const Vertex& v) const
+  int get_vertex_index(const Vertex& v) const override
   {
     if ( &v == vertices_[0] ) return 0;
     if ( &v == vertices_[1] ) return 1;
@@ -218,7 +220,7 @@ public:
   |  vertices_[0]    e3      vertices_[1]
   |
   ------------------------------------------------------------------*/
-  int get_edge_index(const Vertex& v1, const Vertex& v2) const
+  int get_edge_index(const Vertex& v1, const Vertex& v2) const override
   {
     if ( (&v1==vertices_[0] && &v2==vertices_[1]) || 
          (&v1==vertices_[1] && &v2==vertices_[0]) )
@@ -245,7 +247,7 @@ public:
   | --> Vertex is located within the quad or on its
   |     edges
   ------------------------------------------------------------------*/
-  bool intersects_vertex(const Vertex& v) const
+  bool intersects_vertex(const Vertex& v) const override
   { QuadGeometry::check_intersection(*this, v); }
 
   /*------------------------------------------------------------------
@@ -317,13 +319,13 @@ private:
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  VertexArray          vertices_        { nullptr };
-  FacetArray           facets_          { nullptr };
+  VertexArray          vertices_;
+  FacetArray           facets_;
 
   int                  color_           {CONSTANTS.default_element_color()};
   int                  index_           {-1};
   bool                 active_          {false};
-  bool                 marker_          {false};
+  //bool                 marker_          {false};
 
   Mesh*                mesh_            {nullptr};
 

@@ -283,7 +283,7 @@ public:
   void xy(const Vec2d& c) { xy_ = c; }
 
   // Getters
-  const Vec2d xy() const { return xy_; }
+  const Vec2d& xy() const { return xy_; }
   const Iterator& pos() const { return pos_; }
   bool in_container() const { return in_container_; }
 

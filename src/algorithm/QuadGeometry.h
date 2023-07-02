@@ -159,7 +159,7 @@ public:
   {
     if ( area <= 0.0 )
     {
-      DEBUG_LOG("  | NON-POSITIVE QUAD AREA " << area_);
+      DEBUG_LOG("  | NON-POSITIVE QUAD AREA " << area);
       return false;
     }
 

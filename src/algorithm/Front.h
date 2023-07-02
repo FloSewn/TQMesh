@@ -368,7 +368,7 @@ private:
     double s_prev = 0.0;
     for ( int i = 1; i < xy_new.size(); i++ )
     {
-      const double s = ( xy_new[i] - xy_new[0] ).length();
+      const double s = ( xy_new[i] - xy_new[0] ).norm();
       ASSERT( s > s_prev, "ADVANCING FRONT REFINEMENT FAILED." );
       s_prev = s;
     }

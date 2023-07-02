@@ -11,6 +11,12 @@
 #include <string>
 
 /*********************************************************************
+* Adjust logging output stream
+* -> Log debug messages to specified output-file
+*********************************************************************/
+void adjust_logging_output_stream(const std::string& file);
+
+/*********************************************************************
 * The main test function
 *********************************************************************/
 int run_tests(const std::string& library);
@@ -27,3 +33,4 @@ void run_tests_Boundary();
 void run_tests_SizeFunction();
 void run_tests_Smoother();
 void run_tests_Mesh();
+void run_tests_MeshGenerator();

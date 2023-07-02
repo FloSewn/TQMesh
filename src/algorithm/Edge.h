@@ -16,6 +16,7 @@
 #include "Container.h"
 
 #include "Vertex.h"
+#include "Facet.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -25,7 +26,6 @@ using namespace CppUtils;
 /*********************************************************************
 * Forward declarations
 *********************************************************************/
-class Facet;
 class EdgeList;
 
 
@@ -197,8 +197,8 @@ private:
   Vec2d               norm_        { 0.0, 0.0 };
 
   // Pointer to adjacent facets
-  Facet*              face_l_ {nullptr};
-  Facet*              face_r_ {nullptr};
+  Facet*              face_l_ { &NullFacet::get_instance() };
+  Facet*              face_r_ { &NullFacet::get_instance() };
 
   // Sub vertex for quad refinement of the mesh
   Vertex*             sub_vertex_    {nullptr};

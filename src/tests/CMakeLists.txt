@@ -10,6 +10,7 @@ add_executable( ${TESTS}
   tests_SizeFunction.cpp
   tests_Smoother.cpp
   tests_Mesh.cpp
+  tests_MeshGenerator.cpp
   tests.cpp
   main.cpp
 )
