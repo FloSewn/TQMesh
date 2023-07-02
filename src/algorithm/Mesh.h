@@ -18,6 +18,7 @@
 #include "Vertex.h"
 #include "Triangle.h"
 #include "Quad.h"
+#include "NullFacet.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -59,14 +60,17 @@ public:
   /*------------------------------------------------------------------
   | Getters
   ------------------------------------------------------------------*/
-  double area()          const { return mesh_area_; }
-  int    id()            const { return mesh_id_; }
-  int    element_color() const { return elem_color_; }
-  bool   completed()     const { return mesh_completed_; }
-  size_t n_vertices()    const { return verts_.size(); }
-  size_t n_quads()       const { return quads_.size(); }
-  size_t n_triangles()   const { return tris_.size(); }
-  size_t n_elements()    const { return quads_.size() + tris_.size(); }
+  double area()             const { return mesh_area_; }
+  int    id()               const { return mesh_id_; }
+  int    element_color()    const { return elem_color_; }
+  bool   completed()        const { return mesh_completed_; }
+  size_t n_vertices()       const { return verts_.size(); }
+  size_t n_quads()          const { return quads_.size(); }
+  size_t n_triangles()      const { return tris_.size(); }
+  size_t n_elements()       const { return quads_.size() + tris_.size(); }
+  size_t n_interior_edges() const { return intr_edges_.size(); }
+  size_t n_boundary_edges() const { return bdry_edges_.size(); }
+  size_t n_edges()          const { return intr_edges_.size() + bdry_edges_.size(); }
 
   const Vertices& vertices() const { return verts_; }
   Vertices& vertices() { return verts_; }
@@ -101,6 +105,12 @@ public:
   }
 
   /*------------------------------------------------------------------
+  | Check if the mesh is empty
+  ------------------------------------------------------------------*/
+  bool is_empty() const 
+  { return ( n_vertices()==0 && n_elements()==0 && n_edges()==0 ); }
+
+  /*------------------------------------------------------------------
   | Return mesh entities within a given position and radius
   ------------------------------------------------------------------*/
   VertexVector 
@@ -123,6 +133,29 @@ public:
   get_bdry_edges(const Vec2d& center, double radius) const
   { return std::move( bdry_edges_.get_edges(center, radius ) ); }
 
+
+  /*------------------------------------------------------------------
+  | For a given pair of vertices (v1,v2) return a corresponding
+  | edge from the mesh that connects them
+  ------------------------------------------------------------------*/
+  Edge* get_edge(const Vertex& v1, const Vertex& v2, bool dir=false)
+  const 
+  {
+    Edge* found = nullptr;
+
+    found = intr_edges_.get_edge(v1, v2, dir);
+
+    if ( found != nullptr )
+      return found;
+
+    found = bdry_edges_.get_edge(v1, v2, dir);
+
+    if ( found != nullptr )
+      return found;
+
+    return found;
+
+  } // Mesh::get_edge()
 
 
   /*------------------------------------------------------------------

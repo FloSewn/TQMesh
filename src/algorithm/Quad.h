@@ -21,6 +21,7 @@
 #include "Front.h"
 #include "Domain.h"
 #include "QuadGeometry.h"
+#include "NullFacet.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {

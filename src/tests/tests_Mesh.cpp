@@ -104,6 +104,8 @@ void clear_double_quad_edges()
   CHECK( v4.facets().size() == 4 );
   CHECK( v6.facets().size() == 2 );
 
+  CHECK( Cleanup::check_mesh_validity(mesh) );
+
   Cleanup::assign_mesh_indices(mesh);
   Cleanup::setup_vertex_connectivity(mesh);
   Cleanup::setup_facet_connectivity(mesh);
@@ -174,6 +176,7 @@ void clear_double_triangle_edges()
   CHECK( v4.facets().size() == 4 );
   CHECK( v6.facets().size() == 2 );
 
+  CHECK( Cleanup::check_mesh_validity(mesh) );
 
   Cleanup::assign_mesh_indices(mesh);
   Cleanup::setup_vertex_connectivity(mesh);

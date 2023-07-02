@@ -18,6 +18,7 @@
 #include "Vertex.h"
 #include "Triangle.h"
 #include "Quad.h"
+#include "NullFacet.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -31,6 +32,71 @@ using namespace CppUtils;
 class Cleanup
 {
 public:
+
+  /*------------------------------------------------------------------
+  | Check the facet-vertex-edge connectivtiy of a given mesh
+  ------------------------------------------------------------------*/
+  template <typename Mesh>
+  static inline bool check_mesh_validity(Mesh& mesh)
+  { 
+    // Check connectivity for interior edges
+    for ( const auto& e_ptr : mesh.interior_edges() )
+    {
+      const Vertex& v1 = e_ptr->v1();
+      const Vertex& v2 = e_ptr->v2();
+
+      bool check_1 = false; bool check_2 = false;
+
+      // Traverse adjacents facets of both vertices 
+      // and search for the current interior edge
+      for ( auto f : v1.facets() )
+      {
+        check_1 = ( f->get_edge_index(v1, v2) >= 0 );
+        if (check_1) break;
+      }
+
+      for ( auto f : v2.facets() )
+      {
+        check_2 = ( f->get_edge_index(v1, v2) >= 0 );
+        if (check_2) break;
+      }
+
+      // Edge was not found 
+      if (!check_1 || !check_2) 
+        return false;
+    }
+
+    // Check connectivity for boundary edges
+    for ( const auto& e_ptr : mesh.boundary_edges() )
+    {
+      const Vertex& v1 = e_ptr->v1();
+      const Vertex& v2 = e_ptr->v2();
+
+      bool check_1 = false; bool check_2 = false;
+
+      // Traverse adjacents facets of both vertices 
+      // and search for the current interior edge
+      for ( auto f : v1.facets() )
+      {
+        check_1 = ( f->get_edge_index(v1, v2) >= 0 );
+        if (check_1) break;
+      }
+
+      for ( auto f : v2.facets() )
+      {
+        check_2 = ( f->get_edge_index(v1, v2) >= 0 );
+        if (check_2) break;
+      }
+
+      // Edge was not found 
+      if (!check_1 || !check_2) 
+        return false;
+    }
+
+    return true;
+
+  } // Cleanup::check_mesh_validity()
+
 
   /*------------------------------------------------------------------
   | This function assigns a corresponding global index to the 
@@ -120,7 +186,7 @@ public:
   template <typename Mesh>
   static inline void setup_facet_connectivity(Mesh& mesh)
   {
-    // Setup connectivity for interor edges
+    // Setup connectivity for interior edges
     for ( const auto& e_ptr : mesh.interior_edges() )
     {
       Facet* f1 = &NullFacet::get_instance();
@@ -129,8 +195,7 @@ public:
       const Vertex& v1 = e_ptr->v1();
       const Vertex& v2 = e_ptr->v2();
 
-      int idx1 {-1};
-      int idx2 {-1};
+      int idx1 = -1; int idx2 = -1;
 
       // Search the two facets (f1,f2), that share the current edge
       for ( auto f : v1.facets() )

@@ -23,6 +23,8 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "MeshGenerator.h"
+#include "FrontTriangulation.h"
+#include "Cleanup.h"
 
 namespace MeshGeneratorTests 
 {
@@ -86,14 +88,51 @@ void initialization()
   outer_interior_bdry.add_edge( v7, v8, interior_edge_marker );
   outer_interior_bdry.add_edge( v8, v5, interior_edge_marker );
 
-
-
-
   // Setup the generator
   //MeshGenerator mesh_generator { outer_domain };
+    
+    
+} // initialization()
+
+/*********************************************************************
+* Test mesh initialization for two meshes of different colors and 
+* size functions
+*********************************************************************/
+void front_triangulation()
+{
+  // Define a variable size function
+  UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
+
+  // Define the outer domain
+  double quadtree_scale = 10.0;
+  Domain domain { f, quadtree_scale };
+
+  // Define boundary vertices 
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0 );
+  Vertex& v3 = domain.add_vertex(  5.0,  5.0 );
+  Vertex& v4 = domain.add_vertex(  0.0,  5.0 );
+
+  // Build domain boundary
+  int exterior_edge_marker = 1;
+  Boundary& exterior_bdry = domain.add_exterior_boundary();
+  exterior_bdry.add_edge( v1, v2, exterior_edge_marker );
+  exterior_bdry.add_edge( v2, v3, exterior_edge_marker );
+  exterior_bdry.add_edge( v3, v4, exterior_edge_marker );
+  exterior_bdry.add_edge( v4, v1, exterior_edge_marker );
 
 
-}
+  FrontTriangulation triangulation {};
+
+  Mesh mesh = triangulation.create_empty_mesh(domain);
+
+  triangulation.prepare_mesh(mesh, domain);
+
+  Cleanup::assign_mesh_indices(mesh);
+
+  LOG(INFO) << "\n" << mesh;
+
+} // front_triangulation()
 
 } // namespace MeshGeneratorTests
 
@@ -104,6 +143,9 @@ void run_tests_MeshGenerator()
 {
   adjust_logging_output_stream("MeshGeneratorTests.initialization.log");
   MeshGeneratorTests::initialization();
+
+  adjust_logging_output_stream("MeshGeneratorTests.front_triangulation.log");
+  MeshGeneratorTests::front_triangulation();
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");
