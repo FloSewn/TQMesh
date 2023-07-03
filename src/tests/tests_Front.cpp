@@ -24,41 +24,13 @@
 #include "Edge.h"
 #include "Domain.h"
 #include "Front.h"
+#include "Mesh.h"
+#include "FrontInitializer.h"
 
 namespace FrontTests 
 {
 using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
-
-/*********************************************************************
-* Helper function to create the data structure that is needed for 
-* the initialization of the advancing front
-*********************************************************************/
-FrontInitData collect_front_data(const Domain& domain)
-{
-  FrontInitData front_data {};
-
-  for ( const auto& boundary : domain )
-  {
-    std::vector<Edge*> edges {};
-    std::vector<bool>  is_oriented {};
-    std::vector<int>   markers {};
-
-    for ( const auto& e : boundary->edges() )
-    {
-      edges.push_back( e.get() ) ;
-      is_oriented.push_back( true );
-      markers.push_back( e->marker() );
-    }
-
-    front_data.edges.push_back( edges );
-    front_data.is_oriented.push_back( is_oriented );
-    front_data.markers.push_back( markers );
-  }
-
-  return std::move( front_data );
-}
-
 
 /*********************************************************************
 * Test the initialization of the front
@@ -98,7 +70,8 @@ void initialization()
   b_int.add_edge( v8, v5, 2 );
 
   // Collect data for the initialization of the advancing front
-  FrontInitData front_data = collect_front_data( domain );
+  std::vector<Mesh*> dummy {};
+  FrontInitializer front_data { domain, dummy };
 
   // Advancing front requires initialized vertex container
   Vertices vertices { 10.0 };
@@ -186,7 +159,8 @@ void sort_edges()
   b_int.add_edge( v8, v5, 2 );
 
   // Collect data for the initialization of the advancing front
-  FrontInitData front_data = collect_front_data( domain );
+  std::vector<Mesh*> dummy {};
+  FrontInitializer front_data { domain, dummy };
 
   // Advancing front requires initialized vertex container
   Vertices vertices { 10.0 };
@@ -251,7 +225,8 @@ void edge_size()
 
 
   // Collect data for the initialization of the advancing front
-  FrontInitData front_data = collect_front_data( domain );
+  std::vector<Mesh*> dummy {};
+  FrontInitializer front_data { domain, dummy };
 
   // Advancing front requires initialized vertex container
   Vertices vertices {};

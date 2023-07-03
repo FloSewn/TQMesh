@@ -100,37 +100,55 @@ void initialization()
 *********************************************************************/
 void mesh_initializer()
 {
-  // Define a variable size function
-  UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
+  // Define size functions
+  UserSizeFunction f_1 = [](const Vec2d& p) { return 1.0; };
+  UserSizeFunction f_2 = [](const Vec2d& p) { return 0.5; };
 
-  // Define the outer domain
-  double quadtree_scale = 10.0;
-  Domain domain { f, quadtree_scale };
+  // Define domains
+  double quadtree_scale = 20.0;
+  Domain domain_1 { f_1, quadtree_scale };
+  Domain domain_2 { f_2, quadtree_scale };
 
   // Define boundary vertices 
-  Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
-  Vertex& v2 = domain.add_vertex(  5.0,  0.0 );
-  Vertex& v3 = domain.add_vertex(  5.0,  5.0 );
-  Vertex& v4 = domain.add_vertex(  0.0,  5.0 );
+  Vertex& v1_1 = domain_1.add_vertex(  0.0,  0.0 );
+  Vertex& v2_1 = domain_1.add_vertex(  5.0,  0.0 );
+  Vertex& v3_1 = domain_1.add_vertex(  5.0,  5.0 );
+  Vertex& v4_1 = domain_1.add_vertex(  0.0,  5.0 );
 
-  // Build domain boundary
-  int exterior_edge_marker = 1;
-  Boundary& exterior_bdry = domain.add_exterior_boundary();
-  exterior_bdry.add_edge( v1, v2, exterior_edge_marker );
-  exterior_bdry.add_edge( v2, v3, exterior_edge_marker );
-  exterior_bdry.add_edge( v3, v4, exterior_edge_marker );
-  exterior_bdry.add_edge( v4, v1, exterior_edge_marker );
+  Vertex& v1_2 = domain_2.add_vertex(  5.0,  0.0 );
+  Vertex& v2_2 = domain_2.add_vertex( 10.0,  0.0 );
+  Vertex& v3_2 = domain_2.add_vertex( 10.0,  5.0 );
+  Vertex& v4_2 = domain_2.add_vertex(  5.0,  5.0 );
 
+  // Build domain boundaries
+  int edge_marker = 1;
+  Boundary& bdry_1 = domain_1.add_exterior_boundary();
+  Boundary& bdry_2 = domain_2.add_exterior_boundary();
+  
+  bdry_1.add_edge( v1_1, v2_1, edge_marker );
+  bdry_1.add_edge( v2_1, v3_1, edge_marker );
+  bdry_1.add_edge( v3_1, v4_1, edge_marker );
+  bdry_1.add_edge( v4_1, v1_1, edge_marker );
+
+  bdry_2.add_edge( v1_2, v2_2, edge_marker );
+  bdry_2.add_edge( v2_2, v3_2, edge_marker );
+  bdry_2.add_edge( v3_2, v4_2, edge_marker );
+  bdry_2.add_edge( v4_2, v1_2, edge_marker );
 
   MeshInitializer initializer {};
 
-  Mesh mesh = initializer.create_empty_mesh(domain);
+  Mesh mesh_2 = initializer.create_empty_mesh(domain_2);
+  initializer.prepare_mesh(mesh_2, domain_2);
+  initializer.add_mesh_and_domain(mesh_2, domain_2);
 
-  initializer.prepare_mesh(mesh, domain);
+  Mesh mesh_1 = initializer.create_empty_mesh(domain_1);
+  initializer.prepare_mesh(mesh_1, domain_1);
+  initializer.add_mesh_and_domain(mesh_1, domain_1);
 
-  Cleanup::assign_mesh_indices(mesh);
+  Cleanup::assign_mesh_indices(mesh_1);
+  Cleanup::assign_mesh_indices(mesh_2);
 
-  LOG(INFO) << "\n" << mesh;
+  LOG(INFO) << "\n" << mesh_1;
 
 } // mesh_initializer()
 

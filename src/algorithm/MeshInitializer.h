@@ -13,6 +13,7 @@
 
 #include "Domain.h"
 #include "Mesh.h"
+#include "FrontInitializer.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -181,7 +182,7 @@ public:
       n_overlaps += domain.get_overlaps( *domains_[i_domain] );
 
     // Get all edges that will define the advancing front
-    FrontInitData front_data = collect_front_edges(domain);
+    FrontInitializer front_data { domain, meshes_ };
 
     // Initialize edges in a temporary advancing front
     Front tmp_front {};
@@ -212,112 +213,6 @@ public:
 
 
 private:
-
-  /*------------------------------------------------------------------
-  | For a given domain boundary edge <e>, 
-  | search all boundary edges of a 
-  | neighboring mesh, that are contained within <e>.
-  | This function is used upon the initialization of the advancing
-  | front.
-  ------------------------------------------------------------------*/
-  EdgeVector get_neighbor_mesh_edges(const Edge& e) const
-  {
-    EdgeVector   nbr_edges {};
-
-    const Vec2d& c = e.xy();
-    double       r = CONSTANTS.edge_search_factor() * e.length();
-
-    const Vec2d& v = e.v1().xy();
-    const Vec2d& w = e.v2().xy();
-
-    for ( Mesh* m : meshes_ )
-    {
-      ASSERT( m, "Neighbor mesh data structure is invalid." );
-
-      // Get edges in the vicinity of the given edge
-      EdgeVector edges_in_vicinity = m->get_bdry_edges(c, r);
-
-      // Get all edges, that are actually located on the segment
-      // of the current domain boundary edge 
-      for ( Edge* e_vicinity : edges_in_vicinity )
-      {
-        const Vec2d& p = e_vicinity->v1().xy();
-        const Vec2d& q = e_vicinity->v2().xy();
-
-        if ( in_on_segment(v,w,p) && in_on_segment(v,w,q) )
-          nbr_edges.push_back( e_vicinity );
-      }
-
-      // In case edges have been found, sort them in 
-      // ascending direction to the stating vertex
-      std::sort(nbr_edges.begin(), nbr_edges.end(), 
-      [v](Edge* e1, Edge* e2)
-      {
-        double delta_1 = (e1->xy() - v).norm_sqr();
-        double delta_2 = (e2->xy() - v).norm_sqr();
-        return (delta_1 < delta_2);
-      });
-
-      // If edges have been located, terminate the search
-      // --> First come, first serve
-      if ( nbr_edges.size() > 0 )
-        break;
-    }
-
-    return std::move(nbr_edges);
-  }
-
-
-  /*------------------------------------------------------------------
-  | Collect all boundary / neighbor-mesh edges that will be used 
-  | for the creation of the advancing front
-  | Additionally, return also an array of booleans, which indicate
-  | the orientation of the given edges.
-  | Edges which result from neighbor mesh are oriented in the 
-  | opposite direction. This can be used to identify these edges
-  | from normal boundary edges (e.g. for the advancing front 
-  | refinement).
-  ------------------------------------------------------------------*/
-  FrontInitData collect_front_edges(Domain& domain) const
-  {
-    FrontInitData front_data {};
-
-    for ( const auto& boundary : domain )
-    {
-      EdgeVector edges {};
-      IntVector  markers {};
-      BoolVector is_oriented {};
-
-      for ( const auto& e : boundary->edges() )
-      {
-        EdgeVector nbr_edges = get_neighbor_mesh_edges(*e);
-
-        if ( nbr_edges.size() > 0 )
-        {
-          for ( Edge* nbr_e : nbr_edges )
-          {
-            edges.push_back( nbr_e );
-            is_oriented.push_back( false );
-            markers.push_back( nbr_e->marker() );
-          }
-        }
-        else
-        {
-          edges.push_back( e.get() ) ;
-          is_oriented.push_back( true );
-          markers.push_back( e->marker() );
-        }
-      }
-
-      front_data.edges.push_back( edges );
-      front_data.is_oriented.push_back( is_oriented );
-      front_data.markers.push_back( markers );
-    }
-
-    return std::move(front_data); 
-
-  } // Mesh::collect_front_edges()
-
 
   /*------------------------------------------------------------------
   | Attributes

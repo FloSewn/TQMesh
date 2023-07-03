@@ -32,40 +32,6 @@ using namespace CppUtils;
 * The advancing front - defined by a list of edges
 * > Must be defined counter-clockwise
 *********************************************************************/
-struct FrontInitData
-{
-  using IntVector    = std::vector<int>;
-  using BoolVector   = std::vector<bool>;
-  using EdgeVector   = std::vector<Edge*>;
-
-  FrontInitData() = default;
-  ~FrontInitData() = default;
-
-  FrontInitData(FrontInitData&& f)
-  : edges { std::move(f.edges) }
-  , markers { std::move(f.markers) }
-  , is_oriented { std::move(f.is_oriented) }
-  {}
-  
-  FrontInitData& operator=(FrontInitData&& f)
-  {
-    edges = std::move(f.edges);
-    markers = std::move(f.markers);
-    is_oriented = std::move(f.is_oriented);
-    return *this;
-  }
-
-  std::vector<EdgeVector> edges;
-  std::vector<IntVector>  markers {};
-  std::vector<BoolVector> is_oriented {};
-
-}; // FrontInitData
-
-
-/*********************************************************************
-* The advancing front - defined by a list of edges
-* > Must be defined counter-clockwise
-*********************************************************************/
 class Front : public EdgeList
 {
   using BoolVector   = std::vector<bool>;
@@ -81,23 +47,24 @@ public:
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  Front() : EdgeList( Orientation::NONE )
-  {}
+  Front() : EdgeList( Orientation::NONE ) {}
+  ~Front() {}
 
   /*------------------------------------------------------------------
   |
   ------------------------------------------------------------------*/
-  void init_front_edges(const Domain&         domain, 
-                        const FrontInitData&  front_data,
-                        Vertices&             mesh_vertices)
+  template <typename FrontInitializer>
+  void init_front_edges(const Domain&            domain, 
+                        const FrontInitializer&  front_data,
+                        Vertices&                mesh_vertices)
   {
     BoolVector edges_to_refine {};
 
     for ( size_t i_bdry = 0; i_bdry < domain.size(); ++i_bdry )
     {
-      const EdgeVector& front_edges = front_data.edges[i_bdry];
-      const BoolVector& is_oriented = front_data.is_oriented[i_bdry];
-      const IntVector&  markers     = front_data.markers[i_bdry];
+      const EdgeVector& front_edges = front_data.edges()[i_bdry];
+      const BoolVector& is_oriented = front_data.is_oriented()[i_bdry];
+      const IntVector&  markers     = front_data.markers()[i_bdry];
 
       VertexVector new_vertices {};
 
