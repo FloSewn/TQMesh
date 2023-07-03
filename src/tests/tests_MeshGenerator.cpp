@@ -23,7 +23,7 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "MeshGenerator.h"
-#include "FrontTriangulation.h"
+#include "MeshInitializer.h"
 #include "Cleanup.h"
 
 namespace MeshGeneratorTests 
@@ -98,7 +98,7 @@ void initialization()
 * Test mesh initialization for two meshes of different colors and 
 * size functions
 *********************************************************************/
-void front_triangulation()
+void mesh_initializer()
 {
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
@@ -122,17 +122,17 @@ void front_triangulation()
   exterior_bdry.add_edge( v4, v1, exterior_edge_marker );
 
 
-  FrontTriangulation triangulation {};
+  MeshInitializer initializer {};
 
-  Mesh mesh = triangulation.create_empty_mesh(domain);
+  Mesh mesh = initializer.create_empty_mesh(domain);
 
-  triangulation.prepare_mesh(mesh, domain);
+  initializer.prepare_mesh(mesh, domain);
 
   Cleanup::assign_mesh_indices(mesh);
 
   LOG(INFO) << "\n" << mesh;
 
-} // front_triangulation()
+} // mesh_initializer()
 
 } // namespace MeshGeneratorTests
 
@@ -144,8 +144,8 @@ void run_tests_MeshGenerator()
   adjust_logging_output_stream("MeshGeneratorTests.initialization.log");
   MeshGeneratorTests::initialization();
 
-  adjust_logging_output_stream("MeshGeneratorTests.front_triangulation.log");
-  MeshGeneratorTests::front_triangulation();
+  adjust_logging_output_stream("MeshGeneratorTests.mesh_initializer.log");
+  MeshGeneratorTests::mesh_initializer();
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");

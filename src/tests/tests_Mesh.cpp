@@ -127,9 +127,7 @@ void clear_double_quad_edges()
   CHECK( mesh.n_quads() == 2 );
   CHECK( mesh.n_triangles() == 1 );
 
-  LOG_PROPERTIES.set_info_header( "" );
-  LOG(INFO) << mesh;
-  LOG_PROPERTIES.set_info_header( "  " );
+  LOG(INFO) << "\n" << mesh;
 
 } // clear_double_quad_edges()
 
@@ -184,10 +182,7 @@ void clear_double_triangle_edges()
 
   Cleanup::clear_double_triangle_edges(mesh, false);
 
-  LOG_PROPERTIES.set_info_header( "" );
-  LOG(INFO) << mesh;
-  LOG_PROPERTIES.set_info_header( "  " );
-
+  LOG(INFO) << "\n" << mesh;
 
 } // clear_double_triangle_edges()
 
