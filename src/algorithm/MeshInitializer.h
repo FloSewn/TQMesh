@@ -186,7 +186,7 @@ public:
 
     // Initialize edges in a temporary advancing front
     Front tmp_front {};
-    tmp_front.init_front_edges(domain, front_data, mesh.vertices());
+    tmp_front.init_front(domain, front_data, mesh.vertices());
 
     // Setup the mesh's boundary edges from the initial advancing front
     for ( auto& e : tmp_front )

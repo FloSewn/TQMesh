@@ -202,7 +202,7 @@ private:
   Facet*              face_r_ { &NullFacet::get_instance() };
 
   // Sub vertex for quad refinement of the mesh
-  Vertex*             sub_vertex_    {nullptr};
+  Vertex*             sub_vertex_ {nullptr};
 
   // Twin edge of a neighbor mesh
   Edge*               twin_edge_ {nullptr};

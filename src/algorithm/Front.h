@@ -51,73 +51,6 @@ public:
   ~Front() {}
 
   /*------------------------------------------------------------------
-  |
-  ------------------------------------------------------------------*/
-  template <typename FrontInitializer>
-  void init_front_edges(const Domain&            domain, 
-                        const FrontInitializer&  front_data,
-                        Vertices&                mesh_vertices)
-  {
-    BoolVector edges_to_refine {};
-
-    for ( size_t i_bdry = 0; i_bdry < domain.size(); ++i_bdry )
-    {
-      const EdgeVector& front_edges  = front_data.edges()[i_bdry];
-      const BoolVector& is_twin_edge = front_data.is_twin_edge()[i_bdry];
-      const IntVector&  markers      = front_data.markers()[i_bdry];
-
-      VertexVector new_vertices {};
-
-      for ( size_t i = 0; i < front_edges.size(); ++i )
-      {
-        Edge* e = front_edges[i];
-
-        Vertex& v1 = ( !is_twin_edge[i] ) ? e->v1() : e->v2();
-
-        Vertex& v_new = mesh_vertices.push_back( v1.xy(), 
-                                                 v1.sizing(), 
-                                                 v1.range() );
-        v_new.on_front( true );
-        v_new.on_boundary( true );
-        v_new.is_fixed( true );
-
-        new_vertices.push_back( &v_new );
-      }
-
-      int n_verts = static_cast<int>( new_vertices.size() );
-
-      for ( size_t i_edge = 0; i_edge < front_edges.size(); ++i_edge )
-      {
-        int i1 = static_cast<int>( i_edge );
-        int i2 = MOD( i1+1, n_verts );
-
-        Vertex* v1 = new_vertices[i1];
-        Vertex* v2 = new_vertices[i2];
-
-        Edge& e_new = this->add_edge( *v1, *v2, markers[i_edge] );
-
-        // Connect the boundary edge of the neighbor mesh
-        // and the new front edge
-        if ( is_twin_edge[i_edge] )
-        {
-          Edge* twin_edge = front_edges[i_edge];
-          e_new.twin_edge( twin_edge );
-          twin_edge->twin_edge( &e_new );
-          edges_to_refine.push_back( false );
-        }
-        else
-        {
-          edges_to_refine.push_back( true );
-        }
-      }
-    }
-
-    // Refine the front edges, but do not refine sub-edges!
-    this->refine(domain, edges_to_refine, mesh_vertices);
-    
-  } // Front::init_front_edges()
-
-  /*------------------------------------------------------------------
   | Getters
   ------------------------------------------------------------------*/
   Edge& base() { return *base_; }
@@ -129,62 +62,33 @@ public:
   void base(Edge& b) { base_ = &b; }
 
   /*------------------------------------------------------------------
-  | Refine the advancing front 
-  | Returns the number of new edges
+  | Initialize the advancing front structure according to a given 
+  | domain and its size function
   ------------------------------------------------------------------*/
-  int refine(const Domain& domain, 
-             const BoolVector& edges_to_refine,
-             Vertices& vertices)
+  template <typename FrontInitializer>
+  void init_front(const Domain&            domain, 
+                  const FrontInitializer&  front_initializer,
+                  Vertices&                mesh_vertices)
   {
-    int n_before = edges_.size();
-
-    std::vector<Edge*> marked {};
-
-    size_t i_edge_to_refine = 0;
-
-    // Loop over all edge segments
-    for ( const auto& e_ptr : edges_ )
+    for ( size_t i_bdry = 0; i_bdry < domain.size(); ++i_bdry )
     {
-      // Ignore edges that should not be refined
-      if ( !edges_to_refine[i_edge_to_refine++] )
-        continue;
+      const EdgeVector& front_edges  = front_initializer.edges()[i_bdry];
+      const BoolVector& is_twin_edge = front_initializer.is_twin_edge()[i_bdry];
+      const IntVector&  markers      = front_initializer.markers()[i_bdry];
 
-      Edge& cur_edge = *e_ptr.get();
+      VertexVector new_vertices 
+        = this->init_mesh_vertices(front_edges, is_twin_edge, mesh_vertices);
 
-      const double rho_1 = domain.size_function( cur_edge.v1().xy() );
-      const double rho_2 = domain.size_function( cur_edge.v2().xy() );
+      EdgeVector new_edges 
+        = this->init_front_edges(front_edges, markers, new_vertices);
 
-      // Define local edge direction from vertex v_b to
-      // vertex v_a, such that rho_a < rho_b
-      bool dir = (rho_1 < rho_2);
-
-      // Create coordinates of new vertices along the 
-      // current edge segment
-      std::vector<Vec2d> xy_new 
-        = create_sub_vertex_coords(cur_edge, dir, rho_1, rho_2, domain);
-
-      // No new vertices have been added 
-      // --> continue with next boundary segment
-      // Otherwise mark this edge to be removed later on
-      if ( xy_new.size() < 3 )
-        continue;
-      else
-        marked.push_back( &cur_edge );
-
-      // Create new vertices and edges
-      create_sub_edges( cur_edge, xy_new, vertices );
+      this->mark_twin_edges(front_edges, is_twin_edge, new_edges);
     }
 
-    // Remove old boundary segments
-    for ( auto cur_edge : marked )
-      edges_.remove( *cur_edge );
-
-    // Re-compute area of domain
-    compute_area();
-
-    return ( edges_.size() - n_before );
-
-  } // Front::refine()
+    // Refine the front edges, but do not refine sub-edges!
+    this->refine_front_edges(domain, mesh_vertices);
+    
+  } // Front::init_front_edges()
 
   /*------------------------------------------------------------------
   | Let base point to first edge in container
@@ -237,6 +141,41 @@ public:
 private:
 
   /*------------------------------------------------------------------
+  | Refine specific advancing front edges such that their length is 
+  | in accordance to the underlying size function.
+  | Returns the number of new edges.
+  ------------------------------------------------------------------*/
+  int refine_front_edges(const Domain& domain, Vertices& vertices)
+  {
+    int n_before = edges_.size();
+
+    // Obtain the edges that should be refined
+    EdgeVector edges_to_refine = get_edges_to_refine();
+
+    // Refine the edges and collect the "old" edge segment if the 
+    // refinement succeeded
+    EdgeVector edges_to_remove {};
+    for (size_t i_edge = 0; i_edge < edges_to_refine.size(); ++i_edge)
+    {
+      Edge& cur_edge = *edges_to_refine[i_edge];
+
+      if ( refine_edge(domain, vertices, cur_edge) )
+        edges_to_remove.push_back( &cur_edge );
+    }
+
+    // Remove old edge segments
+    for ( auto cur_edge : edges_to_remove )
+      edges_.remove( *cur_edge );
+
+    // Re-compute area of domain
+    compute_area();
+
+    return ( edges_.size() - n_before );
+
+  } // Front::refine_front_edges()
+
+
+  /*------------------------------------------------------------------
   | Mark new vertices and edges to be part of the
   | advancing front
   ------------------------------------------------------------------*/
@@ -246,6 +185,134 @@ private:
     v1.on_front( true );
     v2.on_front( true );
   }
+
+  /*------------------------------------------------------------------
+  | Initialize the vertices of the advancing front.
+  | Returns a vector of pointers to the generated vertices
+  ------------------------------------------------------------------*/
+  VertexVector init_mesh_vertices(const EdgeVector& front_edges,
+                                  const BoolVector& is_twin_edge,
+                                  Vertices&         mesh_vertices)
+  const
+  {
+    VertexVector new_vertices {};
+
+    for ( size_t i = 0; i < front_edges.size(); ++i )
+    {
+      Edge* e = front_edges[i];
+
+      Vertex& v1 = ( !is_twin_edge[i] ) ? e->v1() : e->v2();
+
+      Vertex& v_new = mesh_vertices.push_back(v1.xy(), v1.sizing(), 
+                                              v1.range());
+      v_new.on_front( true );
+      v_new.on_boundary( true );
+      v_new.is_fixed( true );
+
+      new_vertices.push_back( &v_new );
+    }
+
+    return std::move(new_vertices);
+
+  } // init_front_vertices()
+
+  /*------------------------------------------------------------------
+  | Initialize the edges of the advancing front.
+  | Returns a vector of pointers to the generated edges
+  ------------------------------------------------------------------*/
+  EdgeVector init_front_edges(const EdgeVector&   front_edges,
+                              const IntVector&    markers,
+                              const VertexVector& new_vertices)
+  {
+    EdgeVector new_edges {};
+
+    int n_verts = static_cast<int>( new_vertices.size() );
+
+    for ( size_t i_edge = 0; i_edge < front_edges.size(); ++i_edge )
+    {
+      int i1 = static_cast<int>( i_edge );
+      int i2 = MOD( i1+1, n_verts );
+
+      Vertex* v1 = new_vertices[i1];
+      Vertex* v2 = new_vertices[i2];
+
+      Edge& e_new = this->add_edge( *v1, *v2, markers[i_edge] );
+
+      new_edges.push_back(&e_new);
+    }
+
+    return std::move(new_edges);
+
+  } // init_front_edges()
+
+  /*------------------------------------------------------------------
+  | Connect the boundary edge of the neighbor mesh
+  | and the new front edges
+  ------------------------------------------------------------------*/
+  void mark_twin_edges(const EdgeVector& front_edges,
+                       const BoolVector& is_twin_edge,
+                       const EdgeVector& new_edges)
+  {
+    for ( size_t i_edge = 0; i_edge < front_edges.size(); ++i_edge )
+    {
+      if ( is_twin_edge[i_edge] )
+      {
+        Edge* twin_edge = front_edges[i_edge];
+        new_edges[i_edge]->twin_edge( twin_edge );
+        twin_edge->twin_edge( new_edges[i_edge] );
+      }
+      else
+        ASSERT( new_edges[i_edge]->twin_edge() == nullptr,
+          "Front::mark_twin_edges(): Invalid edge.");
+    }
+  } // mark_twin_edges()
+
+  /*------------------------------------------------------------------
+  | Return a vector of pointers to edges that should be refined
+  ------------------------------------------------------------------*/
+  EdgeVector get_edges_to_refine() const 
+  {
+    EdgeVector edges_to_refine {};
+
+    // Twin edges are not refined
+    for ( const auto& e_ptr : edges_ )
+      if ( e_ptr->twin_edge() == nullptr )
+        edges_to_refine.push_back( e_ptr.get() );
+
+    return std::move(edges_to_refine);
+
+  } // get_edges_to_refine()
+
+  /*------------------------------------------------------------------
+  | Refine a given edge.
+  | Return true if the edge refinement succeeded.
+  ------------------------------------------------------------------*/
+  bool refine_edge(const Domain& domain, Vertices& vertices, Edge& edge)
+  {
+    const double rho_1 = domain.size_function( edge.v1().xy() );
+    const double rho_2 = domain.size_function( edge.v2().xy() );
+
+    // Define local edge direction from vertex v_b to
+    // vertex v_a, such that rho_a < rho_b
+    bool dir = (rho_1 < rho_2);
+
+    // Create coordinates of new vertices along the 
+    // current edge segment
+    std::vector<Vec2d> xy_new 
+      = create_sub_vertex_coords(edge, dir, rho_1, rho_2, domain);
+
+    // No new vertices have been added 
+    // --> continue with next boundary segment
+    // Otherwise mark this edge to be removed later on
+    if ( xy_new.size() < 3 )
+      return false;
+
+    // Create new vertices and edges
+    create_sub_edges( edge, xy_new, vertices );
+
+    return true;
+
+  } // refine_edge()
 
   /*------------------------------------------------------------------
   | Create a vector of new vertex coordinates along a front edge. 

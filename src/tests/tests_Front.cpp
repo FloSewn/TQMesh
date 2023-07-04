@@ -117,13 +117,10 @@ void initialization()
 
   // Advancing front requires initialized vertex container
   Vertices vertices { 10.0 };
-
-  for ( const auto& v_ptr : domain.vertices() )
-    vertices.push_back( v_ptr->xy(), v_ptr->sizing(), v_ptr->range() );
     
   // Create advancing front
   Front front { }; 
-  front.init_front_edges( domain, front_data, vertices );
+  front.init_front( domain, front_data, vertices );
   
   CHECK( EQ(front.area(), domain.area()) );
 
@@ -180,7 +177,7 @@ void sort_edges()
 
   // Create advancing front
   Front front { };
-  front.init_front_edges( domain, front_data, vertices );
+  front.init_front( domain, front_data, vertices );
 
   // Sort edges in ascending order
   front.sort_edges();
@@ -246,7 +243,7 @@ void edge_size()
 
   // Create advancing front
   Front front { };
-  front.init_front_edges( domain, front_data, vertices );
+  front.init_front( domain, front_data, vertices );
 
   // Check if all edge lengths are more or less in accordance to
   // the global size parameter
