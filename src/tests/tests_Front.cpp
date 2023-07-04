@@ -33,6 +33,48 @@ using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
+* 
+*********************************************************************/
+static inline void export_mesh_file(const Vertices& vertices,
+                                    const Front& front,
+                                    const Domain& domain)
+{
+  unsigned int v_index = 0;
+  LOG_PROPERTIES.set_info_header("");
+  LOG(INFO) << "MESH 0";
+  LOG(INFO) << "VERTICES " << vertices.size();
+  for ( const auto& v_ptr : vertices )
+  {
+    LOG(INFO) << std::setprecision(5) << std::fixed 
+              << (*v_ptr).xy().x << "," << (*v_ptr).xy().y;
+    (*v_ptr).index( v_index++ );
+  }
+  LOG(INFO) << "INTERIOREDGES 0";
+
+  LOG(INFO) << "BOUNDARYEDGES " << front.size();
+  for ( const auto& e : front )
+    LOG(INFO) 
+      << std::setprecision(0) << std::fixed 
+      << std::setw(4) << e->v1().index() << "," 
+      << std::setw(4) << e->v2().index() << ","
+      << std::setw(4) << -1 << ","
+      << std::setw(4) << e->marker();
+
+  LOG(INFO) << "INTERFACEEDGES 0";
+  LOG(INFO) << "FRONT 0";
+  LOG(INFO) << "QUADS 0";
+  LOG(INFO) << "TRIANGLES 0";
+  LOG(INFO) << "QUADNEIGHBORS 0";
+  LOG(INFO) << "TRIANGLENEIGHBORS 0";
+  LOG(INFO) << "SIZEFUNCTION " << vertices.size();;
+  for ( const auto& v_ptr : vertices )
+    LOG(INFO) << std::setprecision(5) << std::fixed 
+              << domain.size_function(v_ptr->xy());
+  LOG_PROPERTIES.set_info_header("  ");
+
+} // export_mesh_file()
+
+/*********************************************************************
 * Test the initialization of the front
 *********************************************************************/
 void initialization()
@@ -85,39 +127,7 @@ void initialization()
   
   CHECK( EQ(front.area(), domain.area()) );
 
-
-  // Export the advancing front data 
-  std::string source_dir { TQMESH_SOURCE_DIR };
-  std::string file_name 
-  { source_dir + "/auxiliary/test_data/FrontTests.initialization.txt" };
-
-  std::ofstream outfile;
-  outfile.open( file_name );
-
-  unsigned int v_index = 0;
-  outfile << "VERTICES " << vertices.size() << std::endl;
-  for ( const auto& v_ptr : vertices )
-  {
-    outfile << std::setprecision(5) << std::fixed 
-              << (*v_ptr).xy().x << "," 
-              << (*v_ptr).xy().y << std::endl;
-    (*v_ptr).index( v_index++ );
-  }
-
-  outfile << "EDGES " << front.size() << "\n";
-  for ( const auto& e : front )
-    outfile 
-      << std::setprecision(0) << std::fixed 
-      << std::setw(4) << e->v1().index() << "," 
-      << std::setw(4) << e->v2().index() << ","
-      << std::setw(4) << e->marker() << "\n";
-
-  domain.export_size_function( outfile, {0.0,0.0}, {5.0,5.0}, 100, 100);
-
-  outfile << "QTREE-LEAFS " << vertices.quad_tree().n_leafs() << std::endl;
-  outfile << vertices.quad_tree();
-
-  outfile.close();
+  export_mesh_file(vertices, front, domain);
 
 } // initialization()
 
@@ -257,8 +267,16 @@ void edge_size()
 *********************************************************************/
 void run_tests_Front()
 {
+  adjust_logging_output_stream("FrontTests.initialization.log");
   FrontTests::initialization();
+
+  adjust_logging_output_stream("FrontTests.sort_edges.log");
   FrontTests::sort_edges();
+
+  adjust_logging_output_stream("FrontTests.edge_size.log");
   FrontTests::edge_size();
+
+  // Reset debug logging ostream
+  adjust_logging_output_stream("COUT");
 
 } // run_tests_Front()

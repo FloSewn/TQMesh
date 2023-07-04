@@ -62,9 +62,9 @@ public:
 
     for ( size_t i_bdry = 0; i_bdry < domain.size(); ++i_bdry )
     {
-      const EdgeVector& front_edges = front_data.edges()[i_bdry];
-      const BoolVector& is_oriented = front_data.is_oriented()[i_bdry];
-      const IntVector&  markers     = front_data.markers()[i_bdry];
+      const EdgeVector& front_edges  = front_data.edges()[i_bdry];
+      const BoolVector& is_twin_edge = front_data.is_twin_edge()[i_bdry];
+      const IntVector&  markers      = front_data.markers()[i_bdry];
 
       VertexVector new_vertices {};
 
@@ -72,7 +72,7 @@ public:
       {
         Edge* e = front_edges[i];
 
-        Vertex& v1 = ( is_oriented[i] ) ? e->v1() : e->v2();
+        Vertex& v1 = ( !is_twin_edge[i] ) ? e->v1() : e->v2();
 
         Vertex& v_new = mesh_vertices.push_back( v1.xy(), 
                                                  v1.sizing(), 
@@ -98,7 +98,7 @@ public:
 
         // Connect the boundary edge of the neighbor mesh
         // and the new front edge
-        if ( !is_oriented[i_edge] )
+        if ( is_twin_edge[i_edge] )
         {
           Edge* twin_edge = front_edges[i_edge];
           e_new.twin_edge( twin_edge );
@@ -140,19 +140,19 @@ public:
 
     std::vector<Edge*> marked {};
 
-    size_t i_edge = 0;
+    size_t i_edge_to_refine = 0;
 
     // Loop over all edge segments
     for ( const auto& e_ptr : edges_ )
     {
       // Ignore edges that should not be refined
-      if ( !edges_to_refine[i_edge] )
+      if ( !edges_to_refine[i_edge_to_refine++] )
         continue;
 
-      Edge* e = e_ptr.get();
+      Edge& cur_edge = *e_ptr.get();
 
-      const double rho_1 = domain.size_function( e->v1().xy() );
-      const double rho_2 = domain.size_function( e->v2().xy() );
+      const double rho_1 = domain.size_function( cur_edge.v1().xy() );
+      const double rho_2 = domain.size_function( cur_edge.v2().xy() );
 
       // Define local edge direction from vertex v_b to
       // vertex v_a, such that rho_a < rho_b
@@ -161,7 +161,7 @@ public:
       // Create coordinates of new vertices along the 
       // current edge segment
       std::vector<Vec2d> xy_new 
-        = create_sub_vertex_coords(*e, dir, rho_1, rho_2, domain);
+        = create_sub_vertex_coords(cur_edge, dir, rho_1, rho_2, domain);
 
       // No new vertices have been added 
       // --> continue with next boundary segment
@@ -169,17 +169,15 @@ public:
       if ( xy_new.size() < 3 )
         continue;
       else
-        marked.push_back( e );
+        marked.push_back( &cur_edge );
 
       // Create new vertices and edges
-      create_sub_edges( *e, xy_new, vertices );
-
-      ++i_edge;
+      create_sub_edges( cur_edge, xy_new, vertices );
     }
 
     // Remove old boundary segments
-    for ( auto e : marked )
-      edges_.remove( *e );
+    for ( auto cur_edge : marked )
+      edges_.remove( *cur_edge );
 
     // Re-compute area of domain
     compute_area();

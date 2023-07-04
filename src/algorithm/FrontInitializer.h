@@ -53,14 +53,14 @@ public:
   FrontInitializer(FrontInitializer&& f)
   : edges_ { std::move(f.edges_) }
   , markers_ { std::move(f.markers_) }
-  , is_oriented_ { std::move(f.is_oriented_) }
+  , is_twin_edge_ { std::move(f.is_twin_edge_) }
   {}
   
   FrontInitializer& operator=(FrontInitializer&& f)
   {
     edges_ = std::move(f.edges_);
     markers_ = std::move(f.markers_);
-    is_oriented_ = std::move(f.is_oriented_);
+    is_twin_edge_ = std::move(f.is_twin_edge_);
     return *this;
   }
 
@@ -70,12 +70,11 @@ public:
   std::vector<EdgeVector>& edges() { return edges_; }
   const std::vector<EdgeVector>& edges() const { return edges_; }
 
-  std::vector<BoolVector>& is_oriented() { return is_oriented_; }
-  const std::vector<BoolVector>& is_oriented() const { return is_oriented_; }
+  std::vector<BoolVector>& is_twin_edge() { return is_twin_edge_; }
+  const std::vector<BoolVector>& is_twin_edge() const { return is_twin_edge_; }
 
   std::vector<IntVector>& markers() { return markers_; }
   const std::vector<IntVector>& markers() const { return markers_; }
-
 
 private:
   /*------------------------------------------------------------------
@@ -96,31 +95,33 @@ private:
     {
       EdgeVector edges {};
       IntVector  markers {};
-      BoolVector is_oriented {};
+      BoolVector is_twin_edge {};
 
       for ( const auto& e : boundary->edges() )
       {
         EdgeVector nbr_edges = get_neighbor_mesh_edges(*e, meshes);
 
+        // Add edges from adjacent mesh
         if ( nbr_edges.size() > 0 )
         {
           for ( Edge* nbr_e : nbr_edges )
           {
             edges.push_back( nbr_e );
-            is_oriented.push_back( false );
+            is_twin_edge.push_back( true );
             markers.push_back( nbr_e->marker() );
           }
         }
+        // Add edges from domain boundary
         else
         {
           edges.push_back( e.get() ) ;
-          is_oriented.push_back( true );
+          is_twin_edge.push_back( false );
           markers.push_back( e->marker() );
         }
       }
 
       edges_.push_back( edges );
-      is_oriented_.push_back( is_oriented );
+      is_twin_edge_.push_back( is_twin_edge );
       markers_.push_back( markers );
     }
 
@@ -175,8 +176,8 @@ private:
 
       // If edges have been located, terminate the search
       // --> First come, first serve
-      if ( nbr_edges.size() > 0 )
-        break;
+      //if ( nbr_edges.size() > 0 )
+      //  break;
     }
 
     return std::move(nbr_edges);
@@ -187,9 +188,9 @@ private:
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
-  std::vector<EdgeVector> edges_       {};
-  std::vector<IntVector>  markers_     {};
-  std::vector<BoolVector> is_oriented_ {};
+  std::vector<EdgeVector> edges_        {};
+  std::vector<IntVector>  markers_      {};
+  std::vector<BoolVector> is_twin_edge_ {};
 
 }; // FrontInitializer
 

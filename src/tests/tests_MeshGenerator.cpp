@@ -25,6 +25,7 @@
 #include "MeshGenerator.h"
 #include "MeshInitializer.h"
 #include "Cleanup.h"
+#include "FrontInitializer.h"
 
 namespace MeshGeneratorTests 
 {
@@ -140,15 +141,15 @@ void mesh_initializer()
   Mesh mesh_2 = initializer.create_empty_mesh(domain_2);
   initializer.prepare_mesh(mesh_2, domain_2);
   initializer.add_mesh_and_domain(mesh_2, domain_2);
+  Cleanup::assign_mesh_indices(mesh_2);
 
   Mesh mesh_1 = initializer.create_empty_mesh(domain_1);
   initializer.prepare_mesh(mesh_1, domain_1);
   initializer.add_mesh_and_domain(mesh_1, domain_1);
-
   Cleanup::assign_mesh_indices(mesh_1);
-  Cleanup::assign_mesh_indices(mesh_2);
 
   LOG(INFO) << "\n" << mesh_1;
+
 
 } // mesh_initializer()
 
