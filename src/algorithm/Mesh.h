@@ -422,8 +422,7 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
   for ( const auto& v_ptr : mesh.vertices() )
   {
     os << std::setprecision(5) << std::fixed 
-       << v_ptr->sizing() << "\n";
-       //<< mesh.domain().size_function( v_ptr->xy() ) << "\n";
+       << v_ptr->mesh_size() << "\n";
   }
 
   return os;

@@ -33,8 +33,8 @@ void constructor()
 
   v.index(1);
 
-  CHECK( EQ(v.sizing(), 0.5) );
-  CHECK( EQ(v.range(), 0.1) );
+  CHECK( EQ(v.mesh_size(), 0.5) );
+  CHECK( EQ(v.size_range(), 0.1) );
   CHECK( v.index() == 1 );
   CHECK( !v.on_front() );
   CHECK( !v.on_boundary() );

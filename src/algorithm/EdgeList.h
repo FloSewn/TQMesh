@@ -190,8 +190,8 @@ public:
     Vertex& v2 = edge.v2();
 
     const Vec2d xy_new  = s * v1.xy()     + q * v2.xy();
-    const double sizing = s * v1.sizing() + q * v2.sizing();
-    const double range  = s * v1.range()  + q * v2.range();
+    const double sizing = s * v1.mesh_size() + q * v2.mesh_size();
+    const double range  = s * v1.size_range()  + q * v2.size_range();
 
     // Place new vertex between v1 and v2
     Vertex& v_new = vertices.insert(v2.pos(), xy_new, sizing, range);

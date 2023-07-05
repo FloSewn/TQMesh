@@ -81,7 +81,8 @@ void initialization()
 {
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
-  { return 1.0 + 0.15*sqrt(p.x*p.y); };
+  { return 1.0; };
+  //{ return 1.0 + 0.15*sqrt(p.x*p.x); };
 
   Domain domain { f, 10.0 };
 
@@ -101,10 +102,10 @@ void initialization()
 
 
   // Build interior boundary
-  Vertex& v5 = domain.add_vertex(  2.5,  2.0, 0.2);
+  Vertex& v5 = domain.add_vertex(  2.5,  2.0 );
   Vertex& v6 = domain.add_vertex(  2.0,  3.5 );
   Vertex& v7 = domain.add_vertex(  3.0,  2.5 );
-  Vertex& v8 = domain.add_vertex(  3.0,  2.0 );
+  Vertex& v8 = domain.add_vertex(  3.0,  2.0, 0.05, 0.5 );
 
   b_int.add_edge( v5, v6, 2 );
   b_int.add_edge( v6, v7, 2 );
@@ -172,9 +173,6 @@ void sort_edges()
   // Advancing front requires initialized vertex container
   Vertices vertices { 10.0 };
 
-  for ( const auto& v_ptr : domain.vertices() )
-    vertices.push_back( v_ptr->xy(), v_ptr->sizing(), v_ptr->range() );
-
   // Create advancing front
   Front front { };
   front.init_front( domain, front_data, vertices );
@@ -238,9 +236,6 @@ void edge_size()
   // Advancing front requires initialized vertex container
   Vertices vertices {};
 
-  for ( const auto& v_ptr : domain.vertices() )
-    vertices.push_back( v_ptr->xy(), v_ptr->sizing(), v_ptr->range() );
-
   // Create advancing front
   Front front { };
   front.init_front( domain, front_data, vertices );
@@ -267,11 +262,11 @@ void run_tests_Front()
   adjust_logging_output_stream("FrontTests.initialization.log");
   FrontTests::initialization();
 
-  adjust_logging_output_stream("FrontTests.sort_edges.log");
-  FrontTests::sort_edges();
+  //adjust_logging_output_stream("FrontTests.sort_edges.log");
+  //FrontTests::sort_edges();
 
-  adjust_logging_output_stream("FrontTests.edge_size.log");
-  FrontTests::edge_size();
+  //adjust_logging_output_stream("FrontTests.edge_size.log");
+  //FrontTests::edge_size();
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");

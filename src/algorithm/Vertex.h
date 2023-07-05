@@ -39,12 +39,18 @@ public:
   /*------------------------------------------------------------------
   | Constructor 
   ------------------------------------------------------------------*/
-  Vertex(double x, double y, double s=1.0, double r=1.0) 
-  : ContainerEntry(x,y), sizing_ {s}, range_ {r}
-  {}
-  Vertex(const Vec2d& c, double s=1.0, double r=1.0) 
-  : ContainerEntry(c), sizing_ {s}, range_ {r}
-  {}
+  Vertex(double x, double y, double s=0.0, double r=0.0) 
+  : ContainerEntry(x,y), mesh_size_ {s}, size_range_ {r}
+  {
+    if (mesh_size_ > 0.0 && size_range_ <= 0.0)
+      size_range_ = 10.0 * mesh_size_;
+  }
+  Vertex(const Vec2d& c, double s=0.0, double r=0.0) 
+  : ContainerEntry(c), mesh_size_ {s}, size_range_ {r}
+  {
+    if (mesh_size_ > 0.0 && size_range_ <= 0.0)
+      size_range_ = 10.0 * mesh_size_;
+  }
 
   /*------------------------------------------------------------------
   | Setters 
@@ -57,8 +63,8 @@ public:
   /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
-  double       sizing() const { return sizing_; }
-  double       range() const { return range_; }
+  double       mesh_size() const { return mesh_size_; }
+  double       size_range() const { return size_range_; }
   unsigned int index() const { return index_; }
   bool         on_front() const { return on_front_; }
   bool         on_boundary() const { return on_bdry_; }
@@ -161,12 +167,12 @@ private:
   FacetList           facets_   { };
   VertexVector        verts_    { };
 
-  double              sizing_   { 1.0 };
-  double              range_    { 1.0 };
-  unsigned int        index_    {  0  };
-  bool                on_front_ { false };
-  bool                on_bdry_  { false };
-  bool                is_fixed_ { false };
+  double              mesh_size_  { 0.0 };
+  double              size_range_ { 0.0 };
+  unsigned int        index_      { 0   };
+  bool                on_front_   { false };
+  bool                on_bdry_    { false };
+  bool                is_fixed_   { false };
 
 }; // Vertex 
 

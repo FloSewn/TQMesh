@@ -203,8 +203,9 @@ private:
 
       Vertex& v1 = ( !is_twin_edge[i] ) ? e->v1() : e->v2();
 
-      Vertex& v_new = mesh_vertices.push_back(v1.xy(), v1.sizing(), 
-                                              v1.range());
+      Vertex& v_new = mesh_vertices.push_back(v1.xy(), 
+                                              v1.mesh_size(), 
+                                              v1.size_range());
       v_new.on_front( true );
       v_new.on_boundary( true );
       v_new.is_fixed( true );
@@ -308,7 +309,7 @@ private:
       return false;
 
     // Create new vertices and edges
-    create_sub_edges( edge, xy_new, vertices );
+    create_sub_edges( edge, xy_new, domain, vertices );
 
     return true;
 
@@ -423,13 +424,15 @@ private:
   ------------------------------------------------------------------*/
   void create_sub_edges(Edge& e, 
                         std::vector<Vec2d>& xy_new, 
+                        const Domain& domain,
                         Vertices& vertices)
   {
     Vertex* v_cur = &( e.v1() );
 
     for ( int i = 1; i < xy_new.size()-1; i++ )
     {
-      Vertex& v_n = vertices.insert( e.v2().pos(), xy_new[i], 1.0 );
+      const double h = domain.size_function(xy_new[i]);
+      Vertex& v_n = vertices.insert( e.v2().pos(), xy_new[i], h, h );
 
       // We fix the position of all new vertices on the front,
       // such that they won't be shifted during grid smoothing 
