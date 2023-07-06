@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 #include <memory>
+#include <stdlib.h>
 
 namespace CppUtils {
 
@@ -31,5 +32,14 @@ static inline void ASSERT(bool cond, const std::string& msg)
 static inline void ASSERT(bool cond, const std::string& msg)
 {}
 #endif
+
+/*********************************************************************
+* Terminate 
+*********************************************************************/
+static inline void TERMINATE(const std::string& msg)
+{
+  std::cerr << "[ERROR] " << msg << std::endl;
+  exit(EXIT_FAILURE);
+}
 
 } // namespace CppUtils

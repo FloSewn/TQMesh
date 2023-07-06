@@ -41,20 +41,17 @@ public:
   ------------------------------------------------------------------*/
   Vertex(double x, double y, double s=0.0, double r=0.0) 
   : ContainerEntry(x,y), mesh_size_ {s}, size_range_ {r}
-  {
-    if (mesh_size_ > 0.0 && size_range_ <= 0.0)
-      size_range_ = 10.0 * mesh_size_;
-  }
+  {}
+
   Vertex(const Vec2d& c, double s=0.0, double r=0.0) 
   : ContainerEntry(c), mesh_size_ {s}, size_range_ {r}
-  {
-    if (mesh_size_ > 0.0 && size_range_ <= 0.0)
-      size_range_ = 10.0 * mesh_size_;
-  }
+  {}
 
   /*------------------------------------------------------------------
   | Setters 
   ------------------------------------------------------------------*/
+  void mesh_size(double s) { mesh_size_ = s; }
+  void size_range(double r) { size_range_ = r; }
   void index (unsigned int i) { index_ = i; }
   void on_front( bool f ) { on_front_ = f; }
   void on_boundary( bool b ) { on_bdry_ = b; }

@@ -126,6 +126,20 @@ public:
 
 
   /*------------------------------------------------------------------
+  | Each mesh vertex gets the value of the domain's size function 
+  | at its position. This is required for a proper mesh output.
+  ------------------------------------------------------------------*/
+  template <typename Mesh, typename Domain>
+  static inline void assign_size_function_to_vertices(Mesh& mesh,
+                                                      const Domain& domain)
+  {
+    for ( auto& v_ptr : mesh.vertices() )
+      v_ptr->mesh_size( domain.size_function(v_ptr->xy()) );
+
+  } // Cleanup:assign_size_function_to_vertices()
+
+
+  /*------------------------------------------------------------------
   | Every vertex gets assigned its neighboring vertices and these 
   | are then sorted by means of ascending angles
   | This function requires, that all the interior edges and 

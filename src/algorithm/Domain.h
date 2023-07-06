@@ -208,75 +208,64 @@ public:
   ------------------------------------------------------------------*/
   inline double size_function(const Vec2d& xy) const
   {
-    std::vector<double> z {};
+    // The underlying size function
+    const double h_fun = f_(xy);
+
+    if ( h_fun <= 0.0 )
+      TERMINATE("Domain::size_function(): Invalid value (<=0) encountered.");
+
+    double h = h_fun;
 
     // Gather distance contribution of each boundary vertices
     for ( const auto& boundary : (*this) )
       for ( const auto& e : boundary.get()->edges() )
       {
-        const Vertex& v = e->v1(); 
-        if (v.mesh_size() <= 0.0 || v.size_range() <= 0.0) 
-          continue;
+        const Vec2d&  v1_xy = e->v1().xy();
+        const Vec2d&  v2_xy = e->v2().xy();
 
-        const Vec2d& v_xy = v.xy();
-        const double delta_sqr = (xy - v_xy).norm_sqr();
-        const double s_inv = 1.0 / v.size_range();
-        const double zi = exp(-delta_sqr * s_inv * s_inv);
-        z.push_back( zi );
+        const double el = e->length();
+        const double r = MAX(h_fun/el, el/h_fun);
+
+        const double d1_sqr = (xy - v1_xy).norm_sqr();
+        const double d2_sqr = (xy - v2_xy).norm_sqr();
+
+        const double s1 = (e->v1().size_range() <= 0.0) 
+                        ? el : e->v1().size_range();
+        const double s2 = (e->v2().size_range() <= 0.0) 
+                        ? el : e->v2().size_range();
+
+        const double s1_inv = 1.0 / (r*MAX(el, s1));
+        const double s2_inv = 1.0 / (r*MAX(el, s2));
+
+        const double z1 = exp(-d1_sqr * s1_inv * s1_inv);
+        const double z2 = exp(-d2_sqr * s2_inv * s2_inv);
+
+        const double h1 = (e->v1().mesh_size() <= 0.0)
+                        ? h_fun : e->v1().mesh_size();
+
+        const double h2 = (e->v2().mesh_size() <= 0.0)
+                        ? h_fun : e->v2().mesh_size();
+
+        const double hv1 = z1*MIN(h1,el) + (1.0-z1)*h_fun;
+        const double hv2 = z2*MIN(h2,el) + (1.0-z2)*h_fun;
+
+        h = MIN(h, hv1);
+        h = MIN(h, hv2);
       }
 
     // Gather distance contribution of fixed vertices
     for ( auto& v : fixed_verts_ )
     {
-      if (v->mesh_size() <= 0.0 || v->size_range() <= 0.0) 
+      if (v->mesh_size() <= 0.0) 
         continue;
 
-      const Vec2d& v_xy = v->xy();
-      const double delta_sqr = (xy - v_xy).norm_sqr();
-      const double s_inv = 1.0 / v->size_range();
-      const double zi = exp(-delta_sqr * s_inv * s_inv);
-      z.push_back( zi );
+      const double d_sqr = (xy - v->xy()).norm_sqr();
+      const double s_inv = (v->size_range() <= 0.0) 
+                         ? 1.0/h_fun : 1.0/v->size_range();
+
+      const double z = exp(-d_sqr * s_inv * s_inv);
+      h = MIN(h, z*v->mesh_size() + (1.0-z)*h_fun);
     }
-
-    const double z_max = *std::max_element(z.begin(), z.end());
-    const double z_sum = std::accumulate(z.begin(), z.end(), 0.0);
-
-    // The underlying size function
-    const double h_function = f_(xy);
-
-    // No contribution from vertices
-    if (z_sum < 1.0E-8 || z_max < 1.0E-08)
-      return h_function;
-
-    // Compute scale value of vertices
-    double h_vertices = 0.0;
-    size_t i = 0;
-
-    for ( const auto& boundary : (*this) )
-      for ( const auto& e : boundary.get()->edges() )
-      {
-        const Vertex& v = e->v1(); 
-        if (v.mesh_size() <= 0.0 || v.size_range() <= 0.0) 
-          continue;
-
-        h_vertices += z[i] * v.mesh_size();
-        ++i;
-      }
-
-    for ( auto& v : fixed_verts_ )
-    {
-      if (v->mesh_size() <= 0.0 || v->size_range() <= 0.0) 
-        continue;
-
-      h_vertices += z[i] * v->mesh_size();
-      ++i;
-    }
-
-    const double h1 = (1.0-z_max) * h_function;
-    const double h2 = z_max * h_vertices / z_sum;
-    const double h = h1 + h2;
-
-    return h;
   }
 
   /*------------------------------------------------------------------

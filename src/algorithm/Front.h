@@ -145,7 +145,7 @@ private:
   | in accordance to the underlying size function.
   | Returns the number of new edges.
   ------------------------------------------------------------------*/
-  int refine_front_edges(const Domain& domain, Vertices& vertices)
+  int refine_front_edges(const Domain& domain, Vertices& mesh_vertices)
   {
     int n_before = edges_.size();
 
@@ -159,7 +159,7 @@ private:
     {
       Edge& cur_edge = *edges_to_refine[i_edge];
 
-      if ( refine_edge(domain, vertices, cur_edge) )
+      if ( refine_edge(domain, mesh_vertices, cur_edge) )
         edges_to_remove.push_back( &cur_edge );
     }
 
@@ -203,9 +203,7 @@ private:
 
       Vertex& v1 = ( !is_twin_edge[i] ) ? e->v1() : e->v2();
 
-      Vertex& v_new = mesh_vertices.push_back(v1.xy(), 
-                                              v1.mesh_size(), 
-                                              v1.size_range());
+      Vertex& v_new = mesh_vertices.push_back( v1.xy() ); 
       v_new.on_front( true );
       v_new.on_boundary( true );
       v_new.is_fixed( true );
@@ -288,7 +286,8 @@ private:
   | Refine a given edge.
   | Return true if the edge refinement succeeded.
   ------------------------------------------------------------------*/
-  bool refine_edge(const Domain& domain, Vertices& vertices, Edge& edge)
+  bool refine_edge(const Domain& domain, Vertices& mesh_vertices, 
+                   Edge& edge)
   {
     const double rho_1 = domain.size_function( edge.v1().xy() );
     const double rho_2 = domain.size_function( edge.v2().xy() );
@@ -309,7 +308,7 @@ private:
       return false;
 
     // Create new vertices and edges
-    create_sub_edges( edge, xy_new, domain, vertices );
+    create_sub_edges( edge, xy_new, domain, mesh_vertices );
 
     return true;
 
@@ -425,14 +424,13 @@ private:
   void create_sub_edges(Edge& e, 
                         std::vector<Vec2d>& xy_new, 
                         const Domain& domain,
-                        Vertices& vertices)
+                        Vertices& mesh_vertices)
   {
     Vertex* v_cur = &( e.v1() );
 
     for ( int i = 1; i < xy_new.size()-1; i++ )
     {
-      const double h = domain.size_function(xy_new[i]);
-      Vertex& v_n = vertices.insert( e.v2().pos(), xy_new[i], h, h );
+      Vertex& v_n = mesh_vertices.insert( e.v2().pos(), xy_new[i] );
 
       // We fix the position of all new vertices on the front,
       // such that they won't be shifted during grid smoothing 

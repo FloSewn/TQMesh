@@ -81,7 +81,7 @@ void initialization()
 {
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
-  { return 1.0; };
+  { return 5.0; };
   //{ return 1.0 + 0.15*sqrt(p.x*p.x); };
 
   Domain domain { f, 10.0 };
@@ -103,9 +103,9 @@ void initialization()
 
   // Build interior boundary
   Vertex& v5 = domain.add_vertex(  2.5,  2.0 );
-  Vertex& v6 = domain.add_vertex(  2.0,  3.5 );
+  Vertex& v6 = domain.add_vertex(  2.0,  3.5, 0.01 );
   Vertex& v7 = domain.add_vertex(  3.0,  2.5 );
-  Vertex& v8 = domain.add_vertex(  3.0,  2.0, 0.05, 0.5 );
+  Vertex& v8 = domain.add_vertex(  3.0,  2.0 );
 
   b_int.add_edge( v5, v6, 2 );
   b_int.add_edge( v6, v7, 2 );

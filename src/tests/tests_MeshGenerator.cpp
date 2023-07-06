@@ -102,7 +102,7 @@ void initialization()
 void mesh_initializer()
 {
   // Define size functions
-  UserSizeFunction f_1 = [](const Vec2d& p) { return 1.0; };
+  UserSizeFunction f_1 = [](const Vec2d& p) { return 0.3 + 0.4*p.x; };
   UserSizeFunction f_2 = [](const Vec2d& p) { return 0.5; };
 
   // Define domains
@@ -141,15 +141,16 @@ void mesh_initializer()
   Mesh mesh_2 = initializer.create_empty_mesh(domain_2);
   initializer.prepare_mesh(mesh_2, domain_2);
   initializer.add_mesh_and_domain(mesh_2, domain_2);
+  Cleanup::assign_size_function_to_vertices(mesh_2, domain_2);
   Cleanup::assign_mesh_indices(mesh_2);
 
   Mesh mesh_1 = initializer.create_empty_mesh(domain_1);
   initializer.prepare_mesh(mesh_1, domain_1);
   initializer.add_mesh_and_domain(mesh_1, domain_1);
+  Cleanup::assign_size_function_to_vertices(mesh_1, domain_1);
   Cleanup::assign_mesh_indices(mesh_1);
 
   LOG(INFO) << "\n" << mesh_1;
-
 
 } // mesh_initializer()
 
