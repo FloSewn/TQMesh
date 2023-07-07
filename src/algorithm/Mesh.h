@@ -218,7 +218,6 @@ public:
   Edge& add_boundary_edge(Vertex& v1, Vertex& v2, int marker)
   { bdry_edges_.add_edge(v1, v2, marker); }
 
-  
   /*------------------------------------------------------------------
   | These functions remove mesh entities and makes sure, that the 
   | removal succeeded
@@ -277,8 +276,38 @@ private:
 *********************************************************************/
 inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
 {
+  // Count the total number of interior and boundary edges
+  // and the total number of interface edges with other meshes
+  // -> Valid interior edges share two facets - otherwise we define
+  //    them as advancing front edges (of a non-completed mesh)
+  // -> Boundary edges must share a left facet - otherwise we define
+  //    them as advancing front edges as well.
+  size_t n_intr_edges = 0;
+  size_t n_bdry_edges = 0;
+  size_t n_interface_edges = 0;
+
+  for ( const auto& e_ptr : mesh.interior_edges() )
+    if ( NullFacet::is_not_null( e_ptr->facet_l() ) && 
+         NullFacet::is_not_null( e_ptr->facet_r() )  )
+      ++n_intr_edges;
+
+  for ( const auto& e_ptr : mesh.boundary_edges() )
+  {
+    if ( NullFacet::is_not_null( e_ptr->facet_l() ) )
+      ++n_bdry_edges;
+
+    if (e_ptr->twin_edge() != nullptr)
+      ++n_interface_edges;
+  }
+
+  size_t n_front_edges = mesh.interior_edges().size() - n_intr_edges
+                       + mesh.boundary_edges().size() - n_bdry_edges;
+
+
+
   os << "MESH " << mesh.id() << "\n";
 
+  // Print out vertex coordinates
   os << "VERTICES " << mesh.vertices().size() << "\n";
   for ( const auto& v_ptr : mesh.vertices() )
   {
@@ -287,60 +316,41 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
        << v_ptr->xy().y << "\n";
   }
 
-
-  // Count the total number of advancing front edges
-  // Interior edges share two facets - otherwise we define
-  // them as advancing front edges (of a non-completed mesh)
-  size_t n_front_edges = 0;
-
-  for ( const auto& e_ptr : mesh.interior_edges() )
-    if ( NullFacet::is_null( e_ptr->facet_l() ) || 
-         NullFacet::is_null( e_ptr->facet_r() )  )
-      ++n_front_edges;
-
-  size_t n_intr_edges = mesh.interior_edges().size() - n_front_edges;
-
+  // Print out all valid interior edges
   os << "INTERIOREDGES " << n_intr_edges << "\n";
   for ( const auto& e_ptr : mesh.interior_edges() )
   {
-    if ( NullFacet::is_null( e_ptr->facet_l() ) || 
-         NullFacet::is_null( e_ptr->facet_r() )  )
-      continue;
-
-    os << std::setprecision(0) << std::fixed 
-      << std::setw(4) << e_ptr->v1().index() << "," 
-      << std::setw(4) << e_ptr->v2().index() << ","
-      << std::setw(4) << e_ptr->facet_l()->index() << ","
-      << std::setw(4) << e_ptr->facet_r()->index() << "\n";
+    if ( NullFacet::is_not_null( e_ptr->facet_l() ) && 
+         NullFacet::is_not_null( e_ptr->facet_r() )  )
+    {
+      os << std::setprecision(0) << std::fixed 
+        << std::setw(4) << e_ptr->v1().index() << "," 
+        << std::setw(4) << e_ptr->v2().index() << ","
+        << std::setw(4) << e_ptr->facet_l()->index() << ","
+        << std::setw(4) << e_ptr->facet_r()->index() << "\n";
+    }
   }
 
-
-  // During the output of all boundary edges, we track the 
-  // occurence of interface edges to other meshes
-  size_t n_interface_edges = 0;
-
-  os << "BOUNDARYEDGES " << mesh.boundary_edges().size() << "\n";
+  // Print out all valid boundary edges
+  os << "BOUNDARYEDGES " << n_bdry_edges << "\n";
   for ( const auto& e_ptr : mesh.boundary_edges() )
   {
-    if (e_ptr->twin_edge() != nullptr)
-      ++n_interface_edges;
-
-    auto fl_index = NullFacet::is_null( e_ptr->facet_l() ) 
-                  ? -1 : e_ptr->facet_l()->index();
-
-    os << std::setprecision(0) << std::fixed 
-      << std::setw(4) << e_ptr->v1().index() << "," 
-      << std::setw(4) << e_ptr->v2().index() << ","
-      << std::setw(4) << fl_index << ","
-      << std::setw(4) << e_ptr->marker() << "\n";
+    if ( NullFacet::is_not_null( e_ptr->facet_l() ) )
+    {
+      os << std::setprecision(0) << std::fixed 
+        << std::setw(4) << e_ptr->v1().index() << "," 
+        << std::setw(4) << e_ptr->v2().index() << ","
+        << std::setw(4) << e_ptr->facet_l()->index() << ","
+        << std::setw(4) << e_ptr->marker() << "\n";
+    }
   }
 
+  // Print out all interface edges to other meshes
   os << "INTERFACEEDGES " << n_interface_edges << "\n";
   for ( const auto& e_ptr : mesh.boundary_edges() )
   {
     if (e_ptr->twin_edge() == nullptr)
       continue;
-
     os << std::setprecision(0) << std::fixed 
       << std::setw(4) << e_ptr->v1().index() << "," 
       << std::setw(4) << e_ptr->v2().index() << ","
@@ -349,11 +359,23 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
       << std::setw(4) << e_ptr->twin_edge()->facet_l()->color() << "\n";
   }
 
+  // Print out all advancing front edges
   os << "FRONT " << n_front_edges << "\n";
   for ( const auto& e_ptr : mesh.interior_edges() )
   {
     if ( NullFacet::is_not_null( e_ptr->facet_l() ) && 
          NullFacet::is_not_null( e_ptr->facet_r() )  )
+      continue;
+     
+    os << std::setprecision(0) << std::fixed 
+      << std::setw(4) << e_ptr->v1().index() << "," 
+      << std::setw(4) << e_ptr->v2().index() << ","
+      << std::setw(4) << -1 << "\n";
+     
+  }
+  for ( const auto& e_ptr : mesh.boundary_edges() )
+  {
+    if ( NullFacet::is_not_null( e_ptr->facet_l() ) )
       continue;
 
     os << std::setprecision(0) << std::fixed 
@@ -362,6 +384,8 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
       << std::setw(4) << -1 << "\n";
   }
 
+
+  // Print out all quads
   os << "QUADS " << mesh.quads().size() << "\n";
   for ( const auto& q_ptr : mesh.quads() )
   {
@@ -379,6 +403,7 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
       << std::setw(4) << color << "\n";
   }
 
+  // Print out all triangles
   os << "TRIANGLES " << mesh.triangles().size() << "\n";
   for ( const auto& t_ptr : mesh.triangles() )
   {
@@ -394,6 +419,7 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
       << std::setw(4) << color << "\n";
   }
 
+  // Print out all quad neighbors
   os << "QUADNEIGHBORS " << mesh.quads().size() << "\n";
   for ( const auto& q_ptr : mesh.quads() )
   {
@@ -409,6 +435,7 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
       << nbr4_index << "\n";
   }
 
+  // Print out all triangle neighbors
   os << "TRIANGLENEIGHBORS " << mesh.triangles().size() << "\n";
   for ( const auto& t_ptr : mesh.triangles() )
   {

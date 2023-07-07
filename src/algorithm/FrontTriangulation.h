@@ -17,7 +17,6 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "FrontInitializer.h"
-//#include "MeshingAlgorithm.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -27,7 +26,7 @@ using namespace CppUtils;
 /*********************************************************************
 * 
 *********************************************************************/
-class FrontTriangulation //: public MeshingAlgorithm
+class FrontTriangulation 
 {
 public:
 
@@ -41,7 +40,6 @@ public:
   : mesh_ { mesh }
   , domain_ { domain }
   { 
-    front_.init_front(mesh);
   }
 
   ~FrontTriangulation() {}
@@ -49,17 +47,18 @@ public:
   /*------------------------------------------------------------------
   | Triangulate a given initialized mesh structure
   ------------------------------------------------------------------*/
-  bool generate_elements(Mesh& mesh, const Domain& domain, int n_elements=0) 
+  bool generate_elements(int n_elements=0) 
   {
-    if ( mesh.n_boundary_edges() == 0 )
+    if ( mesh_.n_boundary_edges() == 0 )
     {
       LOG(ERROR) << 
-      "Unable to triangulate mesh " << mesh.id() << ". " <<
+      "Unable to triangulate mesh " << mesh_.id() << ". " <<
       "The mesh has not been prepared yet.";
       return false;
     }
 
-    // Initialize base edge
+    // Initialize the advancing front and its base edge
+    front_.init_front(mesh_);
     front_.set_base_first();
     Edge* base = &( front_.base() );
 
@@ -67,12 +66,12 @@ public:
     if ( !base ) 
     {
       LOG(ERROR) << 
-      "Unable to triangulate mesh " << mesh.id() << ". " <<
+      "Unable to triangulate mesh " << mesh_.id() << ". " <<
       "The mesh's advancing front structure seems to corrupted.";
       return false;
     }
 
-    LOG(INFO) << "Start triangulation of mesh " << mesh.id() << ".";
+    LOG(INFO) << "Start triangulation of mesh " << mesh_.id() << ".";
 
     // Sort the advancing front edges
     front_.sort_edges( false );
@@ -116,7 +115,7 @@ public:
         front_.set_base_first();
         base = &( front_.base() );
 
-        mesh.clear_waste();
+        mesh_.clear_waste();
       }
       // If it failed, go to the next base edge
       else
@@ -136,7 +135,7 @@ public:
       }
 
       // Update progress bar
-      double state = std::ceil(100.0 * mesh.area() / domain.area());
+      double state = std::ceil(100.0 * mesh_.area() / domain_.area());
       progress_bar.update( static_cast<int>(state) );
       progress_bar.show( LOG_PROPERTIES.get_ostream(INFO) );
 
@@ -168,8 +167,26 @@ public:
       }
     }
 
-    Cleanup::assign_size_function_to_vertices(mesh, domain);
-    Cleanup::assign_mesh_indices(mesh);
+    Cleanup::setup_vertex_connectivity(mesh_);
+    Cleanup::setup_facet_connectivity(mesh_);
+    Cleanup::assign_size_function_to_vertices(mesh_, domain_);
+    Cleanup::assign_mesh_indices(mesh_);
+
+    // Add remaining front edges to the mesh 
+    for ( auto& e_ptr : front_.edges() )
+    {
+      const Vertex& v1 = e_ptr->v1();
+      const Vertex& v2 = e_ptr->v2();
+
+      if ( mesh_.interior_edges().get_edge(v1, v2) )
+        continue;
+
+      if ( mesh_.boundary_edges().get_edge(v1, v2) )
+        continue;
+
+      mesh_.add_interior_edge(e_ptr->v1(), e_ptr->v2());
+    }
+    front_.clear_edges();
 
     return true;
   }

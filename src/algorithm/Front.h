@@ -52,15 +52,7 @@ public:
   /*------------------------------------------------------------------
   | Destructor
   ------------------------------------------------------------------*/
-  ~Front() 
-  {
-    EdgeVector edges_to_remove {};
-    for (auto& e : edges_)
-      edges_to_remove.push_back( e.get() );
-
-    for (auto& e : edges_to_remove)
-      remove(*e);
-  }
+  ~Front() { clear_edges(); }
 
   /*------------------------------------------------------------------
   | Getters
@@ -108,8 +100,22 @@ public:
   template <typename Mesh>
   void init_front(const Mesh& mesh)
   {
-    for ( auto& e_ptr : mesh.boundary_edges() )
+    for ( const auto& e_ptr : mesh.interior_edges() )
     {
+      if ( NullFacet::is_not_null( e_ptr->facet_l() ) && 
+           NullFacet::is_not_null( e_ptr->facet_r() )  )
+        continue;
+
+      Vertex& v1 = e_ptr->v1();
+      Vertex& v2 = e_ptr->v2();
+      this->add_edge( v1, v2, e_ptr->marker() );
+    }
+
+    for ( const auto& e_ptr : mesh.boundary_edges() )
+    {
+      if ( NullFacet::is_not_null( e_ptr->facet_l() ) )
+        continue;
+
       Vertex& v1 = e_ptr->v1();
       Vertex& v2 = e_ptr->v2();
       this->add_edge( v1, v2, e_ptr->marker() );

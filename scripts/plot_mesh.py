@@ -49,7 +49,7 @@ class TQMesh:
     def plot_front(self, ax):
         ''' Plot the advancing front of the mesh
         '''
-        front_collection = mc.LineCollection( self.front, colors=[(.7,.4,.4)], lw=1.0, ls='--' )
+        front_collection = mc.LineCollection( self.front, colors=[(.4,.4,.7)], lw=1.0, ls='-.' )
         ax.add_collection( front_collection )
 
     def plot_boundaries(self, ax):

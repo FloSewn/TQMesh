@@ -225,7 +225,10 @@ void triangulate()
 
   FrontTriangulation triangulation {mesh, domain};
 
-  CHECK( triangulation.generate_elements(mesh,domain,0) );
+  CHECK( triangulation.generate_elements(2) );
+  CHECK( triangulation.generate_elements(3) );
+  CHECK( triangulation.generate_elements(3) );
+  //
 
   // Assertions
   CHECK( ABS(mesh.area() - domain.area()) < 1.0E-07 );

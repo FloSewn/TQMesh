@@ -231,28 +231,24 @@ public:
         }
       }
 
-      ASSERT( NullFacet::is_not_null(f1), 
-        "Cleanup::setup_facet_connectivity(): "
-        "First facet is NullFacet.");
-
-      ASSERT( NullFacet::is_not_null(f2), 
-        "Cleanup::setup_facet_connectivity(): "
-        "Second facet is NullFacet.");
-
-      // Setup connectivity between facets (f1,f2)
-      f1->neighbor( idx1, f2 );
-      f2->neighbor( idx2, f1 );
-
-      // Setup connectivity between internal edge and facets (f1,f2)
-      if ( is_left( v1.xy(), v2.xy(), f1->xy() ) )
+      if ( NullFacet::is_not_null(f1) )
       {
-        e_ptr->facet_l( f1 );
-        e_ptr->facet_r( f2 );
+        f1->neighbor( idx1, f2 );
+
+        if ( is_left( v1.xy(), v2.xy(), f1->xy() ) )
+          e_ptr->facet_l( f1 );
+        else
+          e_ptr->facet_r( f1 );
       }
-      else
+
+      if ( NullFacet::is_not_null(f2) )
       {
-        e_ptr->facet_l( f2 );
-        e_ptr->facet_r( f1 );
+        f2->neighbor( idx2, f1 );
+
+        if ( is_left( v1.xy(), v2.xy(), f2->xy() ) )
+          e_ptr->facet_l( f2 );
+        else
+          e_ptr->facet_r( f2 );
       }
     }
 
@@ -274,6 +270,9 @@ public:
         f1 = f;
         break;
       }
+
+      if ( NullFacet::is_null(f1) )
+        continue;
 
       // Setup connectivity between boundary edge and facet
       if ( is_left( v1.xy(), v2.xy(), f1->xy() ) )

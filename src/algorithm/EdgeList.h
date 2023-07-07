@@ -30,6 +30,8 @@ class EdgeList
 {
 public:
 
+  using EdgeVector = std::vector<Edge*>;
+
   using iterator       = Container<Edge>::iterator;
   using const_iterator = Container<Edge>::const_iterator;
 
@@ -47,6 +49,11 @@ public:
     ASSERT( ( orient != Orientation::CL ),
         "Invalid edge list orientation.");
   }
+
+  /*------------------------------------------------------------------
+  | Destructor
+  ------------------------------------------------------------------*/
+  ~EdgeList() {}
 
   /*------------------------------------------------------------------
   | Copy Constructor
@@ -77,8 +84,7 @@ public:
   /*------------------------------------------------------------------
   | Return all edges that within a given position and radius
   ------------------------------------------------------------------*/
-  std::vector<Edge*>
-  get_edges(const Vec2d& center, const double radius) const
+  EdgeVector get_edges(const Vec2d& center, const double radius) const
   { return std::move( edges_.get_items(center, radius) ); }
   
 
