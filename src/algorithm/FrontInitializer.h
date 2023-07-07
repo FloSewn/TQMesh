@@ -40,10 +40,11 @@ public:
   /*------------------------------------------------------------------
   | Constructor / Destructor
   ------------------------------------------------------------------*/
-  FrontInitializer(Domain& domain, const MeshVector& meshes) 
-  { 
-    collect_front_edges(domain, meshes); 
-  }
+  FrontInitializer(const Domain& domain, const MeshVector& meshes) 
+  { collect_front_edges(domain, meshes); }
+
+  FrontInitializer(const Domain& domain) 
+  { MeshVector dummy {};  collect_front_edges(domain, dummy); }
 
   ~FrontInitializer() {};
 
@@ -88,7 +89,7 @@ private:
   | from "normal" boundary edges (e.g. for the advancing front 
   | refinement).
   ------------------------------------------------------------------*/
-  void collect_front_edges(Domain& domain,
+  void collect_front_edges(const Domain& domain,
                            const MeshVector& meshes)
   {
     for ( const auto& boundary : domain )

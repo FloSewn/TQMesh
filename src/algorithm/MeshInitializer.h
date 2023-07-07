@@ -179,7 +179,7 @@ public:
     // algorithm structure
     size_t n_overlaps = 0;
     for (size_t i_domain = 0; i_domain < n_domains(); ++i_domain)
-      n_overlaps += domain.get_overlaps( *domains_[i_domain] );
+      n_overlaps += domain.count_edge_overlaps( *domains_[i_domain] );
 
     // Get all edges that will define the advancing front
     FrontInitializer front_data { domain, meshes_ };

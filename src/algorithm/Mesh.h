@@ -58,6 +58,11 @@ public:
   friend std::ostream& operator<<(std::ostream& os, const Mesh& mesh);
 
   /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  void add_area(double a) { mesh_area_ += a; }
+
+  /*------------------------------------------------------------------
   | Getters
   ------------------------------------------------------------------*/
   double area()             const { return mesh_area_; }
@@ -321,8 +326,7 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
       ++n_interface_edges;
 
     auto fl_index = NullFacet::is_null( e_ptr->facet_l() ) 
-                  ?   e_ptr->facet_l()->index()
-                  :   -1;
+                  ? -1 : e_ptr->facet_l()->index();
 
     os << std::setprecision(0) << std::fixed 
       << std::setw(4) << e_ptr->v1().index() << "," 

@@ -48,7 +48,19 @@ public:
   | Constructor
   ------------------------------------------------------------------*/
   Front() : EdgeList( Orientation::NONE ) {}
-  ~Front() {}
+
+  /*------------------------------------------------------------------
+  | Destructor
+  ------------------------------------------------------------------*/
+  ~Front() 
+  {
+    EdgeVector edges_to_remove {};
+    for (auto& e : edges_)
+      edges_to_remove.push_back( e.get() );
+
+    for (auto& e : edges_to_remove)
+      remove(*e);
+  }
 
   /*------------------------------------------------------------------
   | Getters
@@ -88,7 +100,22 @@ public:
     // Refine the front edges, but do not refine sub-edges!
     this->refine_front_edges(domain, mesh_vertices);
     
-  } // Front::init_front_edges()
+  } // Front::init_front()
+
+  /*------------------------------------------------------------------
+  | Initialize the advancing front structure from a given mesh
+  ------------------------------------------------------------------*/
+  template <typename Mesh>
+  void init_front(const Mesh& mesh)
+  {
+    for ( auto& e_ptr : mesh.boundary_edges() )
+    {
+      Vertex& v1 = e_ptr->v1();
+      Vertex& v2 = e_ptr->v2();
+      this->add_edge( v1, v2, e_ptr->marker() );
+    }
+
+  } // Front::init_front()
 
   /*------------------------------------------------------------------
   | Let base point to first edge in container

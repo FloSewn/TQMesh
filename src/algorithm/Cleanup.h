@@ -264,7 +264,7 @@ public:
       const Vertex& v1 = e_ptr->v1();
       const Vertex& v2 = e_ptr->v2();
 
-      // Search adjacent facet to current boundar edge
+      // Search adjacent facets to the current boundary edge
       for ( auto f : v1.facets() )
       {
         int idx = f->get_edge_index(v1, v2);
@@ -275,7 +275,7 @@ public:
         break;
       }
 
-      // Setup connectivity between internal edge and facets
+      // Setup connectivity between boundary edge and facet
       if ( is_left( v1.xy(), v2.xy(), f1->xy() ) )
         e_ptr->facet_l( f1 );
       else

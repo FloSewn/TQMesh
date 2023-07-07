@@ -103,7 +103,7 @@ void initialization()
 
   // Build interior boundary
   Vertex& v5 = domain.add_vertex(  2.5,  2.0 );
-  Vertex& v6 = domain.add_vertex(  2.0,  3.5, 0.01 );
+  Vertex& v6 = domain.add_vertex(  2.0,  3.5, 0.1 );
   Vertex& v7 = domain.add_vertex(  3.0,  2.5 );
   Vertex& v8 = domain.add_vertex(  3.0,  2.0 );
 
@@ -113,8 +113,7 @@ void initialization()
   b_int.add_edge( v8, v5, 2 );
 
   // Collect data for the initialization of the advancing front
-  std::vector<Mesh*> dummy {};
-  FrontInitializer front_data { domain, dummy };
+  FrontInitializer front_data { domain };
 
   // Advancing front requires initialized vertex container
   Vertices vertices { 10.0 };
