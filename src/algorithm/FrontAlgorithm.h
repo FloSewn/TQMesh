@@ -208,6 +208,37 @@ protected:
 
   } // update_front() 
 
+  /*------------------------------------------------------------------
+  | This function is part of the advancing front loop.
+  | We loop over a given set of <vertex_candidates> and check
+  | if we can create a possible triangle with the current base edge
+  | (<b1>,<b2>) and the given vertices.
+  | If it is possible, new triangles are created and pushed back to 
+  | the vector <new_triangles>.
+  ------------------------------------------------------------------*/
+  void check_vertex_candidates(const VertexVector& vertex_candidates,
+                               Edge& base_edge, TriVector& new_triangles)
+  {
+    for ( Vertex* v : vertex_candidates )
+    {
+      // Skip vertices that are not located on the advancing front
+      if ( !v->on_front() )
+        continue;
+
+      // Skip vertices that are colinear to the current base edge
+      if ( orientation( base_edge.v1().xy(), base_edge.v2().xy(), v->xy() )
+          == Orientation::CL )
+        continue;
+
+      // Create new potential triangle 
+      Triangle& t_new = mesh_.add_triangle( base_edge.v1(), base_edge.v2(), *v );
+
+      // Check if new potential triangle is valid
+      if ( !validator_.remove_from_mesh_if_invalid(t_new) )
+        new_triangles.push_back( &t_new );
+    }
+
+  } // check_vertex_candidates()
 
   /*------------------------------------------------------------------
   | Initialize the advancing front structure
@@ -270,7 +301,6 @@ protected:
     progress_bar_.update( static_cast<int>(state) );
     progress_bar_.show( LOG_PROPERTIES.get_ostream(INFO) );
   }
-
 
   /*------------------------------------------------------------------
   | Attributes

@@ -19,7 +19,6 @@
 #include "FrontInitializer.h"
 #include "FrontAlgorithm.h"
 #include "MeshValidator.h"
-#include "MeshingFunctions.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -96,6 +95,29 @@ public:
 private:
 
   /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  Vertex& create_base_vertex(const Edge& base_edge, 
+                             double base_vertex_factor)
+  {
+    // Half of the factor h for height of equlateral triangle
+    // h := sqrt(3) / 2  -   h_fac := h / 2
+    constexpr double h_fac = 0.4330127019; 
+    const double v_fac = h_fac * base_vertex_factor;
+
+    // Obtain size function value at the centroid of an equlateral
+    // triangle, created from the current base edge
+    Vec2d c = base_edge.xy() + base_edge.normal() * base_edge.length() * v_fac;
+    const double rho = domain_.size_function(c);
+
+    // Coordinate of new vertex 
+    Vec2d xy = base_edge.xy() + base_edge.normal() * rho;
+
+    return mesh_.add_vertex( xy );
+
+  } // create_base_vertex() 
+
+  /*------------------------------------------------------------------
   | Let the advancing front create a new triangle 
   ------------------------------------------------------------------*/
   bool advance_front_triangle(Edge& base_edge, bool wide_search=false)
@@ -115,10 +137,7 @@ private:
 
     // Create potential triangles with all found vertices
     TriVector new_triangles {};
-    MeshingFunctions::check_vertex_candidates(vertex_candidates, 
-                                              base_edge, 
-                                              new_triangles,
-                                              mesh_, validator_);
+    check_vertex_candidates(vertex_candidates, base_edge, new_triangles);
 
     // If potential triangles have been found, choose the best one
     if ( choose_best_triangle(new_triangles, base_edge) )
@@ -129,9 +148,7 @@ private:
     Vertex& b1 = base_edge.v1();
     Vertex& b2 = base_edge.v2();
 
-    Vertex& v_new 
-      = MeshingFunctions::create_base_vertex(base_edge, domain_, mesh_,
-                                             base_vertex_factor_ );
+    Vertex& v_new = create_base_vertex(base_edge, base_vertex_factor_ );
     Triangle& t_new = mesh_.add_triangle(b1, b2, v_new);
     
     // Algorithm fails if new vertex or new triangle is invalid
