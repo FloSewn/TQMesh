@@ -14,6 +14,7 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "FrontInitializer.h"
+#include "Front.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {

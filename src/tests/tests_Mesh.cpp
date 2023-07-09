@@ -152,11 +152,11 @@ void clear_double_triangle_edges()
   Vertex& v6 = mesh.add_vertex({4.0, 4.0});
   Vertex& v7 = mesh.add_vertex({3.0, 6.0});
 
-  Triangle& t1 = mesh.add_triangle(v3, v4, v7);
-  Triangle& t2 = mesh.add_triangle(v4, v5, v6);
+  mesh.add_triangle(v3, v4, v7);
+  mesh.add_triangle(v4, v5, v6);
 
-  Quad& q1 = mesh.add_quad(v1, v2, v5, v4);
-  Quad& q2 = mesh.add_quad(v4, v6, v5, v7);
+  mesh.add_quad(v1, v2, v5, v4);
+  mesh.add_quad(v4, v6, v5, v7);
 
   mesh.add_interior_edge(v4, v5);
   mesh.add_interior_edge(v4, v6);
@@ -228,7 +228,6 @@ void triangulate()
   CHECK( triangulation.generate_elements(2) );
   CHECK( triangulation.generate_elements(3) );
   CHECK( triangulation.generate_elements(3) );
-  //
 
   // Assertions
   CHECK( ABS(mesh.area() - domain.area()) < 1.0E-07 );
@@ -239,6 +238,60 @@ void triangulate()
   Cleanup::setup_vertex_connectivity(mesh);
   Cleanup::setup_facet_connectivity(mesh);
   LOG(DEBUG) << "\n" << mesh;
+
+  // Check mesh stats
+  CHECK( mesh.n_elements() == 8 );
+  CHECK( mesh.n_vertices() == 9 );
+  CHECK( mesh.n_interior_edges() == 8 );
+  CHECK( mesh.n_boundary_edges() == 8 );
+
+  // Check vertex-to-facet-connectivity  
+  CHECK( mesh.vertices()[0].facets().size() == 2 );
+  CHECK( mesh.vertices()[1].facets().size() == 2 );
+  CHECK( mesh.vertices()[2].facets().size() == 4 );
+  CHECK( mesh.vertices()[3].facets().size() == 2 );
+  CHECK( mesh.vertices()[4].facets().size() == 1 );
+  CHECK( mesh.vertices()[5].facets().size() == 3 );
+  CHECK( mesh.vertices()[6].facets().size() == 3 );
+  CHECK( mesh.vertices()[7].facets().size() == 2 );
+  CHECK( mesh.vertices()[8].facets().size() == 5 );
+
+  // Check edge-to-facet connectivity (boundary edges)
+  CHECK( mesh.get_edge(mesh.vertices()[0], mesh.vertices()[1])->facet_l()->index() == 0 );
+  CHECK( mesh.get_edge(mesh.vertices()[1], mesh.vertices()[2])->facet_l()->index() == 1 );
+  CHECK( mesh.get_edge(mesh.vertices()[2], mesh.vertices()[3])->facet_l()->index() == 3 );
+  CHECK( mesh.get_edge(mesh.vertices()[3], mesh.vertices()[4])->facet_l()->index() == 4 );
+  CHECK( mesh.get_edge(mesh.vertices()[4], mesh.vertices()[5])->facet_l()->index() == 4 );
+  CHECK( mesh.get_edge(mesh.vertices()[5], mesh.vertices()[6])->facet_l()->index() == 6 );
+  CHECK( mesh.get_edge(mesh.vertices()[6], mesh.vertices()[7])->facet_l()->index() == 7 );
+  CHECK( mesh.get_edge(mesh.vertices()[7], mesh.vertices()[0])->facet_l()->index() == 2 );
+
+  // Check edge-to-facet connectivity (interior edges)
+  CHECK( mesh.get_edge(mesh.vertices()[0], mesh.vertices()[8])->facet_l()->index() == 2 );
+  CHECK( mesh.get_edge(mesh.vertices()[0], mesh.vertices()[8])->facet_r()->index() == 0 );
+
+  CHECK( mesh.get_edge(mesh.vertices()[1], mesh.vertices()[8])->facet_l()->index() == 1 );
+  CHECK( mesh.get_edge(mesh.vertices()[1], mesh.vertices()[8])->facet_r()->index() == 0 );
+
+  CHECK( mesh.get_edge(mesh.vertices()[2], mesh.vertices()[8])->facet_l()->index() == 5 );
+  CHECK( mesh.get_edge(mesh.vertices()[2], mesh.vertices()[8])->facet_r()->index() == 1 );
+
+  CHECK( mesh.get_edge(mesh.vertices()[6], mesh.vertices()[8])->facet_l()->index() == 7 );
+  CHECK( mesh.get_edge(mesh.vertices()[6], mesh.vertices()[8])->facet_r()->index() == 5 );
+
+  CHECK( mesh.get_edge(mesh.vertices()[7], mesh.vertices()[8])->facet_l()->index() == 7 );
+  CHECK( mesh.get_edge(mesh.vertices()[7], mesh.vertices()[8])->facet_r()->index() == 2 );
+
+  CHECK( mesh.get_edge(mesh.vertices()[6], mesh.vertices()[2])->facet_l()->index() == 6 );
+  CHECK( mesh.get_edge(mesh.vertices()[6], mesh.vertices()[2])->facet_r()->index() == 5 );
+
+  CHECK( mesh.get_edge(mesh.vertices()[2], mesh.vertices()[5])->facet_l()->index() == 6 );
+  CHECK( mesh.get_edge(mesh.vertices()[2], mesh.vertices()[5])->facet_r()->index() == 3 );
+
+  CHECK( mesh.get_edge(mesh.vertices()[3], mesh.vertices()[5])->facet_l()->index() == 4 );
+  CHECK( mesh.get_edge(mesh.vertices()[3], mesh.vertices()[5])->facet_r()->index() == 3 );
+
+
 
 } // triangulate() 
 

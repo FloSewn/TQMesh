@@ -18,7 +18,6 @@
 #include "Vertex.h"
 #include "Facet.h"
 
-#include "Front.h"
 #include "Domain.h"
 #include "TriangleGeometry.h"
 #include "NullFacet.h"
@@ -264,6 +263,7 @@ public:
   | The factor range scales the vicinity range from which 
   | front edges to pick from
   ------------------------------------------------------------------*/
+  template <typename Front>
   bool intersects_front(const Front& front, const double range) const 
   { return TriangleGeometry::check_intersection(*this, front, range); }
 

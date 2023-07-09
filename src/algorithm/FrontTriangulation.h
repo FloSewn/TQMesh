@@ -17,6 +17,9 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "FrontInitializer.h"
+#include "FrontAlgorithm.h"
+#include "MeshValidator.h"
+#include "MeshingFunctions.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -26,10 +29,9 @@ using namespace CppUtils;
 /*********************************************************************
 * 
 *********************************************************************/
-class FrontTriangulation 
+class FrontTriangulation : public FrontAlgorithm
 {
 public:
-
   using VertexVector   = std::vector<Vertex*>;
   using TriVector      = std::vector<Triangle*>;
 
@@ -37,60 +39,125 @@ public:
   | Constructor / Destructor 
   ------------------------------------------------------------------*/
   FrontTriangulation(Mesh& mesh, const Domain& domain)
-  : mesh_ { mesh }
-  , domain_ { domain }
-  { 
-  }
+  : FrontAlgorithm(mesh, domain) {}
 
   ~FrontTriangulation() {}
 
   /*------------------------------------------------------------------
+  | Getters 
+  ------------------------------------------------------------------*/
+  double mesh_range_factor() const { return mesh_range_factor_; }
+  double base_height_factor() const { return base_height_factor_; }
+  double wide_search_factor() const { return wide_search_factor_; }
+  double min_cell_quality() const { return validator_.min_cell_quality(); }
+  double max_cell_angle() const { return validator_.max_cell_angle(); }
+  double base_vertex_factor() const { return base_vertex_factor_; }
+
+  /*------------------------------------------------------------------
+  | Setters 
+  ------------------------------------------------------------------*/
+  void mesh_range_factor(double v) { mesh_range_factor_ = v; }
+  void base_height_factor(double v) { base_height_factor_ = v; }
+  void wide_search_factor(double v) { wide_search_factor_ = v; }
+  void min_cell_quality(double v) { validator_.min_cell_quality(v); }
+  void max_cell_angle(double v) { validator_.max_cell_angle(v); }
+  void base_vertex_factor(double v) { base_vertex_factor_ = v; }
+
+  /*------------------------------------------------------------------
   | Triangulate a given initialized mesh structure
   ------------------------------------------------------------------*/
-  bool generate_elements(int n_elements=0) 
+  bool generate_elements(int n_elements=0) override
   {
-    if ( mesh_.n_boundary_edges() == 0 )
-    {
-      LOG(ERROR) << 
-      "Unable to triangulate mesh " << mesh_.id() << ". " <<
-      "The mesh has not been prepared yet.";
-      return false;
-    }
+    ASSERT(mesh_.n_boundary_edges() != 0,
+      "FrontTriangulation::generate_elements(): "
+      "Unable to triangulate mesh that has not been prepared yet.");
+
+    // Prepare the mesh  
+    Cleanup::setup_facet_connectivity(mesh_);
 
     // Initialize the advancing front and its base edge
-    front_.init_front(mesh_);
-    front_.set_base_first();
-    Edge* base = &( front_.base() );
+    Edge* base_edge = init_advancing_front();
 
-    // Invalid base definition
-    if ( !base ) 
-    {
-      LOG(ERROR) << 
-      "Unable to triangulate mesh " << mesh_.id() << ". " <<
-      "The mesh's advancing front structure seems to corrupted.";
+    // Remove invalid mesh edges that are no longer needed
+    remove_invalid_mesh_edges();
+
+    // Perform the actual mesh generation
+    bool success = advancing_front_loop(base_edge, n_elements);
+
+    // Finish mesh structure for output
+    finish_mesh_for_output();
+
+    // Remove remaining edges from the front
+    front_.clear_edges();
+
+    return success;
+  }
+
+private:
+
+  /*------------------------------------------------------------------
+  | Let the advancing front create a new triangle 
+  ------------------------------------------------------------------*/
+  bool advance_front_triangle(Edge& base_edge, bool wide_search=false)
+  {
+    // Obtain the position of a potential new vertex and the radius 
+    // to search around it for potential existing vertices
+    const double height = domain_.size_function( base_edge.xy() );
+    const Vec2d  v_xy   = base_edge.xy() 
+                        + base_height_factor_ * height * base_edge.normal();
+
+    double range = mesh_range_factor_ * domain_.size_function( v_xy );
+    if (wide_search)
+      range *= wide_search_factor_;
+
+    // Find all vertices in the vicinity of the current base edge
+    VertexVector vertex_candidates = find_vertex_candidates(v_xy, range);
+
+    // Create potential triangles with all found vertices
+    TriVector new_triangles {};
+    MeshingFunctions::check_vertex_candidates(vertex_candidates, 
+                                              base_edge, 
+                                              new_triangles,
+                                              mesh_, validator_);
+
+    // If potential triangles have been found, choose the best one
+    if ( choose_best_triangle(new_triangles, base_edge) )
+      return true;
+
+    // Check if a potential triangle can be created with the base edge
+    // and a newly created vertex
+    Vertex& b1 = base_edge.v1();
+    Vertex& b2 = base_edge.v2();
+
+    Vertex& v_new 
+      = MeshingFunctions::create_base_vertex(base_edge, domain_, mesh_,
+                                             base_vertex_factor_ );
+    Triangle& t_new = mesh_.add_triangle(b1, b2, v_new);
+    
+    // Algorithm fails if new vertex or new triangle is invalid
+    if ( validator_.remove_from_mesh_if_invalid(v_new, t_new) )
       return false;
-    }
+    
+    // Update the advancing front with new vertex
+    update_front(base_edge, v_new, t_new);
 
-    LOG(INFO) << "Start triangulation of mesh " << mesh_.id() << ".";
+    return true;
 
-    // Sort the advancing front edges
-    front_.sort_edges( false );
+  } // Mesh::advance_front_triangle() */
 
-    // Start advancing front loop
-    ProgressBar progress_bar {};
-    unsigned int iter = 0;
-    bool wide_search = false;
-    int sort_iter = 0;
-    int n_generated = 0;
+  /*------------------------------------------------------------------
+  | The actual main loop for the advancing front mesh generation
+  ------------------------------------------------------------------*/
+  bool advancing_front_loop(Edge* base_edge, int n_elements)
+  {
+    unsigned int iteration   = 0;
+    bool         wide_search = false;
+    int          n_generated = 0;
 
     while ( true )
     {
-      // Try to advance the current base edge
-      bool success = advance_front_triangle(*base, wide_search);
-
-      // If it worked, reset iteration counter and wide search
-      // and go to the next base edge
-      if ( success )
+      // Advance current base edge 
+      if ( advance_front_triangle(*base_edge, wide_search) )
       {
         ++n_generated;
 
@@ -98,497 +165,59 @@ public:
         if ( wide_search )
           front_.sort_edges( false );
 
-        iter = 0;
+        // Reset iteration counter and wide search
+        iteration = 0;
         wide_search = false;
 
-        // Sort the advancing front edges
-        if ( sort_iter == sort_triangulation_front_ )
-        {
-          front_.sort_edges( false );
-          sort_iter = 0;
-        }
-        else
-        {
-          sort_iter = MOD( sort_iter+1, INT_MAX-1 );
-        }
-
-        front_.set_base_first();
-        base = &( front_.base() );
-
+        // Go to the next base edge
+        base_edge = front_.set_base_first();
         mesh_.clear_waste();
       }
       // If it failed, go to the next base edge
       else
       {
-        front_.set_base_next();
-        base = &( front_.base() );
-        ++iter;
+        base_edge = front_.set_base_next();
+        ++iteration;
       }
 
       // All front edges failed to create new elements
       // --> Activate wide search for neighboring vertices
       //     and re-run the algorithm
-      if ( iter == front_.size() && !wide_search )
+      if ( iteration == front_.size() && !wide_search )
       {
         wide_search = true;
-        iter = 0;
+        iteration = 0;
       }
 
-      // Update progress bar
-      double state = std::ceil(100.0 * mesh_.area() / domain_.area());
-      progress_bar.update( static_cast<int>(state) );
-      progress_bar.show( LOG_PROPERTIES.get_ostream(INFO) );
+      update_progress_bar();
 
       // No more edges in the advancing front
       // --> Meshing algorithm succeeded
       if ( front_.size() == 0 )
-      {
-        LOG(INFO) << "[";
-        LOG(INFO) << "The meshing process succeeded.";
-        break;
-      }
+        return true;
       
       // Maximum number of elements has been generated
       if (n_elements > 0 && n_generated == n_elements)
-      {
-        LOG(INFO) << "[";
-        LOG(INFO) << "The meshing process was aborted.";
-        break;
-      }
+        return true;
 
       // All front edges faild to create new elements, even
       // when using the wide search 
       // --> Meshing algorithm failed
-      if ( iter == front_.size() && wide_search )
-      {
-        LOG(INFO) << "[";
-        LOG(ERROR) << "The meshing process failed.";
+      if ( iteration == front_.size() && wide_search )
         return false;
-      }
     }
 
-    Cleanup::setup_vertex_connectivity(mesh_);
-    Cleanup::setup_facet_connectivity(mesh_);
-    Cleanup::assign_size_function_to_vertices(mesh_, domain_);
-    Cleanup::assign_mesh_indices(mesh_);
-
-    // Add remaining front edges to the mesh 
-    for ( auto& e_ptr : front_.edges() )
-    {
-      const Vertex& v1 = e_ptr->v1();
-      const Vertex& v2 = e_ptr->v2();
-
-      if ( mesh_.interior_edges().get_edge(v1, v2) )
-        continue;
-
-      if ( mesh_.boundary_edges().get_edge(v1, v2) )
-        continue;
-
-      mesh_.add_interior_edge(e_ptr->v1(), e_ptr->v2());
-    }
-    front_.clear_edges();
-
-    return true;
-  }
-
-private:
-
-  /*------------------------------------------------------------------
-  | Check if a triangle is valid. If yes, return true - 
-  | else return false.
-  ------------------------------------------------------------------*/
-  bool triangle_is_valid(const Triangle& tri)
-  {
-    Vertices&   vertices = mesh_.vertices();
-    Triangles& triangles = mesh_.triangles();
-    Quads&         quads = mesh_.quads();
-
-    const double rho   = domain_.size_function( tri.xy() );
-    const double range = 2.0 * rho;
-
-    DEBUG_LOG("CHECK NEW TRIANGLE: " << tri);
-
-    if ( !tri.is_valid() )
-      return false;
-
-    if ( tri.intersects_front( front_, range ) )
-    { DEBUG_LOG("  > FRONT INTERSECTION"); return false; }
-
-    if ( tri.intersects_vertex( vertices, range ) )
-    { DEBUG_LOG("  > VERTEX INTERSECTION"); return false; }
-
-    if ( tri.intersects_triangle( triangles, range ) )
-    { DEBUG_LOG("  > TRIANGLE INTERSECTION"); return false; }
-
-    if ( tri.intersects_quad( quads, range ) )
-    { DEBUG_LOG("  > QUAD INTERSECTION"); return false; }
-
-    if ( tri.quality(rho) < min_cell_quality_ )
-    { DEBUG_LOG("  > BAD TRIANGLE QUALITY"); return false; }
-
-    if ( tri.max_angle() > max_cell_angle_ )
-    { DEBUG_LOG("  > BAD MAXIMUM ANGLE"); return false; }
-
-    DEBUG_LOG("  > VALID");
-    return true;
-
-  } // Mesh::triangle_is_valid()
-
-  /*------------------------------------------------------------------
-  | Check if a vertex is valid. If yes, return true - 
-  | else return false.
-  ------------------------------------------------------------------*/
-  bool vertex_is_valid(const Vertex& v)
-  {
-    Triangles& triangles = mesh_.triangles();
-    Quads&         quads = mesh_.quads();
-
-    const double rho   = domain_.size_function( v.xy() );
-    const double range = 2.0 * rho;
-
-    DEBUG_LOG("CHECK NEW VERTEX: " << v);
-
-    if ( !domain_.is_inside( v ) )
-    { DEBUG_LOG("  > OUTSIDE DOMAIN"); return false; }
-
-    if ( v.intersects_facet(triangles, range) )
-    { DEBUG_LOG("  > TRIANGLE INTERSECTION"); return false; }
-
-    if ( v.intersects_facet(quads, range) )
-    { DEBUG_LOG("  > QUAD INTERSECTION"); return false; }
-
-    DEBUG_LOG("  > VALID");
-    return true;
-
-  } // Mesh::vertex_is_valid()
-
-  /*------------------------------------------------------------------
-  | Check if mesh entities are invalid. If yes, remove them and 
-  | return true. Else, simply return false.
-  ------------------------------------------------------------------*/
-  bool remove_if_invalid(Vertex& v)
-  {
-    if ( vertex_is_valid(v) )
-      return false;
-    mesh_.remove_vertex(v);
-    return true;
-  } 
-
-  bool remove_if_invalid(Triangle& t)
-  {
-    if ( triangle_is_valid(t) )
-      return false;
-    mesh_.remove_triangle(t);
-    return true;
-  } 
-
-  bool remove_if_invalid(Vertex& v, Triangle& t)
-  {
-    if ( !vertex_is_valid(v) || !triangle_is_valid(t) )
-    {
-      mesh_.remove_triangle(t);
-      mesh_.remove_vertex(v);
-      return true;
-    }
-    return false;
-  } 
-
-  bool remove_if_invalid(Vertex& v, Triangle& t1, Triangle& t2)
-  {
-    if (  !vertex_is_valid(v) 
-       || !triangle_is_valid(t1) || !triangle_is_valid(t2) )
-    {
-      mesh_.remove_triangle(t1);
-      mesh_.remove_triangle(t2);
-      mesh_.remove_vertex(v);
-      return true;
-    }
-    return false;
-  }
-
-  /*------------------------------------------------------------------
-  | This function is part of the advancing front loop.
-  | For a given location <xy> and a respective search range <dist>,
-  | all vertices that are located in this vicinity are put into a 
-  | vector and the sorted ascendingly towards <xy>.
-  | If the flag <wide_search> is activated, the search range is 
-  | enlarged by a preset factor, in order to finde more vertex 
-  | candidates.
-  ------------------------------------------------------------------*/
-  VertexVector find_local_vertices(const Vec2d& xy, double dist, 
-                                   bool wide_search=false )
-  {
-    Vertices& vertices = mesh_.vertices();
-
-    if (wide_search)
-      dist *= wide_search_factor_;
-
-    // Get vertices in vicinity of xy  
-    VertexVector vertex_candidates = vertices.get_items(xy, dist);
-
-    // Sort vertices in ascending order towards xy
-    std::sort( vertex_candidates.begin(), vertex_candidates.end(), 
-    [xy] ( const Vertex* a, const Vertex* b )
-    {
-      return ( (a->xy()-xy).norm_sqr() 
-             < (b->xy()-xy).norm_sqr() );
-    });
-
-    return std::move( vertex_candidates ); 
-
-  } // find_local_vertices() 
-
-  /*------------------------------------------------------------------
-  | This function is part of the advancing front loop.
-  | We loop over a given set of <vertex_candidates> and check
-  | if we can create a possible triangle with the current base edge
-  | (<b1>,<b2>) and the given vertices.
-  | If it is possible, new triangles are created and pushed back to 
-  | the vector <new_triangles>.
-  ------------------------------------------------------------------*/
-  void check_vertex_candidates(const VertexVector& vertex_candidates,
-                               Edge& base, TriVector& new_triangles)
-  {
-    for ( Vertex* v : vertex_candidates )
-    {
-      // Skip vertices that are not located on the advancing front
-      if ( !v->on_front() )
-        continue;
-
-      // Skip vertices that are colinear to the current base edge
-      if ( orientation( base.v1().xy(), base.v2().xy(), v->xy() )
-          == Orientation::CL )
-        continue;
-
-      // Create new potential triangle 
-      Triangle& t_new = mesh_.add_triangle( base.v1(), base.v2(), *v );
-
-      // Check if new potential triangle is valid
-      if ( !remove_if_invalid(t_new) )
-        new_triangles.push_back( &t_new );
-    }
-  } // check_vertex_candidates()
-
-  /*------------------------------------------------------------------
-  | 
-  ------------------------------------------------------------------*/
-  Vertex& get_base_vertex(const Edge& base)
-  {
-    // Half of the factor h for height of equlateral triangle
-    // h := sqrt(3) / 2  -   h_fac := h / 2
-    constexpr double h_fac = 0.4330127019; 
-    const double v_fac = h_fac * base_vertex_factor_;
-
-    // Obtain size function value at the centroid of an equlateral
-    // triangle, created from the current base edge
-    Vec2d c = base.xy() + base.normal() * base.length() * v_fac;
-    const double rho = domain_.size_function(c);
-
-    // Coordinate of new vertex 
-    Vec2d xy = base.xy() + base.normal() * rho;
-
-    return mesh_.add_vertex( xy );
-
-  } // get_base_vertex() 
-
-
-  /*------------------------------------------------------------------
-  | This function is part of the advancing front loop.
-  | We sort a given vector of <new_triangles> in descending order
-  | according to the triangle quality.
-  | Finally, the advancing front is updated with the triangle of best
-  | quality and all other triangles are removed.
-  ------------------------------------------------------------------*/
-  Triangle* choose_best_triangle(TriVector& new_triangles,
-                                 Edge&      base)
-  {
-    Triangles& triangles = mesh_.triangles();
-
-    if ( new_triangles.size() < 1 )
-      return nullptr;
-
-    DEBUG_LOG("VALID TRIANGLES IN NEIGHBORHOOD: " 
-       << new_triangles.size()
-    );
-
-    std::sort( new_triangles.begin(), new_triangles.end(),
-    [this] ( Triangle* t1, Triangle* t2 )
-    {
-      const double h1 = domain_.size_function( t1->xy() );
-      const double h2 = domain_.size_function( t2->xy() );
-      const double q1 = t1->quality(h1);
-      const double q2 = t2->quality(h2);
-
-      return ( q1 > q2 );
-    });
-
-    Triangle* new_tri = new_triangles[0];
-    Vertex&   v_adj   = new_tri->v3();
-
-    update_front( base, v_adj, *new_tri );
-
-    for (int i = 1; i < new_triangles.size(); i++)
-      triangles.remove( *new_triangles[i] );
-
-    return new_tri;
-
-  } // choose_best_triangle()
-
-
-  /*------------------------------------------------------------------
-  | 
-  ------------------------------------------------------------------*/
-  void update_front(Edge& base, Vertex& v_new, Triangle& t_new)
-  {
-    // Get advancing front edges adjacent to vertex
-    // -> First two vertices of new triangle tri are always
-    //    the base edge vertices
-    Edge* e1 = front_.get_edge(v_new, base.v1());
-    Edge* e2 = front_.get_edge(v_new, base.v2());
-
-    // *** Both edges are connected to vertex ***
-    //     -> No new edge must be created
-    //     -> Base vertex v1 no longer on the advancing front
-    //     -> Base vertex v2 no longer on the advancing front
-    //     -> vertex no longer on the advancing front
-    if ( e1 && e2 )
-    {
-      ASSERT( v_new.on_front(), "Grid structure corrupted." );
-
-      base.v1().on_front( false );
-      base.v2().on_front( false );
-      v_new.on_front( false );
-
-      if ( e1->is_interior() )
-        mesh_.add_interior_edge(e1->v1(), e1->v2());
-      if ( e2->is_interior() )
-        mesh_.add_interior_edge(e2->v1(), e2->v2());
-
-      front_.remove( *e1 );
-      front_.remove( *e2 );
-    }
-    // *** First edge is connected to vertex ***
-    //     -> New edge between second base vertex and vertex
-    //     -> Base vertex v1 no longer on the advancing front
-    //     -> vertex is part of the advancing front
-    else if ( e1 && !e2 )
-    {
-      ASSERT( v_new.on_front(), "Grid structure corrupted." );
-
-      base.v1().on_front( false );
-
-      if ( e1->is_interior() )
-        mesh_.add_interior_edge(e1->v1(), e1->v2());
-
-      front_.remove( *e1 );
-      front_.add_edge(v_new, base.v2());
-    }
-    // *** Second edge is connected to vertex ***
-    //     -> New edge between first base vertex and vertex
-    //     -> Base vertex v2 no longer on the advancing front
-    //     -> vertex is part of the advancing front
-    else if ( !e1 && e2 )
-    {
-      ASSERT( v_new.on_front(), "Grid structure corrupted." );
-
-      base.v2().on_front( false );
-
-      if ( e2->is_interior() )
-        mesh_.add_interior_edge(e2->v1(), e2->v2());
-
-      front_.remove( *e2 );
-      front_.add_edge(base.v1(), v_new);
-    }
-    // *** Both edges are not connected to vertex ***
-    //     -> Create two new edges
-    //     -> Vertex now part of the advancing front
-    else
-    {
-      v_new.on_front( true );
-      front_.add_edge(base.v1(), v_new);
-      front_.add_edge(v_new, base.v2());
-    }
-
-    // If current base is not at the boundary, add it to the 
-    // interior edge list
-    if ( base.is_interior() )
-      mesh_.add_interior_edge(base.v1(), base.v2());
-
-    // Remove base edge
-    front_.remove( base );
-
-    // Mark new triangle as active
-    t_new.is_active( true );
-
-    // Add element area to the total mesh area
-    mesh_.add_area( t_new.area() );
-
-  } // update_front() 
-
-  /*------------------------------------------------------------------
-  | Let the advancing front create a new triangle 
-  ------------------------------------------------------------------*/
-  bool advance_front_triangle(Edge& base, bool wide_search=false)
-  {
-    // Constants
-    const double f1 = base_height_factor_;
-    const double f2 = mesh_range_factor_;
-
-    // Obtain the position of a potential new vertex and the radius 
-    // to search around it for potential existing vertices
-    const double height = domain_.size_function( base.xy() );
-    const Vec2d  v_xy   = base.xy() + f1 * height * base.normal();
-    const double r      = domain_.size_function( v_xy );
-
-    // Find all vertices in the vicinity of the current base edge
-    VertexVector vertex_candidates 
-      = find_local_vertices(v_xy, f2 * r, wide_search);
-
-    // Create potential triangles with all found vertices
-    TriVector new_triangles {};
-    check_vertex_candidates(vertex_candidates, base, new_triangles);
-
-    // If potential triangles have been found, choose the best one
-    if ( choose_best_triangle(new_triangles, base) )
-      return true;
-
-    // Check if a potential triangle can be created with the base edge
-    // and a newly created vertex
-    Vertex& b1 = base.v1();
-    Vertex& b2 = base.v2();
-
-    Vertex&   v_new = get_base_vertex( base );
-    Triangle& t_new = mesh_.add_triangle(b1, b2, v_new);
-    
-    // Algorithm fails if new vertex or new triangle is invalid
-    if ( remove_if_invalid(v_new, t_new) )
-      return false;
-    
-    // Update the advancing front with new vertex
-    update_front(base, v_new, t_new);
-
-    return true;
-
-  } // Mesh::advance_front_triangle() */
-
+  } // FrontTriangulation::advancing_front_loop()
 
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
-  Mesh&         mesh_;
-  const Domain& domain_;
-  Front         front_ {};
-
-  int    sort_triangulation_front_ = -1;
-  double mesh_range_factor_        = 1.0;
-  double base_height_factor_       = 0.43; // ~ sqrt(3) / 4
-  double wide_search_factor_       = 10.0;
-  double min_cell_quality_         = 0.0;
-  double max_cell_angle_           = M_PI;
-  double base_vertex_factor_       = 2.00;
+  double mesh_range_factor_  = 1.0;
+  double base_height_factor_ = sqrt(3.0) / 4.0; 
+  double wide_search_factor_ = 10.0;
+  double base_vertex_factor_ = 2.00;
 
 }; // FrontTriangulation
- 
 
 } // namespace TQAlgorithm
 } // namespace TQMesh

@@ -138,6 +138,80 @@ public:
   get_bdry_edges(const Vec2d& center, double radius) const
   { return std::move( bdry_edges_.get_edges(center, radius ) ); }
 
+  /*------------------------------------------------------------------
+  | Return all valid interior mesh edges.
+  | An interior edge is valid, if it is connected to its left and 
+  | its right facet.
+  | -> Assumes initialized facet connectivity
+  ------------------------------------------------------------------*/
+  EdgeVector get_valid_interior_edges() const
+  {
+    EdgeVector valid_edges {};
+
+    for ( const auto& e_ptr : intr_edges_ )
+      if ( NullFacet::is_not_null( e_ptr->facet_l() ) && 
+           NullFacet::is_not_null( e_ptr->facet_r() )  )
+        valid_edges.push_back( e_ptr.get() );
+
+    return std::move(valid_edges);
+  }
+
+  /*------------------------------------------------------------------
+  | Return all valid boundary mesh edges.
+  | A boundary edge is valid, if it is connected to its left facet.
+  | -> Assumes initialized facet connectivity
+  ------------------------------------------------------------------*/
+  EdgeVector get_valid_boundary_edges() const 
+  {
+    EdgeVector valid_edges {};
+
+    for ( const auto& e_ptr : bdry_edges_ )
+      if ( NullFacet::is_not_null( e_ptr->facet_l() ) )
+        valid_edges.push_back( e_ptr.get() );
+
+    return std::move(valid_edges);
+  }
+
+  /*------------------------------------------------------------------
+  | Return boundary edges that act as interfaces to neighboring 
+  | meshes (= twin edges)
+  | -> Assumes initialized facet connectivity
+  ------------------------------------------------------------------*/
+  EdgeVector get_interface_edges() const
+  {
+    EdgeVector interface_edges {};
+
+    for ( const auto& e_ptr : bdry_edges_ )
+      if (e_ptr->twin_edge())
+        interface_edges.push_back( e_ptr.get() );
+
+    return std::move( interface_edges );
+  }
+
+  /*------------------------------------------------------------------
+  | Return all invalid mesh edges.
+  | -> Either interior edges that are not connected to two facets 
+  |    of boundary edges that are not connected to their left facet.
+  | -> These edges are also used for the advancing front generation 
+  |    of the mesh
+  | -> Assumes initialized facet connectivity
+  ------------------------------------------------------------------*/
+  EdgeVector get_invalid_edges() const
+  {
+    EdgeVector invalid_edges {};
+
+    for ( const auto& e_ptr : intr_edges_ )
+      if ( NullFacet::is_null( e_ptr->facet_l() ) || 
+           NullFacet::is_null( e_ptr->facet_r() )  )
+        invalid_edges.push_back( e_ptr.get() );
+
+    for ( const auto& e_ptr : bdry_edges_ )
+      if ( NullFacet::is_null( e_ptr->facet_l() ) )
+        invalid_edges.push_back( e_ptr.get() );
+
+    return std::move(invalid_edges);
+  }
+
 
   /*------------------------------------------------------------------
   | For a given pair of vertices (v1,v2) return a corresponding
@@ -242,12 +316,18 @@ public:
 
   void remove_interior_edge(Edge& e)
   {
+    if ( &e.edgelist() != &intr_edges_ )
+      return;
+
     bool removed = intr_edges_.remove( e );
     ASSERT( removed, "Failed to remove interior edge."); (void) removed;
   }
 
   void remove_boundary_edge(Edge& e)
   {
+    if ( &e.edgelist() != &bdry_edges_ )
+      return;
+
     bool removed = bdry_edges_.remove( e );
     ASSERT( removed, "Failed to remove interior edge."); (void) removed;
   }
@@ -276,33 +356,10 @@ private:
 *********************************************************************/
 inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
 {
-  // Count the total number of interior and boundary edges
-  // and the total number of interface edges with other meshes
-  // -> Valid interior edges share two facets - otherwise we define
-  //    them as advancing front edges (of a non-completed mesh)
-  // -> Boundary edges must share a left facet - otherwise we define
-  //    them as advancing front edges as well.
-  size_t n_intr_edges = 0;
-  size_t n_bdry_edges = 0;
-  size_t n_interface_edges = 0;
-
-  for ( const auto& e_ptr : mesh.interior_edges() )
-    if ( NullFacet::is_not_null( e_ptr->facet_l() ) && 
-         NullFacet::is_not_null( e_ptr->facet_r() )  )
-      ++n_intr_edges;
-
-  for ( const auto& e_ptr : mesh.boundary_edges() )
-  {
-    if ( NullFacet::is_not_null( e_ptr->facet_l() ) )
-      ++n_bdry_edges;
-
-    if (e_ptr->twin_edge() != nullptr)
-      ++n_interface_edges;
-  }
-
-  size_t n_front_edges = mesh.interior_edges().size() - n_intr_edges
-                       + mesh.boundary_edges().size() - n_bdry_edges;
-
+  auto interior_edges  = mesh.get_valid_interior_edges();
+  auto boundary_edges  = mesh.get_valid_boundary_edges();
+  auto interface_edges = mesh.get_interface_edges();
+  auto front_edges     = mesh.get_invalid_edges();
 
 
   os << "MESH " << mesh.id() << "\n";
@@ -310,114 +367,64 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
   // Print out vertex coordinates
   os << "VERTICES " << mesh.vertices().size() << "\n";
   for ( const auto& v_ptr : mesh.vertices() )
-  {
     os << std::setprecision(5) << std::fixed 
        << v_ptr->xy().x << "," 
        << v_ptr->xy().y << "\n";
-  }
 
   // Print out all valid interior edges
-  os << "INTERIOREDGES " << n_intr_edges << "\n";
-  for ( const auto& e_ptr : mesh.interior_edges() )
-  {
-    if ( NullFacet::is_not_null( e_ptr->facet_l() ) && 
-         NullFacet::is_not_null( e_ptr->facet_r() )  )
-    {
-      os << std::setprecision(0) << std::fixed 
-        << std::setw(4) << e_ptr->v1().index() << "," 
-        << std::setw(4) << e_ptr->v2().index() << ","
-        << std::setw(4) << e_ptr->facet_l()->index() << ","
-        << std::setw(4) << e_ptr->facet_r()->index() << "\n";
-    }
-  }
+  os << "INTERIOREDGES " << interior_edges.size() << "\n";
+  for ( auto& e_ptr : interior_edges )
+    os << std::setprecision(0) << std::fixed 
+      << std::setw(4) << e_ptr->v1().index() << "," 
+      << std::setw(4) << e_ptr->v2().index() << ","
+      << std::setw(4) << e_ptr->facet_l()->index() << ","
+      << std::setw(4) << e_ptr->facet_r()->index() << "\n";
 
   // Print out all valid boundary edges
-  os << "BOUNDARYEDGES " << n_bdry_edges << "\n";
-  for ( const auto& e_ptr : mesh.boundary_edges() )
-  {
-    if ( NullFacet::is_not_null( e_ptr->facet_l() ) )
-    {
-      os << std::setprecision(0) << std::fixed 
-        << std::setw(4) << e_ptr->v1().index() << "," 
-        << std::setw(4) << e_ptr->v2().index() << ","
-        << std::setw(4) << e_ptr->facet_l()->index() << ","
-        << std::setw(4) << e_ptr->marker() << "\n";
-    }
-  }
+  os << "BOUNDARYEDGES " << boundary_edges.size() << "\n";
+  for ( auto& e_ptr : boundary_edges )
+    os << std::setprecision(0) << std::fixed 
+      << std::setw(4) << e_ptr->v1().index() << "," 
+      << std::setw(4) << e_ptr->v2().index() << ","
+      << std::setw(4) << e_ptr->facet_l()->index() << ","
+      << std::setw(4) << e_ptr->marker() << "\n";
 
   // Print out all interface edges to other meshes
-  os << "INTERFACEEDGES " << n_interface_edges << "\n";
-  for ( const auto& e_ptr : mesh.boundary_edges() )
-  {
-    if (e_ptr->twin_edge() == nullptr)
-      continue;
+  os << "INTERFACEEDGES " << interface_edges.size() << "\n";
+  for ( auto& e_ptr : interface_edges )
     os << std::setprecision(0) << std::fixed 
       << std::setw(4) << e_ptr->v1().index() << "," 
       << std::setw(4) << e_ptr->v2().index() << ","
       << std::setw(4) << e_ptr->facet_l()->index() << ","
       << std::setw(4) << e_ptr->twin_edge()->facet_l()->index() << ","
       << std::setw(4) << e_ptr->twin_edge()->facet_l()->color() << "\n";
-  }
 
   // Print out all advancing front edges
-  os << "FRONT " << n_front_edges << "\n";
-  for ( const auto& e_ptr : mesh.interior_edges() )
-  {
-    if ( NullFacet::is_not_null( e_ptr->facet_l() ) && 
-         NullFacet::is_not_null( e_ptr->facet_r() )  )
-      continue;
-     
+  os << "FRONT " << front_edges.size() << "\n";
+  for ( auto& e_ptr : front_edges )
     os << std::setprecision(0) << std::fixed 
       << std::setw(4) << e_ptr->v1().index() << "," 
       << std::setw(4) << e_ptr->v2().index() << ","
       << std::setw(4) << -1 << "\n";
-     
-  }
-  for ( const auto& e_ptr : mesh.boundary_edges() )
-  {
-    if ( NullFacet::is_not_null( e_ptr->facet_l() ) )
-      continue;
-
-    os << std::setprecision(0) << std::fixed 
-      << std::setw(4) << e_ptr->v1().index() << "," 
-      << std::setw(4) << e_ptr->v2().index() << ","
-      << std::setw(4) << -1 << "\n";
-  }
-
 
   // Print out all quads
   os << "QUADS " << mesh.quads().size() << "\n";
   for ( const auto& q_ptr : mesh.quads() )
-  {
-    auto v1_index = q_ptr->v1().index();
-    auto v2_index = q_ptr->v2().index();
-    auto v3_index = q_ptr->v3().index();
-    auto v4_index = q_ptr->v4().index();
-    auto color    = q_ptr->color();
-
     os << std::setprecision(0) << std::fixed
-      << std::setw(4) << v1_index << ","
-      << std::setw(4) << v2_index << ","
-      << std::setw(4) << v3_index << ","
-      << std::setw(4) << v4_index << ","
-      << std::setw(4) << color << "\n";
-  }
+      << std::setw(4) << q_ptr->v1().index() << ","
+      << std::setw(4) << q_ptr->v2().index() << ","
+      << std::setw(4) << q_ptr->v3().index() << ","
+      << std::setw(4) << q_ptr->v4().index() << ","
+      << std::setw(4) << q_ptr->color() << "\n";
 
   // Print out all triangles
   os << "TRIANGLES " << mesh.triangles().size() << "\n";
   for ( const auto& t_ptr : mesh.triangles() )
-  {
-    auto v1_index = t_ptr->v1().index();
-    auto v2_index = t_ptr->v2().index();
-    auto v3_index = t_ptr->v3().index();
-    auto color    = t_ptr->color();
-
     os << std::setprecision(0) << std::fixed
-      << std::setw(4) << v1_index << ","
-      << std::setw(4) << v2_index << ","
-      << std::setw(4) << v3_index << ","
-      << std::setw(4) << color << "\n";
-  }
+      << std::setw(4) << t_ptr->v1().index() << ","
+      << std::setw(4) << t_ptr->v2().index() << ","
+      << std::setw(4) << t_ptr->v3().index() << ","
+      << std::setw(4) << t_ptr->color() << "\n";
 
   // Print out all quad neighbors
   os << "QUADNEIGHBORS " << mesh.quads().size() << "\n";

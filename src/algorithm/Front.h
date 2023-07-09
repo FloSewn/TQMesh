@@ -28,6 +28,23 @@ namespace TQAlgorithm {
 
 using namespace CppUtils;
 
+
+/*********************************************************************
+* Container for references of advancing front algorithm entities
+*********************************************************************
+struct FrontAlgorithmEntities
+{
+  FrontAlgorithmEntities(Mesh& m, const Domain& d, Front& f)
+  : mesh { m }, domain { d }, front { f } {}
+
+  *------------------------------------------------------------------
+  | Attributes 
+  ------------------------------------------------------------------*
+  Mesh&         mesh;
+  const Domain& domain;
+  Front&        front;
+}; */
+
 /*********************************************************************
 * The advancing front - defined by a list of edges
 * > Must be defined counter-clockwise
@@ -100,22 +117,13 @@ public:
   template <typename Mesh>
   void init_front(const Mesh& mesh)
   {
-    for ( const auto& e_ptr : mesh.interior_edges() )
+    ASSERT( edges_.size() == 0, 
+      "Front::init_front(): Front has not been emptied.");
+
+    auto front_edges = mesh.get_invalid_edges();
+
+    for ( const auto& e_ptr : front_edges )
     {
-      if ( NullFacet::is_not_null( e_ptr->facet_l() ) && 
-           NullFacet::is_not_null( e_ptr->facet_r() )  )
-        continue;
-
-      Vertex& v1 = e_ptr->v1();
-      Vertex& v2 = e_ptr->v2();
-      this->add_edge( v1, v2, e_ptr->marker() );
-    }
-
-    for ( const auto& e_ptr : mesh.boundary_edges() )
-    {
-      if ( NullFacet::is_not_null( e_ptr->facet_l() ) )
-        continue;
-
       Vertex& v1 = e_ptr->v1();
       Vertex& v2 = e_ptr->v2();
       this->add_edge( v1, v2, e_ptr->marker() );
@@ -126,23 +134,28 @@ public:
   /*------------------------------------------------------------------
   | Let base point to first edge in container
   ------------------------------------------------------------------*/
-  void set_base_first()
+  Edge* set_base_first()
   { 
-    if (edges_.size() < 1) return;
+    if (edges_.size() < 1) 
+      return nullptr;
     base_ = edges_.begin()->get();  
+    return base_;
   } 
 
   /*------------------------------------------------------------------
   | Let base point to next edge in container
   ------------------------------------------------------------------*/
-  void set_base_next()
+  Edge* set_base_next()
   {
-    if (edges_.size() < 1) return;
+    if (edges_.size() < 1) 
+      return nullptr;
+
     auto iter = base_->pos();
     std::advance( iter, 1 );
     if (iter == edges_.end())
       iter = edges_.begin();
     base_ = iter->get();
+    return base_;
   }
 
   /*------------------------------------------------------------------

@@ -18,7 +18,6 @@
 #include "Vertex.h"
 #include "Facet.h"
 
-#include "Front.h"
 #include "Domain.h"
 #include "QuadGeometry.h"
 #include "NullFacet.h"
@@ -289,6 +288,7 @@ public:
   | distance that an advancing front vertex must be located 
   | from a quad edge
   ------------------------------------------------------------------*/
+  template <typename Front>
   bool intersects_front(const Front& front,
                         const double range) const
   { QuadGeometry::check_intersection(*this, front, range); }
