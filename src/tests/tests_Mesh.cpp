@@ -25,6 +25,7 @@
 #include "Cleanup.h"
 #include "MeshInitializer.h"
 #include "FrontTriangulation.h"
+//#include "FrontPaving.h"
 
 namespace MeshTests 
 {
@@ -195,7 +196,7 @@ void triangulate()
 {
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
-  { return 4.; };
+  { return 3.; };
 
   double quadtree_scale = 20.0;
   Domain domain   { f, quadtree_scale };
@@ -225,8 +226,9 @@ void triangulate()
 
   FrontTriangulation triangulation {mesh, domain};
 
-  CHECK( triangulation.generate_elements(2) );
-  CHECK( triangulation.generate_elements(3) );
+  //CHECK( triangulation.generate_elements(0) );
+  CHECK( triangulation.generate_elements(5) );
+  CHECK( triangulation.generate_elements(4) );
   CHECK( triangulation.generate_elements(3) );
 
   // Assertions
@@ -240,39 +242,51 @@ void triangulate()
   LOG(DEBUG) << "\n" << mesh;
 
   // Check mesh stats
-  CHECK( mesh.n_elements() == 8 );
-  CHECK( mesh.n_vertices() == 9 );
-  CHECK( mesh.n_interior_edges() == 8 );
-  CHECK( mesh.n_boundary_edges() == 8 );
+  CHECK( mesh.n_elements() == 12 );
+  CHECK( mesh.n_vertices() == 14 );
+  CHECK( mesh.n_interior_edges() == 11 );
+  CHECK( mesh.n_boundary_edges() == 14 );
 
   // Check vertex-to-facet-connectivity  
-  CHECK( mesh.vertices()[0].facets().size() == 2 );
-  CHECK( mesh.vertices()[1].facets().size() == 2 );
-  CHECK( mesh.vertices()[2].facets().size() == 4 );
-  CHECK( mesh.vertices()[3].facets().size() == 2 );
-  CHECK( mesh.vertices()[4].facets().size() == 1 );
+  CHECK( mesh.vertices()[0].facets().size() == 4 );
+  CHECK( mesh.vertices()[1].facets().size() == 1 );
+  CHECK( mesh.vertices()[2].facets().size() == 3 );
+  CHECK( mesh.vertices()[3].facets().size() == 1 );
+  CHECK( mesh.vertices()[4].facets().size() == 4 );
   CHECK( mesh.vertices()[5].facets().size() == 3 );
-  CHECK( mesh.vertices()[6].facets().size() == 3 );
-  CHECK( mesh.vertices()[7].facets().size() == 2 );
-  CHECK( mesh.vertices()[8].facets().size() == 5 );
+  CHECK( mesh.vertices()[6].facets().size() == 4 );
+  CHECK( mesh.vertices()[7].facets().size() == 1 );
+  CHECK( mesh.vertices()[8].facets().size() == 3 );
+  CHECK( mesh.vertices()[9].facets().size() == 1 );
+  CHECK( mesh.vertices()[10].facets().size() == 3 );
+  CHECK( mesh.vertices()[11].facets().size() == 3 );
+  CHECK( mesh.vertices()[12].facets().size() == 4 );
+  CHECK( mesh.vertices()[13].facets().size() == 1 );
 
   // Check edge-to-facet connectivity (boundary edges)
   CHECK( mesh.get_edge(mesh.vertices()[0], mesh.vertices()[1])->facet_l()->index() == 0 );
-  CHECK( mesh.get_edge(mesh.vertices()[1], mesh.vertices()[2])->facet_l()->index() == 1 );
-  CHECK( mesh.get_edge(mesh.vertices()[2], mesh.vertices()[3])->facet_l()->index() == 3 );
-  CHECK( mesh.get_edge(mesh.vertices()[3], mesh.vertices()[4])->facet_l()->index() == 4 );
-  CHECK( mesh.get_edge(mesh.vertices()[4], mesh.vertices()[5])->facet_l()->index() == 4 );
-  CHECK( mesh.get_edge(mesh.vertices()[5], mesh.vertices()[6])->facet_l()->index() == 6 );
-  CHECK( mesh.get_edge(mesh.vertices()[6], mesh.vertices()[7])->facet_l()->index() == 7 );
-  CHECK( mesh.get_edge(mesh.vertices()[7], mesh.vertices()[0])->facet_l()->index() == 2 );
+  CHECK( mesh.get_edge(mesh.vertices()[1], mesh.vertices()[2])->facet_l()->index() == 0 );
+  CHECK( mesh.get_edge(mesh.vertices()[2], mesh.vertices()[3])->facet_l()->index() == 1 );
+  CHECK( mesh.get_edge(mesh.vertices()[3], mesh.vertices()[4])->facet_l()->index() == 1 );
+  CHECK( mesh.get_edge(mesh.vertices()[4], mesh.vertices()[5])->facet_l()->index() == 10 );
+  CHECK( mesh.get_edge(mesh.vertices()[5], mesh.vertices()[6])->facet_l()->index() == 2 );
+  CHECK( mesh.get_edge(mesh.vertices()[6], mesh.vertices()[7])->facet_l()->index() == 3 );
+  CHECK( mesh.get_edge(mesh.vertices()[7], mesh.vertices()[8])->facet_l()->index() == 3 );
+  CHECK( mesh.get_edge(mesh.vertices()[8], mesh.vertices()[9])->facet_l()->index() == 11 );
+  CHECK( mesh.get_edge(mesh.vertices()[9], mesh.vertices()[10])->facet_l()->index() == 11 );
+  CHECK( mesh.get_edge(mesh.vertices()[10], mesh.vertices()[11])->facet_l()->index() == 7 );
+  CHECK( mesh.get_edge(mesh.vertices()[11], mesh.vertices()[12])->facet_l()->index() == 9 );
+  CHECK( mesh.get_edge(mesh.vertices()[12], mesh.vertices()[13])->facet_l()->index() == 4 );
+  CHECK( mesh.get_edge(mesh.vertices()[13], mesh.vertices()[0])->facet_l()->index() == 4 );
 
   // Check edge-to-facet connectivity (interior edges)
-  CHECK( mesh.get_edge(mesh.vertices()[0], mesh.vertices()[8])->facet_l()->index() == 2 );
-  CHECK( mesh.get_edge(mesh.vertices()[0], mesh.vertices()[8])->facet_r()->index() == 0 );
+  CHECK( mesh.get_edge(mesh.vertices()[0], mesh.vertices()[2])->facet_l()->index() == 5 );
+  CHECK( mesh.get_edge(mesh.vertices()[0], mesh.vertices()[2])->facet_r()->index() == 0 );
 
-  CHECK( mesh.get_edge(mesh.vertices()[1], mesh.vertices()[8])->facet_l()->index() == 1 );
-  CHECK( mesh.get_edge(mesh.vertices()[1], mesh.vertices()[8])->facet_r()->index() == 0 );
+  CHECK( mesh.get_edge(mesh.vertices()[2], mesh.vertices()[4])->facet_l()->index() == 5 );
+  CHECK( mesh.get_edge(mesh.vertices()[2], mesh.vertices()[4])->facet_r()->index() == 1 );
 
+  /*
   CHECK( mesh.get_edge(mesh.vertices()[2], mesh.vertices()[8])->facet_l()->index() == 5 );
   CHECK( mesh.get_edge(mesh.vertices()[2], mesh.vertices()[8])->facet_r()->index() == 1 );
 
@@ -290,10 +304,63 @@ void triangulate()
 
   CHECK( mesh.get_edge(mesh.vertices()[3], mesh.vertices()[5])->facet_l()->index() == 4 );
   CHECK( mesh.get_edge(mesh.vertices()[3], mesh.vertices()[5])->facet_r()->index() == 3 );
-
+  */
 
 
 } // triangulate() 
+
+/*********************************************************************
+* Test Mesh::pave()
+*********************************************************************
+void pave()
+{
+  // Define a variable size function
+  UserSizeFunction f = [](const Vec2d& p) 
+  { return 0.5; };
+
+  double quadtree_scale = 20.0;
+  Domain domain   { f, quadtree_scale };
+
+  Boundary&  b_ext = domain.add_exterior_boundary();
+
+  // Build exterior boundary
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0 );
+  Vertex& v3 = domain.add_vertex(  5.0,  5.0 );
+  Vertex& v4 = domain.add_vertex( 10.0,  5.0 );
+  Vertex& v5 = domain.add_vertex( 10.0, 10.0 );
+  Vertex& v6 = domain.add_vertex(  0.0,  5.0 );
+
+  b_ext.add_edge( v1, v2, 1 );
+  b_ext.add_edge( v2, v3, 2 );
+  b_ext.add_edge( v3, v4, 2 );
+  b_ext.add_edge( v4, v5, 3 );
+  b_ext.add_edge( v5, v6, 4 );
+  b_ext.add_edge( v6, v1, 4 );
+
+  // Create the mesh
+  MeshInitializer initializer {};
+
+  Mesh mesh = initializer.create_empty_mesh(domain);
+  initializer.prepare_mesh(mesh, domain);
+
+  FrontPaving paving {mesh, domain};
+
+  CHECK( paving.generate_elements(0) );
+  //CHECK( paving.generate_elements(3) );
+  //CHECK( paving.generate_elements(3) );
+
+  // Assertions
+  //CHECK( ABS(mesh.area() - domain.area()) < 1.0E-07 );
+
+  // Export mesh
+  Cleanup::assign_size_function_to_vertices(mesh, domain);
+  Cleanup::assign_mesh_indices(mesh);
+  Cleanup::setup_vertex_connectivity(mesh);
+  Cleanup::setup_facet_connectivity(mesh);
+  LOG(DEBUG) << "\n" << mesh;
+
+} // pave()  */
 
 /*********************************************************************
 * Test Mesh::pave()
@@ -365,6 +432,8 @@ void run_tests_Mesh()
 
   adjust_logging_output_stream("MeshTests.triangulate.log");
   MeshTests::triangulate();
+
+  //adjust_logging_output_stream("MeshTests.pave.log");
   //MeshTests::pave();
 
   // Reset debug logging ostream

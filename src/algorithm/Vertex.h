@@ -156,6 +156,42 @@ public:
 
   } // intersects_facet()
 
+
+  /*------------------------------------------------------------------
+  | Check if the vertex is located within a minimum distance to 
+  | a mesh's edges
+  ------------------------------------------------------------------*/
+  template <typename Mesh>
+  bool intersects_mesh_edges(const Mesh& mesh, 
+                             const double search_range,
+                             const double limit_range) const
+  {
+    const double limit_sqr = limit_range * limit_range;
+
+    for ( const auto& e_ptr : mesh.get_intr_edges(this->xy_, search_range) )
+    {
+      const Vec2d& xy1 = e_ptr->v1().xy();
+      const Vec2d& xy2 = e_ptr->v2().xy();
+      const double dist_sqr = distance_point_edge_sqr(this->xy_, xy1, xy2);
+
+      if (dist_sqr <= limit_sqr)
+        return true;
+    }
+
+    for ( const auto& e_ptr : mesh.get_bdry_edges(this->xy_, search_range) )
+    {
+      const Vec2d& xy1 = e_ptr->v1().xy();
+      const Vec2d& xy2 = e_ptr->v2().xy();
+      const double dist_sqr = distance_point_edge_sqr(this->xy_, xy1, xy2);
+
+      if (dist_sqr <= limit_sqr)
+        return true;
+    }
+
+    return false;
+
+  } // intersects_mesh_edges()
+
 private:
   /*------------------------------------------------------------------
   | Vertex attributes 

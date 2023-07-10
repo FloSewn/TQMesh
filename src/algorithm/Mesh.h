@@ -212,6 +212,19 @@ public:
     return std::move(invalid_edges);
   }
 
+  /*------------------------------------------------------------------
+  | For a given pair of vertices (v1,v2) return a corresponding
+  | interior edge from the mesh that connects them
+  ------------------------------------------------------------------*/
+  Edge* 
+  get_interior_edge(const Vertex& v1, const Vertex& v2, bool dir=false) 
+  const 
+  { return intr_edges_.get_edge(v1, v2, dir); }
+
+  Edge* 
+  get_boundary_edge(const Vertex& v1, const Vertex& v2, bool dir=false) 
+  const 
+  { return bdry_edges_.get_edge(v1, v2, dir); }
 
   /*------------------------------------------------------------------
   | For a given pair of vertices (v1,v2) return a corresponding
@@ -220,17 +233,12 @@ public:
   Edge* get_edge(const Vertex& v1, const Vertex& v2, bool dir=false)
   const 
   {
-    Edge* found = nullptr;
-
-    found = intr_edges_.get_edge(v1, v2, dir);
+    Edge* found = get_interior_edge(v1, v2, dir);
 
     if ( found != nullptr )
       return found;
 
-    found = bdry_edges_.get_edge(v1, v2, dir);
-
-    if ( found != nullptr )
-      return found;
+    found = get_boundary_edge(v1, v2, dir);
 
     return found;
 
