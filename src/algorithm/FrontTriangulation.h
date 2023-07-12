@@ -18,7 +18,6 @@
 #include "Mesh.h"
 #include "FrontInitializer.h"
 #include "FrontAlgorithm.h"
-#include "FrontUpdate.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -45,6 +44,7 @@ public:
   /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
+  size_t n_elements() const { return n_elements_; }
   double mesh_range_factor() const { return mesh_range_factor_; }
   double wide_search_factor() const { return wide_search_factor_; }
   double min_cell_quality() const { return front_update_.min_cell_quality(); }
@@ -54,6 +54,7 @@ public:
   /*------------------------------------------------------------------
   | Setters 
   ------------------------------------------------------------------*/
+  void n_elements(size_t n) { n_elements_ = n; }
   void mesh_range_factor(double v) { mesh_range_factor_ = v; }
   void wide_search_factor(double v) { wide_search_factor_ = v; }
   void min_cell_quality(double v) { front_update_.min_cell_quality(v); }
@@ -63,11 +64,10 @@ public:
   /*------------------------------------------------------------------
   | Triangulate a given initialized mesh structure
   ------------------------------------------------------------------*/
-  bool generate_elements(int n_elements=0) override
+  bool generate_elements() override
   {
-    ASSERT(mesh_.n_boundary_edges() != 0,
-      "FrontTriangulation::generate_elements(): "
-      "Unable to triangulate mesh that has not been prepared yet.");
+    if (mesh_.n_boundary_edges() < 1)
+      return false;
 
     // Prepare the mesh  
     Cleanup::setup_facet_connectivity(mesh_);
@@ -79,7 +79,7 @@ public:
     remove_invalid_mesh_edges();
 
     // Perform the actual mesh generation
-    bool success = advancing_front_loop(base_edge, n_elements);
+    bool success = advancing_front_loop(base_edge, n_elements_);
 
     // Finish mesh structure for output
     finish_mesh_for_output();
@@ -183,6 +183,7 @@ private:
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
+  size_t n_elements_         = 0;
   double mesh_range_factor_  = 1.0;
   double base_vertex_factor_ = 1.5;
   double wide_search_factor_ = 10.0;

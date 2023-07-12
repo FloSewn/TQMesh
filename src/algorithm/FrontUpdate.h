@@ -53,12 +53,102 @@ public:
   void max_cell_angle(double v) { max_cell_angle_ = v; }
 
   /*------------------------------------------------------------------
+  | Let the front advance  
+  ------------------------------------------------------------------*/
+  void advance_front(Edge& base, Vertex& v_new, Triangle& t_new)
+  {
+    // Get advancing front edges adjacent to vertex
+    // -> First two vertices of new triangle tri are always
+    //    the base edge vertices
+    Edge* e1 = front_.get_edge(v_new, base.v1());
+    Edge* e2 = front_.get_edge(v_new, base.v2());
+
+    // *** Both edges are connected to vertex ***
+    //     -> No new edge must be created
+    //     -> Base vertex v1 no longer on the advancing front
+    //     -> Base vertex v2 no longer on the advancing front
+    //     -> vertex no longer on the advancing front
+    if ( e1 && e2 )
+    {
+      ASSERT( v_new.on_front(), "Grid structure corrupted." );
+
+      base.v1().on_front( false );
+      base.v2().on_front( false );
+      v_new.on_front( false );
+
+      if ( e1->is_interior() )
+        mesh_.add_interior_edge(e1->v1(), e1->v2());
+      if ( e2->is_interior() )
+        mesh_.add_interior_edge(e2->v1(), e2->v2());
+
+      front_.remove( *e1 );
+      front_.remove( *e2 );
+    }
+    // *** First edge is connected to vertex ***
+    //     -> New edge between second base vertex and vertex
+    //     -> Base vertex v1 no longer on the advancing front
+    //     -> vertex is part of the advancing front
+    else if ( e1 && !e2 )
+    {
+      ASSERT( v_new.on_front(), "Grid structure corrupted." );
+
+      base.v1().on_front( false );
+
+      if ( e1->is_interior() )
+        mesh_.add_interior_edge(e1->v1(), e1->v2());
+
+      front_.remove( *e1 );
+      front_.add_edge(v_new, base.v2());
+    }
+    // *** Second edge is connected to vertex ***
+    //     -> New edge between first base vertex and vertex
+    //     -> Base vertex v2 no longer on the advancing front
+    //     -> vertex is part of the advancing front
+    else if ( !e1 && e2 )
+    {
+      ASSERT( v_new.on_front(), "Grid structure corrupted." );
+
+      base.v2().on_front( false );
+
+      if ( e2->is_interior() )
+        mesh_.add_interior_edge(e2->v1(), e2->v2());
+
+      front_.remove( *e2 );
+      front_.add_edge(base.v1(), v_new);
+    }
+    // *** Both edges are not connected to vertex ***
+    //     -> Create two new edges
+    //     -> Vertex now part of the advancing front
+    else
+    {
+      v_new.on_front( true );
+      front_.add_edge(base.v1(), v_new);
+      front_.add_edge(v_new, base.v2());
+    }
+
+    // If current base is not at the boundary, add it to the 
+    // interior edge list
+    if ( base.is_interior() )
+      mesh_.add_interior_edge(base.v1(), base.v2());
+
+    // Remove base edge
+    front_.remove( base );
+
+    // Mark new triangle as active
+    t_new.is_active( true );
+
+    // Add element area to the total mesh area
+    mesh_.add_area( t_new.area() );
+
+  } // advance_front() 
+
+  /*------------------------------------------------------------------
   | Update the advancing front 
   ------------------------------------------------------------------*/
-  bool update_front(Edge& base_edge,
-                    const Vec2d& new_vertex_position,
-                    const Vec2d& search_position,
-                    double search_range)
+  Triangle* update_front(Edge& base_edge,
+                         const Vec2d& new_vertex_position,
+                         const Vec2d& search_position,
+                         double search_range)
   {
     // Create potential triangles with all found vertices
     TriVector new_triangles = 
@@ -68,7 +158,7 @@ public:
     {
       Triangle& t_new = choose_best_triangle(new_triangles, base_edge);
       advance_front(base_edge, t_new.v3(), t_new);
-      return true;
+      return &t_new;
     }
 
     // Check if a potential triangle can be created with the base edge
@@ -80,12 +170,12 @@ public:
 
     // Algorithm fails if new vertex or new triangle is invalid
     if ( remove_from_mesh_if_invalid(v_new, t_new) )
-      return false;
+      return nullptr;
 
     // Update the advancing front with new vertex
     advance_front(base_edge, v_new, t_new);
 
-    return true;
+    return &t_new;
 
   } // update_front()
 
@@ -208,96 +298,6 @@ private:
   } // choose_best_triangle()
 
   /*------------------------------------------------------------------
-  | Let the front advance  
-  ------------------------------------------------------------------*/
-  void advance_front(Edge& base, Vertex& v_new, Triangle& t_new)
-  {
-    // Get advancing front edges adjacent to vertex
-    // -> First two vertices of new triangle tri are always
-    //    the base edge vertices
-    Edge* e1 = front_.get_edge(v_new, base.v1());
-    Edge* e2 = front_.get_edge(v_new, base.v2());
-
-    // *** Both edges are connected to vertex ***
-    //     -> No new edge must be created
-    //     -> Base vertex v1 no longer on the advancing front
-    //     -> Base vertex v2 no longer on the advancing front
-    //     -> vertex no longer on the advancing front
-    if ( e1 && e2 )
-    {
-      ASSERT( v_new.on_front(), "Grid structure corrupted." );
-
-      base.v1().on_front( false );
-      base.v2().on_front( false );
-      v_new.on_front( false );
-
-      if ( e1->is_interior() )
-        mesh_.add_interior_edge(e1->v1(), e1->v2());
-      if ( e2->is_interior() )
-        mesh_.add_interior_edge(e2->v1(), e2->v2());
-
-      front_.remove( *e1 );
-      front_.remove( *e2 );
-    }
-    // *** First edge is connected to vertex ***
-    //     -> New edge between second base vertex and vertex
-    //     -> Base vertex v1 no longer on the advancing front
-    //     -> vertex is part of the advancing front
-    else if ( e1 && !e2 )
-    {
-      ASSERT( v_new.on_front(), "Grid structure corrupted." );
-
-      base.v1().on_front( false );
-
-      if ( e1->is_interior() )
-        mesh_.add_interior_edge(e1->v1(), e1->v2());
-
-      front_.remove( *e1 );
-      front_.add_edge(v_new, base.v2());
-    }
-    // *** Second edge is connected to vertex ***
-    //     -> New edge between first base vertex and vertex
-    //     -> Base vertex v2 no longer on the advancing front
-    //     -> vertex is part of the advancing front
-    else if ( !e1 && e2 )
-    {
-      ASSERT( v_new.on_front(), "Grid structure corrupted." );
-
-      base.v2().on_front( false );
-
-      if ( e2->is_interior() )
-        mesh_.add_interior_edge(e2->v1(), e2->v2());
-
-      front_.remove( *e2 );
-      front_.add_edge(base.v1(), v_new);
-    }
-    // *** Both edges are not connected to vertex ***
-    //     -> Create two new edges
-    //     -> Vertex now part of the advancing front
-    else
-    {
-      v_new.on_front( true );
-      front_.add_edge(base.v1(), v_new);
-      front_.add_edge(v_new, base.v2());
-    }
-
-    // If current base is not at the boundary, add it to the 
-    // interior edge list
-    if ( base.is_interior() )
-      mesh_.add_interior_edge(base.v1(), base.v2());
-
-    // Remove base edge
-    front_.remove( base );
-
-    // Mark new triangle as active
-    t_new.is_active( true );
-
-    // Add element area to the total mesh area
-    mesh_.add_area( t_new.area() );
-
-  } // advance_front() 
-
-  /*------------------------------------------------------------------
   | Check if a triangle is valid. If yes, return true - 
   | else return false.
   ------------------------------------------------------------------*/
@@ -361,7 +361,7 @@ private:
     if ( v.intersects_facet(quads, range) )
     { DEBUG_LOG("  > QUAD INTERSECTION"); return false; }
 
-    if ( v.intersects_mesh_edges(mesh_, range, 0.1*range) )
+    if ( v.intersects_mesh_edges(mesh_, range, ve_intersection_ * rho) )
     { DEBUG_LOG("  > EDGE INTERSECTION"); return false; }
 
     DEBUG_LOG("  > VALID");
@@ -378,8 +378,9 @@ private:
   const Domain&   domain_;
   Front&          front_;
 
-  double          min_cell_quality_   = 0.0;
-  double          max_cell_angle_     = M_PI;
+  double          min_cell_quality_ = 0.0;
+  double          max_cell_angle_   = M_PI;
+  double          ve_intersection_  = 0.01;
 
 }; // FrontUpdate
 

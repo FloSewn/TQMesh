@@ -60,10 +60,7 @@ public:
     // Cast number of edges to int for use of modulo function  
     n_bases_ = static_cast<int>( bases_.size() );
 
-
   } // QuadLayer()
-
-
 
   /*------------------------------------------------------------------
   | Getters
@@ -100,7 +97,6 @@ public:
   | Setters
   ------------------------------------------------------------------*/
 
-
   /*------------------------------------------------------------------
   | Smooth the heights of all quad projections in the layer according
   | to the local size function
@@ -127,9 +123,7 @@ public:
   | projected base vertices. In the case of a QuadLayer that is not
   | closed, adjacent edges are eventually refined. 
   ------------------------------------------------------------------*/
-  void setup_vertex_projection(Vertices& verts, 
-                               Front&    front, 
-                               EdgeList& bdry_edges)
+  void setup_vertex_projection(Mesh&  mesh, Front& front)
   {
     // Update coordinates of projected base vertices
     for ( size_t i = 1; i < bases_.size(); ++i )
@@ -141,8 +135,8 @@ public:
     }
     else
     {
-      place_start_vertex(verts, front, bdry_edges);
-      place_end_vertex(verts, front, bdry_edges);
+      place_start_vertex(mesh.vertices(), front, mesh.boundary_edges());
+      place_end_vertex(mesh.vertices(), front, mesh.boundary_edges());
     }
 
   } // QuadLayer::setup_vertex_projection()

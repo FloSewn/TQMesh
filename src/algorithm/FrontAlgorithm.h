@@ -47,20 +47,22 @@ public:
   /*------------------------------------------------------------------
   | Triangulate a given initialized mesh structure
   ------------------------------------------------------------------*/
-  virtual bool generate_elements(int n_elements=0) = 0;
+  virtual bool generate_elements() = 0;
 
 protected:
 
   /*------------------------------------------------------------------
   | Initialize the advancing front structure
   ------------------------------------------------------------------*/
-  Edge* init_advancing_front()
+  Edge* init_advancing_front(bool sort_edges=true)
   {
     front_.init_front(mesh_);
     Edge* base = front_.set_base_first();
     ASSERT( base, "FrontTriangulation::generate_elements(): "
       "Invalid advancing front structure.");
-    front_.sort_edges( false );
+
+    if (sort_edges)
+      front_.sort_edges( false );
 
     return base;
   }
