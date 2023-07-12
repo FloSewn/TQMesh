@@ -26,39 +26,52 @@ using namespace CppUtils;
 
 /*********************************************************************
 * A structure that contains the data for a quad layer generation
+*
+*                   proj_v1_[0]       proj_v1_[1]       proj_v1_[2]
+*  proj_v1_[0]      proj_v1_[1]       proj_v1_[2]
+*    ^----------------^-----------------^-----------------^-----...
+*    |                |                 |                 |
+*    |                |                 |                 |
+*    |                |                 |                 |
+*    | base_edges_[0] |  base_edges_[1] |  base_edges_[2] |
+*    o----------------o-----------------o-----------------o-----...
+*  base_v1_[0]      base_v1_[1]       base_v1_[2]            
+*                   base_v2_[0]       base_v2_[1]       base_v2_[2]
+*
 *********************************************************************/
 class QuadLayer
 {
-
 public:
+
+  using DoubleVector = std::vector<double>;
+  using Vec2dVector  = std::vector<Vec2d>;
+  using VertexVector = std::vector<Vertex*>;
+  using EdgeVector   = std::vector<Edge*>;
+
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  QuadLayer(Edge* e_start, Edge* e_end, bool is_closed, double height)
-  : e_start_   { e_start }
-  , e_end_     { e_end   }
+  QuadLayer(Edge& e_start, Edge& e_end, bool is_closed, double height)
+  : e_start_   { &e_start }
+  , e_end_     { &e_end   }
   , is_closed_ { is_closed }
   , height_    { height }
   {
-    // Every base edge gets an associated QuadProjection, which 
-    // is basically a container for the generation of a new 
-    // quad element
+    // Initialize edges
     Edge* e_cur = e_start_;
 
     do 
     {
-      init_edge( e_cur );
-      e_cur = e_cur->get_next_edge();
+      ASSERT( e_cur, "QuadLayer::QuadLayer(): "
+        "Advancing front data structure seems to be corrupted.");
 
-      ASSERT( e_cur, "INVALID DATA STRUCTURE FOR QUAD LAYER");
+      add_quadlayer_edge( *e_cur );
+      e_cur = e_cur->get_next_edge();
 
     } while ( e_cur != e_end_ );
 
     // Add also the ending edge
-    init_edge( e_end );
-
-    // Cast number of edges to int for use of modulo function  
-    n_bases_ = static_cast<int>( bases_.size() );
+    add_quadlayer_edge( *e_end_ );
 
   } // QuadLayer()
 
@@ -69,29 +82,33 @@ public:
   Edge* e_end() const { return e_end_; }
   bool is_closed() const { return is_closed_; }
   double height() const { return height_; }
-  int n_bases() const { return n_bases_; }
+  int n_base_edges() const 
+  { 
+    // Cast number of edges to int for use of modulo function  
+    return static_cast<int>( base_edges_.size() ); 
+  }
 
-  const std::vector<Edge*>& bases() const { return bases_; }
-  std::vector<Edge*>& bases() { return bases_; }
+  const EdgeVector& base_edges() const { return base_edges_; }
+  EdgeVector& base_edges() { return base_edges_; }
 
-  const std::vector<Vertex*>& b1() const { return b1_; }
-  const std::vector<Vertex*>& b2() const { return b2_; }
-  const std::vector<Vertex*>& p1() const { return p1_; }
-  const std::vector<Vertex*>& p2() const { return p2_; }
+  const VertexVector& base_v1() const { return base_v1_; }
+  const VertexVector& base_v2() const { return base_v2_; }
+  const VertexVector& proj_p1() const { return proj_v1_; }
+  const VertexVector& proj_p2() const { return proj_v2_; }
 
-  std::vector<Vertex*>& b1() { return b1_; }
-  std::vector<Vertex*>& b2() { return b2_; }
-  std::vector<Vertex*>& p1() { return p1_; }
-  std::vector<Vertex*>& p2() { return p2_; }
+  VertexVector& base_v1() { return base_v1_; }
+  VertexVector& base_v2() { return base_v2_; }
+  VertexVector& proj_p1() { return proj_v1_; }
+  VertexVector& proj_p2() { return proj_v2_; }
 
-  const std::vector<Vec2d>& p1_xy() const { return p1_xy_; }
-  std::vector<Vec2d>& p1_xy() { return p1_xy_; }
+  const Vec2dVector& proj_p1_xy() const { return proj_v1_xy_; }
+  Vec2dVector& proj_p1_xy() { return proj_v1_xy_; }
 
-  const std::vector<Vec2d>& p2_xy() const { return p2_xy_; }
-  std::vector<Vec2d>& p2_xy() { return p2_xy_; }
+  const Vec2dVector& proj_p2_xy() const { return proj_v2_xy_; }
+  Vec2dVector& proj_p2_xy() { return proj_v2_xy_; }
 
-  const std::vector<double>& heights() const { return heights_; }
-  std::vector<double>& heights() { return heights_; }
+  const DoubleVector& heights() const { return heights_; }
+  DoubleVector& heights() { return heights_; }
 
   /*------------------------------------------------------------------
   | Setters
@@ -109,7 +126,7 @@ public:
       const double h2 = heights_[i];
       const double h3 = heights_[i+1];
 
-      const Vec2d& c = bases_[i]->xy();
+      const Vec2d& c = base_edges_[i]->xy();
       const double rho = domain.size_function( c );
 
       heights_[i] = MIN(rho, (h1+h2+h3) / 3.0);
@@ -123,15 +140,15 @@ public:
   | projected base vertices. In the case of a QuadLayer that is not
   | closed, adjacent edges are eventually refined. 
   ------------------------------------------------------------------*/
-  void setup_vertex_projection(Mesh&  mesh, Front& front)
+  void setup_vertex_projection(Mesh& mesh, Front& front)
   {
     // Update coordinates of projected base vertices
-    for ( size_t i = 1; i < bases_.size(); ++i )
-      project_base_vertices(i-1, i);
+    for ( size_t i = 1; i < base_edges_.size(); ++i )
+      adjust_projected_vertex_coordinates(i-1, i);
 
     if ( is_closed_ )
     {
-      project_base_vertices(n_bases_-1, 0);
+      adjust_projected_vertex_coordinates( n_base_edges()-1, 0);
     }
     else
     {
@@ -154,37 +171,37 @@ private:
   | introduce triangles later on, in order to obtain a better quality
   |
   |                   q                    r
-  |                    *------------------*
-  |                   /      bases_[j]
+  |                    o------------------o
+  |                   /   base_edges_[j]
   |                  /
   |                 /
-  |                / bases_[i] 
+  |                / base_edges_[i] 
   |               / 
   |              / 
-  |             * p 
+  |             o p 
   |
   ------------------------------------------------------------------*/
-  void project_base_vertices(int i, int j)
+  void adjust_projected_vertex_coordinates(int i, int j)
   {
-    const Vec2d& p = b1_[i]->xy();
-    const Vec2d& q = b1_[j]->xy(); 
-    const Vec2d& r = b2_[j]->xy();
+    const Vec2d& p = base_v1_[i]->xy();
+    const Vec2d& q = base_v1_[j]->xy(); 
+    const Vec2d& r = base_v2_[j]->xy();
 
     const double alpha = angle( p-q, r-q );
 
     // If both projected vertices are too far apart, we must 
     // create a wedge in between. In this case we use the default 
-    // projection coordinates p1_xy and p2_xy that were already 
+    // projection coordinates proj_p1_xy and proj_p2_xy that were already 
     // calculated in the constructor
     if ( is_left(p, r, q) && alpha <= CONSTANTS.quad_layer_angle() )
       return;
 
     // Otherwise, the projected vertex coordinate will be placed
     // in between the originally projected coordinates 
-    const Vec2d& n1 = bases_[i]->normal();
+    const Vec2d& n1 = base_edges_[i]->normal();
     const double l1 = heights_[i];
 
-    const Vec2d& n2 = bases_[j]->normal();
+    const Vec2d& n2 = base_edges_[j]->normal();
     const double l2 = heights_[j];
 
     const Vec2d  normal  = 0.5 * (n1 + n2);
@@ -193,12 +210,12 @@ private:
 
     Vec2d xy_proj = q + nn * l / sin(0.5*alpha);
 
-    p1_xy_[j] = xy_proj;
-    p2_xy_[i] = xy_proj;
+    proj_v1_xy_[j] = xy_proj;
+    proj_v2_xy_[i] = xy_proj;
 
     return;
 
-  } // QuadLayer::project_base_vertices()
+  } // QuadLayer::adjust_projected_vertex_coordinates()
 
 
   /*------------------------------------------------------------------
@@ -212,7 +229,7 @@ private:
     Edge* e_prv = e_start_->get_prev_edge();
 
     // The current starting base vertex
-    Vertex& v_start = *b1_[0];
+    Vertex& v_start = *base_v1_[0];
 
     ASSERT( (e_prv) && (e_prv->v2() == v_start),
     "During the generation of a QuadLayer, an invalid data\n"
@@ -225,18 +242,18 @@ private:
 
     // If the previous vertex is located right to the starting edge,
     // we use the default projection coordinate
-    if ( !is_left(b1_[0]->xy(), b2_[0]->xy(), v_prev.xy()) )
+    if ( !is_left(base_v1_[0]->xy(), base_v2_[0]->xy(), v_prev.xy()) )
       return;
 
     // Check if the segment between v_start and its projected 
     // coordinate intersects with the previous edge 
     // If yes, merge them
     const double h     = heights_[0];
-    const double d_fac = (v_prev.xy() - p1_xy_[0]).norm() / h;
+    const double d_fac = (v_prev.xy() - proj_v1_xy_[0]).norm() / h;
 
     if ( d_fac < 1.0 )
     {
-      p1_[0] = &v_prev;
+      proj_v1_[0] = &v_prev;
       return;
     }
 
@@ -244,15 +261,15 @@ private:
     // of the previous edge, it must be projected onto it
     //
     //                            v_prev
-    //    x                     x 
+    //    o                     o 
     //     \                   /
     //      \                /
-    //       \     p1      /
+    //       \     proj_p1 /
     //        \   o      /   
-    //         o  |    o
+    //         x  |    x
     //          \ |  /      
     //           \|/
-    //            x---------------------x
+    //            o---------------------o
     //            x                 
     //              v_start
     //
@@ -260,7 +277,7 @@ private:
     if ( h < e_prv->length() )
     {
       const Vec2d d1 = v_prev.xy() - v_start.xy();
-      const Vec2d d2 = p1_xy_[0] - v_start.xy();
+      const Vec2d d2 = proj_v1_xy_[0] - v_start.xy();
       const double alpha = angle( d1, d2 );
       const double ang_fac = cos(alpha); // / sin(0.5*alpha);
 
@@ -295,27 +312,27 @@ private:
       // Add new vertex to quad layer structure
       Vertex& v_new = new_edges.first->v2();
 
-      p1_[0]    = &v_new;
-      p1_xy_[0] = v_new.xy();
+      proj_v1_[0]    = &v_new;
+      proj_v1_xy_[0] = v_new.xy();
 
     }
     // Projected vertex is located outside of adjacent edge range
     // --> Set p to be a
     //
-    //            o p1          
+    //            o proj_p1          
     //            |             
     //            |           
-    //       x    |       v_prev
-    //        \   x     x   
+    //       o    |       v_prev
+    //        \   x     o   
     //         \  |    /
     //          \ |  /
     //           \|/
-    //            x---------------------x
+    //            o---------------------o
     //            v_start           
     else
     {
-      p1_[0]    = &v_prev;
-      p1_xy_[0] = v_prev.xy();
+      proj_v1_[0]    = &v_prev;
+      proj_v1_xy_[0] = v_prev.xy();
     }
 
     return;
@@ -334,7 +351,7 @@ private:
     Edge* e_nxt = e_end_->get_next_edge();
 
     // The current ending base vertex
-    Vertex& v_end = *b2_.back();
+    Vertex& v_end = *base_v2_.back();
 
     ASSERT( (e_nxt) && (e_nxt->v1() == v_end),
     "During the generation of a QuadLayer, an invalid data\n"
@@ -347,8 +364,8 @@ private:
 
     // If the next vertex is located right to the starting edge,
     // we use the default projection coordinate
-    const Vec2d& xy_end_1 = b1_.back()->xy();
-    const Vec2d& xy_end_2 = b2_.back()->xy();
+    const Vec2d& xy_end_1 = base_v1_.back()->xy();
+    const Vec2d& xy_end_2 = base_v2_.back()->xy();
     //
     if ( !is_left(xy_end_1, xy_end_2, v_next.xy()) )
       return;
@@ -357,11 +374,11 @@ private:
     // coordinate intersects with the previous edge 
     // If yes, merge them
     const double h     = heights_.back();
-    const double d_fac = (v_next.xy() - p2_xy_.back()).norm() / h;
+    const double d_fac = (v_next.xy() - proj_v2_xy_.back()).norm() / h;
 
     if ( d_fac < 1.0 )
     {
-      p2_.back() = &v_next;
+      proj_v2_.back() = &v_next;
       return;
     }
 
@@ -369,22 +386,22 @@ private:
     // of the previous edge, it must be projected onto it
     //
     //            v_next
-    //           x                     x 
+    //           o                     o 
     //            \                   /
     //             \                /
-    //              \     p2      /
+    //              \     proj_p2 /
     //               \   o      /   
-    //                o  |    o
+    //                x  |    x
     //                 \ |  /    
     //                  \|/
-    //   x---------------x
+    //   o---------------o
     //         base        v_end       
     //
     //
     if ( h < e_nxt->length() )
     {
       const Vec2d d1 = v_next.xy() - v_end.xy();
-      const Vec2d d2 = p2_xy_.back() - v_end.xy();
+      const Vec2d d2 = proj_v2_xy_.back() - v_end.xy();
       const double alpha = angle( d1, d2 );
       const double ang_fac = cos(alpha); // / sin(0.5*alpha);
 
@@ -418,88 +435,80 @@ private:
       // Add new vertex to quad layer structure
       Vertex& v_new = new_edges.first->v2();
 
-      p2_.back() = &v_new;
-      p2_xy_.back() = v_new.xy();
-
+      proj_v2_.back() = &v_new;
+      proj_v2_xy_.back() = v_new.xy();
     }
     // Projected vertex is located outside of adjacent edge range
     // --> Set p to be a
     //
-    //             p2
+    //             proj_p2
     //            o               
     //            |             
     //            |           
-    //       x    |       v_next  
-    //        \   x     x   
+    //       o    |       v_next  
+    //        \   x     o   
     //         \  |    /
     //          \ |  /
     //           \|/
-    //  x---------x
+    //  o---------o
     //             v_end
     //
     else
     {
-      p2_.back()    = &v_next;
-      p2_xy_.back() = v_next.xy();
+      proj_v2_.back()    = &v_next;
+      proj_v2_xy_.back() = v_next.xy();
     }
 
     return;
 
   } // QuadLayer::place_end_vertex()
 
-
-
   /*------------------------------------------------------------------
   | Add a new edge to the quad layer structure
   ------------------------------------------------------------------*/
-  void init_edge(Edge* e_cur)
+  void add_quadlayer_edge(Edge& e_cur)
   {
     // Pointer to base edge
-    bases_.push_back( e_cur );
+    base_edges_.push_back( &e_cur );
 
-    // Pointers to base vertices
-    Vertex* v1 = &e_cur->v1();
-    Vertex* v2 = &e_cur->v2();
-
-    b1_.push_back( v1 );
-    b2_.push_back( v2 );
+    // Pointers to vertices of current base edge 
+    base_v1_.push_back( &e_cur.v1() );
+    base_v2_.push_back( &e_cur.v2() );
 
     // Adjust height, in order to get good aspect ratios
-    double h = MIN( height_, e_cur->length() );
+    double h = MIN( height_, e_cur.length() );
     heights_.push_back( h );
 
     // Coordinates of initial projected base vertices 
-    // --> Vertices are not generated yet
-    p1_.push_back( nullptr );
-    p2_.push_back( nullptr );
-    p1_xy_.push_back( v1->xy() + e_cur->normal() * h );
-    p2_xy_.push_back( v2->xy() + e_cur->normal() * h );
+    proj_v1_xy_.push_back( e_cur.v1().xy() + e_cur.normal() * h );
+    proj_v2_xy_.push_back( e_cur.v2().xy() + e_cur.normal() * h );
 
+    // Since the actual projected vertices are not generated yet,
+    // we introduced them in terms of nullpointers
+    proj_v1_.push_back( nullptr );
+    proj_v2_.push_back( nullptr );
 
-  } // QuadLayer::init_edge()
-
-
+  } // QuadLayer::add_quadlayer_edge()
 
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
-  Edge*                     e_start_   {nullptr};
-  Edge*                     e_end_     {nullptr};
-  bool                      is_closed_ { false };
-  double                    height_    {  0.0  };
-  int                       n_bases_   { 0 };
+  Edge*        e_start_   {nullptr};
+  Edge*        e_end_     {nullptr};
+  bool         is_closed_ { false };
+  double       height_    {  0.0  };
 
-  std::vector<Edge*>        bases_    {};
-  std::vector<Vertex*>      b1_       {};
-  std::vector<Vertex*>      b2_       {};
+  EdgeVector   base_edges_ {};
+  VertexVector base_v1_    {};
+  VertexVector base_v2_    {};
 
-  std::vector<Vertex*>      p1_       {};
-  std::vector<Vertex*>      p2_       {};
+  VertexVector proj_v1_    {};
+  VertexVector proj_v2_    {};
 
-  std::vector<Vec2d>        p1_xy_    {};
-  std::vector<Vec2d>        p2_xy_    {};
+  Vec2dVector  proj_v1_xy_ {};
+  Vec2dVector  proj_v2_xy_ {};
 
-  std::vector<double>       heights_  {};
+  DoubleVector heights_    {};
 
 }; // QuadLayer
 

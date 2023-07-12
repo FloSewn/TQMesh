@@ -384,6 +384,35 @@ public:
   } // get_edge()
 
 
+  /*------------------------------------------------------------------
+  | Returns the closest vertex of the edge to a given coordinate
+  ------------------------------------------------------------------*/
+  Vertex& get_closest_vertex(const Vec2d& xy)
+  {
+    ASSERT( edges_.size() > 0, 
+      "EdgeList::get_closest_vertex(): EdgeList is empty.");
+
+    Vertex* v_nearest   = nullptr;
+    double min_dist_sqr = 1.0E+10;
+
+    for ( const auto& e_ptr : edges_ )
+    {
+      const Vec2d& xy_v = e_ptr->v1().xy();
+
+      const double dist_sqr = (xy - xy_v).norm_sqr();
+
+      if ( dist_sqr >= min_dist_sqr) 
+        continue;
+
+      min_dist_sqr = dist_sqr;
+      v_nearest = &( e_ptr->v1() );
+    }
+
+    return *v_nearest;
+
+  } // get_closest_vertex()
+
+
 protected:
   /*------------------------------------------------------------------
   | Compute the area enclosed by all edges. 

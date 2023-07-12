@@ -108,69 +108,15 @@ private:
   ------------------------------------------------------------------*/
   bool generate_quad_layer(double height)
   {
-    // Find closest vertices in current front structure to  
-    // current start and ending vertex coordinates
-    Vertex* v_start        = nullptr;
-    Vertex* v_end          = nullptr;
-    double d_start_sqr_min = 1.0E+10;
-    double d_end_sqr_min   = 1.0E+10;
-
-    for ( const auto& e_ptr : front_ )
-    {
-      Vertex& v1 = e_ptr->v1();
-      const double d_start_sqr = (xy_start_ - v1.xy()).norm_sqr();
-      const double d_end_sqr = (xy_end_ - v1.xy()).norm_sqr();
-
-      if ( d_start_sqr < d_start_sqr_min )
-      {
-        v_start = &v1;
-        d_start_sqr_min = d_start_sqr;
-      }
-
-      if ( d_end_sqr < d_end_sqr_min )
-      {
-        v_end = &v1;
-        d_end_sqr_min = d_end_sqr;
-      }
-    }
-
-    if ( !v_start || !v_end )
+    // Determine the edges in the advancing front, that correspond 
+    // to the current start and ending positions for the quad layer 
+    if ( !find_start_and_ending_edges(xy_start_, xy_end_) )
       return false;
-
-    // Get advancing front edges adjacent to input vertices
-    Edge* e_start = front_.get_edge(*v_start, 1); 
-    Edge* e_end   = front_.get_edge(*v_end, 2); 
-
-    if ( !e_start || !e_end )
-      return false;
-
-    if ( !front_.is_traversable(*e_start, *e_end) )
-      return false;
-
-    bool is_closed = (v_start == v_end);
-
-    // For closed quad layers, try not to start at sharp angle edges
-    if ( is_closed )
-    {
-      const Vec2d& v1 = e_end->v1().xy();
-      const Vec2d& v2 = e_end->v2().xy();
-      const Vec2d& v3 = e_start->v2().xy();
-
-      const double ang = angle(v1-v2, v3-v2);
-
-      Edge *e_next = e_start->get_next_edge();
-
-      if ( e_next && ang <= quad_layer_angle_ )
-      {
-        e_end = e_start;
-        e_start = e_next; 
-      }
-    }
 
     // Create the quad layer structure, which keeps track of the target
     // vertex coordinates, that are projected from the base vertex 
     // coordinates
-    QuadLayer quad_layer { e_start, e_end, is_closed, height };
+    QuadLayer quad_layer { *e_start_, *e_end_, closed_layer_, height };
     quad_layer.smooth_heights( domain_ );
     quad_layer.setup_vertex_projection( mesh_, front_ );
 
@@ -187,7 +133,7 @@ private:
 
     // Set new start and ending vertex coordinates
     int i = 0;
-    int n = quad_layer.n_bases();
+    int n = quad_layer.n_base_edges();
 
 
     Vertex* v_start_in = nullptr;
@@ -195,12 +141,12 @@ private:
 
     do 
     {
-      v_start_in = quad_layer.p1()[i];
+      v_start_in = quad_layer.proj_p1()[i];
 
-      if ( is_closed )
+      if ( closed_layer_ )
         v_end_in = v_start_in;
       else
-        v_end_in = quad_layer.p2()[MOD(i-1,n)]; 
+        v_end_in = quad_layer.proj_p2()[MOD(i-1,n)]; 
 
       ++i;
 
@@ -218,40 +164,36 @@ private:
 
 
   /*------------------------------------------------------------------
-  | For each QuadProjection, create a triangle with its base 
-  | vertices (b1,b2) and a vertex p1, which is either located in 
-  | the vicinity of the base edge or which is otherwise generated at 
-  | the projected coordinate of the base vertex b1
   |   
-  |           p1            p2
-  |          x-------------x-------------
-  |          | \           | \          |
-  |          |   \         |   \        |
-  |          |     \       |     \      |
-  |          |       \     |       \    |
-  |          |         \   |         \  |
-  |          |    base   \ |           \|
-  | ---------x-------------x------------x-------
-  |           b1            b2
+  |            proj_p1       proj_p2
+  |              x-------------x-------------
+  |              | \           | \          |
+  |              |   \         |   \        |
+  |              |     \       |     \      |
+  |              |       \     |       \    |
+  |              |         \   |         \  |
+  |              | base_edge \ |           \|
+  |     ---------x-------------x------------x-------
+  |            base_v1       base_v2
   |   
   ------------------------------------------------------------------*/
   void create_quad_layer_elements(QuadLayer& quad_layer)
   {
-    auto& b1        = quad_layer.b1();
-    auto& b2        = quad_layer.b2();
+    auto& base_v1    = quad_layer.base_v1();
+    auto& base_v2    = quad_layer.base_v2();
 
-    auto& p1        = quad_layer.p1();
-    auto& p2        = quad_layer.p2();
+    auto& proj_p1    = quad_layer.proj_p1();
+    auto& proj_p2    = quad_layer.proj_p2();
 
-    auto& p1_xy     = quad_layer.p1_xy();
-    auto& p2_xy     = quad_layer.p2_xy();
+    auto& proj_p1_xy = quad_layer.proj_p1_xy();
+    auto& proj_p2_xy = quad_layer.proj_p2_xy();
 
-    auto& heights   = quad_layer.heights();
-    auto& bases     = quad_layer.bases();
+    auto& heights    = quad_layer.heights();
+    auto& base_edges = quad_layer.base_edges();
 
-    int  n_bases   = quad_layer.n_bases();
+    int n_base_edges = quad_layer.n_base_edges();
 
-    for ( int i = 0; i < n_bases; ++i )
+    for ( int i = 0; i < n_base_edges; ++i )
     {
       DEBUG_LOG("QUAD LAYER BASE " << i);
 
@@ -259,37 +201,37 @@ private:
       // projected coordinates
       const double r = quad_layer_range_ * heights[i];
 
-      // Create first triangle (b1,b2,p1)
-      Edge* base = bases[i];
+      // Create first triangle (base_v1,base_v2,proj_p1)
+      Edge* base = base_edges[i];
 
       if (!base->in_container())
         continue;
 
       Triangle* t1 
-        = front_update_.update_front(*base, p1_xy[i], p1_xy[i], r);
+        = front_update_.update_front(*base, proj_p1_xy[i], proj_p1_xy[i], r);
 
       if ( t1 == nullptr ) 
         continue;
 
-      p1[i] = &(t1->v3());
+      proj_p1[i] = &(t1->v3());
 
-      // Create second triangle (p1,b2,p2)
-      base = front_.get_edge( *p1[i], *b2[i] );
+      // Create second triangle (proj_p1,base_v2,proj_p2)
+      base = front_.get_edge( *proj_p1[i], *base_v2[i] );
 
       if ( !base ) 
         continue;
 
       Triangle* t2 
-        = front_update_.update_front(*base, p2_xy[i], p2_xy[i], r);
+        = front_update_.update_front(*base, proj_p2_xy[i], proj_p2_xy[i], r);
 
       if ( t2 == nullptr )
         continue;
 
-      p2[i] = &(t2->v3());
+      proj_p2[i] = &(t2->v3());
 
       // Merge both triangles t1 & t2 to a quad
       // --> First remove the interior edge between these triangles
-      Edge* e_rem = mesh_.interior_edges().get_edge( *b2[i], *p1[i] );
+      Edge* e_rem = mesh_.interior_edges().get_edge( *base_v2[i], *proj_p1[i] );
 
       if ( e_rem == nullptr ) 
         continue;
@@ -301,7 +243,7 @@ private:
       mesh_.remove_triangle( *t2 );
 
       // Create new quadrilateral element
-      Quad& q_new = mesh_.add_quad( *b1[i], *b2[i], *p2[i], *p1[i] );
+      Quad& q_new = mesh_.add_quad( *base_v1[i], *base_v2[i], *proj_p2[i], *proj_p1[i] );
       q_new.is_active( true );
     }
 
@@ -312,36 +254,36 @@ private:
   | generation steps. In this function, these gaps are closed with 
   | triangular elements.
   |
-  |              p1[i]
-  |      v      x 
-  |     x       :
-  |             :
-  |  p2[i-1]    :  
-  |   x.........x-------------x
-  |             | b1[i]        b2[i]
-  |             |           
-  |             |
-  |             |
-  |             x
-  |               
+  |                        proj_p1[i]
+  |              v_new       o 
+  |                 o        :
+  |                          :
+  |                          :
+  |      proj_p2[i-1]        :  
+  |            o.............o-------------------o
+  |                          | base_v1[i]       base_v2[i]
+  |                          |           
+  |                          |
+  |                          o
+  |                        
   ------------------------------------------------------------------*/
   void finish_quad_layer(QuadLayer& quad_layer)
   {
-    auto& b1        = quad_layer.b1();
+    auto& base_v1        = quad_layer.base_v1();
 
-    auto& p1        = quad_layer.p1();
-    auto& p2        = quad_layer.p2();
+    auto& proj_p1        = quad_layer.proj_p1();
+    auto& proj_p2        = quad_layer.proj_p2();
 
-    int  n_bases   = quad_layer.n_bases();
+    int  n_base_edges = quad_layer.n_base_edges();
 
-    for ( int i = 1; i < n_bases; ++i )
+    for ( int i = 1; i < n_base_edges; ++i )
     {
-      if ( !p1[i] || !p2[i-1] || p1[i] == p2[i-1] )
+      if ( !proj_p1[i] || !proj_p2[i-1] || proj_p1[i] == proj_p2[i-1] )
         continue;
 
-      Vertex& a = *p2[i-1];
-      Vertex& b = *b1[i];
-      Vertex& c = *p1[i];
+      Vertex& a = *proj_p2[i-1];
+      Vertex& b = *base_v1[i];
+      Vertex& c = *proj_p1[i];
 
       const Vec2d l1 = a.xy()-b.xy();
       const Vec2d l2 = c.xy()-b.xy();
@@ -386,6 +328,57 @@ private:
   } // Mesh::finish_quad_layer()
 
 
+  /*------------------------------------------------------------------
+  | Find the starting end ending edge in the advancing front that 
+  | correspond to the currently set start and ending coordinets 
+  ------------------------------------------------------------------*/
+  bool find_start_and_ending_edges(const Vec2d& xy_start,
+                                   const Vec2d& xy_end)
+  {
+    // Find closest vertices in current front structure to  
+    // current start and ending vertex coordinates
+    Vertex& v_start = front_.get_closest_vertex( xy_start );
+    Vertex& v_end   = front_.get_closest_vertex( xy_end );
+
+    // Get advancing front edges adjacent to input vertices
+    Edge* e_start = front_.get_edge(v_start, 1); 
+    Edge* e_end   = front_.get_edge(v_end, 2); 
+
+    ASSERT((e_start && e_end), 
+      "FrontQuadLayering::find_start_and_ending_edges(): "
+      "Vertex-edge-connectivity seems to be corrupted.");
+
+    if ( !front_.is_traversable(*e_start, *e_end) )
+      return false;
+
+    bool is_closed = (v_start == v_end);
+
+    // For closed quad layers, try not to start at sharp angle edges
+    if ( is_closed )
+    {
+      const Vec2d& v1 = e_end->v1().xy();
+      const Vec2d& v2 = e_end->v2().xy();
+      const Vec2d& v3 = e_start->v2().xy();
+
+      const double ang = angle(v1-v2, v3-v2);
+
+      Edge *e_next = e_start->get_next_edge();
+
+      if ( e_next && ang <= quad_layer_angle_ )
+      {
+        e_end = e_start;
+        e_start = e_next; 
+      }
+    }
+
+    // Finally, set the found edges 
+    e_start_      = e_start;
+    e_end_        = e_end;
+    closed_layer_ = is_closed;
+
+    return true;
+
+  } // find_start_and_ending_edges()
 
   /*------------------------------------------------------------------
   | Attributes
@@ -393,11 +386,18 @@ private:
   size_t n_layers_     {};
   double first_height_ {};
   double growth_rate_  {};
-  Vec2d  xy_start_     {};
-  Vec2d  xy_end_       {};
 
+  // Meshing constants
   double quad_layer_angle_ = 1.57079633; // = 1/2 pi
   double quad_layer_range_ = 0.75;
+
+  // Attributes that change during the layer generation
+  Vec2d  xy_start_     {};
+  Vec2d  xy_end_       {};
+  Edge*  e_start_      {nullptr};
+  Edge*  e_end_        {nullptr};
+  bool   closed_layer_ {false};
+
 
 
 }; // FrontQuadLayering

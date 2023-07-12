@@ -360,7 +360,7 @@ void quad_layer()
 
   FrontQuadLayering quadlayering {mesh, domain};
   quadlayering.n_layers( 3 );
-  quadlayering.first_height( 0.1 );
+  quadlayering.first_height( 0.5 );
   quadlayering.growth_rate( 1.2 );
   quadlayering.starting_position( 0.0, 0.0 );
   quadlayering.ending_position( 5.0, 5.0 );
