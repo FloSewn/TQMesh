@@ -359,11 +359,11 @@ void quad_layer()
   initializer.prepare_mesh(mesh, domain);
 
   FrontQuadLayering quadlayering {mesh, domain};
-  quadlayering.n_layers( 3 );
-  quadlayering.first_height( 0.5 );
-  quadlayering.growth_rate( 1.2 );
+  quadlayering.n_layers( 10 );
+  quadlayering.first_height( 0.55 );
+  quadlayering.growth_rate( 1.0 );
   quadlayering.starting_position( 0.0, 0.0 );
-  quadlayering.ending_position( 5.0, 5.0 );
+  quadlayering.ending_position( 5.0, 0.0 );
 
   CHECK( quadlayering.generate_elements() );
 

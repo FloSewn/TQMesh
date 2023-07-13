@@ -18,7 +18,7 @@
 #include "Mesh.h"
 #include "FrontInitializer.h"
 #include "FrontAlgorithm.h"
-#include "QuadLayer.h"
+#include "QuadLayerVertices.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -116,24 +116,25 @@ private:
     // Create the quad layer structure, which keeps track of the target
     // vertex coordinates, that are projected from the base vertex 
     // coordinates
-    QuadLayer quad_layer { *e_start_, *e_end_, closed_layer_, height };
-    quad_layer.smooth_heights( domain_ );
-    quad_layer.setup_vertex_projection( mesh_, front_ );
+    QuadLayerVertices quad_layer_verts { *e_start_, *e_end_, 
+                                   closed_layer_, height };
+    quad_layer_verts.smooth_heights( domain_ );
+    quad_layer_verts.setup_vertex_projection( mesh_, front_ );
 
     // For each base edge in the quad layer, try to create a quad
     // element with its given projected coordinates
-    create_quad_layer_elements( quad_layer );
+    create_quad_layer_elements( quad_layer_verts );
 
     // Triangulate the quad layer based edges, where the generation
     // of quads did not succeed
-    finish_quad_layer( quad_layer );
+    finish_quad_layer( quad_layer_verts );
 
     // Remove deleted entities
     mesh_.clear_waste();
 
     // Set new start and ending vertex coordinates
     int i = 0;
-    int n = quad_layer.n_base_edges();
+    int n = quad_layer_verts.n_base_edges();
 
 
     Vertex* v_start_in = nullptr;
@@ -141,12 +142,12 @@ private:
 
     do 
     {
-      v_start_in = quad_layer.proj_p1()[i];
+      v_start_in = quad_layer_verts.proj_p1()[i];
 
       if ( closed_layer_ )
         v_end_in = v_start_in;
       else
-        v_end_in = quad_layer.proj_p2()[MOD(i-1,n)]; 
+        v_end_in = quad_layer_verts.proj_p2()[MOD(i-1,n)]; 
 
       ++i;
 
@@ -177,21 +178,21 @@ private:
   |            base_v1       base_v2
   |   
   ------------------------------------------------------------------*/
-  void create_quad_layer_elements(QuadLayer& quad_layer)
+  void create_quad_layer_elements(QuadLayerVertices& quad_layer_verts)
   {
-    auto& base_v1    = quad_layer.base_v1();
-    auto& base_v2    = quad_layer.base_v2();
+    auto& base_v1    = quad_layer_verts.base_v1();
+    auto& base_v2    = quad_layer_verts.base_v2();
 
-    auto& proj_p1    = quad_layer.proj_p1();
-    auto& proj_p2    = quad_layer.proj_p2();
+    auto& proj_p1    = quad_layer_verts.proj_p1();
+    auto& proj_p2    = quad_layer_verts.proj_p2();
 
-    auto& proj_p1_xy = quad_layer.proj_p1_xy();
-    auto& proj_p2_xy = quad_layer.proj_p2_xy();
+    auto& proj_p1_xy = quad_layer_verts.proj_p1_xy();
+    auto& proj_p2_xy = quad_layer_verts.proj_p2_xy();
 
-    auto& heights    = quad_layer.heights();
-    auto& base_edges = quad_layer.base_edges();
+    auto& heights    = quad_layer_verts.heights();
+    auto& base_edges = quad_layer_verts.base_edges();
 
-    int n_base_edges = quad_layer.n_base_edges();
+    int n_base_edges = quad_layer_verts.n_base_edges();
 
     for ( int i = 0; i < n_base_edges; ++i )
     {
@@ -267,14 +268,13 @@ private:
   |                          o
   |                        
   ------------------------------------------------------------------*/
-  void finish_quad_layer(QuadLayer& quad_layer)
+  void finish_quad_layer(QuadLayerVertices& quad_layer_verts)
   {
-    auto& base_v1        = quad_layer.base_v1();
+    auto& base_v1        = quad_layer_verts.base_v1();
+    auto& proj_p1        = quad_layer_verts.proj_p1();
+    auto& proj_p2        = quad_layer_verts.proj_p2();
 
-    auto& proj_p1        = quad_layer.proj_p1();
-    auto& proj_p2        = quad_layer.proj_p2();
-
-    int  n_base_edges = quad_layer.n_base_edges();
+    int  n_base_edges = quad_layer_verts.n_base_edges();
 
     for ( int i = 1; i < n_base_edges; ++i )
     {
