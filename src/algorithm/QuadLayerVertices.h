@@ -27,16 +27,16 @@ using namespace CppUtils;
 /*********************************************************************
 * A structure that contains the data for a quad layer generation
 *
-*                   proj_v1_[0]       proj_v1_[1]       proj_v1_[2]
-*  proj_v1_[0]      proj_v1_[1]       proj_v1_[2]
+*                   v1_proj_[0]       v1_proj_[1]       v1_proj_[2]
+*  v1_proj_[0]      v1_proj_[1]       v1_proj_[2]
 *    ^----------------^-----------------^-----------------^-----...
 *    |                |                 |                 |
 *    |                |                 |                 |
 *    |                |                 |                 |
 *    | base_edges_[0] |  base_edges_[1] |  base_edges_[2] |
 *    o----------------o-----------------o-----------------o-----...
-*  base_v1_[0]      base_v1_[1]       base_v1_[2]            
-*                   base_v2_[0]       base_v2_[1]       base_v2_[2]
+*  v1_base_[0]      v1_base_[1]       v1_base_[2]            
+*                   v2_base_[0]       v2_base_[1]       v2_base_[2]
 *
 *********************************************************************/
 class QuadLayerVertices
@@ -92,21 +92,21 @@ public:
   const EdgeVector& base_edges() const { return base_edges_; }
   EdgeVector& base_edges() { return base_edges_; }
 
-  const VertexVector& base_v1() const { return base_v1_; }
-  const VertexVector& base_v2() const { return base_v2_; }
-  const VertexVector& proj_p1() const { return proj_v1_; }
-  const VertexVector& proj_p2() const { return proj_v2_; }
+  const VertexVector& v1_base() const { return v1_base_; }
+  const VertexVector& v2_base() const { return v2_base_; }
+  const VertexVector& v1_proj() const { return v1_proj_; }
+  const VertexVector& v2_proj() const { return v2_proj_; }
 
-  VertexVector& base_v1() { return base_v1_; }
-  VertexVector& base_v2() { return base_v2_; }
-  VertexVector& proj_p1() { return proj_v1_; }
-  VertexVector& proj_p2() { return proj_v2_; }
+  VertexVector& v1_base() { return v1_base_; }
+  VertexVector& v2_base() { return v2_base_; }
+  VertexVector& v1_proj() { return v1_proj_; }
+  VertexVector& v2_proj() { return v2_proj_; }
 
-  const Vec2dVector& proj_p1_xy() const { return proj_v1_xy_; }
-  Vec2dVector& proj_p1_xy() { return proj_v1_xy_; }
+  const Vec2dVector& v1_proj_xy() const { return v1_proj_xy_; }
+  Vec2dVector& v1_proj_xy() { return v1_proj_xy_; }
 
-  const Vec2dVector& proj_p2_xy() const { return proj_v2_xy_; }
-  Vec2dVector& proj_p2_xy() { return proj_v2_xy_; }
+  const Vec2dVector& v2_proj_xy() const { return v2_proj_xy_; }
+  Vec2dVector& v2_proj_xy() { return v2_proj_xy_; }
 
   const DoubleVector& heights() const { return heights_; }
   DoubleVector& heights() { return heights_; }
@@ -184,15 +184,15 @@ private:
   ------------------------------------------------------------------*/
   void adjust_projected_vertex_coordinates(int i, int j)
   {
-    const Vec2d& p = base_v1_[i]->xy();
-    const Vec2d& q = base_v1_[j]->xy(); 
-    const Vec2d& r = base_v2_[j]->xy();
+    const Vec2d& p = v1_base_[i]->xy();
+    const Vec2d& q = v1_base_[j]->xy(); 
+    const Vec2d& r = v2_base_[j]->xy();
 
     const double alpha = angle( p-q, r-q );
 
     // If both projected vertices are too far apart, we must 
     // create a wedge in between. In this case we use the default 
-    // projection coordinates proj_p1_xy and proj_p2_xy that were already 
+    // projection coordinates v1_proj_xy and v2_proj_xy that were already 
     // calculated in the constructor
     if ( is_left(p, r, q) && alpha <= CONSTANTS.quad_layer_angle() )
       return;
@@ -211,8 +211,8 @@ private:
 
     Vec2d xy_proj = q + nn * l / sin(0.5*alpha);
 
-    proj_v1_xy_[j] = xy_proj;
-    proj_v2_xy_[i] = xy_proj;
+    v1_proj_xy_[j] = xy_proj;
+    v2_proj_xy_[i] = xy_proj;
 
     return;
 
@@ -224,27 +224,27 @@ private:
   | vertex of the first quad layer element is located too close 
   | to the previous advancing front edge. We check for the
   | following three scenarios:
-  | 1) The distance between v_prev and proj_p1 is less than the 
+  | 1) The distance between v_prev and v1_proj is less than the 
   |    local quad layer height h. In this case we will simply use 
-  |    v_prev as proj_v1
-  | 2) v_prev and proj_p1 are located very close to each other and 
+  |    v_prev as v1_proj
+  | 2) v_prev and v1_proj are located very close to each other and 
   |    the previous edge length is greater than the quad layer height.
   |    In this case, the previous edge must be split at the location
-  |    of proj_p1 projected onto the previous edge. This leads to the 
-  |    generation of a new vertex v_new, that will be used as proj_p1 
-  | 3) v_prev and proj_p1 are located very close to each other and 
+  |    of v1_proj projected onto the previous edge. This leads to the 
+  |    generation of a new vertex v_new, that will be used as v1_proj 
+  | 3) v_prev and v1_proj are located very close to each other and 
   |    and the previous edge length is smaller than the quad layer 
-  |    height. In this case, proj_v1 is set to v_prev
+  |    height. In this case, v1_proj is set to v_prev
   | 
   |
   |   Scenario 1              Scenario 2            Scenario 3
   |   ----------              ----------            ----------
   |            h
-  |      <------------>                               proj_p1                     
-  | v_prev    proj_p1    v_prev                          o           
+  |      <------------>                               v1_proj                     
+  | v_prev    v1_proj    v_prev                          o           
   |     o      o           o                             |            
   |     |     /             \                    v_prev  |           
-  |     |    /               \   proj_p1            o    |        
+  |     |    /               \   v1_proj            o    |        
   |     |   /                 x   o                  \   x       
   |     |  /             v_new \  |                   \  |   
   |     | /                     \ |                    \ |  
@@ -261,7 +261,7 @@ private:
     Edge* e_prev = e_start_->get_prev_edge();
 
     // The current starting base vertex
-    Vertex& v_start = *base_v1_[0];
+    Vertex& v_start = *v1_base_[0];
 
     ASSERT( (e_prev) && (e_prev->v2() == v_start),
     "During the generation of a QuadLayerVertices, an invalid data\n"
@@ -274,19 +274,16 @@ private:
 
     // If the previous vertex is located right to the starting edge,
     // we use the default projection coordinate
-    if ( !is_left(base_v1_[0]->xy(), base_v2_[0]->xy(), v_prev.xy()) )
+    if ( !is_left(v1_base_[0]->xy(), v2_base_[0]->xy(), v_prev.xy()) )
       return;
 
     const double h = heights_[0];
-    const double dist_sqr = (v_prev.xy() - proj_v1_xy_[0]).norm_sqr();
+    const double dist_sqr = (v_prev.xy() - v1_proj_xy_[0]).norm_sqr();
 
     // Scenario 1
     // ----------
     if ( dist_sqr < h * h )
-    {
-      //proj_v1_[0] = &v_prev; -> ???
       return;
-    }
 
     // Scenario 2
     // ----------
@@ -299,7 +296,7 @@ private:
 
       // Split the adjacent front edge in two smaller edges
       const Vec2d d1 = v_prev.xy() - v_start.xy();
-      const Vec2d d2 = proj_v1_xy_[0] - v_start.xy();
+      const Vec2d d2 = v1_proj_xy_[0] - v_start.xy();
       const double alpha = angle( d1, d2 );
       const double ang_fac = cos(alpha); 
       double sf = (h * ang_fac) / e_prev->length();
@@ -327,19 +324,15 @@ private:
 
       // Add new vertex to quad layer structure
       Vertex& v_new = new_edges.first->v2();
+      v1_proj_xy_[0] = v_new.xy();
 
-      proj_v1_[0]    = &v_new;
-      proj_v1_xy_[0] = v_new.xy();
+      return;
     }
-    //
-    //
+      
+      
     // Scenario 3
     // ----------
-    else
-    {
-      //proj_v1_[0]    = &v_prev; -> ???
-      proj_v1_xy_[0] = v_prev.xy();
-    }
+    v1_proj_xy_[0] = v_prev.xy();
 
     return;
 
@@ -352,10 +345,10 @@ private:
   |   ----------           ----------            ----------
   |       h
   |  <---------->           
-  |    proj_p2  v_next                 v_next       proj_p2
+  |    v2_proj  v_next                 v_next       v2_proj
   |       o      o                       o             o
   |        \     |                      /              |
-  |         \    |             proj_p2 /               |   v_next
+  |         \    |             v2_proj /               |   v_next
   |          \   |                o   x                x   o 
   |           \  |                |  / v_new           |  /
   |            \ |                | /                  | /
@@ -372,7 +365,7 @@ private:
     Edge* e_next = e_end_->get_next_edge();
 
     // The current ending base vertex
-    Vertex& v_end = *base_v2_.back();
+    Vertex& v_end = *v2_base_.back();
 
     ASSERT( (e_next) && (e_next->v1() == v_end),
     "During the generation of a QuadLayerVertices, an invalid data\n"
@@ -385,8 +378,8 @@ private:
 
     // If the next vertex is located right to the starting edge,
     // we use the default projection coordinate
-    const Vec2d& xy_end_1 = base_v1_.back()->xy();
-    const Vec2d& xy_end_2 = base_v2_.back()->xy();
+    const Vec2d& xy_end_1 = v1_base_.back()->xy();
+    const Vec2d& xy_end_2 = v2_base_.back()->xy();
     //
     if ( !is_left(xy_end_1, xy_end_2, v_next.xy()) )
       return;
@@ -395,15 +388,12 @@ private:
     // coordinate intersects with the previous edge 
     // If yes, merge them
     const double h = heights_.back();
-    const double dist_sqr = (v_next.xy() - proj_v2_xy_.back()).norm_sqr();
+    const double dist_sqr = (v_next.xy() - v2_proj_xy_.back()).norm_sqr();
 
     // Scenario 1
     // ----------
     if ( dist_sqr < h * h )
-    {
-      //proj_v2_.back() = &v_next; -> ???
       return;
-    }
 
     // Scenario 2
     // ----------
@@ -415,7 +405,7 @@ private:
 
       // Split the adjacent front edge in two smaller edges
       const Vec2d d1 = v_next.xy() - v_end.xy();
-      const Vec2d d2 = proj_v2_xy_.back() - v_end.xy();
+      const Vec2d d2 = v2_proj_xy_.back() - v_end.xy();
       const double alpha = angle( d1, d2 );
       const double ang_fac = cos(alpha); 
       double sf = 1.0 - (h * ang_fac) / e_next->length();
@@ -441,19 +431,15 @@ private:
 
       // Add new vertex to quad layer structure
       Vertex& v_new = new_edges.first->v2();
+      v2_proj_xy_.back() = v_new.xy();
 
-      proj_v2_.back() = &v_new;
-      proj_v2_xy_.back() = v_new.xy();
+      return;
     }
-    //
-    //
+      
+      
     // Scenario 3
     // ----------
-    else
-    {
-      //proj_v2_.back()    = &v_next; -> ???
-      proj_v2_xy_.back() = v_next.xy();
-    }
+    v2_proj_xy_.back() = v_next.xy();
 
     return;
 
@@ -468,21 +454,21 @@ private:
     base_edges_.push_back( &e_cur );
 
     // Pointers to vertices of current base edge 
-    base_v1_.push_back( &e_cur.v1() );
-    base_v2_.push_back( &e_cur.v2() );
+    v1_base_.push_back( &e_cur.v1() );
+    v2_base_.push_back( &e_cur.v2() );
 
     // Adjust height, in order to get good aspect ratios
     double h = MIN( height_, e_cur.length() );
     heights_.push_back( h );
 
     // Coordinates of initial projected base vertices 
-    proj_v1_xy_.push_back( e_cur.v1().xy() + e_cur.normal() * h );
-    proj_v2_xy_.push_back( e_cur.v2().xy() + e_cur.normal() * h );
+    v1_proj_xy_.push_back( e_cur.v1().xy() + e_cur.normal() * h );
+    v2_proj_xy_.push_back( e_cur.v2().xy() + e_cur.normal() * h );
 
     // Since the actual projected vertices are not generated yet,
     // we introduced them in terms of nullpointers
-    proj_v1_.push_back( nullptr );
-    proj_v2_.push_back( nullptr );
+    v1_proj_.push_back( nullptr );
+    v2_proj_.push_back( nullptr );
 
   } // QuadLayerVertices::add_quadlayer_edge()
 
@@ -495,14 +481,14 @@ private:
   double       height_    {  0.0  };
 
   EdgeVector   base_edges_ {};
-  VertexVector base_v1_    {};
-  VertexVector base_v2_    {};
+  VertexVector v1_base_    {};
+  VertexVector v2_base_    {};
 
-  VertexVector proj_v1_    {};
-  VertexVector proj_v2_    {};
+  VertexVector v1_proj_    {};
+  VertexVector v2_proj_    {};
 
-  Vec2dVector  proj_v1_xy_ {};
-  Vec2dVector  proj_v2_xy_ {};
+  Vec2dVector  v1_proj_xy_ {};
+  Vec2dVector  v2_proj_xy_ {};
 
   DoubleVector heights_    {};
 
