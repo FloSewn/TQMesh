@@ -84,18 +84,7 @@ public:
   {
     std::fill(facets_.begin(), facets_.end(), &NullFacet::get_instance()); 
 
-    area_            = TriangleGeometry::calc_area( v1, v2, v3 );
-    circumcenter_    = TriangleGeometry::calc_circumcenter( v1, v2, v3 );
-    circumradius_    = TriangleGeometry::calc_circumradius( v1, circumcenter_ );
-    edge_lengths_[0] = TriangleGeometry::calc_edge_length( v1, v2 );
-    edge_lengths_[1] = TriangleGeometry::calc_edge_length( v2, v3 );
-    edge_lengths_[2] = TriangleGeometry::calc_edge_length( v3, v1 );
-    min_edge_length_ = edge_lengths_.min(); 
-    max_edge_length_ = edge_lengths_.max(); 
-    angles_          = TriangleGeometry::calc_angles( v1, v2, v3, edge_lengths_ );
-    min_angle_       = angles_.min(); 
-    max_angle_       = angles_.max(); 
-    shape_factor_    = TriangleGeometry::calc_shape_factor(edge_lengths_, area_);
+    update_metrics();
 
     vertices_[0]->add_facet( *this );
     vertices_[1]->add_facet( *this );
@@ -287,6 +276,29 @@ public:
   ------------------------------------------------------------------*/
   bool is_valid() const
   { return TriangleGeometry::check_validity(area_, edge_lengths_); }
+
+  /*------------------------------------------------------------------
+  | Update the triangle if its vertices changed
+  ------------------------------------------------------------------*/
+  void update_metrics() override
+  {
+    const Vertex& v1 = *vertices_[0];
+    const Vertex& v2 = *vertices_[1];
+    const Vertex& v3 = *vertices_[2];
+
+    area_            = TriangleGeometry::calc_area( v1, v2, v3 );
+    circumcenter_    = TriangleGeometry::calc_circumcenter( v1, v2, v3 );
+    circumradius_    = TriangleGeometry::calc_circumradius( v1, circumcenter_ );
+    edge_lengths_[0] = TriangleGeometry::calc_edge_length( v1, v2 );
+    edge_lengths_[1] = TriangleGeometry::calc_edge_length( v2, v3 );
+    edge_lengths_[2] = TriangleGeometry::calc_edge_length( v3, v1 );
+    min_edge_length_ = edge_lengths_.min(); 
+    max_edge_length_ = edge_lengths_.max(); 
+    angles_          = TriangleGeometry::calc_angles( v1, v2, v3, edge_lengths_ );
+    min_angle_       = angles_.min(); 
+    max_angle_       = angles_.max(); 
+    shape_factor_    = TriangleGeometry::calc_shape_factor(edge_lengths_, area_);
+  }
 
 private:
   /*------------------------------------------------------------------

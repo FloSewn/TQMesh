@@ -74,6 +74,11 @@ class Facet
   virtual bool intersects_vertex(const Vertex& v) const
   { ASSERT(0,"THIS SHOULD NOT BE CALLED"); return false; }
 
+  /*------------------------------------------------------------------
+  | Update the facet metrics if its vertices changed
+  ------------------------------------------------------------------*/
+  virtual void update_metrics() = 0;
+
 }; // Facet
 
 } // namespace TQAlgorithm

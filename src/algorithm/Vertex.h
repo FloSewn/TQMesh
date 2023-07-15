@@ -68,6 +68,19 @@ public:
   bool         is_fixed() const { return is_fixed_; }
 
   /*------------------------------------------------------------------
+  | Change vertex coordinate 
+  | ATTENTION: This function does not update the edges / facets that
+  | are attached to this vertex!
+  | -> Use Cleanup::set_vertex_coordinates() instead!!!
+  ------------------------------------------------------------------*/
+  void adjust_xy(const Vec2d& xy)
+  {
+    container_->quad_tree().remove(this);
+    xy_ = xy; 
+    container_->quad_tree().add(this);
+  }
+
+  /*------------------------------------------------------------------
   | Access edges that are adjacent to this vertex 
   ------------------------------------------------------------------*/
   EdgeList& edges() { return edges_;}

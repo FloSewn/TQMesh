@@ -34,6 +34,21 @@ class Cleanup
 public:
 
   /*------------------------------------------------------------------
+  | Adjust the coordinate of a given vertex, while accounting for
+  | the entire underlying mesh structure
+  ------------------------------------------------------------------*/
+  static inline void set_vertex_coordinates(Vertex& v, const Vec2d& xy)
+  {
+    v.adjust_xy( xy );
+
+    for ( auto& e : v.edges() )
+      e->update_metrics();
+
+    for ( auto& f : v.facets() )
+      f->update_metrics();
+  } 
+
+  /*------------------------------------------------------------------
   | Check the facet-vertex-edge connectivtiy of a given mesh
   ------------------------------------------------------------------*/
   template <typename Mesh>

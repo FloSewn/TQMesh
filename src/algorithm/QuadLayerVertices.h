@@ -18,6 +18,7 @@
 #include "Front.h"
 #include "Boundary.h"
 #include "Domain.h"
+#include "Cleanup.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -194,7 +195,7 @@ private:
     // create a wedge in between. In this case we use the default 
     // projection coordinates v1_proj_xy and v2_proj_xy that were already 
     // calculated in the constructor
-    if ( is_left(p, r, q) && alpha <= CONSTANTS.quad_layer_angle() )
+    if ( is_left(p, r, q) && alpha <= quad_layer_angle_ )
       return;
 
     // Otherwise, the projected vertex coordinate will be placed
@@ -283,7 +284,17 @@ private:
     // Scenario 1
     // ----------
     if ( dist_sqr < h * h )
+    {
+      // Shift v_prev along the edge e_prev, such that it has the same
+      // height as v1_proj_xy, then set v1_proj_xy to this coordinate
+      Vec2d delta_1 = v_prev.xy() - v1_base_[0]->xy(); 
+      Vec2d delta_2 = v1_proj_xy_[0] - v1_base_[0]->xy(); 
+      double s = dot(delta_1, delta_2) / delta_1.norm_sqr();
+      Vec2d v_prev_new = v1_base_[0]->xy() + delta_1 * s;
+      Cleanup::set_vertex_coordinates(v_prev, v_prev_new);
+      v1_proj_xy_[0] = v_prev_new;
       return;
+    }
 
     // Scenario 2
     // ----------
@@ -393,7 +404,17 @@ private:
     // Scenario 1
     // ----------
     if ( dist_sqr < h * h )
+    {
+      // Shift v_next along the edge e_prev, such that it has the same
+      // height as v2_proj_xy, then set v2_proj_xy to this coordinate
+      Vec2d delta_1 = v_next.xy() - v_end.xy(); 
+      Vec2d delta_2 = v2_proj_xy_.back() - v_end.xy(); 
+      double s = dot(delta_1, delta_2) / delta_1.norm_sqr();
+      Vec2d v_next_new = v_end.xy() + delta_1 * s;
+      Cleanup::set_vertex_coordinates(v_next, v_next_new);
+      v2_proj_xy_.back() = v_next_new;
       return;
+    }
 
     // Scenario 2
     // ----------
@@ -491,6 +512,9 @@ private:
   Vec2dVector  v2_proj_xy_ {};
 
   DoubleVector heights_    {};
+
+
+  double quad_layer_angle_ = 1.57079633; // = 1/2 pi
 
 }; // QuadLayerVertices
 

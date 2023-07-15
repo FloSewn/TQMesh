@@ -15,6 +15,7 @@
 #include "Triangle.h"
 #include "Quad.h"
 #include "Mesh.h"
+#include "Cleanup.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -167,7 +168,7 @@ private:
         const Vec2d d_xy   = xy_m - xy_old;
         const Vec2d xy_n   = xy_old + eps * d_xy;
 
-        v->xy( xy_n );
+        Cleanup::set_vertex_coordinates(*v, xy_n);
 
         const double rho = domain.size_function( xy_n );
         const double range = 2.0 * rho;
@@ -176,7 +177,7 @@ private:
            || v->intersects_facet(quads, range) 
            || !domain.is_inside( *v ) )
         {
-          v->xy( xy_old );
+          Cleanup::set_vertex_coordinates(*v, xy_old);
         }
 
       }
@@ -238,7 +239,7 @@ private:
         const Vec2d d_xy   = xy_m - xy_old;
         const Vec2d xy_n   = xy_old + eps * d_xy;
 
-        v->xy( xy_n );
+        Cleanup::set_vertex_coordinates(*v, xy_n);
 
         const double rho = domain.size_function( xy_n );
         const double range = 2.0 * rho;
@@ -246,7 +247,9 @@ private:
         if (  v->intersects_facet(triangles, range)
            || v->intersects_facet(quads, range) 
            || !domain.is_inside( *v ) )
-          v->xy( xy_old );
+        {
+          Cleanup::set_vertex_coordinates(*v, xy_old);
+        }
       }
 
       eps *= -decay;

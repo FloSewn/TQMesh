@@ -330,7 +330,7 @@ void quad_layer()
 {
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
-  { return 1.; };
+  { return 0.1; };
 
   double quadtree_scale = 20.0;
   Domain domain   { f, quadtree_scale };
@@ -362,8 +362,8 @@ void quad_layer()
   quadlayering.n_layers( 4 );
   quadlayering.first_height( 0.35 );
   quadlayering.growth_rate( 1.0 );
-  quadlayering.starting_position( 0.0, 0.0 );
-  quadlayering.ending_position( 10.0, 5.0 );
+  quadlayering.starting_position( 0.0, 2.5 );
+  quadlayering.ending_position( 7.5, 5.0 );
 
   CHECK( quadlayering.generate_elements() );
 

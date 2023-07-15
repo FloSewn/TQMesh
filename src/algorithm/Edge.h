@@ -58,14 +58,8 @@ public:
   {
     ASSERT((v1_ && v2_),
         "Failed to create edge structure due to given nullptr." );
-      
-    const Vec2d d_xy = v2_->xy() - v1_->xy();
 
-    length_ = d_xy.norm();
-    tang_   = d_xy / length_;
-
-    norm_.x = -tang_.y;
-    norm_.y =  tang_.x;
+    update_metrics();
 
     v1_->add_edge( *this );
     v2_->add_edge( *this );
@@ -169,6 +163,20 @@ public:
     return nullptr;
 
   } // get_prev_edge()
+
+  /*------------------------------------------------------------------
+  | Update the edge if its vertices changed
+  ------------------------------------------------------------------*/
+  void update_metrics() 
+  {
+    const Vec2d d_xy = v2_->xy() - v1_->xy();
+
+    length_ = d_xy.norm();
+    tang_   = d_xy / length_;
+
+    norm_.x = -tang_.y;
+    norm_.y =  tang_.x;
+  }
 
   /*------------------------------------------------------------------
   | Destructor function for container garbage collection

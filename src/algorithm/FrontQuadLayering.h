@@ -117,13 +117,13 @@ private:
     // vertex coordinates, that are projected from the base vertex 
     // coordinates
     QuadLayerVertices quad_layer_verts { *e_start_, *e_end_, 
-                                   closed_layer_, height };
+                                          closed_layer_, height };
     quad_layer_verts.smooth_heights( domain_ );
     quad_layer_verts.setup_vertex_projection( mesh_, front_ );
 
     // For each base edge in the quad layer, try to create a quad
     // element with its given projected coordinates
-    create_quad_layer_elements( quad_layer_verts );
+    create_quad_layer( quad_layer_verts );
 
     // Triangulate the quad layer based edges, where the generation
     // of quads did not succeed
@@ -175,7 +175,47 @@ private:
 
     return true;
 
-  } // FrontQuadLayering::find_new_layer_endings()
+  } // FrontQuadLayering::find_next_layer_endings()
+
+  /*------------------------------------------------------------------
+  | This function creates a new layer of quad elements   
+  ------------------------------------------------------------------*/
+  void create_quad_layer(QuadLayerVertices& quad_layer_verts)
+  {
+    auto& v1_base    = quad_layer_verts.v1_base();
+    auto& v2_base    = quad_layer_verts.v2_base();
+
+    auto& v1_proj    = quad_layer_verts.v1_proj();
+    auto& v2_proj    = quad_layer_verts.v2_proj();
+
+    auto& v1_proj_xy = quad_layer_verts.v1_proj_xy();
+    auto& v2_proj_xy = quad_layer_verts.v2_proj_xy();
+
+    auto& base_edges = quad_layer_verts.base_edges();
+
+    int n_base_edges = quad_layer_verts.n_base_edges();
+
+    for ( int i = 0; i < n_base_edges; ++i )
+    {
+      DEBUG_LOG("QUAD LAYER BASE " << i);
+
+      // Check if edge has already been put to waste 
+      if ( !base_edges[i]->in_container() )
+        continue;
+
+      // Create new element
+      auto v_proj 
+        = create_quad_layer_element(*base_edges[i],
+                                    *v1_base[i], v1_proj_xy[i],
+                                    *v2_base[i], v2_proj_xy[i]);
+
+      // Store pointer to newly generated vertices
+      v1_proj[i] = v_proj.first;
+      v2_proj[i] = v_proj.second;
+    }
+
+  } // FrontQuadLayering::create_quad_layer() 
+
 
   /*------------------------------------------------------------------
   |   
@@ -191,92 +231,66 @@ private:
   |            v1_base       v2_base
   |   
   ------------------------------------------------------------------*/
-  void create_quad_layer_elements(QuadLayerVertices& quad_layer_verts)
+  std::pair<Vertex*, Vertex*>
+  create_quad_layer_element(Edge& base,
+                            Vertex& v1_base, const Vec2d& v1_proj_xy, 
+                            Vertex& v2_base, const Vec2d& v2_proj_xy)
   {
-    auto& v1_base    = quad_layer_verts.v1_base();
-    auto& v2_base    = quad_layer_verts.v2_base();
-
-    auto& v1_proj    = quad_layer_verts.v1_proj();
-    auto& v2_proj    = quad_layer_verts.v2_proj();
-
-    auto& v1_proj_xy = quad_layer_verts.v1_proj_xy();
-    auto& v2_proj_xy = quad_layer_verts.v2_proj_xy();
-
-    auto& heights    = quad_layer_verts.heights();
-    auto& base_edges = quad_layer_verts.base_edges();
-
-    int n_base_edges = quad_layer_verts.n_base_edges();
-
-    for ( int i = 0; i < n_base_edges; ++i )
-    {
-      DEBUG_LOG("QUAD LAYER BASE " << i);
-
-      // Search radius for vertices in the vicinity of the 
-      // projected coordinates
-      const double r = quad_layer_range_ * heights[i];
+    std::pair<Vertex*, Vertex*> v_proj { nullptr, nullptr };
 
 
+    // Create first triangle (v1_base, v2_base, v1_proj)
+    double r1 = quad_layer_range_ * (v1_base.xy() - v1_proj_xy).norm();
+    Triangle* t1 = front_update_.update_front(base, v1_proj_xy, 
+                                              v1_proj_xy, r1);
+    if ( !t1 )
+      return v_proj;
 
-      // Create first triangle (v1_base,v2_base,v1_proj)
-      Edge& base = *base_edges[i];
-
-      // Check if edge has already been put to waste 
-      if (!base.in_container())
-        continue;
-
-      Triangle* t1 
-        = front_update_.update_front(base, v1_proj_xy[i], 
-                                     v1_proj_xy[i], r);
-
-      if ( t1 == nullptr ) 
-        continue;
-
-      Vertex& v_proj_p1 = t1->v3();
+    Vertex& v_proj_p1 = t1->v3();
+    v_proj.first = &v_proj_p1;
 
 
-
-      // Create second triangle (v1_proj,v2_base,v2_proj)
-      Edge* diagonal = front_.get_edge( v_proj_p1, *v2_base[i] );
-
-      if ( !diagonal ) 
-        continue;
-
-      Triangle* t2 
-        = front_update_.update_front(*diagonal, v2_proj_xy[i], 
-                                     v2_proj_xy[i], r);
-
-      if ( t2 == nullptr )
-        continue;
-
-      Vertex& v_proj_p2 = t2->v3();
+    // Use the newly generated triangle edge as base for 
+    // the second triangle. However, this edge may not be part of the 
+    // advancing front anymore, if the mesh is already degenerated
+    Edge* diagonal = front_.get_edge( v_proj_p1, v2_base );
+    if ( !diagonal ) 
+      return v_proj;
 
 
+    // Create second triangle (v1_proj, v2_base, v2_proj)
+    double r2 = quad_layer_range_ * (v2_base.xy() - v2_proj_xy).norm();
+    Triangle* t2 
+      = front_update_.update_front(*diagonal, v2_proj_xy, 
+                                   v2_proj_xy, r2);
+    if ( !t2 )
+      return v_proj;
 
-      // Merge both triangles t1 & t2 to a quad
-      // --> First remove the interior edge between these triangles
-      Edge* e_rem = mesh_.interior_edges().get_edge( *v2_base[i], v_proj_p1 );
-
-      if ( e_rem == nullptr ) 
-        continue;
-
-      mesh_.remove_interior_edge( *e_rem );
-
-      // Remove old triangular elements
-      mesh_.remove_triangle( *t1 );
-      mesh_.remove_triangle( *t2 );
-
-      // Create new quadrilateral element
-      Quad& q_new = mesh_.add_quad( *v1_base[i], *v2_base[i], v_proj_p2, v_proj_p1 );
-      q_new.is_active( true );
+    Vertex& v_proj_p2 = t2->v3();
+    v_proj.second = &v_proj_p2;
 
 
+    // Merge both triangles t1 & t2 to a quad
+    // --> First remove the interior edge between these triangles
+    Edge* e_rem = mesh_.interior_edges().get_edge( v2_base, v_proj_p1 );
 
-      // Store pointers to projection vertices
-      v1_proj[i] = &v_proj_p1;
-      v2_proj[i] = &v_proj_p2;
-    }
+    if ( !e_rem ) 
+      return v_proj;
 
-  } // FrontQuadLayering::create_quad_layer_elements() 
+    mesh_.remove_interior_edge( *e_rem );
+
+    // Remove old triangular elements
+    mesh_.remove_triangle( *t1 );
+    mesh_.remove_triangle( *t2 );
+
+    // Create new quadrilateral element
+    Quad& q_new = mesh_.add_quad(v1_base, v2_base, v_proj_p2, v_proj_p1);
+    q_new.is_active( true );
+
+    return v_proj;
+
+  } // FrontQuadLayering::create_quad_layer_element()
+
 
   /*------------------------------------------------------------------
   | In this step we treat specific quad layer bases, where the former
@@ -433,7 +447,7 @@ private:
 
   // Meshing constants
   double quad_layer_angle_ = 1.57079633; // = 1/2 pi
-  double quad_layer_range_ = 0.75;
+  double quad_layer_range_ = 0.9;
 
   // Attributes that change during the layer generation
   Vec2d  xy_start_     {};
