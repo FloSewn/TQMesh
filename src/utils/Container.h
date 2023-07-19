@@ -181,6 +181,27 @@ public:
   }
 
   /*------------------------------------------------------------------
+  | Update the coordinate of an item
+  ------------------------------------------------------------------*/
+  bool update(T& item, const Vec2d& xy_new)
+  {
+    auto quad = qtree_.get_leaf( item.xy() );
+
+    if ( in_on_rect(xy_new, quad->lowleft(), quad->upright()) )
+    {
+      item.xy_ = xy_new;
+      return true;
+    }
+
+    if ( !qtree_.remove( &item ) )
+      return false;
+
+    item.xy_ = xy_new;
+
+    return ( qtree_.add( &item ) );
+  } 
+
+  /*------------------------------------------------------------------
   | Function to finally remove all items in the container garbage 
   | collector 
   ------------------------------------------------------------------*/

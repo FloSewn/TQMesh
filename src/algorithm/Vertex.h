@@ -75,9 +75,10 @@ public:
   ------------------------------------------------------------------*/
   void adjust_xy(const Vec2d& xy)
   {
-    container_->quad_tree().remove(this);
-    xy_ = xy; 
-    container_->quad_tree().add(this);
+    bool success = container_->update( *this, xy );
+    ASSERT( success, "Vertex::adjust_xy(): "
+        "Failed to update vertex coordinate.");
+    (void) success;
   }
 
   /*------------------------------------------------------------------

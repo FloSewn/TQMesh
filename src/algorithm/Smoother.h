@@ -121,19 +121,27 @@ private:
                       double a_fac=0.5, double eps=0.75, 
                       double decay=1.0)
   {
-    Triangles& triangles = mesh.triangles();
-    Quads& quads = mesh.quads();
+    Triangles& triangles  = mesh.triangles();
+    Quads&     quads      = mesh.quads();
+    EdgeList&  intr_edges = mesh.interior_edges();
 
     for (int iter = 0; iter < iterations; ++iter)
     {
-      for ( auto v_nbrs : v_conn )
+      std::vector<Vec2d> xy_new ( v_conn.size() );
+
+      for (std::size_t i_v = 0; i_v < v_conn.size(); ++i_v) 
       {
-        Vertex* v  = v_nbrs.first;
-        auto& nbrs = v_nbrs.second;
+        Vertex* v  = v_conn[i_v].first;
+        auto& nbrs = v_conn[i_v].second;
 
+        // Fixed vertices keep their location
         if ( v->is_fixed() || v->on_boundary() )
+        {
+          xy_new[i_v] = v->xy();
           continue;
+        }
 
+        // Compute new vertex location
         int n_nbrs = static_cast<int>( nbrs.size() );
 
         Vec2d xy_m { 0.0, 0.0 };
@@ -164,23 +172,34 @@ private:
 
         xy_m /= static_cast<double>( n_nbrs );
 
+        // Compute relaxed new vertex location
         const Vec2d xy_old = v->xy();
         const Vec2d d_xy   = xy_m - xy_old;
         const Vec2d xy_n   = xy_old + eps * d_xy;
-
-        Cleanup::set_vertex_coordinates(*v, xy_n);
-
-        const double rho = domain.size_function( xy_n );
-        const double range = 2.0 * rho;
-
-        if (  v->intersects_facet(triangles, range)
-           || v->intersects_facet(quads, range) 
-           || !domain.is_inside( *v ) )
-        {
-          Cleanup::set_vertex_coordinates(*v, xy_old);
-        }
-
+        
+        // Check validity of new coordinate
+        if ( check_coordinate( xy_n, *v, domain, mesh ) )
+          xy_new[i_v] = xy_n;
+        else
+          xy_new[i_v] = xy_old;
       }
+
+      // Apply new vertex positions
+      for ( std::size_t i = 0; i < xy_new.size(); ++i )
+      {
+        Vertex* v = v_conn[i].first;
+        v->adjust_xy( xy_new[i] );
+      }
+
+      // Update mesh entities
+      for ( auto& tri : triangles )
+        tri->update_metrics();
+
+      for ( auto& quad : quads )
+        quad->update_metrics();
+
+      for ( auto& edge : intr_edges )
+        edge->update_metrics();
 
       eps *= -decay;
 
@@ -195,19 +214,27 @@ private:
                       const VertexConnectivity& v_conn, int iterations,
                       double eps=0.75, double decay=1.0)
   {
-    Triangles& triangles = mesh.triangles();
-    Quads& quads = mesh.quads();
+    Triangles& triangles  = mesh.triangles();
+    Quads&     quads      = mesh.quads();
+    EdgeList&  intr_edges = mesh.interior_edges();
 
     for (int iter = 0; iter < iterations; ++iter)
     {
-      for ( auto v_nbrs : v_conn )
+      std::vector<Vec2d> xy_new ( v_conn.size() );
+
+      for (std::size_t i_v = 0; i_v < v_conn.size(); ++i_v) 
       {
-        Vertex* v  = v_nbrs.first;
-        auto& nbrs = v_nbrs.second;
+        Vertex* v  = v_conn[i_v].first;
+        auto& nbrs = v_conn[i_v].second;
 
+        // Fixed vertices keep their location
         if ( v->is_fixed() || v->on_boundary() )
+        {
+          xy_new[i_v] = v->xy();
           continue;
+        }
 
+        // Compute new vertex location
         int n_nbrs = static_cast<int>( nbrs.size() );
 
         Vec2d xy_m { 0.0, 0.0 };
@@ -215,42 +242,37 @@ private:
         for ( int j = 0; j < n_nbrs; ++j )
           xy_m += nbrs[j]->xy();
 
-        /*
-        const Vec2d& xy = v->xy();
-        const double r_xy = domain.size_function( xy );
-
-        for ( int j = 0; j < n_nbrs; ++j )
-        {
-          const Vec2d& xy_nb = nbrs[j]->xy();
-          const Vec2d dxy    = xy_nb - xy;
-          const double l     = dxy.length();
-          const double r_nb  = domain.size_function( xy_nb );
-          const double r     = 0.5 * (r_nb + r_xy);
-          const double fac   = r / l;
-
-          xy_m += xy + fac * dxy;
-        }
-        */
-
         xy_m /= static_cast<double>( n_nbrs );
 
+        // Compute relaxed new vertex location
         const Vec2d xy_old = v->xy();
-
         const Vec2d d_xy   = xy_m - xy_old;
         const Vec2d xy_n   = xy_old + eps * d_xy;
-
-        Cleanup::set_vertex_coordinates(*v, xy_n);
-
-        const double rho = domain.size_function( xy_n );
-        const double range = 2.0 * rho;
-
-        if (  v->intersects_facet(triangles, range)
-           || v->intersects_facet(quads, range) 
-           || !domain.is_inside( *v ) )
-        {
-          Cleanup::set_vertex_coordinates(*v, xy_old);
-        }
+        
+        // Check validity of new coordinate
+        if ( check_coordinate( xy_n, *v, domain, mesh ) )
+          xy_new[i_v] = xy_n;
+        else
+          xy_new[i_v] = xy_old;
       }
+
+      // Apply new vertex positions
+      for ( std::size_t i = 0; i < xy_new.size(); ++i )
+      {
+        Vertex* v = v_conn[i].first;
+        v->adjust_xy( xy_new[i] );
+      }
+
+      // Update mesh entities
+      for ( auto& tri : triangles )
+        tri->update_metrics();
+
+      for ( auto& quad : quads )
+        quad->update_metrics();
+
+      for ( auto& edge : intr_edges )
+        edge->update_metrics();
+
 
       eps *= -decay;
 
@@ -304,12 +326,54 @@ private:
 
         return ( a1 < a2 );
       });
-      
     }
 
     return std::move( v_conn );
 
   } // Smoothin::init_vertex_connectivity()
+
+  /*------------------------------------------------------------------
+  | Apply the grid smoothing with a laplace approach 
+  ------------------------------------------------------------------*/
+  bool check_coordinate(const Vec2d& xy_n, const Vertex& v,
+                        const Domain& domain, const Mesh& mesh)
+  {
+    const Triangles& triangles  = mesh.triangles();
+    const Quads&     quads      = mesh.quads();
+
+    const double rho = domain.size_function( xy_n );
+    const double range = 2.0 * rho;
+
+    for ( const auto& tri : triangles.get_items(xy_n, range) )
+    {
+      const Vertex& v1 = tri->v1();
+      const Vertex& v2 = tri->v2();
+      const Vertex& v3 = tri->v3();
+
+      if (  v == v1 || v == v2 || v == v3 )
+        continue;
+
+      if ( in_on_triangle(xy_n, v1.xy(), v2.xy(), v3.xy()) )
+        return false;
+    }
+
+    for ( const auto& quad : quads.get_items(xy_n, range) )
+    {
+      const Vertex& v1 = quad->v1();
+      const Vertex& v2 = quad->v2();
+      const Vertex& v3 = quad->v3();
+      const Vertex& v4 = quad->v3();
+
+      if (  v == v1 || v == v2 || v == v3 || v == v4 )
+        continue;
+
+      if ( in_on_quad(xy_n, v1.xy(), v2.xy(), v3.xy(), v4.xy()) )
+        return false;
+    }
+
+    return ( domain.is_inside( xy_n ) );
+
+  } // Smoother::check_coordinate_validity()
 
   /*------------------------------------------------------------------
   | Attributes 

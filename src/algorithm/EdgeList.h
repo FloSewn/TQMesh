@@ -224,18 +224,15 @@ public:
   } // EdgeList::split_edge()
 
   /*------------------------------------------------------------------
-  | Check if a simplex is inside the area that is surrounded by the 
-  | edges. If the object is located on the edge semgents, it is 
+  | Check if a coordinate is inside the area that is surrounded by the 
+  | edges. If the coordinate is located on the edge semgents, it is 
   | treated as lying inside.
   | Source: http://alienryderflex.com/polygon/
   ------------------------------------------------------------------*/
-  template <typename T>
-  bool is_inside(const T& s) const 
+  bool is_inside(const Vec2d& obj) const 
   {
     if (edges_.size() < 3)
       return false;
-
-    const Vec2d obj = s.xy();
     
     int count = 0;
 
@@ -267,6 +264,15 @@ public:
     return ( (count&1) == 1 ); // := (count%2 == 1)
 
   } // EdgeList::is_inside()
+
+  /*------------------------------------------------------------------
+  | Check if a simplex is inside the area that is surrounded by the 
+  | edges. If the object is located on the edge semgents, it is 
+  | treated as lying inside.
+  ------------------------------------------------------------------*/
+  template <typename T>
+  bool is_inside(const T& s) const 
+  { return is_inside(s.xy()); }
 
   /*------------------------------------------------------------------
   | Check if the edgelist is traversable for given start and ending

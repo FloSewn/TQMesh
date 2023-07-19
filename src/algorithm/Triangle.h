@@ -84,7 +84,7 @@ public:
   {
     std::fill(facets_.begin(), facets_.end(), &NullFacet::get_instance()); 
 
-    update_metrics();
+    update_metrics(false);
 
     vertices_[0]->add_facet( *this );
     vertices_[1]->add_facet( *this );
@@ -280,11 +280,20 @@ public:
   /*------------------------------------------------------------------
   | Update the triangle if its vertices changed
   ------------------------------------------------------------------*/
-  void update_metrics() override
+  void update_metrics(bool update_centroid=true) override
   {
     const Vertex& v1 = *vertices_[0];
     const Vertex& v2 = *vertices_[1];
     const Vertex& v3 = *vertices_[2];
+
+    if ( update_centroid )
+    {
+      Vec2d xy_new = TriangleGeometry::calc_centroid(v1, v2, v3);
+      bool success = container_->update( *this, xy_new );
+      ASSERT( success, "Triangle::update_metrics(): "
+          "Failed to update triangle centroid.");
+      (void) success;
+    }
 
     area_            = TriangleGeometry::calc_area( v1, v2, v3 );
     circumcenter_    = TriangleGeometry::calc_circumcenter( v1, v2, v3 );
@@ -298,6 +307,7 @@ public:
     min_angle_       = angles_.min(); 
     max_angle_       = angles_.max(); 
     shape_factor_    = TriangleGeometry::calc_shape_factor(edge_lengths_, area_);
+
   }
 
 private:

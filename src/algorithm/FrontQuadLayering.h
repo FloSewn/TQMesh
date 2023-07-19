@@ -247,6 +247,7 @@ private:
       return v_proj;
 
     Vertex& v_proj_p1 = t1->v3();
+    v_proj_p1.is_fixed(true);
     v_proj.first = &v_proj_p1;
 
 
@@ -267,6 +268,7 @@ private:
       return v_proj;
 
     Vertex& v_proj_p2 = t2->v3();
+    v_proj_p2.is_fixed(true);
     v_proj.second = &v_proj_p2;
 
 

@@ -77,7 +77,7 @@ class Facet
   /*------------------------------------------------------------------
   | Update the facet metrics if its vertices changed
   ------------------------------------------------------------------*/
-  virtual void update_metrics() = 0;
+  virtual void update_metrics(bool update_centroid=true) = 0;
 
 }; // Facet
 

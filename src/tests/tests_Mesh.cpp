@@ -27,6 +27,7 @@
 #include "FrontTriangulation.h"
 #include "FrontQuadLayering.h"
 //#include "FrontPaving.h"
+#include "Smoother.h"
 
 namespace MeshTests 
 {
@@ -367,9 +368,12 @@ void quad_layer()
 
   CHECK( quadlayering.generate_elements() );
 
-  //FrontTriangulation triangulation {mesh, domain};
-  //triangulation.n_elements(0);
-  //CHECK( triangulation.generate_elements() );
+  FrontTriangulation triangulation {mesh, domain};
+  triangulation.n_elements(0);
+  CHECK( triangulation.generate_elements() );
+
+  Smoother smoother {};
+  smoother.smooth(domain, mesh, 6, 0.5, 0.75, 0.95);
 
   // Export mesh
   Cleanup::assign_size_function_to_vertices(mesh, domain);

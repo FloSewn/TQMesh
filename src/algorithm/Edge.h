@@ -59,7 +59,7 @@ public:
     ASSERT((v1_ && v2_),
         "Failed to create edge structure due to given nullptr." );
 
-    update_metrics();
+    update_metrics(false);
 
     v1_->add_edge( *this );
     v2_->add_edge( *this );
@@ -167,8 +167,18 @@ public:
   /*------------------------------------------------------------------
   | Update the edge if its vertices changed
   ------------------------------------------------------------------*/
-  void update_metrics() 
+  void update_metrics(bool update_centroid=true) 
   {
+
+    if ( update_centroid )
+    {
+      Vec2d xy_new = 0.5 * ( v1_->xy() + v2_->xy() );
+      bool success = container_->update( *this, xy_new );
+      ASSERT( success, "Edge::update_metrics(): "
+          "Failed to update edge centroid.");
+      (void) success;
+    }
+
     const Vec2d d_xy = v2_->xy() - v1_->xy();
 
     length_ = d_xy.norm();
