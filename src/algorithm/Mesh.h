@@ -292,13 +292,13 @@ public:
   | Add new interior mesh edge   
   ------------------------------------------------------------------*/
   Edge& add_interior_edge(Vertex& v1, Vertex& v2)
-  { intr_edges_.add_edge(v1, v2, CONSTANTS.interior_edge_marker()); }
+  { return intr_edges_.add_edge(v1, v2, CONSTANTS.interior_edge_marker()); }
 
   /*------------------------------------------------------------------
   | Add new boundary mesh edge   
   ------------------------------------------------------------------*/
   Edge& add_boundary_edge(Vertex& v1, Vertex& v2, int marker)
-  { bdry_edges_.add_edge(v1, v2, marker); }
+  { return bdry_edges_.add_edge(v1, v2, marker); }
 
   /*------------------------------------------------------------------
   | These functions remove mesh entities and makes sure, that the 

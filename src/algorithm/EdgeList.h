@@ -310,35 +310,11 @@ public:
   Edge* 
   get_edge(const Vertex& v1, const Vertex& v2, bool dir=false) const
   {
-    // Consider edge direction
-    if (dir)
-    {
-      for ( const auto& e : v1.edges() )
-      {
-        if ( &e->edgelist() != this )
-          continue;
+    if ( dir ) 
+      return get_edge_dir(v1, v2);
 
-        if ( (e->v1() == v1 && e->v2() == v2) )
-          return e;
-      }
-    }
-    // Do not consider edge direction
-    else
-    {
-      for ( const auto& e : v1.edges() )
-      {
-        if ( &e->edgelist() != this )
-          continue;
-
-        if ( (e->v1() == v1 && e->v2() == v2) ||
-             (e->v2() == v1 && e->v1() == v2)  )
-          return e;
-      }
-    }
-
-    return nullptr;
-
-  } // get_edge()
+    return get_edge_nodir(v1, v2);
+  } 
 
   /*------------------------------------------------------------------
   | Search for an edge that is part of this edgelist and which 
@@ -420,6 +396,41 @@ public:
 
 
 protected:
+  /*------------------------------------------------------------------
+  | Search for an edge that is part of this edgelist and which 
+  | connects the given vertices v1 and v2.
+  | Consider the direction of the edge (v1->v2)
+  ------------------------------------------------------------------*/
+  Edge* get_edge_dir(const Vertex& v1, const Vertex& v2) const
+  {
+    for ( const auto& e : v1.edges() )
+    {
+      if ( &e->edgelist() != this )
+        continue;
+      if ( (e->v1() == v1 && e->v2() == v2) )
+        return e;
+    }
+    return nullptr;
+  }
+
+  /*------------------------------------------------------------------
+  | Search for an edge that is part of this edgelist and which 
+  | connects the given vertices v1 and v2.
+  | Do not consider the direction of the edge
+  ------------------------------------------------------------------*/
+  Edge* get_edge_nodir(const Vertex& v1, const Vertex& v2) const
+  {
+    for ( const auto& e : v1.edges() )
+    {
+      if ( &e->edgelist() != this )
+        continue;
+      if ( (e->v1() == v1 && e->v2() == v2) ||
+           (e->v2() == v1 && e->v1() == v2)  )
+        return e;
+    }
+    return nullptr;
+  }
+
   /*------------------------------------------------------------------
   | Compute the area enclosed by all edges. 
   | Splits the edge list into triangles and sums up

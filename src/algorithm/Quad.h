@@ -236,14 +236,14 @@ public:
   |     edges
   ------------------------------------------------------------------*/
   bool intersects_vertex(const Vertex& v) const override
-  { QuadGeometry::check_intersection(*this, v); }
+  { return QuadGeometry::check_intersection(*this, v); }
 
   /*------------------------------------------------------------------
   | Returns true, if any quad vertex is not within a given domain.
   | Triangle vertices are allowed to be located on domain edges.
   ------------------------------------------------------------------*/
   bool intersects_domain(const Domain& domain) const
-  { QuadGeometry::check_intersection(*this, domain); }
+  { return QuadGeometry::check_intersection(*this, domain); }
 
   /*------------------------------------------------------------------
   | Returns true if the quad intersects with a triangle 
@@ -254,7 +254,7 @@ public:
   template <typename T>
   bool intersects_triangle(const Container<T>& tris,
                            const double range) const
-  { QuadGeometry::check_intersection(*this, tris, range); }
+  { return QuadGeometry::check_intersection(*this, tris, range); }
 
   /*------------------------------------------------------------------
   | Returns true if the quad intersects with a quad 
@@ -265,7 +265,7 @@ public:
   template <typename Q>
   bool intersects_quad(const Container<Q>& quads,
                        const double range) const
-  { QuadGeometry::check_intersection(*this, quads, range); }
+  { return QuadGeometry::check_intersection(*this, quads, range); }
 
   /*------------------------------------------------------------------
   | Returns true if a quad edge is too close to a vertex in a given 
@@ -279,7 +279,7 @@ public:
   template <typename Front>
   bool intersects_front(const Front& front,
                         const double range) const
-  { QuadGeometry::check_intersection(*this, front, range); }
+  { return QuadGeometry::check_intersection(*this, front, range); }
 
   /*------------------------------------------------------------------
   | Returns true if the quad encloses an advancing front vertex.

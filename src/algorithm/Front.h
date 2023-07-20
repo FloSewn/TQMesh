@@ -426,7 +426,7 @@ private:
     // Compute size function lengths for every vertex 
     // Neglect start and ending vertices
     std::vector<double> rho_i { 0.0 };
-    for ( int i = 1; i < xy_new.size()-1; i++)
+    for ( std::size_t i = 1; i < xy_new.size()-1; i++)
       rho_i.push_back( domain.size_function( xy_new[i] ) );
     rho_i.push_back( 0.0 );
 
@@ -438,13 +438,13 @@ private:
         [rho_tot](double &v){ return v/rho_tot; });
 
     // Distribute cropped distance among new vertices
-    for ( int i = 1; i < xy_new.size()-1; i++)
+    for ( std::size_t i = 1; i < xy_new.size()-1; i++)
       xy_new[i] += rho_i[i] * d_cr;
 
     // Check that all nodes are ordered ascendingly
 #ifndef NDEBUG
     double s_prev = 0.0;
-    for ( int i = 1; i < xy_new.size(); i++ )
+    for ( std::size_t i = 1; i < xy_new.size(); i++ )
     {
       const double s = ( xy_new[i] - xy_new[0] ).norm();
       ASSERT( s > s_prev, "ADVANCING FRONT REFINEMENT FAILED." );
@@ -474,7 +474,7 @@ private:
   {
     Vertex* v_cur = &( e.v1() );
 
-    for ( int i = 1; i < xy_new.size()-1; i++ )
+    for ( std::size_t i = 1; i < xy_new.size()-1; i++ )
     {
       Vertex& v_n = mesh_vertices.insert( e.v2().pos(), xy_new[i] );
 

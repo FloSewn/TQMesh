@@ -290,7 +290,7 @@ private:
       return ( q1 > q2 );
     });
 
-    for (int i = 1; i < new_triangles.size(); i++)
+    for (std::size_t i = 1; i < new_triangles.size(); i++)
       mesh_.triangles().remove( *new_triangles[i] );
 
     return *new_triangles[0];
