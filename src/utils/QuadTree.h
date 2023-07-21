@@ -95,19 +95,11 @@ public:
            const Vec2<V>&  center={0.0,0.0}, 
            size_t          depth=0,
            QuadTree<T,V>*  parent=nullptr)
-  : scale_      { scale     }
-  , max_item_   { max_item  }
-  , max_depth_  { max_depth }
-  , center_     { center    }
-  , depth_      { depth     }
-  , parent_     { parent    }
-  {  
-    halfscale_ = scale_ / 2;
-    Vec2<V> hsv  = { halfscale_, halfscale_ };
-    lowleft_   = center_ - hsv;
-    upright_   = center_ + hsv;
-
-  } // QuadTree()
+  { 
+    update_attributes( scale, max_item, max_depth, center ); 
+    depth_  = depth;
+    parent_ = parent;
+  }
 
   /*------------------------------------------------------------------ 
   | Destructor
@@ -122,7 +114,6 @@ public:
         delete  child;
       }
     }
-
   } // ~QuadTree() 
 
   /*------------------------------------------------------------------ 
@@ -138,6 +129,21 @@ public:
   const Vec2<V>& center() const { return center_; }
   const Vec2<V>& lowleft() const { return lowleft_; }
   const Vec2<V>& upright() const { return upright_; }
+
+  /*------------------------------------------------------------------ 
+  | Setters
+  ------------------------------------------------------------------*/
+  void scale(double v)  
+  { update_attributes(v, max_item_, max_depth_, center_); }
+
+  void max_item(size_t v)  
+  { update_attributes(scale_, v, max_depth_, center_); }
+
+  void max_depth(size_t v)  
+  { update_attributes(scale_, max_item_, v, center_); }
+
+  void center(const Vec2<V>& v)  
+  { update_attributes(scale_, max_item_, max_depth_, v); }
 
   /*------------------------------------------------------------------ 
   | Query function pointers
@@ -387,6 +393,27 @@ public:
 protected:
 
   /*------------------------------------------------------------------ 
+  | Initialize the quadtree geometry
+  ------------------------------------------------------------------*/
+  void update_attributes(double scale, size_t max_item, 
+                         size_t max_depth, const Vec2<V>& center)
+  {
+    if ( split_ || parent_ || n_items_ > 0 )
+      TERMINATE( "QuadTree::update_attributes(): "
+        "Failed to update splitted quadtree.");
+
+    scale_       = scale;
+    max_item_    = max_item;
+    max_depth_   = max_depth;
+    center_      = center;
+
+    halfscale_   = scale_ / 2;
+    Vec2<V> hsv  = { halfscale_, halfscale_ };
+    lowleft_     = center_ - hsv;
+    upright_     = center_ + hsv;
+  }
+
+  /*------------------------------------------------------------------ 
   | Add to total number of items in entire tree 
   ------------------------------------------------------------------*/
   inline void add_item_number( int i ) 
@@ -542,9 +569,9 @@ private:
   size_t         max_item_  { 0 };
   size_t         max_depth_ { 0 };
 
-  Vec2<V>        center_   { 0.0, 0.0 };
-  Vec2<V>        lowleft_  { 0.0, 0.0 };
-  Vec2<V>        upright_  { 0.0, 0.0 };
+  Vec2<V>        center_    { 0.0, 0.0 };
+  Vec2<V>        lowleft_   { 0.0, 0.0 };
+  Vec2<V>        upright_   { 0.0, 0.0 };
 
   bool           split_     { false };
   size_t         depth_     { 0 };
@@ -553,9 +580,6 @@ private:
   List           items_;
   Array          children_  { nullptr };
   QuadTree<T,V>* parent_    { nullptr };
-
-
-
 
 }; // QuadTree
 

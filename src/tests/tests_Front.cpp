@@ -13,6 +13,7 @@
 #include <TQMeshConfig.h>
 
 #include "tests.h"
+#include "TestInitializer.h"
 
 #include "Testing.h"
 #include "VecND.h"
@@ -73,6 +74,66 @@ static inline void export_mesh_file(const Vertices& vertices,
   LOG_PROPERTIES.set_info_header("  ");
 
 } // export_mesh_file()
+
+
+/*********************************************************************
+* Test the initialization of the front with a unit squre domain
+*********************************************************************/
+void test_UnitSquare()
+{
+  UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
+
+  TestInitializer initializer { "UnitSquare", f};
+
+  // Collect data for the initialization of the advancing front
+  FrontInitializer front_data { initializer.domain() };
+
+  // Advancing front requires initialized vertex container
+  Vertices vertices { 1.5 };
+    
+  // Create advancing front
+  Front front { }; 
+  front.init_front( initializer.domain(), front_data, vertices );
+  
+  CHECK( EQ(front.area(), initializer.domain().area()) );
+  CHECK( EQ(front.area(), 1.0) );
+  CHECK( front.edges().size() == 4 );
+  for ( const auto& e_ptr : front.edges() )
+    CHECK( EQ(e_ptr->length(), 1.0) );
+
+  export_mesh_file(vertices, front, initializer.domain());
+
+} // test_UnitSquare()
+
+/*********************************************************************
+* Test the initialization of the front with a unit squre domain
+*********************************************************************/
+void test_UnitCircle()
+{
+  UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
+
+  TestInitializer initializer { "UnitCircle", f };
+
+  // Collect data for the initialization of the advancing front
+  FrontInitializer front_data { initializer.domain() };
+
+  // Advancing front requires initialized vertex container
+  Vertices vertices { 2.5 };
+    
+  // Create advancing front
+  Front front { }; 
+  front.init_front( initializer.domain(), front_data, vertices );
+  
+  //CHECK( EQ(front.area(), initializer.domain().area()) );
+  //CHECK( EQ(front.area(), 1.0) );
+  //CHECK( front.edges().size() == 4 );
+  //for ( const auto& e_ptr : front.edges() )
+  //  CHECK( EQ(e_ptr->length(), 1.0) );
+
+  export_mesh_file(vertices, front, initializer.domain());
+
+} // test_UnitCircle()
+
 
 /*********************************************************************
 * Test the initialization of the front
@@ -258,14 +319,20 @@ void edge_size()
 *********************************************************************/
 void run_tests_Front()
 {
+  adjust_logging_output_stream("FrontTests.test_UnitSquare.log");
+  FrontTests::test_UnitSquare();
+
+  adjust_logging_output_stream("FrontTests.test_UnitCirlce.log");
+  FrontTests::test_UnitCircle();
+
   adjust_logging_output_stream("FrontTests.initialization.log");
   FrontTests::initialization();
 
-  //adjust_logging_output_stream("FrontTests.sort_edges.log");
-  //FrontTests::sort_edges();
+  adjust_logging_output_stream("FrontTests.sort_edges.log");
+  FrontTests::sort_edges();
 
-  //adjust_logging_output_stream("FrontTests.edge_size.log");
-  //FrontTests::edge_size();
+  adjust_logging_output_stream("FrontTests.edge_size.log");
+  FrontTests::edge_size();
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");

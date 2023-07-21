@@ -331,7 +331,7 @@ void quad_layer()
 {
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
-  { return 0.1; };
+  { return 0.2; };
 
   double quadtree_scale = 20.0;
   Domain domain   { f, quadtree_scale };
@@ -368,12 +368,14 @@ void quad_layer()
 
   CHECK( quadlayering.generate_elements() );
 
+  /*
   FrontTriangulation triangulation {mesh, domain};
   triangulation.n_elements(0);
   CHECK( triangulation.generate_elements() );
 
   Smoother smoother {};
-  smoother.smooth(domain, mesh, 6, 0.5, 0.75, 0.95);
+  smoother.smooth(domain, mesh, 2);
+  */
 
   // Export mesh
   Cleanup::assign_size_function_to_vertices(mesh, domain);

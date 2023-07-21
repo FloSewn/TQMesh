@@ -53,9 +53,7 @@ public:
   Domain( UserSizeFunction f = [](const Vec2d& p){return 1.0;},
           double qtree_scale = ContainerQuadTreeScale,
           size_t qtree_items = ContainerQuadTreeItems, 
-          size_t qtree_depth = ContainerQuadTreeDepth,
-          double min_size    = CONSTANTS.minimum_element_size(),
-          double min_scaling = CONSTANTS.minimum_element_scaling() )
+          size_t qtree_depth = ContainerQuadTreeDepth )
   : size_fun_ { f }
   , verts_ { qtree_scale, qtree_items, qtree_depth }
   { }
@@ -95,6 +93,14 @@ public:
 
   const VertexVector& fixed_vertices() const { return fixed_verts_; }
   VertexVector& fixed_vertices() { return fixed_verts_; }
+
+  /*------------------------------------------------------------------
+  | Setter 
+  ------------------------------------------------------------------*/
+  void quad_tree_scale(double v) { verts_.quad_tree().scale(v); }
+  void quad_tree_max_item(size_t v) { verts_.quad_tree().max_item(v); }
+  void quad_tree_max_depth(size_t v) { verts_.quad_tree().max_depth(v); }
+  void quad_tree_center(const Vec2d& v) { verts_.quad_tree().center(v); }
 
   /*------------------------------------------------------------------
   | Evaluate the domain's size function at a given point

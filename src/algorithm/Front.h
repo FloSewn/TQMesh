@@ -30,22 +30,6 @@ using namespace CppUtils;
 
 
 /*********************************************************************
-* Container for references of advancing front algorithm entities
-*********************************************************************
-struct FrontAlgorithmEntities
-{
-  FrontAlgorithmEntities(Mesh& m, const Domain& d, Front& f)
-  : mesh { m }, domain { d }, front { f } {}
-
-  *------------------------------------------------------------------
-  | Attributes 
-  ------------------------------------------------------------------*
-  Mesh&         mesh;
-  const Domain& domain;
-  Front&        front;
-}; */
-
-/*********************************************************************
 * The advancing front - defined by a list of edges
 * > Must be defined counter-clockwise
 *********************************************************************/
@@ -335,21 +319,13 @@ private:
   bool refine_edge(const Domain& domain, Vertices& mesh_vertices, 
                    Edge& edge)
   {
-    const double rho_1 = domain.size_function( edge.v1().xy() );
-    const double rho_2 = domain.size_function( edge.v2().xy() );
-
-    // Define local edge direction from vertex v_b to
-    // vertex v_a, such that rho_a < rho_b
-    bool dir = (rho_1 < rho_2);
-
     // Create coordinates of new vertices along the 
     // current edge segment
     std::vector<Vec2d> xy_new 
-      = create_sub_vertex_coords(edge, dir, rho_1, rho_2, domain);
+      = create_sub_vertex_coords(edge, domain);
 
     // No new vertices have been added 
     // --> continue with next boundary segment
-    // Otherwise mark this edge to be removed later on
     if ( xy_new.size() < 3 )
       return false;
 
@@ -370,13 +346,14 @@ private:
   | rho(x_a) < rho(x_b)
   ------------------------------------------------------------------*/
   std::vector<Vec2d> create_sub_vertex_coords(const Edge& e, 
-                                              bool   dir,
-                                              double rho_1, 
-                                              double rho_2,
                                               const Domain& domain)
   {
+    const double rho_1 = domain.size_function( e.v1().xy() );
+    const double rho_2 = domain.size_function( e.v2().xy() );
+      
     // Define local edge direction from vertex v_b to
     // vertex v_a, such that rho_a < rho_b
+    bool          dir = (rho_1 < rho_2);
     const Vertex& v_a = dir ? e.v1() : e.v2();
     const Vertex& v_b = dir ? e.v2() : e.v1();
 
@@ -390,7 +367,7 @@ private:
     // Compute point on abscissa where no new points 
     // will be generated
     const double rho_b = dir ? rho_2 : rho_1;
-    const double s_end = 1.0 - 0.5 * rho_b / e.length();
+    const double s_end = 1.0 - 0.5 * MIN(1.0, rho_b / e.length());
 
     // Compute new vertex positions
     Vec2d xy { v_a.xy() };
@@ -441,15 +418,26 @@ private:
     for ( std::size_t i = 1; i < xy_new.size()-1; i++)
       xy_new[i] += rho_i[i] * d_cr;
 
-    // Check that all nodes are ordered ascendingly
 #ifndef NDEBUG
+    // Check that all nodes are ordered ascendingly
     double s_prev = 0.0;
     for ( std::size_t i = 1; i < xy_new.size(); i++ )
     {
       const double s = ( xy_new[i] - xy_new[0] ).norm();
-      ASSERT( s > s_prev, "ADVANCING FRONT REFINEMENT FAILED." );
+      ASSERT( s > s_prev, "Front::create_sub_vertex_coords(): "
+        "New vertices in wrong order.");
       s_prev = s;
     }
+
+    // Check that all nodes are in between start and end
+    double l_tot_sqr = (xy_new[0]-xy_new.back()).norm_sqr();
+    for ( std::size_t i = 1; i < xy_new.size()-1; i++ )
+    {
+      const double l_sqr = (xy_new[i]-xy_new[0]).norm_sqr();
+      ASSERT( l_sqr < l_tot_sqr, "Front::create_sub_vertex_coords(): "
+        "New vertices extend edge range." );
+    }
+
 #endif
     
     // Adjust order of new vertices 
