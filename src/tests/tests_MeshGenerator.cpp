@@ -23,9 +23,8 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "MeshGenerator.h"
-#include "MeshInitializer.h"
+#include "MeshBuilder.h"
 #include "Cleanup.h"
-#include "FrontInitializer.h"
 
 namespace MeshGeneratorTests 
 {
@@ -136,17 +135,17 @@ void mesh_initializer()
   bdry_2.add_edge( v3_2, v4_2, edge_marker );
   bdry_2.add_edge( v4_2, v1_2, edge_marker );
 
-  MeshInitializer initializer {};
+  MeshBuilder mesh_builder {};
 
-  Mesh mesh_2 = initializer.create_empty_mesh(domain_2);
-  initializer.prepare_mesh(mesh_2, domain_2);
-  initializer.add_mesh_and_domain(mesh_2, domain_2);
+  Mesh mesh_2 = mesh_builder.create_empty_mesh(domain_2);
+  mesh_builder.prepare_mesh(mesh_2, domain_2);
+  mesh_builder.add_mesh_and_domain(mesh_2, domain_2);
   Cleanup::assign_size_function_to_vertices(mesh_2, domain_2);
   Cleanup::assign_mesh_indices(mesh_2);
 
-  Mesh mesh_1 = initializer.create_empty_mesh(domain_1);
-  initializer.prepare_mesh(mesh_1, domain_1);
-  initializer.add_mesh_and_domain(mesh_1, domain_1);
+  Mesh mesh_1 = mesh_builder.create_empty_mesh(domain_1);
+  mesh_builder.prepare_mesh(mesh_1, domain_1);
+  mesh_builder.add_mesh_and_domain(mesh_1, domain_1);
   Cleanup::assign_size_function_to_vertices(mesh_1, domain_1);
   Cleanup::assign_mesh_indices(mesh_1);
 

@@ -11,10 +11,9 @@
 #include <limits.h>
 
 #include "VecND.h"
-#include "utils.h"
 #include "VtkIO.h"
-#include "ProgressBar.h"
 
+#include "utils.h"
 #include "Vertex.h"
 #include "Triangle.h"
 #include "Quad.h"
@@ -40,8 +39,8 @@ public:
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  Mesh(int       mesh_id=CONSTANTS.default_mesh_id(),
-       int       element_color=CONSTANTS.default_element_color(),
+  Mesh(int       mesh_id=DEFAULT_MESH_ID,
+       int       element_color=DEFAULT_ELEMENT_COLOR,
        double    qtree_scale=ContainerQuadTreeScale,
        size_t    qtree_items=ContainerQuadTreeItems, 
        size_t    qtree_depth=ContainerQuadTreeDepth)
@@ -189,14 +188,14 @@ public:
   }
 
   /*------------------------------------------------------------------
-  | Return all invalid mesh edges.
+  | Return all mesh edges that are part of the advancing front:
   | -> Either interior edges that are not connected to two facets 
-  |    of boundary edges that are not connected to their left facet.
-  | -> These edges are also used for the advancing front generation 
+  |    or boundary edges that are not connected to their left facet.
+  | -> These edges are used for the advancing front generation 
   |    of the mesh
-  | -> Assumes initialized facet connectivity
+  | -> This function assumes an initialized facet connectivity
   ------------------------------------------------------------------*/
-  EdgeVector get_invalid_edges() const
+  EdgeVector get_front_edges() const
   {
     EdgeVector invalid_edges {};
 
@@ -292,7 +291,7 @@ public:
   | Add new interior mesh edge   
   ------------------------------------------------------------------*/
   Edge& add_interior_edge(Vertex& v1, Vertex& v2)
-  { return intr_edges_.add_edge(v1, v2, CONSTANTS.interior_edge_marker()); }
+  { return intr_edges_.add_edge(v1, v2, INTERIOR_EDGE_MARKER); }
 
   /*------------------------------------------------------------------
   | Add new boundary mesh edge   
@@ -346,7 +345,7 @@ private:
   | Attributes
   ------------------------------------------------------------------*/
   int        mesh_id_        { 0 };
-  int        elem_color_     { CONSTANTS.default_element_color() };
+  int        elem_color_     { DEFAULT_ELEMENT_COLOR };
   bool       mesh_completed_ { false };
   double     mesh_area_      { 0.0 };
 
@@ -367,7 +366,7 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
   auto interior_edges  = mesh.get_valid_interior_edges();
   auto boundary_edges  = mesh.get_valid_boundary_edges();
   auto interface_edges = mesh.get_interface_edges();
-  auto front_edges     = mesh.get_invalid_edges();
+  auto front_edges     = mesh.get_front_edges();
 
 
   os << "MESH " << mesh.id() << "\n";

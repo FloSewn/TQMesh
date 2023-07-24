@@ -11,9 +11,6 @@
 #include <limits.h>
 
 #include "VecND.h"
-#include "utils.h"
-#include "VtkIO.h"
-#include "ProgressBar.h"
 
 #include "Vertex.h"
 #include "Triangle.h"

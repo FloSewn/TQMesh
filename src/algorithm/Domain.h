@@ -13,7 +13,6 @@
 #include <array>          // std::array
 #include <functional>     // std::function
 
-#include "utils.h"
 #include "Boundary.h"
 #include "SizeFunction.h"
 
@@ -196,7 +195,7 @@ public:
         // search in vicinity of current edge for edges of the 
         // neighboring domain. 
         const Vec2d c  = e->xy();
-        double radius  = CONSTANTS.edge_search_factor() * e->length();
+        double radius  = edge_overlap_range_ * e->length();
 
         std::vector<Edge*> nbr_edges = nbr_domain.get_edges(c, radius);
 
@@ -297,6 +296,8 @@ private:
   SizeFunction     size_fun_;
   Vertices         verts_;
   VertexVector     fixed_verts_ {};
+
+  double           edge_overlap_range_ { 1.5 };
 
 }; // Domain
 

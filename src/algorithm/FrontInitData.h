@@ -12,12 +12,8 @@
 #include "VecND.h"
 #include "Geometry.h"
 
-#include "utils.h"
-#include "Vertex.h"
 #include "Edge.h"
-#include "EdgeList.h"
 #include "Domain.h"
-#include "Boundary.h"
 #include "Mesh.h"
 
 namespace TQMesh {
@@ -26,10 +22,9 @@ namespace TQAlgorithm {
 using namespace CppUtils;
 
 /*********************************************************************
-* The advancing front - defined by a list of edges
-* > Must be defined counter-clockwise
+* 
 *********************************************************************/
-class FrontInitializer
+class FrontInitData
 {
 public:
   using IntVector    = std::vector<int>;
@@ -40,24 +35,24 @@ public:
   /*------------------------------------------------------------------
   | Constructor / Destructor
   ------------------------------------------------------------------*/
-  FrontInitializer(const Domain& domain, const MeshVector& meshes) 
+  FrontInitData(const Domain& domain, const MeshVector& meshes) 
   { collect_front_edges(domain, meshes); }
 
-  FrontInitializer(const Domain& domain) 
+  FrontInitData(const Domain& domain) 
   { MeshVector dummy {};  collect_front_edges(domain, dummy); }
 
-  ~FrontInitializer() {};
+  ~FrontInitData() {};
 
   /*------------------------------------------------------------------
   | Move operator
   ------------------------------------------------------------------*/
-  FrontInitializer(FrontInitializer&& f)
+  FrontInitData(FrontInitData&& f)
   : edges_ { std::move(f.edges_) }
   , markers_ { std::move(f.markers_) }
   , is_twin_edge_ { std::move(f.is_twin_edge_) }
   {}
   
-  FrontInitializer& operator=(FrontInitializer&& f)
+  FrontInitData& operator=(FrontInitData&& f)
   {
     edges_ = std::move(f.edges_);
     markers_ = std::move(f.markers_);
@@ -126,7 +121,7 @@ private:
       markers_.push_back( markers );
     }
 
-  } // FrontInitializer::collect_front_edges()
+  } // FrontInitData::collect_front_edges()
 
   /*------------------------------------------------------------------
   | For a given domain boundary edge <e>, 
@@ -142,7 +137,7 @@ private:
     EdgeVector   nbr_edges {};
 
     const Vec2d& c = e.xy();
-    double       r = CONSTANTS.edge_search_factor() * e.length();
+    double       r = edge_overlap_range_ * e.length();
 
     const Vec2d& v = e.v1().xy();
     const Vec2d& w = e.v2().xy();
@@ -183,7 +178,7 @@ private:
 
     return std::move(nbr_edges);
 
-  } // FrontInitializer::get_neighbor_mesh_edges()
+  } // FrontInitData::get_neighbor_mesh_edges()
 
 
   /*------------------------------------------------------------------
@@ -193,7 +188,9 @@ private:
   std::vector<IntVector>  markers_      {};
   std::vector<BoolVector> is_twin_edge_ {};
 
-}; // FrontInitializer
+  double edge_overlap_range_ { 1.5 };
+
+}; // FrontInitData
 
 
 } // namespace TQAlgorithm

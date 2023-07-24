@@ -13,7 +13,7 @@
 #include <TQMeshConfig.h>
 
 #include "tests.h"
-#include "TestInitializer.h"
+#include "TestBuilder.h"
 
 #include "Testing.h"
 #include "VecND.h"
@@ -26,7 +26,7 @@
 #include "Domain.h"
 #include "Front.h"
 #include "Mesh.h"
-#include "FrontInitializer.h"
+#include "FrontInitData.h"
 
 namespace FrontTests 
 {
@@ -83,25 +83,26 @@ void test_UnitSquare()
 {
   UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
 
-  TestInitializer initializer { "UnitSquare", f};
+  TestBuilder test_builder { "UnitSquare", f};
 
   // Collect data for the initialization of the advancing front
-  FrontInitializer front_data { initializer.domain() };
+  FrontInitData front_init_data { test_builder.domain() };
 
   // Advancing front requires initialized vertex container
   Vertices vertices { 1.5 };
     
   // Create advancing front
   Front front { }; 
-  front.init_front( initializer.domain(), front_data, vertices );
+  front.init_front( test_builder.domain(), front_init_data, vertices );
   
-  CHECK( EQ(front.area(), initializer.domain().area()) );
+  CHECK( EQ(front.area(), test_builder.domain().area()) );
   CHECK( EQ(front.area(), 1.0) );
   CHECK( front.edges().size() == 4 );
   for ( const auto& e_ptr : front.edges() )
     CHECK( EQ(e_ptr->length(), 1.0) );
 
-  export_mesh_file(vertices, front, initializer.domain());
+  // Export
+  export_mesh_file(vertices, front, test_builder.domain());
 
 } // test_UnitSquare()
 
@@ -112,27 +113,150 @@ void test_UnitCircle()
 {
   UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
 
-  TestInitializer initializer { "UnitCircle", f };
+  TestBuilder test_builder { "UnitCircle", f };
 
   // Collect data for the initialization of the advancing front
-  FrontInitializer front_data { initializer.domain() };
+  FrontInitData front_init_data { test_builder.domain() };
 
   // Advancing front requires initialized vertex container
   Vertices vertices { 2.5 };
     
   // Create advancing front
   Front front { }; 
-  front.init_front( initializer.domain(), front_data, vertices );
+  front.init_front( test_builder.domain(), front_init_data, vertices );
   
-  //CHECK( EQ(front.area(), initializer.domain().area()) );
-  //CHECK( EQ(front.area(), 1.0) );
-  //CHECK( front.edges().size() == 4 );
-  //for ( const auto& e_ptr : front.edges() )
-  //  CHECK( EQ(e_ptr->length(), 1.0) );
+  CHECK( EQ(front.area(), test_builder.domain().area()) );
+  CHECK( ABS(front.area() - M_PI) < 0.05 );  // Area == 3.12869
+  CHECK( front.edges().size() == 40 );
+  for ( const auto& e_ptr : front.edges() )
+    CHECK( e_ptr->length() < 0.16 );
 
-  export_mesh_file(vertices, front, initializer.domain());
+  // Export
+  export_mesh_file(vertices, front, test_builder.domain());
 
 } // test_UnitCircle()
+
+/*********************************************************************
+* 
+*********************************************************************/
+void test_RefinedTriangle()
+{
+  UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
+
+  TestBuilder test_builder { "RefinedTriangle", f };
+
+  // Collect data for the initialization of the advancing front
+  FrontInitData front_init_data { test_builder.domain() };
+
+  // Advancing front requires initialized vertex container
+  Vertices vertices { 10.0 };
+    
+  // Create advancing front
+  Front front { }; 
+  front.init_front( test_builder.domain(), front_init_data, vertices );
+
+  CHECK( EQ(front.area(), test_builder.domain().area()) );
+  CHECK( EQ(front.area(), 23.0)  );  
+  CHECK( front.edges().size() == 68 );
+  for ( const auto& e_ptr : front.edges() )
+    CHECK( e_ptr->length() <= 1.1 );
+
+  // Export
+  export_mesh_file(vertices, front, test_builder.domain());
+
+
+} // test_RefinedTriangle()
+
+/*********************************************************************
+* 
+*********************************************************************/
+void test_TriangleSquareCircle()
+{
+  UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
+
+  TestBuilder test_builder { "TriangleSquareCircle", f };
+
+  // Collect data for the initialization of the advancing front
+  FrontInitData front_init_data { test_builder.domain() };
+
+  // Advancing front requires initialized vertex container
+  Vertices vertices { 20.0 };
+    
+  // Create advancing front
+  Front front { }; 
+  front.init_front( test_builder.domain(), front_init_data, vertices );
+
+  double area = (10.0 * 8.0)                    // Exterior 
+              - (1.75 * 1.75)                   // Square
+              - (M_PI * 1.25 * 1.25)            // Circle
+              - (0.25 * sqrt(3) * 1.75 * 1.75); // Triangle
+
+  CHECK( EQ(front.area(), test_builder.domain().area()) );
+  CHECK( ABS(front.area() - area) < 0.025 );  
+  CHECK( front.edges().size() == 146 );
+  for ( const auto& e_ptr : front.edges() )
+    CHECK( e_ptr->length() < 1.0 );
+
+  // Export
+  export_mesh_file(vertices, front, test_builder.domain());
+
+} // test_TriangleSquareCircle()
+
+/*********************************************************************
+* 
+*********************************************************************/
+void test_FixedVertices()
+{
+  UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
+
+  TestBuilder test_builder { "FixedVertices", f };
+
+  // Collect data for the initialization of the advancing front
+  FrontInitData front_init_data { test_builder.domain() };
+
+  // Advancing front requires initialized vertex container
+  Vertices vertices { 20.0 };
+    
+  // Create advancing front
+  Front front { }; 
+  front.init_front( test_builder.domain(), front_init_data, vertices );
+
+  CHECK( EQ(front.area(), test_builder.domain().area()) );
+  for ( const auto& e_ptr : front.edges() )
+    CHECK( e_ptr->length() < 1.1 );
+
+  // Export
+  export_mesh_file(vertices, front, test_builder.domain());
+
+} // test_FixedVertices()
+
+/*********************************************************************
+* 
+*********************************************************************/
+void test_LakeSuperior()
+{
+  UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
+
+  TestBuilder test_builder { "LakeSuperior", f };
+
+  // Collect data for the initialization of the advancing front
+  FrontInitData front_init_data { test_builder.domain() };
+
+  // Advancing front requires initialized vertex container
+  Vertices vertices { 20.0 };
+    
+  // Create advancing front
+  Front front { }; 
+  front.init_front( test_builder.domain(), front_init_data, vertices );
+
+  //CHECK( EQ(front.area(), test_builder.domain().area()) );
+  //for ( const auto& e_ptr : front.edges() )
+  //  CHECK( e_ptr->length() < 1.1 );
+
+  // Export
+  export_mesh_file(vertices, front, test_builder.domain());
+
+} // test_LakeSuperior()
 
 
 /*********************************************************************
@@ -174,14 +298,14 @@ void initialization()
   b_int.add_edge( v8, v5, 2 );
 
   // Collect data for the initialization of the advancing front
-  FrontInitializer front_data { domain };
+  FrontInitData front_init_data { domain };
 
   // Advancing front requires initialized vertex container
   Vertices vertices { 10.0 };
     
   // Create advancing front
   Front front { }; 
-  front.init_front( domain, front_data, vertices );
+  front.init_front( domain, front_init_data, vertices );
   
   CHECK( EQ(front.area(), domain.area()) );
 
@@ -228,14 +352,14 @@ void sort_edges()
 
   // Collect data for the initialization of the advancing front
   std::vector<Mesh*> dummy {};
-  FrontInitializer front_data { domain, dummy };
+  FrontInitData front_init_data { domain, dummy };
 
   // Advancing front requires initialized vertex container
   Vertices vertices { 10.0 };
 
   // Create advancing front
   Front front { };
-  front.init_front( domain, front_data, vertices );
+  front.init_front( domain, front_init_data, vertices );
 
   // Sort edges in ascending order
   front.sort_edges();
@@ -291,14 +415,14 @@ void edge_size()
 
   // Collect data for the initialization of the advancing front
   std::vector<Mesh*> dummy {};
-  FrontInitializer front_data { domain, dummy };
+  FrontInitData front_init_data { domain, dummy };
 
   // Advancing front requires initialized vertex container
   Vertices vertices {};
 
   // Create advancing front
   Front front { };
-  front.init_front( domain, front_data, vertices );
+  front.init_front( domain, front_init_data, vertices );
 
   // Check if all edge lengths are more or less in accordance to
   // the global size parameter
@@ -324,6 +448,18 @@ void run_tests_Front()
 
   adjust_logging_output_stream("FrontTests.test_UnitCirlce.log");
   FrontTests::test_UnitCircle();
+
+  adjust_logging_output_stream("FrontTests.test_RefinedTriangle.log");
+  FrontTests::test_RefinedTriangle();
+
+  adjust_logging_output_stream("FrontTests.test_TriangleSquareCircle.log");
+  FrontTests::test_TriangleSquareCircle();
+
+  adjust_logging_output_stream("FrontTests.test_FixedVertices.log");
+  FrontTests::test_FixedVertices();
+
+  adjust_logging_output_stream("FrontTests.test_LakeSuperior.log");
+  FrontTests::test_LakeSuperior();
 
   adjust_logging_output_stream("FrontTests.initialization.log");
   FrontTests::initialization();

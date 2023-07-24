@@ -10,11 +10,11 @@
 #include <iomanip>   
 #include <algorithm>   
 
-#include "utils.h"
 #include "Geometry.h"
 #include "VecND.h"
 #include "Container.h"
 
+#include "utils.h"
 #include "Vertex.h"
 #include "Facet.h"
 #include "NullFacet.h"
@@ -61,6 +61,9 @@ public:
 
     update_metrics(false);
 
+    ASSERT( length_ > 0.0, 
+        "Edge: Invalid edge definition - edge length is zero.");
+
     v1_->add_edge( *this );
     v2_->add_edge( *this );
   }
@@ -104,7 +107,7 @@ public:
   | or if it is in the interior of the domain
   ------------------------------------------------------------------*/
   bool on_boundary() const 
-  { return ( marker_ != CONSTANTS.interior_edge_marker() ); }
+  { return ( marker_ != INTERIOR_EDGE_MARKER ); }
   bool is_interior() const
   { return !on_boundary(); }
 

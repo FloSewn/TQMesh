@@ -8,7 +8,6 @@
 #pragma once
 
 #include "VecND.h"
-#include "utils.h"
 #include "Geometry.h"
 
 #include "EdgeList.h"

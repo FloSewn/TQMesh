@@ -13,7 +13,7 @@
 
 #include "Domain.h"
 #include "Mesh.h"
-#include "FrontInitializer.h"
+#include "FrontInitData.h"
 #include "Front.h"
 
 namespace TQMesh {
@@ -27,7 +27,7 @@ using namespace CppUtils;
 * The initialization comprises the generation of boundary edges, 
 * whereas no internal edges, triangles or quads are constructed.
 *********************************************************************/
-class MeshInitializer
+class MeshBuilder
 {
 public:
   using MeshVector     = std::vector<Mesh*>;
@@ -39,8 +39,8 @@ public:
   /*------------------------------------------------------------------
   | Constructor / Destructor
   ------------------------------------------------------------------*/
-  MeshInitializer() = default;
-  virtual ~MeshInitializer() {}
+  MeshBuilder() = default;
+  virtual ~MeshBuilder() {}
 
   /*------------------------------------------------------------------
   | Getters
@@ -48,14 +48,20 @@ public:
   size_t n_meshes() const { return meshes_.size(); }
   size_t n_domains() const { return domains_.size(); }
 
+  const MeshVector& meshes() const { return meshes_; }
+  MeshVector& meshes() { return meshes_; }
+
+  const DomainVector& domains() const { return domains_; }
+  DomainVector& domains() { return domains_; }
+
   /*------------------------------------------------------------------
   | Create a new empty mesh entity, based on the extent of a given
   | domain
   ------------------------------------------------------------------*/
   static inline Mesh
   create_empty_mesh(Domain& domain, 
-                    int mesh_id=CONSTANTS.default_mesh_id(),
-                    int element_color=CONSTANTS.default_element_color())
+                    int mesh_id=DEFAULT_MESH_ID,
+                    int element_color=DEFAULT_ELEMENT_COLOR)
   { 
     return { mesh_id, element_color, 
              domain.vertices().quad_tree().scale(),
@@ -169,7 +175,7 @@ public:
       return false;
     }
 
-    if ( !MeshInitializer::check_domain_validity(domain) )
+    if ( !MeshBuilder::check_domain_validity(domain) )
     {
       LOG(ERROR) << "Failed mesh preparation: Invalid domain.";
       return false;
@@ -183,7 +189,7 @@ public:
       n_overlaps += domain.count_edge_overlaps( *domains_[i_domain] );
 
     // Get all edges that will define the advancing front
-    FrontInitializer front_data { domain, meshes_ };
+    FrontInitData front_data { domain, meshes_ };
 
     // Initialize edges in a temporary advancing front
     Front tmp_front {};
@@ -222,7 +228,7 @@ private:
   DomainVector domains_ {};
 
 
-}; // MeshInitializer
+}; // MeshBuilder
  
 
 } // namespace TQAlgorithm

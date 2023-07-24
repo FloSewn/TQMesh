@@ -17,10 +17,8 @@
 #include "VecND.h"
 #include "Geometry.h"
 
-#include "utils.h"
 #include "EdgeList.h"
 #include "Vertex.h"
-#include "Boundary.h"
 #include "Domain.h"
 
 namespace TQMesh {
@@ -70,16 +68,16 @@ public:
   | Initialize the advancing front structure according to a given 
   | domain and its size function
   ------------------------------------------------------------------*/
-  template <typename FrontInitializer>
-  void init_front(const Domain&            domain, 
-                  const FrontInitializer&  front_initializer,
-                  Vertices&                mesh_vertices)
+  template <typename FrontInitData>
+  void init_front(const Domain&        domain, 
+                  const FrontInitData& front_init_data,
+                  Vertices&            mesh_vertices)
   {
     for ( size_t i_bdry = 0; i_bdry < domain.size(); ++i_bdry )
     {
-      const EdgeVector& front_edges  = front_initializer.edges()[i_bdry];
-      const BoolVector& is_twin_edge = front_initializer.is_twin_edge()[i_bdry];
-      const IntVector&  markers      = front_initializer.markers()[i_bdry];
+      const EdgeVector& front_edges  = front_init_data.edges()[i_bdry];
+      const BoolVector& is_twin_edge = front_init_data.is_twin_edge()[i_bdry];
+      const IntVector&  markers      = front_init_data.markers()[i_bdry];
 
       VertexVector new_vertices 
         = this->init_mesh_vertices(front_edges, is_twin_edge, mesh_vertices);
@@ -104,7 +102,7 @@ public:
     ASSERT( edges_.size() == 0, 
       "Front::init_front(): Front has not been emptied.");
 
-    auto front_edges = mesh.get_invalid_edges();
+    auto front_edges = mesh.get_front_edges();
 
     for ( const auto& e_ptr : front_edges )
     {
@@ -366,8 +364,8 @@ private:
 
     // Compute point on abscissa where no new points 
     // will be generated
-    const double rho_b = dir ? rho_2 : rho_1;
-    const double s_end = 1.0 - 0.5 * MIN(1.0, rho_b / e.length());
+    const double rho_m = 0.5 * (rho_1 + rho_2);
+    const double s_end = 1.0 - 0.5 * MIN(1.0, rho_m / e.length());
 
     // Compute new vertex positions
     Vec2d xy { v_a.xy() };

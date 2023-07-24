@@ -7,14 +7,13 @@
 */
 #pragma once
 
+#include "ProgressBar.h"
+
 #include "Vertex.h"
 #include "Edge.h"
-#include "Facet.h"
-#include "Boundary.h"
 #include "Front.h"
 #include "Domain.h"
 #include "Mesh.h"
-#include "FrontInitializer.h"
 #include "FrontUpdate.h"
 
 namespace TQMesh {
@@ -73,7 +72,7 @@ protected:
   ------------------------------------------------------------------*/
   void remove_invalid_mesh_edges()
   {
-    auto invalid_mesh_edges = mesh_.get_invalid_edges();
+    auto invalid_mesh_edges = mesh_.get_front_edges();
     for ( auto& e_ptr : invalid_mesh_edges )
       mesh_.remove_interior_edge( *e_ptr );
   }

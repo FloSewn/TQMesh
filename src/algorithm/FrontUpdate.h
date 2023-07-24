@@ -11,7 +11,7 @@
 
 #include "Vertex.h"
 #include "Edge.h"
-#include "Facet.h"
+#include "Triangle.h"
 #include "Front.h"
 #include "Domain.h"
 #include "Mesh.h"

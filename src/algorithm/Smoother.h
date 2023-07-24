@@ -8,14 +8,10 @@
 #pragma once
 
 #include "VecND.h"
-#include "utils.h"
 #include "ProgressBar.h"
 
 #include "Vertex.h"
-#include "Triangle.h"
-#include "Quad.h"
 #include "Mesh.h"
-#include "Cleanup.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {

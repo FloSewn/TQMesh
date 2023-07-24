@@ -16,7 +16,7 @@ namespace CppUtils {
 /*********************************************************************
 * GLOBAL CONSTANTS
 *********************************************************************/
-constexpr double CPPUTILS_SMALL  = 1.0E-13; //DBL_EPSILON;
+constexpr double CPPUTILS_SMALL  = 1.0E-12; //DBL_EPSILON;
 constexpr double CPPUTILS_MAX    = DBL_MAX;
 constexpr double CPPUTILS_MIN    = DBL_MIN;
 

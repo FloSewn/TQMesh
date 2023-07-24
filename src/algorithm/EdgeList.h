@@ -112,7 +112,7 @@ public:
   | Boundary edges are assumed to be defined with a marker > 0
   ------------------------------------------------------------------*/
   virtual Edge& insert_edge(const_iterator pos, Vertex& v1, Vertex& v2, 
-                            int marker=CONSTANTS.interior_edge_marker())
+                            int marker=INTERIOR_EDGE_MARKER)
   {
     Edge& e = edges_.insert(pos, v1, v2, *this, marker);
     if ( orient_ != Orientation::NONE )
@@ -137,7 +137,7 @@ public:
   |   connected to more than two edges of this list type
   ------------------------------------------------------------------*/
   virtual Edge& add_edge(Vertex& v1, Vertex& v2, 
-                         int marker=CONSTANTS.interior_edge_marker())
+                         int marker=INTERIOR_EDGE_MARKER)
   { 
     if ( orient_ == Orientation::NONE || edges_.size() < 1 )
       return insert_edge( edges_.end(), v1, v2, marker ); 

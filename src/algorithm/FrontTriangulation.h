@@ -11,12 +11,8 @@
 
 #include "Vertex.h"
 #include "Edge.h"
-#include "Facet.h"
-#include "Boundary.h"
-#include "Front.h"
 #include "Domain.h"
 #include "Mesh.h"
-#include "FrontInitializer.h"
 #include "FrontAlgorithm.h"
 
 namespace TQMesh {

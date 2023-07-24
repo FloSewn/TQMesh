@@ -12,6 +12,7 @@
 #include <TQMeshConfig.h>
 
 #include "tests.h"
+#include "TestBuilder.h"
 
 #include "VecND.h"
 #include "Testing.h"
@@ -23,10 +24,9 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "Cleanup.h"
-#include "MeshInitializer.h"
+#include "MeshBuilder.h"
 #include "FrontTriangulation.h"
 #include "FrontQuadLayering.h"
-//#include "FrontPaving.h"
 #include "Smoother.h"
 
 namespace MeshTests 
@@ -221,10 +221,10 @@ void triangulate()
   b_ext.add_edge( v6, v1, 4 );
 
   // Create the mesh
-  MeshInitializer initializer {};
+  MeshBuilder mesh_builder {};
 
-  Mesh mesh = initializer.create_empty_mesh(domain);
-  initializer.prepare_mesh(mesh, domain);
+  Mesh mesh = mesh_builder.create_empty_mesh(domain);
+  mesh_builder.prepare_mesh(mesh, domain);
 
   FrontTriangulation triangulation {mesh, domain};
 
@@ -354,10 +354,10 @@ void quad_layer()
   b_ext.add_edge( v6, v1, 4 );
 
   // Create the mesh
-  MeshInitializer initializer {};
+  MeshBuilder mesh_builder {};
 
-  Mesh mesh = initializer.create_empty_mesh(domain);
-  initializer.prepare_mesh(mesh, domain);
+  Mesh mesh = mesh_builder.create_empty_mesh(domain);
+  mesh_builder.prepare_mesh(mesh, domain);
 
   FrontQuadLayering quadlayering {mesh, domain};
   quadlayering.n_layers( 4 );
@@ -416,10 +416,10 @@ void pave()
   b_ext.add_edge( v6, v1, 4 );
 
   // Create the mesh
-  MeshInitializer initializer {};
+  MeshBuilder mesh_builder {};
 
-  Mesh mesh = initializer.create_empty_mesh(domain);
-  initializer.prepare_mesh(mesh, domain);
+  Mesh mesh = mesh_builder.create_empty_mesh(domain);
+  mesh_builder.prepare_mesh(mesh, domain);
 
   FrontPaving paving {mesh, domain};
 
@@ -490,6 +490,143 @@ void pave()
 
 } // pave() */
 
+
+/*********************************************************************
+* Test Mesh::triangulate()
+*********************************************************************/
+void triangulate_UnitSquare()
+{
+  UserSizeFunction f = [](const Vec2d& p) { return 0.5; };
+   
+  TestBuilder test_builder { "UnitSquare", f};
+  Domain& domain = test_builder.domain();
+
+  // Create the mesh
+  MeshBuilder mesh_builder {};
+
+  Mesh mesh = mesh_builder.create_empty_mesh( domain );
+  mesh_builder.prepare_mesh(mesh, domain);
+
+  FrontTriangulation triangulation {mesh, domain};
+
+  CHECK( triangulation.generate_elements() );
+  CHECK( EQ(mesh.area(), domain.area()) );
+
+  // Export mesh
+  Cleanup::assign_size_function_to_vertices(mesh, domain);
+  Cleanup::assign_mesh_indices(mesh);
+  Cleanup::setup_vertex_connectivity(mesh);
+  Cleanup::setup_facet_connectivity(mesh);
+  LOG(DEBUG) << "\n" << mesh;
+
+} // triangulate_UnitSquare()
+
+/*********************************************************************
+* Test Mesh::triangulate()
+*********************************************************************/
+void triangulate_UnitCircle()
+{
+  UserSizeFunction f = [](const Vec2d& p) { return 0.5; };
+   
+  TestBuilder test_builder { "UnitCircle", f};
+  Domain& domain = test_builder.domain();
+
+  // Create the mesh
+  MeshBuilder mesh_builder {};
+
+  Mesh mesh = mesh_builder.create_empty_mesh( domain );
+  mesh_builder.prepare_mesh(mesh, domain);
+
+  FrontTriangulation triangulation {mesh, domain};
+
+  CHECK( triangulation.generate_elements() );
+  CHECK( EQ(mesh.area(), domain.area()) );
+
+  // Export mesh
+  Cleanup::assign_size_function_to_vertices(mesh, domain);
+  Cleanup::assign_mesh_indices(mesh);
+  Cleanup::setup_vertex_connectivity(mesh);
+  Cleanup::setup_facet_connectivity(mesh);
+  LOG(DEBUG) << "\n" << mesh;
+
+} // triangulate_UnitCircle()
+
+/*********************************************************************
+* Test Mesh::triangulate()
+*********************************************************************/
+void triangulate_RefinedTriangle()
+{
+  UserSizeFunction f = [](const Vec2d& p) { return 0.5; };
+   
+  TestBuilder test_builder { "RefinedTriangle", f};
+  Domain& domain = test_builder.domain();
+
+  // Create the mesh
+  MeshBuilder mesh_builder {};
+
+  Mesh mesh = mesh_builder.create_empty_mesh( domain );
+  mesh_builder.prepare_mesh(mesh, domain);
+
+  FrontTriangulation triangulation {mesh, domain};
+
+  CHECK( triangulation.generate_elements() );
+  CHECK( EQ(mesh.area(), domain.area()) );
+
+  // Export mesh
+  Cleanup::assign_size_function_to_vertices(mesh, domain);
+  Cleanup::assign_mesh_indices(mesh);
+  Cleanup::setup_vertex_connectivity(mesh);
+  Cleanup::setup_facet_connectivity(mesh);
+  LOG(DEBUG) << "\n" << mesh;
+
+} // triangulate_RefinedTriangle()
+
+
+/*********************************************************************
+* Test Mesh::triangulate()
+*********************************************************************/
+void triangulate_standard_tests(const std::string& test_name)
+{
+  UserSizeFunction f = [](const Vec2d& p) { return 0.5; };
+   
+  TestBuilder test_builder { test_name, f};
+  Domain& domain = test_builder.domain();
+
+  // Create the mesh
+  MeshBuilder mesh_builder {};
+
+  Mesh mesh = mesh_builder.create_empty_mesh( domain );
+  mesh_builder.prepare_mesh(mesh, domain);
+
+  FrontTriangulation triangulation {mesh, domain};
+
+  bool success = true;
+
+  success &= triangulation.generate_elements();
+  CHECK( success );
+
+  success &= EQ(mesh.area(), domain.area());
+  CHECK( success );
+
+  if ( !success )
+    LOG(ERROR) << "triangulate_" << test_name;
+
+  // Export mesh
+  Cleanup::assign_size_function_to_vertices(mesh, domain);
+  Cleanup::assign_mesh_indices(mesh);
+
+  if ( success )
+  {
+    Cleanup::setup_vertex_connectivity(mesh);
+    Cleanup::setup_facet_connectivity(mesh);
+  }
+
+  LOG(DEBUG) << "\n" << mesh;
+
+} // triangulate_standard_tests()
+
+
+
 } // namespace MeshTests
 
 
@@ -513,6 +650,19 @@ void run_tests_Mesh()
   adjust_logging_output_stream("MeshTests.quad_layer.log");
   MeshTests::quad_layer();
 
+
+  std::vector<std::string> standard_tests {
+    "UnitSquare", "UnitCircle", "RefinedTriangle", 
+    "FixedVertices", "TriangleSquareCircle",
+    //"LakeSuperior",
+  };
+
+  for ( auto test_name : standard_tests )
+  {
+    adjust_logging_output_stream("MeshTests.triangulate_" + test_name + ".log");
+    MeshTests::triangulate_standard_tests(test_name);
+  }
+  
   //adjust_logging_output_stream("MeshTests.pave.log");
   //MeshTests::pave();
 

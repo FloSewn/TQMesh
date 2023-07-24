@@ -7,11 +7,6 @@
 */
 #pragma once
 
-#include "VecND.h"
-#include "Geometry.h"
-#include "Container.h"
-#include "utils.h"
-
 #include "Vertex.h"
 #include "Facet.h"
 

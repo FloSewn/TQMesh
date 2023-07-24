@@ -24,10 +24,12 @@ class TQMesh:
     def get_extent(self):
         ''' Return the mesh extents
         '''
-        xy_max = np.max( self.vertices )
-        xy_min = np.min( self.vertices )
+        x_max = np.max( self.vertices[:,0] )
+        x_min = np.min( self.vertices[:,0] )
+        y_max = np.max( self.vertices[:,1] )
+        y_min = np.min( self.vertices[:,1] )
 
-        return (xy_min, xy_max)
+        return (x_min, x_max, y_min, y_max)
 
     def get_element_colors(self):
         ''' Returns an array of all unique element color IDs
@@ -414,12 +416,14 @@ def main():
         ax.add_collection( qtree_collection )
 
 
-    xy_min, xy_max = [], []
+    x_min, x_max, y_min, y_max = [], [], [], []
 
     for i, mesh in enumerate(meshes):
-        xy_min_i, xy_max_i = mesh.get_extent()
-        xy_min.append( xy_min_i )
-        xy_max.append( xy_max_i )
+        x_min_i, x_max_i, y_min_i, y_max_i = mesh.get_extent()
+        x_min.append( x_min_i )
+        x_max.append( x_max_i )
+        y_min.append( y_min_i )
+        y_max.append( y_max_i )
 
         if '-v' in sys.argv:
             mesh.plot_vertices(ax, indices=True)
@@ -437,11 +441,13 @@ def main():
         mesh.plot_quads(ax, element_colors, '-e' in sys.argv)
 
 
-    xy_min = np.min(np.vstack( xy_min ).T)
-    xy_max = np.max(np.vstack( xy_max ).T)
+    x_min = np.min(np.vstack( x_min ).T)
+    x_max = np.max(np.vstack( x_max ).T)
+    y_min = np.min(np.vstack( y_min ).T)
+    y_max = np.max(np.vstack( y_max ).T)
 
-    ax.set_xlim( (xy_min,xy_max))
-    ax.set_ylim( (xy_min,xy_max))
+    ax.set_xlim( (x_min,x_max))
+    ax.set_ylim( (y_min,y_max))
 
     ax.set_axis_off()
     ax.set_aspect('equal')

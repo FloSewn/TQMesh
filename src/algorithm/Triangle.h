@@ -317,10 +317,9 @@ private:
   VertexArray          vertices_;
   FacetArray           facets_;
 
-  int                  color_           {CONSTANTS.default_element_color()};
+  int                  color_           {DEFAULT_ELEMENT_COLOR};
   int                  index_           {-1};
   bool                 active_          {false};
-  //bool                 marker_          {false};
 
   Mesh*                mesh_            {nullptr};
 
