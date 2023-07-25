@@ -89,7 +89,8 @@ void initialization()
   outer_interior_bdry.add_edge( v8, v5, interior_edge_marker );
 
   // Setup the generator
-  //MeshGenerator mesh_generator { outer_domain };
+  MeshGenerator generator {};
+  generator.define_mesh( outer_domain );
     
     
 } // initialization()
@@ -135,17 +136,13 @@ void mesh_initializer()
   bdry_2.add_edge( v3_2, v4_2, edge_marker );
   bdry_2.add_edge( v4_2, v1_2, edge_marker );
 
-  MeshBuilder mesh_builder {};
 
-  Mesh mesh_2 = mesh_builder.create_empty_mesh(domain_2);
-  mesh_builder.prepare_mesh(mesh_2, domain_2);
-  mesh_builder.add_mesh_and_domain(mesh_2, domain_2);
-  Cleanup::assign_size_function_to_vertices(mesh_2, domain_2);
-  Cleanup::assign_mesh_indices(mesh_2);
+  // Setup the generator
+  MeshGenerator generator {};
+  generator.define_mesh( domain_1 );
+  generator.define_mesh( domain_2 );
 
-  Mesh mesh_1 = mesh_builder.create_empty_mesh(domain_1);
-  mesh_builder.prepare_mesh(mesh_1, domain_1);
-  mesh_builder.add_mesh_and_domain(mesh_1, domain_1);
+  Mesh& mesh_1 = generator.mesh(0);
   Cleanup::assign_size_function_to_vertices(mesh_1, domain_1);
   Cleanup::assign_mesh_indices(mesh_1);
 

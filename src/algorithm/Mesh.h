@@ -52,6 +52,20 @@ public:
   { }
 
   /*------------------------------------------------------------------
+  | Move constructor
+  ------------------------------------------------------------------*/
+  Mesh(Mesh&& mesh)
+  : mesh_id_    { mesh.mesh_id_ }
+  , elem_color_ { mesh.elem_color_ }
+  , mesh_area_  { mesh.mesh_area_ }
+  , verts_      { std::move( mesh.verts_      )}
+  , quads_      { std::move( mesh.quads_      )}
+  , tris_       { std::move( mesh.tris_       )}
+  , intr_edges_ { std::move( mesh.intr_edges_ )}
+  , bdry_edges_ { std::move( mesh.bdry_edges_ )}
+  {}
+
+  /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
   friend std::ostream& operator<<(std::ostream& os, const Mesh& mesh);
@@ -67,7 +81,6 @@ public:
   double area()             const { return mesh_area_; }
   int    id()               const { return mesh_id_; }
   int    element_color()    const { return elem_color_; }
-  bool   completed()        const { return mesh_completed_; }
   size_t n_vertices()       const { return verts_.size(); }
   size_t n_quads()          const { return quads_.size(); }
   size_t n_triangles()      const { return tris_.size(); }
@@ -346,7 +359,6 @@ private:
   ------------------------------------------------------------------*/
   int        mesh_id_        { 0 };
   int        elem_color_     { DEFAULT_ELEMENT_COLOR };
-  bool       mesh_completed_ { false };
   double     mesh_area_      { 0.0 };
 
   Vertices   verts_;

@@ -59,15 +59,15 @@ public:
   | Copy constructor
   ------------------------------------------------------------------*/
   Container(const Container<T>& c) 
-  : qtree_ { c.qtree().scale(),
-             c.qtree().max_items(),
-             c.qtree().max_depth() }  
+  : qtree_ { c.quad_tree().scale(),
+             c.quad_tree().max_items(),
+             c.quad_tree().max_depth() }  
   {
     // Copy the list items
     for (auto& obj : c)
     {
-      const Vec2d& xy = obj->xy();
-      push_back( xy.x, xy.y, obj->sizing() );
+      //const Vec2d& xy = obj->xy();
+      //push_back( xy.x, xy.y, obj->sizing() );
     }
 
     // Copy the waste items

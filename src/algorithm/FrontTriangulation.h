@@ -66,7 +66,7 @@ public:
       return false;
 
     // Prepare the mesh  
-    //Cleanup::setup_facet_connectivity(mesh_);
+    Cleanup::setup_facet_connectivity(mesh_);
 
     // Initialize the advancing front and its base edge
     Edge* base_edge = init_advancing_front();
@@ -78,7 +78,7 @@ public:
     bool success = advancing_front_loop(base_edge, n_elements_);
 
     // Finish mesh structure for output
-    finish_mesh_for_output();
+    add_remaining_front_edges_to_mesh();
 
     // Remove remaining edges from the front
     front_.clear_edges();
