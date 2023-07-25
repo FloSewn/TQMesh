@@ -66,7 +66,7 @@ public:
       return false;
 
     // Prepare the mesh  
-    Cleanup::setup_facet_connectivity(mesh_);
+    //Cleanup::setup_facet_connectivity(mesh_);
 
     // Initialize the advancing front and its base edge
     Edge* base_edge = init_advancing_front();

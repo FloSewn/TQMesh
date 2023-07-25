@@ -395,6 +395,73 @@ public:
   } // get_closest_vertex()
 
 
+  /*------------------------------------------------------------------
+  | Check if two edges of this edgelist intersect
+  ------------------------------------------------------------------*/
+  bool intersects_self(void) const
+  {
+    for ( const auto& e_ptr : edges_ )
+    {
+      Edge* e_prev = e_ptr->get_prev_edge();
+      Edge* e_next = e_ptr->get_next_edge();
+
+      const Vec2d& xy_1 = e_ptr->v1().xy();
+      const Vec2d& xy_2 = e_ptr->v2().xy();
+
+      const Vec2d ll = { MIN(xy_1.x, xy_2.x), MIN(xy_1.y, xy_2.y) };
+      const Vec2d ur = { MAX(xy_1.x, xy_2.x), MAX(xy_1.y, xy_2.y) };
+
+      auto found_edges = edges_.get_items(ll, ur);
+
+      for ( const auto& e_found : found_edges )
+      {
+        if ( e_found == e_ptr.get()) continue;
+        if ( e_found == e_prev) continue;
+        if ( e_found == e_next) continue;
+
+        const Vec2d& xy_1_e = e_found->v1().xy();
+        const Vec2d& xy_2_e = e_found->v2().xy();
+
+        if ( line_line_intersection(xy_1, xy_2, xy_1_e, xy_2_e) ) 
+          return true;
+      }
+    }
+
+    return false;
+
+  } // intersects_itself()
+
+  /*------------------------------------------------------------------
+  | Check if an edge this edgelist intersects with an edge of another
+  | edgelist
+  ------------------------------------------------------------------*/
+  bool intersects_edgelist(const EdgeList& edge_list) const
+  {
+    for ( const auto& e_ptr : edges_ )
+    {
+      const Vec2d& xy_1 = e_ptr->v1().xy();
+      const Vec2d& xy_2 = e_ptr->v2().xy();
+
+      const Vec2d ll = { MIN(xy_1.x, xy_2.x), MIN(xy_1.y, xy_2.y) };
+      const Vec2d ur = { MAX(xy_1.x, xy_2.x), MAX(xy_1.y, xy_2.y) };
+
+      auto found_edges = edge_list.edges().get_items(ll, ur);
+
+      for ( const auto& e_found : found_edges )
+      {
+        const Vec2d& xy_1_e = e_found->v1().xy();
+        const Vec2d& xy_2_e = e_found->v2().xy();
+
+        if ( line_line_intersection(xy_1, xy_2, xy_1_e, xy_2_e) ) 
+          return true;
+      }
+    }
+
+    return false;
+
+  } // intersects_edgelist()
+
+
 protected:
   /*------------------------------------------------------------------
   | Search for an edge that is part of this edgelist and which 

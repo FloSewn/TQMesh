@@ -11,6 +11,7 @@ add_executable( ${TESTS}
   tests_Smoother.cpp
   tests_Mesh.cpp
   tests_MeshGenerator.cpp
+  tests_Cleanup.cpp
   tests.cpp
   main.cpp
 )

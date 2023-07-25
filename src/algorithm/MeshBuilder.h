@@ -15,6 +15,7 @@
 #include "Mesh.h"
 #include "FrontInitData.h"
 #include "Front.h"
+#include "EntityChecks.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -103,60 +104,6 @@ public:
 
   } // remove_mesh_and_domain()
 
-
-  /*------------------------------------------------------------------
-  | Check if the provided domain is valid for the mesh generation
-  ------------------------------------------------------------------*/
-  static inline bool check_domain_validity(const Domain& domain) 
-  {
-    // Check if boundaries are defined 
-    if ( domain.size() < 1 )
-    {
-      LOG(ERROR) << 
-      "Can not initialize the mesh's advancing front, "
-      "since no domain boundaries are defined.";
-      return false;
-    }
-
-    // Check if an exterior boundary exists
-    bool extr_bdry_found = false;
-
-    for ( const auto& boundary : domain )
-    {
-      if ( boundary->is_exterior() )
-      {
-        extr_bdry_found = true;
-        break;
-      }
-    }
-
-    if ( !extr_bdry_found )
-    {
-      LOG(ERROR) << 
-      "Can not initialize advancing front. "
-      "No exterior mesh boundary found.";
-      return false;
-    }
-
-    // Check if domain boundaries are traversable
-    for ( const auto& boundary : domain )
-    {
-      Edge& e_start = boundary->edges()[0];
-
-      if ( !boundary->is_traversable(e_start, e_start) )
-      {
-        LOG(ERROR) << 
-        "Can not initialize advancing front. "
-        "Mesh boundaries are not traversable.";
-        return false;
-      }
-    }
-
-    return true;
-
-  } // check_domain_validity()
-
-
   /*------------------------------------------------------------------
   | Prepare a given mesh entity for the advancing front triangulation.
   | The given mesh entity must be empty.
@@ -169,31 +116,44 @@ public:
   ------------------------------------------------------------------*/
   bool prepare_mesh(Mesh& mesh, Domain& domain)
   {
+    // We require an empty mesh
     if ( !mesh.is_empty() )
     {
       LOG(ERROR) << "Failed mesh preparation: Mesh not empty.";
       return false;
     }
 
-    if ( !MeshBuilder::check_domain_validity(domain) )
+    // Check if the domain is valid for the mesh generation
+    if ( !EntityChecks::check_domain_validity(domain) )
     {
       LOG(ERROR) << "Failed mesh preparation: Invalid domain.";
       return false;
     }
 
-    // Count the number of boundary edge overlaps between the current
-    // domain and all domains that are already treated by the meshing 
-    // algorithm structure
-    size_t n_overlaps = 0;
-    for (size_t i_domain = 0; i_domain < n_domains(); ++i_domain)
-      n_overlaps += domain.count_edge_overlaps( *domains_[i_domain] );
-
     // Get all edges that will define the advancing front
+    // Here, we also consider other meshes that have been defined with 
+    // this mesh builder, in order to maintain vertex-adjacency
     FrontInitData front_data { domain, meshes_ };
 
     // Initialize edges in a temporary advancing front
     Front tmp_front {};
     tmp_front.init_front(domain, front_data, mesh.vertices());
+
+    // Check if the initial advancing front is valid
+    if ( !EntityChecks::check_front_validity( tmp_front ) )
+    {
+      LOG(ERROR) << "Failed mesh preparation: Invalid advancing front.";
+
+      // Remove all previously generated vertices
+      for ( auto& v_ptr : mesh.vertices() )
+        mesh.remove_vertex( *v_ptr );
+      mesh.clear_waste();
+      
+      ASSERT( mesh.is_empty(), 
+        "Failed to get mesh back into initial state.");
+
+      return false;
+    }
 
     // Setup the mesh's boundary edges from the initial advancing front
     for ( auto& e : tmp_front )

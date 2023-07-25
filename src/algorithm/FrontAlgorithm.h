@@ -84,10 +84,6 @@ protected:
   ------------------------------------------------------------------*/
   void finish_mesh_for_output()
   {
-    // Setup mesh connectivity
-    Cleanup::setup_vertex_connectivity(mesh_);
-    Cleanup::setup_facet_connectivity(mesh_);
-
     // Add remaining front edges to the mesh 
     for ( auto& e_ptr : front_.edges() )
     {
@@ -102,6 +98,10 @@ protected:
 
       mesh_.add_interior_edge(e_ptr->v1(), e_ptr->v2());
     }
+    
+    // Setup mesh connectivity
+    Cleanup::setup_vertex_connectivity(mesh_);
+    Cleanup::setup_facet_connectivity(mesh_);
   }
 
   /*------------------------------------------------------------------

@@ -30,6 +30,8 @@ class Cleanup
 {
 public:
 
+  using VertexList = std::list<Vertex*>;
+
   /*------------------------------------------------------------------
   | Adjust the coordinate of a given vertex, while accounting for
   | the entire underlying mesh structure
@@ -44,70 +46,6 @@ public:
     for ( auto& f : v.facets() )
       f->update_metrics();
   } 
-
-  /*------------------------------------------------------------------
-  | Check the facet-vertex-edge connectivtiy of a given mesh
-  ------------------------------------------------------------------*/
-  template <typename Mesh>
-  static inline bool check_mesh_validity(Mesh& mesh)
-  { 
-    // Check connectivity for interior edges
-    for ( const auto& e_ptr : mesh.interior_edges() )
-    {
-      const Vertex& v1 = e_ptr->v1();
-      const Vertex& v2 = e_ptr->v2();
-
-      bool check_1 = false; bool check_2 = false;
-
-      // Traverse adjacents facets of both vertices 
-      // and search for the current interior edge
-      for ( auto f : v1.facets() )
-      {
-        check_1 = ( f->get_edge_index(v1, v2) >= 0 );
-        if (check_1) break;
-      }
-
-      for ( auto f : v2.facets() )
-      {
-        check_2 = ( f->get_edge_index(v1, v2) >= 0 );
-        if (check_2) break;
-      }
-
-      // Edge was not found 
-      if (!check_1 || !check_2) 
-        return false;
-    }
-
-    // Check connectivity for boundary edges
-    for ( const auto& e_ptr : mesh.boundary_edges() )
-    {
-      const Vertex& v1 = e_ptr->v1();
-      const Vertex& v2 = e_ptr->v2();
-
-      bool check_1 = false; bool check_2 = false;
-
-      // Traverse adjacents facets of both vertices 
-      // and search for the current interior edge
-      for ( auto f : v1.facets() )
-      {
-        check_1 = ( f->get_edge_index(v1, v2) >= 0 );
-        if (check_1) break;
-      }
-
-      for ( auto f : v2.facets() )
-      {
-        check_2 = ( f->get_edge_index(v1, v2) >= 0 );
-        if (check_2) break;
-      }
-
-      // Edge was not found 
-      if (!check_1 || !check_2) 
-        return false;
-    }
-
-    return true;
-
-  } // Cleanup::check_mesh_validity()
 
 
   /*------------------------------------------------------------------
@@ -692,8 +630,113 @@ public:
 
   } // Cleanup::clear_double_triangle_edges()
 
+  /*------------------------------------------------------------------
+  | This function locates vertices that are adjacent to exactly 
+  | three triangles of same color and merges them to a single one
+  |           x                       x
+  |          /|\                     / \
+  |         / | \                   /   \
+  |        /  x  \     ----->      /     \
+  |       /  / \  \               /       \
+  |      / /     \ \             /         \
+  |     //         \\           /           \
+  |    x-------------x         x-------------x
+  |
+  ------------------------------------------------------------------*/
+  template <typename Mesh>
+  static inline void merge_degenerate_triangles(Mesh& mesh, bool init=true)
+  {
+    // Collect all vertices, that are adjacent to exactly three 
+    // triangles
+    VertexList bad_vertices {};
+
+    for ( const auto& vertex_ptr : mesh.vertices() )
+    {
+      if ( vertex_ptr->facets().size() != 3 )
+        continue;
+      if ( vertex_ptr->edges().size() != 3 )
+        continue;
+      if ( vertex_ptr->facets(0).n_vertices() != 3 )
+        continue;
+      if ( vertex_ptr->facets(1).n_vertices() != 3 )
+        continue;
+      if ( vertex_ptr->facets(2).n_vertices() != 3 )
+        continue;
+
+      auto color = vertex_ptr->facets(0).color();
+
+      if ( vertex_ptr->facets(1).color() != color )
+        continue;
+      if ( vertex_ptr->facets(2).color() != color )
+        continue;
+
+      bad_vertices.push_back( vertex_ptr.get() );
+    }
 
 
+
+    for ( auto& bad_vertex : bad_vertices )
+    {
+      const Triangle* t0 = static_cast<const Triangle*>(
+          &bad_vertex->facets(0));
+
+      const Triangle* t1 = static_cast<const Triangle*>(
+          &bad_vertex->facets(1));
+
+      const Triangle* t2 = static_cast<const Triangle*>(
+          &bad_vertex->facets(2));
+
+      auto color = t0->color();
+
+      // Get surrounding vertices
+      int i0 = t0->get_vertex_index( *bad_vertex );
+      int i1 = t1->get_vertex_index( *bad_vertex );
+      int i2 = t2->get_vertex_index( *bad_vertex );
+
+      Vertex& v0 = const_cast<Vertex&>( t0->vertex(MOD(i0+1,3)) );
+      Vertex& v1 = const_cast<Vertex&>( t1->vertex(MOD(i1+1,3)) );
+      Vertex& v2 = const_cast<Vertex&>( t2->vertex(MOD(i2+1,3)) );
+
+      // Remove interior edges 
+      Edge* e0 = mesh.interior_edges().get_edge(*bad_vertex, v0);
+      Edge* e1 = mesh.interior_edges().get_edge(*bad_vertex, v1);
+      Edge* e2 = mesh.interior_edges().get_edge(*bad_vertex, v2);
+
+      ASSERT( e0, "Interior edge not defined.\n" );
+      mesh.remove_interior_edge( *e0 );
+
+      ASSERT( e1, "Interior edge not defined.\n" );
+      mesh.remove_interior_edge( *e1 );
+
+      ASSERT( e2, "Interior edge not defined.\n" );
+      mesh.remove_interior_edge( *e2 );
+
+      // Remove triangles
+      mesh.remove_triangle(const_cast<Triangle&>(*t0));
+      mesh.remove_triangle(const_cast<Triangle&>(*t1));
+      mesh.remove_triangle(const_cast<Triangle&>(*t2));
+
+      // Remove vertex
+      mesh.remove_vertex( *bad_vertex );
+
+      // Add new triangle
+      auto o = orientation(v0.xy(), v1.xy(), v2.xy());
+
+      if ( o == Orientation::CCW ) 
+        mesh.add_triangle( v0, v1, v2, color );
+      else
+        mesh.add_triangle( v0, v2, v1, color );
+    }
+
+    // Remove deleted entities
+    mesh.clear_waste();
+
+    // Re-initialize facet-to-facet connectivity
+    Cleanup::assign_mesh_indices(mesh);
+    Cleanup::setup_vertex_connectivity(mesh);
+    Cleanup::setup_facet_connectivity(mesh);
+   
+  } // merge_degenerate_triangles()
 
 private:
   /*------------------------------------------------------------------
@@ -702,8 +745,6 @@ private:
   ------------------------------------------------------------------*/
   Cleanup() = default;
   ~Cleanup() {};
-
-
 
 }; // Cleanup
 

@@ -90,6 +90,11 @@ int run_tests(const std::string& test_case)
     LOG(INFO) << "  Running tests for \"MeshGenerator\" class...";
     run_tests_MeshGenerator();
   }
+  else if ( !test_case.compare("Cleanup") )
+  {
+    LOG(INFO) << "  Running tests for \"Cleanup\" class...";
+    run_tests_Cleanup();
+  }
   else
   {
     LOG(INFO) << "";

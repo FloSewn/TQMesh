@@ -34,3 +34,4 @@ void run_tests_SizeFunction();
 void run_tests_Smoother();
 void run_tests_Mesh();
 void run_tests_MeshGenerator();
+void run_tests_Cleanup();
