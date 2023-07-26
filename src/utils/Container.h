@@ -146,7 +146,8 @@ public:
     if (!in_qtree)
     {
       LOG(ERROR) << 
-        "Failed to add element to the quad tree. "
+        "Failed to add element at location " << ptr->xy() << 
+        " to the quad tree. "
         "Maybe the element is outside of the defined domain.";
     }
     

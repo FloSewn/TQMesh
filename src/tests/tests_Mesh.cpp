@@ -24,6 +24,7 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "Cleanup.h"
+#include "Refinement.h"
 #include "MeshBuilder.h"
 #include "FrontTriangulation.h"
 #include "FrontQuadLayering.h"
@@ -261,6 +262,81 @@ void quad_layer()
 
 } // quad_layer()
 
+
+/*********************************************************************
+* Test refinement to quads
+*********************************************************************/
+void refine_to_quads()
+{
+  // Define a variable size function
+  UserSizeFunction f = [](const Vec2d& p) 
+  { return 0.3; };
+
+  double quadtree_scale = 50.0;
+  Domain domain   { f, quadtree_scale };
+
+  Boundary&  b_ext = domain.add_exterior_boundary();
+
+  // Build exterior boundary
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0 );
+  Vertex& v3 = domain.add_vertex(  5.0,  5.0 );
+  Vertex& v4 = domain.add_vertex( 10.0,  5.0, 0.1, 0.1 );
+  Vertex& v5 = domain.add_vertex( 10.0, 10.0 );
+  Vertex& v6 = domain.add_vertex(  0.0,  5.0 );
+
+  b_ext.add_edge( v1, v2, 1 );
+  b_ext.add_edge( v2, v3, 2 );
+  b_ext.add_edge( v3, v4, 2 );
+  b_ext.add_edge( v4, v5, 3 );
+  b_ext.add_edge( v5, v6, 4 );
+  b_ext.add_edge( v6, v1, 4 );
+
+  // Create the mesh
+  MeshBuilder mesh_builder {};
+
+  Mesh mesh = mesh_builder.create_empty_mesh(domain);
+  CHECK( mesh_builder.prepare_mesh(mesh, domain) );
+
+  // Create quad layers
+  FrontQuadLayering quadlayering {mesh, domain};
+  quadlayering.n_layers( 3 );
+  quadlayering.first_height( 0.35 );
+  quadlayering.growth_rate( 1.0 );
+  quadlayering.starting_position( 0.0, 2.5 );
+  quadlayering.ending_position( 7.5, 5.0 );
+
+  CHECK( quadlayering.generate_elements() );
+
+  // Refinement
+  Refinement::refine_to_quads(mesh);
+
+  // Create triangulation
+  FrontTriangulation triangulation {mesh, domain};
+  triangulation.n_elements(0);
+
+  CHECK( triangulation.generate_elements() );
+
+  Cleanup::clear_double_quad_edges(mesh);
+  Cleanup::clear_double_triangle_edges(mesh);
+  Cleanup::merge_degenerate_triangles(mesh);
+
+  // Refinement
+  Refinement::refine_to_quads(mesh);
+
+  // Smooth grid
+  Smoother smoother {};
+  smoother.smooth(domain, mesh, 2);
+
+  // Export mesh
+  Cleanup::assign_size_function_to_vertices(mesh, domain);
+  Cleanup::assign_mesh_indices(mesh);
+  Cleanup::setup_vertex_connectivity(mesh);
+  Cleanup::setup_facet_connectivity(mesh);
+  LOG(DEBUG) << "\n" << mesh;
+
+} // refine_to_quads()
+
 /*********************************************************************
 * Test Mesh::pave()
 *********************************************************************
@@ -379,11 +455,11 @@ void run_tests_Mesh()
   adjust_logging_output_stream("MeshTests.triangulate.log");
   MeshTests::triangulate();
   
-  //adjust_logging_output_stream("MeshTests.pave.log");
-  //MeshTests::pave();
-
   adjust_logging_output_stream("MeshTests.quad_layer.log");
   MeshTests::quad_layer();
+
+  adjust_logging_output_stream("MeshTests.refine_to_quads.log");
+  MeshTests::refine_to_quads();
 
   std::vector<std::string> standard_tests {
     "UnitSquare", "UnitCircle", "RefinedTriangle", 
