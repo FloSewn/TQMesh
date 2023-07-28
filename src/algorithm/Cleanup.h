@@ -13,6 +13,7 @@
 #include "VecND.h"
 
 #include "Vertex.h"
+#include "Edge.h"
 #include "Triangle.h"
 #include "Quad.h"
 #include "NullFacet.h"
@@ -31,6 +32,7 @@ class Cleanup
 public:
 
   using VertexList = std::list<Vertex*>;
+  using EdgeList   = std::list<Edge*>;
 
   /*------------------------------------------------------------------
   | Adjust the coordinate of a given vertex, while accounting for
@@ -737,6 +739,126 @@ public:
     Cleanup::setup_facet_connectivity(mesh);
    
   } // merge_degenerate_triangles()
+
+  /*------------------------------------------------------------------
+  | This function loops over all internal edges and, if possible,
+  | merges two adjacent triangles to one quad element.
+  ------------------------------------------------------------------*/
+  template <typename Mesh>
+  static inline void merge_triangles_to_quads(Mesh& mesh, bool init=true)
+  {
+    if (init)
+      Cleanup::setup_facet_connectivity(mesh);
+
+    // Pick all internal edges, which are adjacent to two triangles
+    EdgeList tri_edges {};
+
+    for ( const auto& e_ptr : mesh.interior_edges() )
+    {
+      Facet* f_l = e_ptr->facet_l();
+      Facet* f_r = e_ptr->facet_r();
+
+      if (  ( NullFacet::is_not_null(f_l) && f_l->n_vertices() == 3 )
+         && ( NullFacet::is_not_null(f_r) && f_r->n_vertices() == 3 ) )
+        tri_edges.push_back( e_ptr.get() );
+    }
+
+    // Sort edge list with increasing minimum edge length of their
+    // adjacent triangles
+    tri_edges.sort(
+    []( Edge* a, Edge* b )
+    {
+      const double a_l = a->facet_l()->min_edge_length();
+      const double a_r = a->facet_r()->min_edge_length();
+      const double a_ang = MIN(a_l, a_r);
+
+      const double b_l = b->facet_l()->min_edge_length();
+      const double b_r = b->facet_r()->min_edge_length();
+      const double b_ang = MIN(b_l, b_r);
+
+      return a_ang < b_ang;
+    });
+
+    // Loop over all sorted edges and merge their adjacent triangles
+    // to quadrilaterals. It may be, that the triangle of an 
+    // upcoming edge has already been merged in this process. Thus
+    // we have to make sure, that the triangles to merge still
+    // exist.
+    //
+    //   v2               q_r
+    //     *-------------*
+    //     | \           |
+    //     |   \   f_r   |
+    //     |     \       |
+    //     |       \     |
+    //     |  f_l    \   |
+    //     |           \ |
+    //     *-------------*
+    //    q_l             v1
+    //
+    for ( auto& e : tri_edges )
+    {
+      Facet* f_l = e->facet_l();
+      Facet* f_r = e->facet_r();
+
+      // Triangles have already been merged with prior edge
+      if ( f_l->n_vertices() > 3 || f_r->n_vertices() > 3 ) 
+        continue;
+
+      Vertex& v1 = e->v1();
+      Vertex& v2 = e->v2();
+
+      int i_l = f_l->get_edge_index(v1, v2);
+      int i_r = f_r->get_edge_index(v1, v2);
+
+      Vertex& q_l = f_l->vertex(i_l);
+      Vertex& q_r = f_r->vertex(i_r);
+
+      // Remove internal edge
+      mesh.remove_interior_edge( *e );
+
+      // Create new quadrilateral element
+      Quad& q_new = mesh.add_quad( q_l, v1, q_r, v2 );
+      q_new.is_active( true );
+
+      // Update internal edge connectivity to prevent bad memory 
+      // access for upcoming internal edges that are no longer 
+      // adjacent to two triangles due to the merge
+      for (int i = 0; i < 4; ++i)
+      {
+        int i1 = i;
+        int i2 = MOD(i+1, 4);
+
+        Vertex& q1 = q_new.vertex(i1);
+        Vertex& q2 = q_new.vertex(i2);
+
+        Edge* e_share = mesh.interior_edges().get_edge(q1,q2);
+
+        // Boundary edge found
+        if ( e_share == nullptr ) 
+          continue;
+
+        if (is_left(e_share->v1().xy(), e_share->v2().xy(), q_new.xy()))
+          e_share->facet_l( &q_new );
+        else
+          e_share->facet_r( &q_new );
+      }
+
+      // Remove triangles
+      mesh.remove_triangle( *(static_cast<Triangle*>(f_l)) );
+      mesh.remove_triangle( *(static_cast<Triangle*>(f_r)) );
+    }
+
+    // Remove deleted entities
+    mesh.clear_waste();
+
+    // Bad elements may have been created up to this point
+    // due to the merging of triangles to quads
+    // The two upcoming function fix these bad elements
+    Cleanup::clear_double_quad_edges(mesh, true);
+    Cleanup::clear_double_triangle_edges(mesh, false);
+
+  } // merge_triangles_to_quads()
 
 private:
   /*------------------------------------------------------------------

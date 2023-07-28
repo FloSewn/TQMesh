@@ -42,8 +42,10 @@ class Facet
   // virtual bool          is_active() const = 0;
   // virtual bool          marker() const = 0;
   // virtual double        area() const = 0;
-  // virtual double        min_angle() const = 0;
-  // virtual double        max_angle() const = 0;
+  virtual double        min_angle() const = 0;
+  virtual double        max_angle() const = 0;
+  virtual double        min_edge_length() const = 0;
+  virtual double        max_edge_length() const = 0;
 
 
   /*------------------------------------------------------------------

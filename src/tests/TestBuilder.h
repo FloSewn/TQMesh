@@ -49,6 +49,10 @@ public:
       init_FixedVertices();
     else if ( testcase == "LakeSuperior" )
       init_LakeSuperior();
+    else if ( testcase == "SharpStepAndSharpEdge" )
+      init_SharpStepAndSharpEdge();
+    else if ( testcase == "NormalStepAndSharpEdge" )
+      init_NormalStepAndSharpEdge();
     else
       TERMINATE("TestBuilder(): No valid test case defined.");
 
@@ -241,10 +245,58 @@ private:
       b_ext.add_edge( v0, v1, 1 );
     }
 
-
-
-
   } // TestBuilder::init_LakeSuperior()
+
+
+  /*------------------------------------------------------------------
+  | A sharp step and a sharp edge
+  ------------------------------------------------------------------*/
+  void init_SharpStepAndSharpEdge()
+  {
+    domain_.quad_tree_scale( 30.0 );
+
+    Boundary& b_ext = domain_.add_exterior_boundary();
+
+    Vertex& v0 = domain_.add_vertex(  0.0,  0.0 );
+    Vertex& v1 = domain_.add_vertex(  5.0,  0.0, 0.1, 0.1 );
+    Vertex& v2 = domain_.add_vertex(  4.0,  5.0 );
+    Vertex& v3 = domain_.add_vertex( 10.0,  3.0 );
+    Vertex& v4 = domain_.add_vertex( 10.0, 10.0 );
+    Vertex& v5 = domain_.add_vertex(  0.0,  5.0 );
+
+    b_ext.add_edge( v0, v1, 1 );
+    b_ext.add_edge( v1, v2, 2 );
+    b_ext.add_edge( v2, v3, 2 );
+    b_ext.add_edge( v3, v4, 3 );
+    b_ext.add_edge( v4, v5, 4 );
+    b_ext.add_edge( v5, v0, 4 );
+
+  } // TestBuilder::init_SharpStepAndSharpEdge()
+
+  /*------------------------------------------------------------------
+  | A normal step and a sharp edge
+  ------------------------------------------------------------------*/
+  void init_NormalStepAndSharpEdge()
+  {
+    domain_.quad_tree_scale( 30.0 );
+
+    Boundary& b_ext = domain_.add_exterior_boundary();
+
+    Vertex& v0 = domain_.add_vertex(  0.0,  0.0 );
+    Vertex& v1 = domain_.add_vertex(  5.0,  0.0 );
+    Vertex& v2 = domain_.add_vertex(  5.0,  5.0 );
+    Vertex& v3 = domain_.add_vertex( 10.0,  5.0 );
+    Vertex& v4 = domain_.add_vertex( 10.0, 10.0 );
+    Vertex& v5 = domain_.add_vertex(  0.0,  5.0 );
+
+    b_ext.add_edge( v0, v1, 1 );
+    b_ext.add_edge( v1, v2, 2 );
+    b_ext.add_edge( v2, v3, 2 );
+    b_ext.add_edge( v3, v4, 3 );
+    b_ext.add_edge( v4, v5, 4 );
+    b_ext.add_edge( v5, v0, 4 );
+
+  } // TestBuilder::init_NormalStepAndSharpEdge()
 
   /*------------------------------------------------------------------
   | Attributes

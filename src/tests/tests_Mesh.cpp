@@ -76,25 +76,8 @@ void triangulate()
   UserSizeFunction f = [](const Vec2d& p) 
   { return 3.; };
 
-  double quadtree_scale = 20.0;
-  Domain domain   { f, quadtree_scale };
-
-  Boundary&  b_ext = domain.add_exterior_boundary();
-
-  // Build exterior boundary
-  Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
-  Vertex& v2 = domain.add_vertex(  5.0,  0.0 );
-  Vertex& v3 = domain.add_vertex(  5.0,  5.0 );
-  Vertex& v4 = domain.add_vertex( 10.0,  5.0 );
-  Vertex& v5 = domain.add_vertex( 10.0, 10.0 );
-  Vertex& v6 = domain.add_vertex(  0.0,  5.0 );
-
-  b_ext.add_edge( v1, v2, 1 );
-  b_ext.add_edge( v2, v3, 2 );
-  b_ext.add_edge( v3, v4, 2 );
-  b_ext.add_edge( v4, v5, 3 );
-  b_ext.add_edge( v5, v6, 4 );
-  b_ext.add_edge( v6, v1, 4 );
+  TestBuilder test_builder { "NormalStepAndSharpEdge", f};
+  Domain& domain = test_builder.domain();
 
   // Create the mesh
   MeshBuilder mesh_builder {};
@@ -209,25 +192,8 @@ void quad_layer()
   UserSizeFunction f = [](const Vec2d& p) 
   { return 0.2; };
 
-  double quadtree_scale = 20.0;
-  Domain domain   { f, quadtree_scale };
-
-  Boundary&  b_ext = domain.add_exterior_boundary();
-
-  // Build exterior boundary
-  Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
-  Vertex& v2 = domain.add_vertex(  5.0,  0.0 );
-  Vertex& v3 = domain.add_vertex(  5.0,  5.0 );
-  Vertex& v4 = domain.add_vertex( 10.0,  5.0 );
-  Vertex& v5 = domain.add_vertex( 10.0, 10.0 );
-  Vertex& v6 = domain.add_vertex(  0.0,  5.0 );
-
-  b_ext.add_edge( v1, v2, 1 );
-  b_ext.add_edge( v2, v3, 2 );
-  b_ext.add_edge( v3, v4, 2 );
-  b_ext.add_edge( v4, v5, 3 );
-  b_ext.add_edge( v5, v6, 4 );
-  b_ext.add_edge( v6, v1, 4 );
+  TestBuilder test_builder { "SharpStepAndSharpEdge", f};
+  Domain& domain = test_builder.domain();
 
   // Create the mesh
   MeshBuilder mesh_builder {};
@@ -236,8 +202,8 @@ void quad_layer()
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
   FrontQuadLayering quadlayering {mesh, domain};
-  quadlayering.n_layers( 4 );
-  quadlayering.first_height( 0.35 );
+  quadlayering.n_layers( 2 );
+  quadlayering.first_height( 0.20 );
   quadlayering.growth_rate( 1.0 );
   quadlayering.starting_position( 0.0, 2.5 );
   quadlayering.ending_position( 7.5, 5.0 );
@@ -336,6 +302,42 @@ void refine_to_quads()
   LOG(DEBUG) << "\n" << mesh;
 
 } // refine_to_quads()
+
+/*********************************************************************
+* Test triangle to quad merge operation
+*********************************************************************/
+void merge_triangles_to_quads()
+{
+  // Define a variable size function
+  UserSizeFunction f = [](const Vec2d& p) { return 0.3; };
+
+  TestBuilder test_builder { "TriangleSquareCircle", f};
+  Domain& domain = test_builder.domain();
+
+  // Create the mesh
+  MeshBuilder mesh_builder {};
+
+  Mesh mesh = mesh_builder.create_empty_mesh( domain );
+  CHECK( mesh_builder.prepare_mesh(mesh, domain) );
+
+  FrontTriangulation triangulation {mesh, domain};
+
+  CHECK( triangulation.generate_elements() );
+  
+  Cleanup::merge_triangles_to_quads(mesh);
+
+  // Smooth grid
+  Smoother smoother {};
+  smoother.smooth(domain, mesh, 2);
+
+  // Export mesh
+  Cleanup::assign_size_function_to_vertices(mesh, domain);
+  Cleanup::assign_mesh_indices(mesh);
+  Cleanup::setup_vertex_connectivity(mesh);
+  Cleanup::setup_facet_connectivity(mesh);
+  LOG(DEBUG) << "\n" << mesh;
+
+} // merge_triangles_to_quads()
 
 /*********************************************************************
 * Test Mesh::pave()
@@ -461,9 +463,13 @@ void run_tests_Mesh()
   adjust_logging_output_stream("MeshTests.refine_to_quads.log");
   MeshTests::refine_to_quads();
 
+  adjust_logging_output_stream("MeshTests.merge_triangles_to_quads.log");
+  MeshTests::merge_triangles_to_quads();
+
   std::vector<std::string> standard_tests {
     "UnitSquare", "UnitCircle", "RefinedTriangle", 
     "FixedVertices", "TriangleSquareCircle",
+    "NormalStepAndSharpEdge", "SharpStepAndSharpEdge",
     //"LakeSuperior",
   };
 

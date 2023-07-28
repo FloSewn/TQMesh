@@ -67,6 +67,10 @@ public:
   size_t n_vertices() const override { return 0; }
   int    color() const override { return -1; }
   int    index() const override { return -1; }
+  double min_angle() const override { return 0; }
+  double max_angle() const override { return 0; }
+  double min_edge_length() const override { return 0; }
+  double max_edge_length() const override { return 0; }
 
 
   /*------------------------------------------------------------------
