@@ -24,11 +24,11 @@
 #include "Mesh.h"
 #include "MeshGenerator.h"
 #include "MeshMerger.h"
-#include "Cleanup.h"
+#include "MeshRefinement.h"
+#include "MeshCleanup.h"
 #include "FrontTriangulation.h"
-#include "Smoother.h"
+#include "MeshSmoother.h"
 #include "EntityChecks.h"
-#include "Refinement.h"
 
 namespace MeshGeneratorTests 
 {
@@ -176,28 +176,28 @@ void mesh_initializer()
 
   CHECK( mesh_2.n_quads() == 8 );
 
-  Refinement::refine_to_quads( mesh_1 );
+  MeshRefinement::refine_to_quads( mesh_1 );
 
   MeshMerger merger { mesh_1, mesh_2 };
   CHECK( merger.merge() );
 
   CHECK( EntityChecks::check_mesh_validity( mesh_1 ) );
 
-  //Cleanup::merge_triangles_to_quads(mesh_1);
-  //Cleanup::merge_degenerate_triangles(mesh_1);
+  //MeshCleanup::merge_triangles_to_quads(mesh_1);
+  //MeshCleanup::merge_degenerate_triangles(mesh_1);
     
-  Refinement::refine_to_quads( mesh_1 );
-  Refinement::refine_to_quads( mesh_1 );
-  Refinement::refine_to_quads( mesh_1 );
+  MeshRefinement::refine_to_quads( mesh_1 );
+  MeshRefinement::refine_to_quads( mesh_1 );
+  MeshRefinement::refine_to_quads( mesh_1 );
 
   CHECK( EntityChecks::check_mesh_validity( mesh_1 ) );
 
-  //Smoother smoother {};
+  //MeshSmoother smoother {};
   //smoother.smooth(domain_1, mesh_1, 4);
 
-  Cleanup::assign_size_function_to_vertices(mesh_1, domain_1);
-  Cleanup::assign_mesh_indices(mesh_1);
-  Cleanup::setup_facet_connectivity(mesh_1);
+  MeshCleanup::assign_size_function_to_vertices(mesh_1, domain_1);
+  MeshCleanup::assign_mesh_indices(mesh_1);
+  MeshCleanup::setup_facet_connectivity(mesh_1);
 
   LOG(INFO) << "\n" << mesh_1;
 

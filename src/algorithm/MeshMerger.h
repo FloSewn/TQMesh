@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "Mesh.h"
-#include "Cleanup.h"
+#include "MeshCleanup.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -50,12 +50,12 @@ public:
     if ( merged_ )
       return false;
 
-    Cleanup::setup_facet_connectivity(*receiver_);
-    Cleanup::setup_facet_connectivity(*donor_);
+    MeshCleanup::setup_facet_connectivity(*receiver_);
+    MeshCleanup::setup_facet_connectivity(*donor_);
 
     // Assign indices to donor mesh
-    Cleanup::assign_mesh_indices(*receiver_);
-    Cleanup::assign_mesh_indices(*donor_);
+    MeshCleanup::assign_mesh_indices(*receiver_);
+    MeshCleanup::assign_mesh_indices(*donor_);
 
     // Search for vertices that are located on the inteface
     // boundary between donor and receiver

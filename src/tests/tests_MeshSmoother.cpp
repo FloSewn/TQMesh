@@ -20,22 +20,22 @@
 #include "Edge.h"
 #include "Domain.h"
 #include "Mesh.h"
-#include "Smoother.h"
+#include "MeshSmoother.h"
 
-namespace SmootherTests 
+namespace MeshSmootherTests 
 {
 using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
-* Test Smoother::smooth() for a pure triangle mesh
+* Test MeshSmoother::smooth() for a pure triangle mesh
 *********************************************************************
 void tri_mesh()
 {
   // Log debug messages to specified output-file
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-  { source_dir + "/auxiliary/test_data/SmootherTests.tri_mesh.log" };
+  { source_dir + "/auxiliary/test_data/MeshSmootherTests.tri_mesh.log" };
   LOG_PROPERTIES.set_info_ostream( TO_FILE, file_name );
   LOG_PROPERTIES.set_debug_ostream( TO_FILE, file_name );
 
@@ -62,7 +62,7 @@ void tri_mesh()
 
   // Create the mesh
   Mesh mesh { domain, 0, 0, 50.0 };
-  Smoother smoother {};
+  MeshSmoother smoother {};
 
   mesh.init_advancing_front();
   mesh.triangulate();
@@ -70,24 +70,24 @@ void tri_mesh()
   smoother.smooth(domain, mesh, 6, 0.5, 0.75, 0.95);
 
   // Export mesh
-  file_name = source_dir + "/auxiliary/test_data/SmootherTests.tri_mesh.txt";
+  file_name = source_dir + "/auxiliary/test_data/MeshSmootherTests.tri_mesh.txt";
 
   mesh.write_to_file( file_name, ExportType::txt );
 
 } // tri_mesh()  */
 
-} // namespace SmootherTests
+} // namespace MeshSmootherTests
 
 
 /*********************************************************************
-* Run tests for: Smoother.h
+* Run tests for: MeshSmoother.h
 *********************************************************************/
-void run_tests_Smoother()
+void run_tests_MeshSmoother()
 {
-  //SmootherTests::tri_mesh();
+  //MeshSmootherTests::tri_mesh();
 
   // Reset debug logging ostream
   CppUtils::LOG_PROPERTIES.set_info_ostream( CppUtils::TO_COUT );
   CppUtils::LOG_PROPERTIES.set_debug_ostream( CppUtils::TO_COUT );
 
-} // run_tests_Smoother()
+} // run_tests_MeshSmoother()

@@ -61,7 +61,7 @@ public:
       "Unable to triangulate mesh that has not been prepared yet.");
 
     // Prepare the mesh  
-    Cleanup::setup_facet_connectivity(mesh_);
+    MeshCleanup::setup_facet_connectivity(mesh_);
 
     // Initialize the advancing front and its base edge
     Edge* base_edge = init_advancing_front();

@@ -81,9 +81,9 @@ add_test(NAME Front COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Front")
 add_test(NAME EdgeList COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "EdgeList")
 add_test(NAME Boundary COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Boundary")
 add_test(NAME SizeFunction COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "SizeFunction")
-add_test(NAME Smoother COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Smoother")
 add_test(NAME Mesh COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Mesh")
 add_test(NAME MeshGenerator COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "MeshGenerator")
-add_test(NAME Cleanup COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Cleanup")
+add_test(NAME MeshCleanup COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "MeshCleanup")
+add_test(NAME MeshSmoother COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "MeshSmoother")
 
 

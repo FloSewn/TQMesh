@@ -18,7 +18,7 @@
 #include "Boundary.h"
 #include "Mesh.h"
 #include "FrontAlgorithm.h"
-#include "Cleanup.h"
+#include "MeshCleanup.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -291,7 +291,7 @@ private:
       Vec2d delta_2 = v1_proj_xy_[0] - v1_base_[0]->xy(); 
       double s = dot(delta_1, delta_2) / delta_1.norm_sqr();
       Vec2d v_prev_new = v1_base_[0]->xy() + delta_1 * s;
-      Cleanup::set_vertex_coordinates(v_prev, v_prev_new);
+      MeshCleanup::set_vertex_coordinates(v_prev, v_prev_new);
       v1_proj_xy_[0] = v_prev_new;
       return;
     }
@@ -411,7 +411,7 @@ private:
       Vec2d delta_2 = v2_proj_xy_.back() - v_end.xy(); 
       double s = dot(delta_1, delta_2) / delta_1.norm_sqr();
       Vec2d v_next_new = v_end.xy() + delta_1 * s;
-      Cleanup::set_vertex_coordinates(v_next, v_next_new);
+      MeshCleanup::set_vertex_coordinates(v_next, v_next_new);
       v2_proj_xy_.back() = v_next_new;
       return;
     }
@@ -567,7 +567,7 @@ public:
       return false;
 
     // Prepare the mesh  
-    Cleanup::setup_facet_connectivity(mesh_);
+    MeshCleanup::setup_facet_connectivity(mesh_);
     
     // Initialize the advancing front and its base edge
     init_advancing_front(false);

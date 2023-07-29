@@ -24,11 +24,11 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "MeshBuilder.h"
-#include "Cleanup.h"
-#include "Refinement.h"
+#include "MeshRefinement.h"
+#include "MeshCleanup.h"
+#include "MeshSmoother.h"
 #include "FrontTriangulation.h"
 #include "FrontQuadLayering.h"
-#include "Smoother.h"
 
 namespace MeshTests 
 {
@@ -56,8 +56,8 @@ void initialization()
   mesh.add_boundary_edge(v2, v3, 1);
   mesh.add_interior_edge(v3, v1);
 
-  Cleanup::assign_mesh_indices(mesh);
-  Cleanup::setup_vertex_connectivity(mesh);
+  MeshCleanup::assign_mesh_indices(mesh);
+  MeshCleanup::setup_vertex_connectivity(mesh);
 
   LOG(INFO) << mesh;
 
@@ -103,10 +103,10 @@ void triangulate()
   CHECK( ABS(mesh.area() - domain.area()) < 1.0E-07 );
 
   // Export mesh
-  Cleanup::assign_size_function_to_vertices(mesh, domain);
-  Cleanup::assign_mesh_indices(mesh);
-  Cleanup::setup_vertex_connectivity(mesh);
-  Cleanup::setup_facet_connectivity(mesh);
+  MeshCleanup::assign_size_function_to_vertices(mesh, domain);
+  MeshCleanup::assign_mesh_indices(mesh);
+  MeshCleanup::setup_vertex_connectivity(mesh);
+  MeshCleanup::setup_facet_connectivity(mesh);
   LOG(DEBUG) << "\n" << mesh;
 
   // Check mesh stats
@@ -216,15 +216,15 @@ void quad_layer()
   triangulation.n_elements(0);
   CHECK( triangulation.generate_elements() );
 
-  Smoother smoother {};
+  MeshSmoother smoother {};
   smoother.smooth(domain, mesh, 2);
   */
 
   // Export mesh
-  Cleanup::assign_size_function_to_vertices(mesh, domain);
-  Cleanup::assign_mesh_indices(mesh);
-  Cleanup::setup_vertex_connectivity(mesh);
-  Cleanup::setup_facet_connectivity(mesh);
+  MeshCleanup::assign_size_function_to_vertices(mesh, domain);
+  MeshCleanup::assign_mesh_indices(mesh);
+  MeshCleanup::setup_vertex_connectivity(mesh);
+  MeshCleanup::setup_facet_connectivity(mesh);
   LOG(DEBUG) << "\n" << mesh;
 
 } // quad_layer()
@@ -276,7 +276,7 @@ void refine_to_quads()
   CHECK( quadlayering.generate_elements() );
 
   // Refinement
-  Refinement::refine_to_quads(mesh);
+  MeshRefinement::refine_to_quads(mesh);
 
   // Create triangulation
   FrontTriangulation triangulation {mesh, domain};
@@ -284,22 +284,22 @@ void refine_to_quads()
 
   CHECK( triangulation.generate_elements() );
 
-  Cleanup::clear_double_quad_edges(mesh);
-  Cleanup::clear_double_triangle_edges(mesh);
-  Cleanup::merge_degenerate_triangles(mesh);
+  MeshCleanup::clear_double_quad_edges(mesh);
+  MeshCleanup::clear_double_triangle_edges(mesh);
+  MeshCleanup::merge_degenerate_triangles(mesh);
 
   // Refinement
-  Refinement::refine_to_quads(mesh);
+  MeshRefinement::refine_to_quads(mesh);
 
   // Smooth grid
-  Smoother smoother {};
+  MeshSmoother smoother {};
   smoother.smooth(domain, mesh, 2);
 
   // Export mesh
-  Cleanup::assign_size_function_to_vertices(mesh, domain);
-  Cleanup::assign_mesh_indices(mesh);
-  Cleanup::setup_vertex_connectivity(mesh);
-  Cleanup::setup_facet_connectivity(mesh);
+  MeshCleanup::assign_size_function_to_vertices(mesh, domain);
+  MeshCleanup::assign_mesh_indices(mesh);
+  MeshCleanup::setup_vertex_connectivity(mesh);
+  MeshCleanup::setup_facet_connectivity(mesh);
   LOG(DEBUG) << "\n" << mesh;
 
 } // refine_to_quads()
@@ -325,17 +325,17 @@ void merge_triangles_to_quads()
 
   CHECK( triangulation.generate_elements() );
   
-  Cleanup::merge_triangles_to_quads(mesh);
+  MeshCleanup::merge_triangles_to_quads(mesh);
 
   // Smooth grid
-  Smoother smoother {};
+  MeshSmoother smoother {};
   smoother.smooth(domain, mesh, 2);
 
   // Export mesh
-  Cleanup::assign_size_function_to_vertices(mesh, domain);
-  Cleanup::assign_mesh_indices(mesh);
-  Cleanup::setup_vertex_connectivity(mesh);
-  Cleanup::setup_facet_connectivity(mesh);
+  MeshCleanup::assign_size_function_to_vertices(mesh, domain);
+  MeshCleanup::assign_mesh_indices(mesh);
+  MeshCleanup::setup_vertex_connectivity(mesh);
+  MeshCleanup::setup_facet_connectivity(mesh);
   LOG(DEBUG) << "\n" << mesh;
 
 } // merge_triangles_to_quads()
@@ -385,10 +385,10 @@ void pave()
   //CHECK( ABS(mesh.area() - domain.area()) < 1.0E-07 );
 
   // Export mesh
-  Cleanup::assign_size_function_to_vertices(mesh, domain);
-  Cleanup::assign_mesh_indices(mesh);
-  Cleanup::setup_vertex_connectivity(mesh);
-  Cleanup::setup_facet_connectivity(mesh);
+  MeshCleanup::assign_size_function_to_vertices(mesh, domain);
+  MeshCleanup::assign_mesh_indices(mesh);
+  MeshCleanup::setup_vertex_connectivity(mesh);
+  MeshCleanup::setup_facet_connectivity(mesh);
   LOG(DEBUG) << "\n" << mesh;
 
 } // pave()  */
@@ -426,16 +426,16 @@ void triangulate_standard_tests(const std::string& test_name)
   if ( !success )
     LOG(ERROR) << "triangulate_" << test_name;
 
-  Cleanup::merge_degenerate_triangles(mesh);
+  MeshCleanup::merge_degenerate_triangles(mesh);
 
   // Export mesh
-  Cleanup::assign_size_function_to_vertices(mesh, domain);
-  Cleanup::assign_mesh_indices(mesh);
+  MeshCleanup::assign_size_function_to_vertices(mesh, domain);
+  MeshCleanup::assign_mesh_indices(mesh);
 
   if ( success )
   {
-    Cleanup::setup_vertex_connectivity(mesh);
-    Cleanup::setup_facet_connectivity(mesh);
+    MeshCleanup::setup_vertex_connectivity(mesh);
+    MeshCleanup::setup_facet_connectivity(mesh);
   }
 
   LOG(DEBUG) << "\n" << mesh;

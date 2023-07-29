@@ -71,7 +71,7 @@ public:
   | Change vertex coordinate 
   | ATTENTION: This function does not update the edges / facets that
   | are attached to this vertex!
-  | -> Use Cleanup::set_vertex_coordinates() instead!!!
+  | -> Use MeshCleanup::set_vertex_coordinates() instead!!!
   ------------------------------------------------------------------*/
   void adjust_xy(const Vec2d& xy)
   {

@@ -27,7 +27,7 @@ using namespace CppUtils;
 * This class contains all functions that are required to cleanup and
 * prepare the mesh after the generation process
 *********************************************************************/
-class Cleanup
+class MeshCleanup
 {
 public:
 
@@ -74,7 +74,7 @@ public:
     for ( auto& t_ptr : mesh.triangles() )
       t_ptr->index( element_index++ );
 
-  } // Cleanup::assign_mesh_indices()
+  } // MeshCleanup::assign_mesh_indices()
 
 
   /*------------------------------------------------------------------
@@ -88,7 +88,7 @@ public:
     for ( auto& v_ptr : mesh.vertices() )
       v_ptr->mesh_size( domain.size_function(v_ptr->xy()) );
 
-  } // Cleanup:assign_size_function_to_vertices()
+  } // MeshCleanup:assign_size_function_to_vertices()
 
 
   /*------------------------------------------------------------------
@@ -142,7 +142,7 @@ public:
       });
     }
 
-  } // Cleanup::setup_vertex_connectivity()
+  } // MeshCleanup::setup_vertex_connectivity()
 
 
   /*------------------------------------------------------------------
@@ -267,9 +267,9 @@ public:
   {
     if (init)
     {
-      Cleanup::assign_mesh_indices(mesh);
-      Cleanup::setup_vertex_connectivity(mesh);
-      Cleanup::setup_facet_connectivity(mesh);
+      MeshCleanup::assign_mesh_indices(mesh);
+      MeshCleanup::setup_vertex_connectivity(mesh);
+      MeshCleanup::setup_facet_connectivity(mesh);
     }
 
     // Initialize arrays to store entities temporally
@@ -316,11 +316,11 @@ public:
           continue;
 
         ASSERT( nbr_1 != nullptr, 
-          "Cleanup::clear_double_quad_edges(): "
+          "MeshCleanup::clear_double_quad_edges(): "
           "First edge neighbor is nullptr.");
 
         ASSERT( nbr_2 != nullptr, 
-          "Cleanup::clear_double_quad_edges(): "
+          "MeshCleanup::clear_double_quad_edges(): "
           "Second edge neighbor is nullptr.");
 
         // Proceed if neighbor has already been added
@@ -339,12 +339,12 @@ public:
         Edge* e2 = mesh.interior_edges().get_edge(v2, v3);
 
         ASSERT( (e1 != e2), 
-          "Cleanup::clear_double_quad_edges(): "
+          "MeshCleanup::clear_double_quad_edges(): "
           "Invalid edge data structure.");
 
         ASSERT( ( e1->v1() == e2->v1() || e1->v1() == e2->v2() 
                || e1->v2() == e2->v1() || e1->v2() == e2->v2() ),
-          "Cleanup::clear_double_quad_edges(): "
+          "MeshCleanup::clear_double_quad_edges(): "
           "Wrong edges found for quad merging.");
 
         // Mark the current quads, such that these won't get chosen
@@ -366,13 +366,13 @@ public:
         opposing_vertices.push_back( {&v4, &v_op} );
 
         ASSERT( (v_op != v1), 
-          "Cleanup::clear_double_quad_edges(): "
+          "MeshCleanup::clear_double_quad_edges(): "
           "Messed up quad data structure (1).");
         ASSERT( (v_op != v2), 
-          "Cleanup::clear_double_quad_edges(): "
+          "MeshCleanup::clear_double_quad_edges(): "
           "Messed up quad data structure (2).");
         ASSERT( (v_op != v3), 
-          "Cleanup::clear_double_quad_edges(): "
+          "MeshCleanup::clear_double_quad_edges(): "
           "Messed up quad data structure (3).");
 
         // At this point we can break the inner loop over 
@@ -432,11 +432,11 @@ public:
     }
 
     // Re-initialize facet-to-facet connectivity
-    Cleanup::assign_mesh_indices(mesh);
-    Cleanup::setup_vertex_connectivity(mesh);
-    Cleanup::setup_facet_connectivity(mesh);
+    MeshCleanup::assign_mesh_indices(mesh);
+    MeshCleanup::setup_vertex_connectivity(mesh);
+    MeshCleanup::setup_facet_connectivity(mesh);
 
-  } // Cleanup::clear_double_quad_edges() 
+  } // MeshCleanup::clear_double_quad_edges() 
 
 
   /*------------------------------------------------------------------
@@ -482,9 +482,9 @@ public:
   {
     if (init)
     {
-      Cleanup::assign_mesh_indices(mesh);
-      Cleanup::setup_vertex_connectivity(mesh);
-      Cleanup::setup_facet_connectivity(mesh);
+      MeshCleanup::assign_mesh_indices(mesh);
+      MeshCleanup::setup_vertex_connectivity(mesh);
+      MeshCleanup::setup_facet_connectivity(mesh);
     }
 
     // Initialize arrays to store entities temporally
@@ -529,11 +529,11 @@ public:
           continue;
 
         ASSERT( nbr_1 != nullptr, 
-          "Cleanup::clear_double_quad_edges(): "
+          "MeshCleanup::clear_double_quad_edges(): "
           "First edge neighbor is nullptr.");
 
         ASSERT( nbr_2 != nullptr, 
-          "Cleanup::clear_double_quad_edges(): "
+          "MeshCleanup::clear_double_quad_edges(): "
           "Second edge neighbor is nullptr.");
 
         // Proceed if neighbor has already been added
@@ -552,12 +552,12 @@ public:
         Edge* e2 = mesh.interior_edges().get_edge(v2, v3);
 
         ASSERT( (e1 != e2), 
-          "Cleanup::clear_double_triangle_edges(): "
+          "MeshCleanup::clear_double_triangle_edges(): "
           "Invalid edge data structure.");
 
         ASSERT( ( e1->v1() == e2->v1() || e1->v1() == e2->v2() 
                || e1->v2() == e2->v1() || e1->v2() == e2->v2() ),
-          "Cleanup::clear_double_triangle_edges(): "
+          "MeshCleanup::clear_double_triangle_edges(): "
           "Wrong edges found for element merging.");
 
         // Mark the current quads, such that the won't get chosen
@@ -585,7 +585,7 @@ public:
       int id_v = q->get_vertex_index( *v );
 
       ASSERT( (id_v > -1), 
-        "Cleanup::clear_double_triangle_edges(): "
+        "MeshCleanup::clear_double_triangle_edges(): "
         "Invalid quad data structure.");
 
       // Get the remaining three vertices of the quad 
@@ -626,11 +626,11 @@ public:
     }
 
     // Re-initialize facet-to-facet connectivity
-    Cleanup::assign_mesh_indices(mesh);
-    Cleanup::setup_vertex_connectivity(mesh);
-    Cleanup::setup_facet_connectivity(mesh);
+    MeshCleanup::assign_mesh_indices(mesh);
+    MeshCleanup::setup_vertex_connectivity(mesh);
+    MeshCleanup::setup_facet_connectivity(mesh);
 
-  } // Cleanup::clear_double_triangle_edges()
+  } // MeshCleanup::clear_double_triangle_edges()
 
   /*------------------------------------------------------------------
   | This function locates vertices that are adjacent to exactly 
@@ -734,9 +734,9 @@ public:
     mesh.clear_waste();
 
     // Re-initialize facet-to-facet connectivity
-    Cleanup::assign_mesh_indices(mesh);
-    Cleanup::setup_vertex_connectivity(mesh);
-    Cleanup::setup_facet_connectivity(mesh);
+    MeshCleanup::assign_mesh_indices(mesh);
+    MeshCleanup::setup_vertex_connectivity(mesh);
+    MeshCleanup::setup_facet_connectivity(mesh);
    
   } // merge_degenerate_triangles()
 
@@ -748,7 +748,7 @@ public:
   static inline void merge_triangles_to_quads(Mesh& mesh, bool init=true)
   {
     if (init)
-      Cleanup::setup_facet_connectivity(mesh);
+      MeshCleanup::setup_facet_connectivity(mesh);
 
     // Pick all internal edges, which are adjacent to two triangles
     EdgeList tri_edges {};
@@ -859,8 +859,8 @@ public:
     // Bad elements may have been created up to this point
     // due to the merging of triangles to quads
     // The two upcoming function fix these bad elements
-    Cleanup::clear_double_quad_edges(mesh, true);
-    Cleanup::clear_double_triangle_edges(mesh, false);
+    MeshCleanup::clear_double_quad_edges(mesh, true);
+    MeshCleanup::clear_double_triangle_edges(mesh, false);
 
   } // merge_triangles_to_quads()
 
@@ -869,10 +869,10 @@ private:
   | We hide the constructor, since this class acts only as container
   | for static inline functions
   ------------------------------------------------------------------*/
-  Cleanup() = default;
-  ~Cleanup() {};
+  MeshCleanup() = default;
+  ~MeshCleanup() {};
 
-}; // Cleanup
+}; // MeshCleanup
 
 } // namespace TQAlgorithm
 } // namespace TQMesh

@@ -30,7 +30,7 @@ using namespace CppUtils;
 *   IMR 2000 (2000), 373-384
 *
 *********************************************************************/
-class Smoother
+class MeshSmoother
 {
 
   using VertexConnectivity = std::vector<std::pair<Vertex*, std::vector<Vertex*>>>;
@@ -39,7 +39,7 @@ public:
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  Smoother() = default;
+  MeshSmoother() = default;
 
   /*------------------------------------------------------------------
   | The interface to run smoothing algorithms on a given mesh
@@ -71,7 +71,7 @@ public:
     LOG(INFO) << "";
     LOG(INFO) << "Smoothing is completed.";
 
-  } // Smoother::smooth()
+  } // MeshSmoother::smooth()
 
 
 private:
@@ -107,7 +107,7 @@ private:
       }
     }
 
-  } // Smoother::unfix_vertices()
+  } // MeshSmoother::unfix_vertices()
 
   /*------------------------------------------------------------------
   | Apply the grid smoothing with a torsion spring approach 
@@ -201,7 +201,7 @@ private:
 
     }
 
-  } // Smoother::smooth_torsion()
+  } // MeshSmoother::smooth_torsion()
 
   /*------------------------------------------------------------------
   | Apply the grid smoothing with a laplace approach 
@@ -274,7 +274,7 @@ private:
 
     }
 
-  } // Smoother::smooth_laplace()
+  } // MeshSmoother::smooth_laplace()
 
   /*------------------------------------------------------------------
   | Sets up the vertex->vertex connectivity that is needed for the 
@@ -369,7 +369,7 @@ private:
 
     return ( domain.is_inside( xy_n ) );
 
-  } // Smoother::check_coordinate_validity()
+  } // MeshSmoother::check_coordinate_validity()
 
   /*------------------------------------------------------------------
   | Attributes 
@@ -381,7 +381,7 @@ private:
   double crit_quad_max_angle_  { 150.0 * M_PI / 180.0 };
 
 
-}; // Smoother
+}; // MeshSmoother
 
 } // namespace TQAlgorithm
 } // namespace TQMesh

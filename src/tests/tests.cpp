@@ -75,10 +75,10 @@ int run_tests(const std::string& test_case)
     LOG(INFO) << "  Running tests for \"SizeFunction\" class...";
     run_tests_SizeFunction();
   } 
-  else if ( !test_case.compare("Smoother") )
+  else if ( !test_case.compare("MeshSmoother") )
   {
-    LOG(INFO) << "  Running tests for \"Smoother\" class...";
-    run_tests_Smoother();
+    LOG(INFO) << "  Running tests for \"MeshSmoother\" class...";
+    run_tests_MeshSmoother();
   }
   else if ( !test_case.compare("Mesh") )
   {
@@ -90,10 +90,10 @@ int run_tests(const std::string& test_case)
     LOG(INFO) << "  Running tests for \"MeshGenerator\" class...";
     run_tests_MeshGenerator();
   }
-  else if ( !test_case.compare("Cleanup") )
+  else if ( !test_case.compare("MeshCleanup") )
   {
-    LOG(INFO) << "  Running tests for \"Cleanup\" class...";
-    run_tests_Cleanup();
+    LOG(INFO) << "  Running tests for \"MeshCleanup\" class...";
+    run_tests_MeshCleanup();
   }
   else
   {

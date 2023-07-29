@@ -13,6 +13,7 @@
 #include "Edge.h"
 #include "Domain.h"
 #include "Mesh.h"
+#include "MeshCleanup.h"
 #include "FrontAlgorithm.h"
 
 namespace TQMesh {
@@ -66,7 +67,7 @@ public:
       return false;
 
     // Prepare the mesh  
-    Cleanup::setup_facet_connectivity(mesh_);
+    MeshCleanup::setup_facet_connectivity(mesh_);
 
     // Initialize the advancing front and its base edge
     Edge* base_edge = init_advancing_front();

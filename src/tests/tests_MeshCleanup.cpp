@@ -23,7 +23,7 @@
 #include "Edge.h"
 #include "Domain.h"
 #include "Mesh.h"
-#include "Cleanup.h"
+#include "MeshCleanup.h"
 #include "EntityChecks.h"
 
 namespace CleanupTests 
@@ -77,9 +77,9 @@ void clear_double_quad_edges()
 
   CHECK( EntityChecks::check_mesh_validity(mesh) );
 
-  Cleanup::assign_mesh_indices(mesh);
-  Cleanup::setup_vertex_connectivity(mesh);
-  Cleanup::setup_facet_connectivity(mesh);
+  MeshCleanup::assign_mesh_indices(mesh);
+  MeshCleanup::setup_vertex_connectivity(mesh);
+  MeshCleanup::setup_facet_connectivity(mesh);
 
   CHECK( q1.index() == 0 );
   CHECK( q2.index() == 1 );
@@ -92,7 +92,7 @@ void clear_double_quad_edges()
   CHECK( v4.vertices().size() == 5 );
 
 
-  Cleanup::clear_double_quad_edges(mesh, false);
+  MeshCleanup::clear_double_quad_edges(mesh, false);
 
   CHECK( mesh.n_elements() == 3 );
   CHECK( mesh.n_quads() == 2 );
@@ -146,11 +146,11 @@ void clear_double_triangle_edges()
 
   CHECK( EntityChecks::check_mesh_validity(mesh) );
 
-  Cleanup::assign_mesh_indices(mesh);
-  Cleanup::setup_vertex_connectivity(mesh);
-  Cleanup::setup_facet_connectivity(mesh);
+  MeshCleanup::assign_mesh_indices(mesh);
+  MeshCleanup::setup_vertex_connectivity(mesh);
+  MeshCleanup::setup_facet_connectivity(mesh);
 
-  Cleanup::clear_double_triangle_edges(mesh, false);
+  MeshCleanup::clear_double_triangle_edges(mesh, false);
 
   LOG(INFO) << "\n" << mesh;
 
@@ -189,7 +189,7 @@ void merge_degenerate_triangles()
 
   CHECK( EntityChecks::check_mesh_validity(mesh) );
 
-  Cleanup::merge_degenerate_triangles(mesh);
+  MeshCleanup::merge_degenerate_triangles(mesh);
 
   CHECK( mesh.n_elements() == 1 );
   CHECK( mesh.n_triangles() == 1 );
@@ -202,9 +202,9 @@ void merge_degenerate_triangles()
 
 
 /*********************************************************************
-* Run tests for: Cleanup.h
+* Run tests for: MeshCleanup.h
 *********************************************************************/
-void run_tests_Cleanup()
+void run_tests_MeshCleanup()
 {
   adjust_logging_output_stream("CleanupTests.clear_double_quad_edges.log");
   CleanupTests::clear_double_quad_edges();
@@ -218,4 +218,4 @@ void run_tests_Cleanup()
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");
 
-} // run_tests_Cleanup()
+} // run_tests_MeshCleanup()

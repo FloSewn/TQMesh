@@ -24,7 +24,7 @@ using namespace CppUtils;
 /*********************************************************************
 * 
 *********************************************************************/
-class Refinement
+class MeshRefinement
 {
 public:
 
@@ -220,8 +220,8 @@ private:
   | We hide the constructor, since this class acts only as container
   | for static inline functions
   ------------------------------------------------------------------*/
-  Refinement() = default;
-  ~Refinement() {};
+  MeshRefinement() = default;
+  ~MeshRefinement() {};
 };
 
 
