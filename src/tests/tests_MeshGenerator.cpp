@@ -24,7 +24,12 @@
 #include "Mesh.h"
 #include "MeshGenerator.h"
 #include "MeshBuilder.h"
+#include "MeshMerger.h"
 #include "Cleanup.h"
+#include "FrontTriangulation.h"
+#include "Smoother.h"
+#include "EntityChecks.h"
+#include "Refinement.h"
 
 namespace MeshGeneratorTests 
 {
@@ -102,8 +107,9 @@ void initialization()
 void mesh_initializer()
 {
   // Define size functions
-  UserSizeFunction f_1 = [](const Vec2d& p) { return 0.3 + 0.4*p.x; };
-  UserSizeFunction f_2 = [](const Vec2d& p) { return 0.5; };
+  //UserSizeFunction f_1 = [](const Vec2d& p) { return 0.3 + 0.4*p.x; };
+  UserSizeFunction f_1 = [](const Vec2d& p) { return 2.5; };
+  UserSizeFunction f_2 = [](const Vec2d& p) { return 2.5 - MIN((p.x-5.0) * 0.3, 2.0); };
 
   // Define domains
   double quadtree_scale = 20.0;
@@ -118,7 +124,7 @@ void mesh_initializer()
 
   Vertex& v1_2 = domain_2.add_vertex(  5.0,  0.0 );
   Vertex& v2_2 = domain_2.add_vertex( 10.0,  0.0 );
-  Vertex& v3_2 = domain_2.add_vertex( 10.0,  5.0 );
+  Vertex& v3_2 = domain_2.add_vertex( 10.0,  5.0, 0.1, 1.0 );
   Vertex& v4_2 = domain_2.add_vertex(  5.0,  5.0 );
 
   // Build domain boundaries
@@ -136,15 +142,39 @@ void mesh_initializer()
   bdry_2.add_edge( v3_2, v4_2, edge_marker );
   bdry_2.add_edge( v4_2, v1_2, edge_marker );
 
-
   // Setup the generator
   MeshGenerator generator {};
-  generator.define_mesh( domain_1 );
-  generator.define_mesh( domain_2 );
+  generator.define_mesh( domain_1, 1, 1);
+  generator.define_mesh( domain_2, 2, 2);
 
   Mesh& mesh_1 = generator.mesh(0);
+  Mesh& mesh_2 = generator.mesh(1);
+
+  FrontTriangulation triangulation_1 {mesh_1, domain_1};
+  CHECK( triangulation_1.generate_elements() );
+
+  FrontTriangulation triangulation_2 {mesh_2, domain_2};
+  CHECK( triangulation_2.generate_elements() );
+
+  MeshMerger merger { mesh_1, mesh_2 };
+  CHECK( merger.merge() );
+
+  CHECK( EntityChecks::check_mesh_validity( mesh_1 ) );
+
+  Cleanup::merge_triangles_to_quads(mesh_1);
+  
+  Cleanup::merge_degenerate_triangles(mesh_1);
+    
+  Refinement::refine_to_quads( mesh_1 );
+
+  CHECK( EntityChecks::check_mesh_validity( mesh_1 ) );
+
+  Smoother smoother {};
+  smoother.smooth(domain_1, mesh_1, 4);
+
   Cleanup::assign_size_function_to_vertices(mesh_1, domain_1);
   Cleanup::assign_mesh_indices(mesh_1);
+  Cleanup::setup_facet_connectivity(mesh_1);
 
   LOG(INFO) << "\n" << mesh_1;
 

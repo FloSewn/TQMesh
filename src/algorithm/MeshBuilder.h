@@ -13,6 +13,7 @@
 
 #include "Domain.h"
 #include "Mesh.h"
+#include "Cleanup.h"
 #include "FrontInitData.h"
 #include "Front.h"
 #include "EntityChecks.h"
@@ -33,6 +34,7 @@ class MeshBuilder
 public:
   using MeshVector     = std::vector<Mesh*>;
   using DomainVector   = std::vector<Domain*>;
+  using VertexVector   = std::vector<Vertex*>;
   using EdgeVector     = std::vector<Edge*>;
   using BoolVector     = std::vector<bool>;
   using IntVector      = std::vector<int>;

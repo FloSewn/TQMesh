@@ -13,6 +13,8 @@
 namespace TQMesh {
 namespace TQAlgorithm {
 
+class Mesh;
+
 /*********************************************************************
 * 
 *********************************************************************/
@@ -71,7 +73,7 @@ public:
   double max_angle() const override { return 0; }
   double min_edge_length() const override { return 0; }
   double max_edge_length() const override { return 0; }
-
+  Mesh*  mesh() const override { return nullptr; }
 
   /*------------------------------------------------------------------
   | Setters 
@@ -81,6 +83,9 @@ public:
 
   void index(int i) override
   { ASSERT( false, "Invalid NullFacet access: index()."); }
+
+  void mesh(Mesh* m) override
+  { ASSERT( false, "Invalid NullFacet access: mesh()."); }
 
 
   /*------------------------------------------------------------------

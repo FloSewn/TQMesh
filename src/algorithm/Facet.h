@@ -14,7 +14,7 @@ namespace TQMesh {
 namespace TQAlgorithm {
 
 class Vertex;
-//class Mesh;
+class Mesh;
 
 /*********************************************************************
 * This class defines any two dimensional facet
@@ -36,7 +36,7 @@ class Facet
   virtual Vertex&       vertex(size_t i) = 0;
   virtual size_t        n_vertices() const { return 0; }
   virtual const Vec2d&  xy() const = 0; 
-  // virtual Mesh*         mesh() const = 0;
+  virtual Mesh*         mesh() const = 0;
   virtual int           color() const = 0;
   virtual int           index() const = 0;
   // virtual bool          is_active() const = 0;
@@ -55,7 +55,7 @@ class Facet
   virtual void index(int i) = 0;
   // virtual void is_active(bool a) = 0;
   // virtual void marker(bool c) = 0;
-  // virtual void mesh(Mesh* m) = 0;
+  virtual void mesh(Mesh* m) = 0;
 
   /*------------------------------------------------------------------
   | Functions to return indices of vertices, edges...

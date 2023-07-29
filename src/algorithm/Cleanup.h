@@ -838,9 +838,13 @@ public:
         if ( e_share == nullptr ) 
           continue;
 
-        if (is_left(e_share->v1().xy(), e_share->v2().xy(), q_new.xy()))
+        Facet* t_l = e_share->facet_l();
+        Facet* t_r = e_share->facet_r();
+
+        if ( t_l && (t_l == f_l || t_l == f_r) )
           e_share->facet_l( &q_new );
-        else
+
+        if ( t_r && (t_r == f_l || t_r == f_r) )
           e_share->facet_r( &q_new );
       }
 
