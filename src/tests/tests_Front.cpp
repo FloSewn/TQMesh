@@ -26,7 +26,6 @@
 #include "Domain.h"
 #include "Front.h"
 #include "Mesh.h"
-#include "FrontInitData.h"
 
 namespace FrontTests 
 {

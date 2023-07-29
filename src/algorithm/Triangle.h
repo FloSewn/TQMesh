@@ -19,8 +19,7 @@
 #include "Facet.h"
 
 #include "Domain.h"
-#include "TriangleGeometry.h"
-#include "NullFacet.h"
+#include "FacetGeometry.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {

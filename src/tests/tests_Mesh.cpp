@@ -23,9 +23,9 @@
 #include "Edge.h"
 #include "Domain.h"
 #include "Mesh.h"
+#include "MeshBuilder.h"
 #include "Cleanup.h"
 #include "Refinement.h"
-#include "MeshBuilder.h"
 #include "FrontTriangulation.h"
 #include "FrontQuadLayering.h"
 #include "Smoother.h"
@@ -40,10 +40,11 @@ using namespace TQMesh::TQAlgorithm;
 *********************************************************************/
 void initialization()
 {
-  int mesh_id = 0;
-  int element_color = 0;
-
-  Mesh mesh { mesh_id, element_color };
+  // Define dummy domain & mesh builder
+  UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
+  Domain domain { f, 5.0 };
+  MeshBuilder mesh_builder {};
+  Mesh mesh = mesh_builder.create_empty_mesh(domain, 0, 0);
 
   Vertex& v1 = mesh.add_vertex({0.0, 0.0});
   Vertex& v2 = mesh.add_vertex({1.0, 0.0});

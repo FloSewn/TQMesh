@@ -14,7 +14,6 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "Cleanup.h"
-#include "FrontInitData.h"
 #include "Front.h"
 #include "EntityChecks.h"
 
@@ -58,6 +57,17 @@ public:
   DomainVector& domains() { return domains_; }
 
   /*------------------------------------------------------------------
+  | Get the domain that corresponds to a given mesh
+  ------------------------------------------------------------------*/
+  Domain* get_domain(Mesh& mesh)
+  {
+    for ( std::size_t i = 0; i < meshes_.size(); ++i )
+      if ( meshes_[i] == &mesh ) 
+        return domains_[i];
+    return nullptr;
+  }
+
+  /*------------------------------------------------------------------
   | Create a new empty mesh entity, based on the extent of a given
   | domain
   ------------------------------------------------------------------*/
@@ -72,6 +82,24 @@ public:
              domain.vertices().quad_tree().max_depth() }; 
 
   } // create_empty_mesh()
+
+  /*------------------------------------------------------------------
+  | Create a new unique_ptr to an empty mesh entity, 
+  | based on the extent of a given domain
+  ------------------------------------------------------------------*/
+  static inline std::unique_ptr<Mesh>
+  create_empty_mesh_ptr(Domain& domain, 
+                        int mesh_id=DEFAULT_MESH_ID,
+                        int element_color=DEFAULT_ELEMENT_COLOR)
+  {
+    return std::move(
+      std::make_unique<Mesh>(mesh_id, element_color,
+                             domain.vertices().quad_tree().scale(),
+                             domain.vertices().quad_tree().max_items(),
+                             domain.vertices().quad_tree().max_depth() )  
+    );
+
+  } // create_empty_mesh_ptr()
 
   /*------------------------------------------------------------------
   | Add meshes and corresponding domains
@@ -179,7 +207,6 @@ public:
     return true;
 
   } // prepare_mesh()
-
 
 private:
 

@@ -11,13 +11,13 @@
 #include <limits.h>
 
 #include "VecND.h"
-#include "VtkIO.h"
+//#include "VtkIO.h"
 
 #include "utils.h"
 #include "Vertex.h"
 #include "Triangle.h"
 #include "Quad.h"
-#include "NullFacet.h"
+#include "Facet.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -37,7 +37,7 @@ public:
   using QuadVector     = std::vector<Quad*>;
 
   /*------------------------------------------------------------------
-  | Constructor
+  | Constructor 
   ------------------------------------------------------------------*/
   Mesh(int       mesh_id=DEFAULT_MESH_ID,
        int       element_color=DEFAULT_ELEMENT_COLOR,

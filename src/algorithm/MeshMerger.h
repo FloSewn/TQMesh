@@ -54,6 +54,7 @@ public:
     Cleanup::setup_facet_connectivity(*donor_);
 
     // Assign indices to donor mesh
+    Cleanup::assign_mesh_indices(*receiver_);
     Cleanup::assign_mesh_indices(*donor_);
 
     // Search for vertices that are located on the inteface
@@ -143,7 +144,7 @@ private:
   ------------------------------------------------------------------*/
   void copy_donor_quads()
   {
-    for ( const auto& q_ptr : receiver_->quads() )
+    for ( const auto& q_ptr : donor_->quads() )
     {
       auto v1_index = q_ptr->v1().index();
       auto v2_index = q_ptr->v2().index();

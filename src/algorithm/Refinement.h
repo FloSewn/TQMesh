@@ -73,6 +73,13 @@ public:
   {
     mesh.clear_waste();
 
+    // Check if mesh has any twin edges - only meshes without 
+    // twin edges can be refined in order to maintain conformity
+    // between neighboring meshes
+    for ( auto& e_ptr : mesh.boundary_edges() )
+      if ( e_ptr->twin_edge() )
+        return false;
+
     // Gather all coarse edges, quads and tris
     EdgeVector coarse_intr_edges {};
     EdgeVector coarse_bdry_edges {};

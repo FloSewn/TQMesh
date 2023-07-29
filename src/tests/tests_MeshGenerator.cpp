@@ -23,7 +23,6 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "MeshGenerator.h"
-#include "MeshBuilder.h"
 #include "MeshMerger.h"
 #include "Cleanup.h"
 #include "FrontTriangulation.h"
@@ -95,7 +94,7 @@ void initialization()
 
   // Setup the generator
   MeshGenerator generator {};
-  generator.define_mesh( outer_domain );
+  generator.new_mesh( outer_domain );
     
     
 } // initialization()
@@ -109,7 +108,8 @@ void mesh_initializer()
   // Define size functions
   //UserSizeFunction f_1 = [](const Vec2d& p) { return 0.3 + 0.4*p.x; };
   UserSizeFunction f_1 = [](const Vec2d& p) { return 2.5; };
-  UserSizeFunction f_2 = [](const Vec2d& p) { return 2.5 - MIN((p.x-5.0) * 0.3, 2.0); };
+  //UserSizeFunction f_2 = [](const Vec2d& p) { return 2.5 - MIN((p.x-5.0) * 0.3, 2.0); };
+  UserSizeFunction f_2 = [](const Vec2d& p) { return 2.5; };
 
   // Define domains
   double quadtree_scale = 20.0;
@@ -124,7 +124,7 @@ void mesh_initializer()
 
   Vertex& v1_2 = domain_2.add_vertex(  5.0,  0.0 );
   Vertex& v2_2 = domain_2.add_vertex( 10.0,  0.0 );
-  Vertex& v3_2 = domain_2.add_vertex( 10.0,  5.0, 0.1, 1.0 );
+  Vertex& v3_2 = domain_2.add_vertex( 10.0,  5.0 );
   Vertex& v4_2 = domain_2.add_vertex(  5.0,  5.0 );
 
   // Build domain boundaries
@@ -144,33 +144,56 @@ void mesh_initializer()
 
   // Setup the generator
   MeshGenerator generator {};
-  generator.define_mesh( domain_1, 1, 1);
-  generator.define_mesh( domain_2, 2, 2);
+  Mesh& mesh_1 = generator.new_mesh( domain_1, 1, 1);
 
-  Mesh& mesh_1 = generator.mesh(0);
-  Mesh& mesh_2 = generator.mesh(1);
+  generator.set_meshing_algorithm(mesh_1, Algorithm::QuadLayer);
+  generator.quad_layer().n_layers( 1 );
+  generator.quad_layer().first_height( 0.20 );
+  generator.quad_layer().growth_rate( 1.0 );
+  generator.quad_layer().starting_position( 0.0, 0.0 );
+  generator.quad_layer().ending_position( 0.0, 0.0 );
+  CHECK( generator.generate_mesh_elements() );
 
-  FrontTriangulation triangulation_1 {mesh_1, domain_1};
-  CHECK( triangulation_1.generate_elements() );
+  CHECK( mesh_1.n_quads() == 8 );
 
-  FrontTriangulation triangulation_2 {mesh_2, domain_2};
-  CHECK( triangulation_2.generate_elements() );
+  generator.set_meshing_algorithm(mesh_1, Algorithm::Triangulation);
+  CHECK( generator.generate_mesh_elements() );
+
+
+
+  Mesh& mesh_2 = generator.new_mesh( domain_2, 2, 2);
+
+  generator.set_meshing_algorithm(mesh_2, Algorithm::QuadLayer);
+  generator.quad_layer().n_layers( 1 );
+  generator.quad_layer().first_height( 0.20 );
+  generator.quad_layer().growth_rate( 1.0 );
+  generator.quad_layer().starting_position( 0.0, 0.0 );
+  generator.quad_layer().ending_position( 0.0, 0.0 );
+  CHECK( generator.generate_mesh_elements() );
+
+  generator.set_meshing_algorithm(mesh_2, Algorithm::Triangulation);
+  CHECK( generator.generate_mesh_elements() );
+
+  CHECK( mesh_2.n_quads() == 8 );
+
+  Refinement::refine_to_quads( mesh_1 );
 
   MeshMerger merger { mesh_1, mesh_2 };
   CHECK( merger.merge() );
 
   CHECK( EntityChecks::check_mesh_validity( mesh_1 ) );
 
-  Cleanup::merge_triangles_to_quads(mesh_1);
-  
-  Cleanup::merge_degenerate_triangles(mesh_1);
+  //Cleanup::merge_triangles_to_quads(mesh_1);
+  //Cleanup::merge_degenerate_triangles(mesh_1);
     
+  Refinement::refine_to_quads( mesh_1 );
+  Refinement::refine_to_quads( mesh_1 );
   Refinement::refine_to_quads( mesh_1 );
 
   CHECK( EntityChecks::check_mesh_validity( mesh_1 ) );
 
-  Smoother smoother {};
-  smoother.smooth(domain_1, mesh_1, 4);
+  //Smoother smoother {};
+  //smoother.smooth(domain_1, mesh_1, 4);
 
   Cleanup::assign_size_function_to_vertices(mesh_1, domain_1);
   Cleanup::assign_mesh_indices(mesh_1);

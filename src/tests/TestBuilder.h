@@ -19,7 +19,6 @@
 #include "Edge.h"
 #include "Domain.h"
 #include "Boundary.h"
-#include "SizeFunction.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {

@@ -16,7 +16,7 @@
 #include "Edge.h"
 #include "Triangle.h"
 #include "Quad.h"
-#include "NullFacet.h"
+#include "Facet.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {

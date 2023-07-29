@@ -8,6 +8,7 @@
 #pragma once
 
 #include <algorithm>
+#include <memory>
 #include <limits.h>
 
 #include "VecND.h"
@@ -15,7 +16,9 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "MeshBuilder.h"
-
+#include "FrontAlgorithm.h"
+#include "FrontTriangulation.h"
+#include "FrontQuadLayering.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -23,11 +26,22 @@ namespace TQAlgorithm {
 using namespace CppUtils;
 
 /*********************************************************************
+* Different element generation algorithms that utlize an advancing
+* front approach
+*********************************************************************/
+enum class Algorithm { 
+  None,
+  Triangulation,
+  QuadLayer,
+};
+
+/*********************************************************************
 * The actual interface to generate meshes
 *********************************************************************/
 class MeshGenerator
 {
-  using MeshVector = std::vector<std::unique_ptr<Mesh>>;
+  using MeshVector        = std::vector<std::unique_ptr<Mesh>>;
+  using FrontAlgorithmPtr = std::unique_ptr<FrontAlgorithm>;
 
 public:
   /*------------------------------------------------------------------
@@ -48,36 +62,85 @@ public:
   /*------------------------------------------------------------------
   | Initialize a new mesh for a given domain
   ------------------------------------------------------------------*/
-  void define_mesh(Domain& domain,
-                   int     mesh_id = DEFAULT_MESH_ID,
-                   int     element_color = DEFAULT_ELEMENT_COLOR)
+  Mesh& new_mesh(Domain& domain,
+                 int     mesh_id = DEFAULT_MESH_ID,
+                 int     element_color = DEFAULT_ELEMENT_COLOR)
   {
-    meshes_.push_back(
-      std::make_unique<Mesh>(mesh_id, element_color,
-                             domain.vertices().quad_tree().scale(),
-                             domain.vertices().quad_tree().max_items(),
-                             domain.vertices().quad_tree().max_depth() )  
+    meshes_.push_back( 
+      mesh_builder_.create_empty_mesh_ptr(domain, mesh_id, element_color)
     );
 
     Mesh& new_mesh = *( meshes_.back() );
     mesh_builder_.prepare_mesh( new_mesh, domain );
     mesh_builder_.add_mesh_and_domain( new_mesh, domain );
+    
+    return new_mesh;
   }
 
   /*------------------------------------------------------------------
-  | Generate the actual mesh elements for all defined meshes
+  | Set an advancing front algorithm for a specified mesh.
+  | Returns false if the mesh is not connected to this MeshGenerator
+  | or if the algorithm was not found.
+  ------------------------------------------------------------------*/
+  bool set_meshing_algorithm(Mesh& mesh, Algorithm algorithm_type)
+  {
+    Domain* domain = mesh_builder_.get_domain( mesh );
+
+    if ( !domain ) 
+      return false;
+
+    switch (algorithm_type)
+    {
+      case Algorithm::Triangulation:
+        front_algorithm_ 
+          = std::make_unique<FrontTriangulation>(mesh, *domain);
+        algorithm_ = Algorithm::Triangulation;
+        break;
+
+      case Algorithm::QuadLayer:
+        front_algorithm_ 
+          = std::make_unique<FrontQuadLayering>(mesh, *domain);
+        algorithm_ = Algorithm::QuadLayer;
+        break;
+
+      default:
+        algorithm_ = Algorithm::None;
+    }
+
+    return true;
+  }
+
+  /*------------------------------------------------------------------
+  | Use the current front algorithm to generate mesh elements in the
+  | associated mesh
   ------------------------------------------------------------------*/
   bool generate_mesh_elements()
   {
-    return false;
+    if ( algorithm_ == Algorithm::None )
+      return false;
+    return front_algorithm_->generate_elements();
   }
 
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  bool generate_quad_layers()
+  FrontQuadLayering& quad_layer()
   {
-    return false;
+    if ( algorithm_ != Algorithm::QuadLayer )
+      TERMINATE("MeshGenerator::quad_layer(): "
+        "QuadLayer is not chosen as current algorithm.");
+    return *dynamic_cast<FrontQuadLayering*>(front_algorithm_.get());
+  }
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  FrontTriangulation& triangulation()
+  {
+    if ( algorithm_ != Algorithm::Triangulation )
+      TERMINATE("MeshGenerator::triangulation(): "
+        "Triangulation is not chosen as current algorithm.");
+    return *dynamic_cast<FrontTriangulation*>(front_algorithm_.get());
   }
 
 
@@ -85,8 +148,11 @@ private:
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
-  MeshVector  meshes_ {};
-  MeshBuilder mesh_builder_ {};
+  MeshVector         meshes_ {};
+  MeshBuilder        mesh_builder_ {};
+
+  FrontAlgorithmPtr  front_algorithm_;
+  Algorithm          algorithm_ { Algorithm::None };
 
 }; // MeshGenerator
 

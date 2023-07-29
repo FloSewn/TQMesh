@@ -17,7 +17,6 @@
 #include "utils.h"
 #include "Vertex.h"
 #include "Facet.h"
-#include "NullFacet.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
