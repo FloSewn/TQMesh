@@ -145,36 +145,37 @@ void mesh_initializer()
   MeshGenerator generator {};
   Mesh& mesh_1 = generator.new_mesh( domain_1, 1, 1);
 
-  generator.set_algorithm(mesh_1, MeshingAlgorithm::QuadLayer);
-  generator.quad_layer().n_layers( 1 );
-  generator.quad_layer().first_height( 0.20 );
-  generator.quad_layer().growth_rate( 1.0 );
-  generator.quad_layer().starting_position( 0.0, 0.0 );
-  generator.quad_layer().ending_position( 0.0, 0.0 );
-  CHECK( generator.generate_mesh_elements() );
+  CHECK(
+    generator.quad_layer_generation(mesh_1)
+      .n_layers( 1 )
+      .first_height( 0.20 )
+      .growth_rate( 1.0 )
+      .starting_position( 0.0, 0.0 )
+      .ending_position( 0.0, 0.0 )
+      .generate_elements()
+  );
 
-  generator.set_algorithm(mesh_1, MeshingAlgorithm::Triangulation);
-  CHECK( generator.generate_mesh_elements() );
+  CHECK( generator.triangulation(mesh_1).generate_elements() );
   CHECK( mesh_1.n_quads() == 8 );
 
   // Generate mesh 2
   Mesh& mesh_2 = generator.new_mesh( domain_2, 2, 2);
 
-  generator.set_algorithm(mesh_2, MeshingAlgorithm::QuadLayer);
-  generator.quad_layer().n_layers( 1 );
-  generator.quad_layer().first_height( 0.20 );
-  generator.quad_layer().growth_rate( 1.0 );
-  generator.quad_layer().starting_position( 0.0, 0.0 );
-  generator.quad_layer().ending_position( 0.0, 0.0 );
-  CHECK( generator.generate_mesh_elements() );
 
-  generator.set_algorithm(mesh_2, MeshingAlgorithm::Triangulation);
-  CHECK( generator.generate_mesh_elements() );
+  generator.quad_layer_generation(mesh_2)
+    .n_layers( 1 )
+    .first_height( 0.20 )
+    .growth_rate( 1.0 )
+    .starting_position( 0.0, 0.0 )
+    .ending_position( 0.0, 0.0 );
+  CHECK( generator.quad_layer_generation(mesh_2).generate_elements() );
+
+  CHECK( generator.triangulation(mesh_2).generate_elements() );
   CHECK( mesh_2.n_quads() == 8 );
 
   // Refinement of mesh 1 must fail, since it is connected to 
   // mesh 2
-  CHECK( !RefinementStrategy::refine_to_quads( mesh_1 ) );
+  CHECK( !generator.quad_refinement(mesh_1).refine() );
 
   // Merge both meshes
   MeshMerger merger { mesh_1, mesh_2 };
@@ -187,14 +188,14 @@ void mesh_initializer()
     
   // Refinement of mesh 1 must work now, since it has been
   // merged with mesh 2
-  CHECK( RefinementStrategy::refine_to_quads( mesh_1 ) );
-  CHECK( RefinementStrategy::refine_to_quads( mesh_1 ) );
-  CHECK( RefinementStrategy::refine_to_quads( mesh_1 ) );
+  CHECK( generator.quad_refinement(mesh_1).refine() );
+  CHECK( generator.quad_refinement(mesh_1).refine() );
+  CHECK( generator.quad_refinement(mesh_1).refine() );
 
   // Smoothing of mesh 1
-  generator.set_algorithm(mesh_1, SmoothingAlgorithm::Mixed);
-  CHECK( generator.smooth_mesh_elements(2) );
+  CHECK( generator.mixed_smoothing(mesh_1).smooth(2) );
 
+  // Check mesh validity
   CHECK( EntityChecks::check_mesh_validity( mesh_1 ) );
 
   // Prepare for output
@@ -297,34 +298,20 @@ void multiple_neighbors()
 
 
   // Generate meshes
-  generator.set_algorithm(mesh_c, MeshingAlgorithm::Triangulation);
-  CHECK( generator.generate_mesh_elements() );
+  CHECK( generator.triangulation(mesh_c).generate_elements() );
+  CHECK( generator.triangulation(mesh_n).generate_elements() );
+  CHECK( generator.triangulation(mesh_ne).generate_elements() );
+  CHECK( generator.triangulation(mesh_e).generate_elements() );
+  CHECK( generator.triangulation(mesh_se).generate_elements() );
 
-  generator.set_algorithm(mesh_n, MeshingAlgorithm::Triangulation);
-  CHECK( generator.generate_mesh_elements() );
+  CHECK( generator.merge_meshes( mesh_c, mesh_n) );
+  CHECK( generator.merge_meshes( mesh_c, mesh_ne) );
+  CHECK( generator.merge_meshes( mesh_c, mesh_e) );
+  CHECK( generator.merge_meshes( mesh_c, mesh_se) );
 
-  generator.set_algorithm(mesh_ne, MeshingAlgorithm::Triangulation);
-  CHECK( generator.generate_mesh_elements() );
-
-  generator.set_algorithm(mesh_e, MeshingAlgorithm::Triangulation);
-  CHECK( generator.generate_mesh_elements() );
-
-  generator.set_algorithm(mesh_se, MeshingAlgorithm::Triangulation);
-  CHECK( generator.generate_mesh_elements() );
-
-
-  MeshMerger merger_1 { mesh_c, mesh_n };
-  CHECK( merger_1.merge() );
-
-  MeshMerger merger_2 { mesh_c, mesh_ne };
-  CHECK( merger_2.merge() );
-
-  MeshMerger merger_3 { mesh_c, mesh_e };
-  CHECK( merger_3.merge() );
-
-  MeshMerger merger_4 { mesh_c, mesh_se };
-  CHECK( merger_4.merge() );
-
+  CHECK( generator.quad_refinement(mesh_c).refine() );
+  CHECK( generator.quad_refinement(mesh_c).refine() );
+  CHECK( generator.quad_refinement(mesh_c).refine() );
 
 
   MeshCleanup::assign_size_function_to_vertices(mesh_c, domain_c);

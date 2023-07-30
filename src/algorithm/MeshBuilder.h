@@ -131,6 +131,8 @@ public:
     domains_.erase(domains_.begin() + index);
     meshes_.erase(meshes_.begin() + index);
 
+    return true;
+
   } // remove_mesh_and_domain()
 
   /*------------------------------------------------------------------

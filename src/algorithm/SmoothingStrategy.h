@@ -42,6 +42,11 @@ public:
   virtual ~SmoothingStrategy() {}
 
   /*------------------------------------------------------------------
+  | Getters
+  ------------------------------------------------------------------*/
+  Mesh& mesh() { return *mesh_; }
+
+  /*------------------------------------------------------------------
   | The interface to run smoothing algorithms on a given mesh
   ------------------------------------------------------------------*/
   virtual bool smooth(int iterations) = 0;
@@ -217,8 +222,8 @@ public:
   /*------------------------------------------------------------------
   | Setters
   ------------------------------------------------------------------*/
-  void epsilon(double e) { eps_ = e; } 
-  void decay(double d) { decay_ = d; } 
+  LaplaceSmoothingStrategy& epsilon(double e) { eps_ = e; return *this;} 
+  LaplaceSmoothingStrategy& decay(double d) { decay_ = d; return *this;} 
 
   /*------------------------------------------------------------------
   | Apply mesh smoothing
@@ -351,9 +356,10 @@ public:
   /*------------------------------------------------------------------
   | Setters
   ------------------------------------------------------------------*/
-  void epsilon(double e) { eps_ = e; } 
-  void decay(double d) { decay_ = d; } 
-  void angle_factor(double a) { angle_factor_ = a; } 
+  TorsionSmoothingStrategy& epsilon(double e) { eps_ = e; return *this;} 
+  TorsionSmoothingStrategy& decay(double d) { decay_ = d; return *this;} 
+  TorsionSmoothingStrategy& angle_factor(double a) 
+  { angle_factor_ = a; return *this; } 
 
   /*------------------------------------------------------------------
   | Apply mesh smoothing
@@ -495,9 +501,10 @@ public:
   /*------------------------------------------------------------------
   | Setters
   ------------------------------------------------------------------*/
-  void epsilon(double e) { eps_ = e; } 
-  void decay(double d) { decay_ = d; } 
-  void angle_factor(double a) { angle_factor_ = a; } 
+  MixedSmoothingStrategy& epsilon(double e) { eps_ = e; return *this;} 
+  MixedSmoothingStrategy& decay(double d) { decay_ = d; return *this;} 
+  MixedSmoothingStrategy& angle_factor(double a) 
+  { angle_factor_ = a; return *this; } 
 
   /*------------------------------------------------------------------
   | Apply mesh smoothing

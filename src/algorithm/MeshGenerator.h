@@ -16,8 +16,11 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "MeshBuilder.h"
+#include "MeshWriter.h"
+#include "MeshMerger.h"
 #include "MeshingStrategy.h"
 #include "SmoothingStrategy.h"
+#include "RefinementStrategy.h"
 #include "TriangulationStrategy.h"
 #include "QuadLayerStrategy.h"
 
@@ -42,15 +45,21 @@ enum class SmoothingAlgorithm {
   Mixed,
 };
 
+enum class RefinementAlgorithm {
+  None,
+  Quad,
+};
+
 
 /*********************************************************************
 * The actual interface to generate meshes
 *********************************************************************/
 class MeshGenerator
 {
-  using MeshVector           = std::vector<std::unique_ptr<Mesh>>;
-  using MeshingStrategyPtr   = std::unique_ptr<MeshingStrategy>;
-  using SmoothingStrategyPtr = std::unique_ptr<SmoothingStrategy>;
+  using MeshVector            = std::vector<std::unique_ptr<Mesh>>;
+  using MeshingStrategyPtr    = std::unique_ptr<MeshingStrategy>;
+  using SmoothingStrategyPtr  = std::unique_ptr<SmoothingStrategy>;
+  using RefinementStrategyPtr = std::unique_ptr<RefinementStrategy>;
 
 public:
   /*------------------------------------------------------------------
@@ -85,6 +94,118 @@ public:
     
     return new_mesh;
   }
+
+  /*------------------------------------------------------------------
+  | Merge all defined meshes 
+  ------------------------------------------------------------------*/
+  bool merge_meshes(Mesh& receiver, Mesh& donor)
+  {
+    if ( !mesh_builder_.get_domain( receiver ) || 
+         !mesh_builder_.get_domain( donor ) )
+      return false;
+
+    MeshMerger merger ( receiver, donor );
+    bool success = merger.merge();
+
+    if ( success ) 
+    {
+      auto it = std::find_if(meshes_.begin(), meshes_.end(), 
+        [&donor](const std::unique_ptr<Mesh>& ptr)
+        { return ptr.get() ==&donor; }
+      );
+
+      if (it == meshes_.end())
+        return false;
+
+      if ( !mesh_builder_.remove_mesh_and_domain(donor) )
+        return false;
+
+      meshes_.erase( it );
+    }
+
+    return true;
+  }
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  QuadLayerStrategy& quad_layer_generation(Mesh& mesh)
+  {
+    if ( meshing_algorithm_type_ != MeshingAlgorithm::QuadLayer ||
+         &meshing_algorithm_->mesh() != &mesh )
+      if ( !set_algorithm(mesh, MeshingAlgorithm::QuadLayer) )
+        TERMINATE("MeshGenerator::quad_layer_generation(): Invalid mesh provided.");
+
+    return *dynamic_cast<QuadLayerStrategy*>(meshing_algorithm_.get());
+  }
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  TriangulationStrategy& triangulation(Mesh& mesh)
+  {
+    if ( meshing_algorithm_type_ != MeshingAlgorithm::Triangulation ||
+         &meshing_algorithm_->mesh() != &mesh )
+      if ( !set_algorithm(mesh, MeshingAlgorithm::Triangulation) )
+        TERMINATE("MeshGenerator::triangulation(): Invalid mesh provided.");
+
+    return *dynamic_cast<TriangulationStrategy*>(meshing_algorithm_.get());
+  }
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  LaplaceSmoothingStrategy& laplace_smoothing(Mesh& mesh)
+  {
+    if ( smoothing_algorithm_type_ != SmoothingAlgorithm::Laplace ||
+         &smoothing_algorithm_->mesh() != &mesh )
+      if ( !set_algorithm(mesh, SmoothingAlgorithm::Laplace) )
+        TERMINATE("MeshGenerator::laplace_smoothing(): Invalid mesh provided.");
+
+    return *dynamic_cast<LaplaceSmoothingStrategy*>(smoothing_algorithm_.get());
+  }
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  TorsionSmoothingStrategy& torsion_smoothing(Mesh& mesh)
+  {
+    if ( smoothing_algorithm_type_ != SmoothingAlgorithm::Torsion ||
+         &smoothing_algorithm_->mesh() != &mesh )
+      if ( !set_algorithm(mesh, SmoothingAlgorithm::Torsion) )
+        TERMINATE("MeshGenerator::torsion_smoothing(): Invalid mesh provided.");
+
+    return *dynamic_cast<TorsionSmoothingStrategy*>(smoothing_algorithm_.get());
+  }
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  MixedSmoothingStrategy& mixed_smoothing(Mesh& mesh)
+  {
+    if ( smoothing_algorithm_type_ != SmoothingAlgorithm::Mixed ||
+         &smoothing_algorithm_->mesh() != &mesh )
+      if ( !set_algorithm(mesh, SmoothingAlgorithm::Mixed) )
+        TERMINATE("MeshGenerator::mixed_smoothing(): Invalid mesh provided.");
+
+    return *dynamic_cast<MixedSmoothingStrategy*>(smoothing_algorithm_.get());
+  }
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  QuadRefinementStrategy& quad_refinement(Mesh& mesh)
+  {
+    if ( refinement_algorithm_type_ != RefinementAlgorithm::Quad ||
+         &refinement_algorithm_->mesh() != &mesh )
+      if ( !set_algorithm(mesh, RefinementAlgorithm::Quad) )
+        TERMINATE("MeshGenerator::quad_refinement(): Invalid mesh provided.");
+
+    return *dynamic_cast<QuadRefinementStrategy*>(refinement_algorithm_.get());
+  }
+
+
+private:
 
   /*------------------------------------------------------------------
   | Set a mesh generation algorithm for a specified mesh.
@@ -159,97 +280,48 @@ public:
   }
 
   /*------------------------------------------------------------------
-  | Use the current front algorithm to generate mesh elements in the
-  | associated mesh
+  | Set a mesh refinement algorithm for a specified mesh.
+  | Returns false if the mesh is not connected to this MeshGenerator
+  | or if the algorithm was not found.
   ------------------------------------------------------------------*/
-  bool generate_mesh_elements()
+  bool set_algorithm(Mesh& mesh, RefinementAlgorithm algorithm_type)
   {
-    if ( meshing_algorithm_type_ == MeshingAlgorithm::None )
+    Domain* domain = mesh_builder_.get_domain( mesh );
+
+    if ( !domain ) 
       return false;
-    return meshing_algorithm_->generate_elements();
-  }
 
-  /*------------------------------------------------------------------
-  | Use the current smoothing algorithm to smooth the grid elements
-  ------------------------------------------------------------------*/
-  bool smooth_mesh_elements(int iterations)
-  {
-    if ( smoothing_algorithm_type_ == SmoothingAlgorithm::None )
-      return false;
-    return smoothing_algorithm_->smooth(iterations);
-  }
+    switch (algorithm_type)
+    {
+      case RefinementAlgorithm::Quad:
+        refinement_algorithm_ 
+          = std::make_unique<QuadRefinementStrategy>(mesh, *domain);
+        refinement_algorithm_type_ = RefinementAlgorithm::Quad;
+        break;
 
+      default:
+        refinement_algorithm_type_ = RefinementAlgorithm::None;
+    }
 
-
-  /*------------------------------------------------------------------
-  | 
-  ------------------------------------------------------------------*/
-  QuadLayerStrategy& quad_layer()
-  {
-    if ( meshing_algorithm_type_ != MeshingAlgorithm::QuadLayer )
-      TERMINATE("MeshGenerator::quad_layer(): "
-        "QuadLayer is not chosen as current algorithm.");
-    return *dynamic_cast<QuadLayerStrategy*>(meshing_algorithm_.get());
-  }
-
-  /*------------------------------------------------------------------
-  | 
-  ------------------------------------------------------------------*/
-  TriangulationStrategy& triangulation()
-  {
-    if ( meshing_algorithm_type_ != MeshingAlgorithm::Triangulation )
-      TERMINATE("MeshGenerator::triangulation(): "
-        "Triangulation is not chosen as current algorithm.");
-    return *dynamic_cast<TriangulationStrategy*>(meshing_algorithm_.get());
-  }
-
-  /*------------------------------------------------------------------
-  | 
-  ------------------------------------------------------------------*/
-  LaplaceSmoothingStrategy& laplace_smoothing()
-  {
-    if ( smoothing_algorithm_type_ != SmoothingAlgorithm::Laplace )
-      TERMINATE("MeshGenerator::laplace_smoothing(): "
-        "Laplace is not chosen as current smoothing algorithm.");
-    return *dynamic_cast<LaplaceSmoothingStrategy*>(smoothing_algorithm_.get());
-  }
-
-  /*------------------------------------------------------------------
-  | 
-  ------------------------------------------------------------------*/
-  TorsionSmoothingStrategy& torsion_smoothing()
-  {
-    if ( smoothing_algorithm_type_ != SmoothingAlgorithm::Torsion )
-      TERMINATE("MeshGenerator::torsion_smoothing(): "
-        "Torsion is not chosen as current smoothing algorithm.");
-    return *dynamic_cast<TorsionSmoothingStrategy*>(smoothing_algorithm_.get());
-  }
-
-  /*------------------------------------------------------------------
-  | 
-  ------------------------------------------------------------------*/
-  MixedSmoothingStrategy& mixed_smoothing()
-  {
-    if ( smoothing_algorithm_type_ != SmoothingAlgorithm::Mixed )
-      TERMINATE("MeshGenerator::mixed_smoothing(): "
-        "Mixed is not chosen as current smoothing algorithm.");
-    return *dynamic_cast<MixedSmoothingStrategy*>(smoothing_algorithm_.get());
+    return true;
   }
 
 
 
-private:
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
-  MeshVector           meshes_ {};
-  MeshBuilder          mesh_builder_ {};
+  MeshVector            meshes_ {};
+  MeshBuilder           mesh_builder_ {};
 
-  MeshingStrategyPtr   meshing_algorithm_;
-  MeshingAlgorithm     meshing_algorithm_type_ { MeshingAlgorithm::None };
+  MeshingStrategyPtr    meshing_algorithm_;
+  MeshingAlgorithm      meshing_algorithm_type_ { MeshingAlgorithm::None };
 
-  SmoothingStrategyPtr smoothing_algorithm_;
-  SmoothingAlgorithm   smoothing_algorithm_type_ { SmoothingAlgorithm::None };
+  SmoothingStrategyPtr  smoothing_algorithm_;
+  SmoothingAlgorithm    smoothing_algorithm_type_ { SmoothingAlgorithm::None };
+
+  RefinementStrategyPtr refinement_algorithm_;
+  RefinementAlgorithm   refinement_algorithm_type_ { RefinementAlgorithm::None };
 
 }; // MeshGenerator
 

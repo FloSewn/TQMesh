@@ -15,16 +15,72 @@
 #include "Edge.h"
 #include "Triangle.h"
 #include "Quad.h"
+#include "Mesh.h"
+#include "Domain.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
 
 using namespace CppUtils;
 
+
 /*********************************************************************
 * 
 *********************************************************************/
 class RefinementStrategy
+{
+public:
+  /*------------------------------------------------------------------
+  |
+  ------------------------------------------------------------------*/
+  RefinementStrategy(Mesh& mesh, const Domain& domain)
+  : mesh_   { &mesh }
+  , domain_ { &domain }
+  {}
+
+  virtual ~RefinementStrategy() {}
+
+  /*------------------------------------------------------------------
+  | Getters
+  ------------------------------------------------------------------*/
+  Mesh& mesh() { return *mesh_; }
+
+  virtual bool refine() = 0;
+
+protected:
+  /*------------------------------------------------------------------
+  | Attributes
+  ------------------------------------------------------------------*/
+  Mesh*         mesh_;
+  const Domain* domain_;
+
+}; // RefinementStrategy
+
+
+/*********************************************************************
+* Every triangle is refined into three quads and every quads is 
+* refined into four quads. This results in an all-quad mesh.
+*
+*  qi... sub-quads 
+*  vi... vertices
+*        
+*                         
+*                      (v5)                        (v7)         (v6)      (v5) 
+*                       o                             o<--------o---------o    
+*                     /   \                           |         |         ^
+*                   / [q3]  \                         |  [q4]   |   [q3]  |
+*                 /           \                       |         |         |
+*         (v6)  /      (v7)     \  (v4)               |         |(v9)     |  
+*             o---------o---------o               (v8)o---------o---------o(v4)
+*           /           |           \                 |         |         |
+*         /             |             \               |         |         |
+*       /     [q1]      |      [q2]     \             |  [q1]   |   [q2]  |
+*     /                 |                 \           v         |         |
+*   o-------------------o-------------------o         o---------o-------->o
+*  (v1)                (v2)                 (v3)   (v1)        (v2)       (v3)
+*
+*********************************************************************/
+class QuadRefinementStrategy : public RefinementStrategy
 {
 public:
 
@@ -33,118 +89,130 @@ public:
   using QuadVector = std::vector<Quad*>;
 
   /*------------------------------------------------------------------
-  | Every triangle is refined into three quads and every 
-  | quads is refined into four quads.
-  | This results in an all-quad mesh.
-  |
-  |                        
-  |          (v7)         (v6)      (v5)      qi... sub-quads 
-  |             o<--------o---------o         vi... vertices
-  |             |         |         ^
-  |             |  [q4]   |   [q3]  |
-  |             |         |         |
-  |             |         |(v9)     |  
-  |         (v8)o---------o---------o(v4) 
-  |             |         |         |
-  |             |         |         |
-  |             |  [q1]   |   [q2]  |
-  |             v         |         |
-  |             o---------o-------->o
-  |          (v1)        (v2)       (v3)
-  |                         
-  |                         
-  |                        (v5)                 
-  |                         o                   
-  |                       /   \
-  |                     / [q3]  \
-  |                   /           \
-  |           (v6)  /      (v7)     \  (v4)
-  |               o---------o---------o
-  |             /           |           \
-  |           /             |             \
-  |         /     [q1]      |      [q2]     \
-  |       /                 |                 \
-  |     o-------------------o-------------------o
-  |    (v1)                (v2)                 (v3)
-  |
+  | Constructor
   ------------------------------------------------------------------*/
-  template <typename Mesh>
-  static inline bool refine_to_quads(Mesh& mesh)
+  QuadRefinementStrategy(Mesh& mesh, const Domain& domain)
+  : RefinementStrategy(mesh, domain) 
+  {}
+
+  ~QuadRefinementStrategy() {}
+
+  /*------------------------------------------------------------------
+  | The actual mesh refinement
+  ------------------------------------------------------------------*/
+  bool refine() override
   {
-    mesh.clear_waste();
+    // Empty waste 
+    mesh_->clear_waste();
+    coarse_intr_edges_.clear();
+    coarse_bdry_edges_.clear();
+    coarse_quads_.clear();     
+    coarse_tris_.clear();      
 
     // Check if mesh has any twin edges - only meshes without 
     // twin edges can be refined in order to maintain conformity
     // between neighboring meshes
-    for ( auto& e_ptr : mesh.boundary_edges() )
+    for ( auto& e_ptr : mesh_->boundary_edges() )
       if ( e_ptr->twin_edge() )
         return false;
 
-    // Gather all coarse edges, quads and tris
-    EdgeVector coarse_intr_edges {};
-    EdgeVector coarse_bdry_edges {};
-    TriVector  coarse_tris {};
-    QuadVector coarse_quads {};
+    gather_entities_to_refine();
 
-    for ( auto& e : mesh.interior_edges() )
-      coarse_intr_edges.push_back( e.get() );
+    refine_interior_edges();
 
-    for ( auto& e : mesh.boundary_edges() )
-      coarse_bdry_edges.push_back( e.get() );
+    refine_boundary_edges();
 
-    for ( auto& q_ptr : mesh.quads() )
-      coarse_quads.push_back( q_ptr.get() );
+    refine_triangles();
 
-    for ( auto& t_ptr : mesh.triangles() )
-      coarse_tris.push_back( t_ptr.get() );
+    refine_quads();
 
-    // Refine interior edges
-    for ( auto e : coarse_intr_edges )
+    remove_old_entities();
+
+    return true;
+    
+  } // refine_to_quads()
+
+private:
+
+  /*------------------------------------------------------------------
+  | Gather all coarse edges, quads and tris
+  ------------------------------------------------------------------*/
+  void gather_entities_to_refine()
+  {
+    for ( auto& e : mesh_->interior_edges() )
+      coarse_intr_edges_.push_back( e.get() );
+
+    for ( auto& e : mesh_->boundary_edges() )
+      coarse_bdry_edges_.push_back( e.get() );
+
+    for ( auto& q_ptr : mesh_->quads() )
+      coarse_quads_.push_back( q_ptr.get() );
+
+    for ( auto& t_ptr : mesh_->triangles() )
+      coarse_tris_.push_back( t_ptr.get() );
+  }
+
+  /*------------------------------------------------------------------
+  | Refine interior edges
+  ------------------------------------------------------------------*/
+  void refine_interior_edges()
+  {
+    for ( auto e : coarse_intr_edges_ )
     {
-      Vertex& v = mesh.add_vertex( e->xy() );
-      mesh.interior_edges().add_edge( e->v1(), v );
-      mesh.interior_edges().add_edge( v, e->v2() );
+      Vertex& v = mesh_->add_vertex( e->xy() );
+      mesh_->interior_edges().add_edge( e->v1(), v );
+      mesh_->interior_edges().add_edge( v, e->v2() );
       e->sub_vertex( &v );
 
       if ( e->v1().is_fixed() && e->v2().is_fixed() )
         v.is_fixed( true );
     }
+  }
 
-    // Refine boundary edges
-    for ( auto e : coarse_bdry_edges )
+  /*------------------------------------------------------------------
+  | Refine boundary edges
+  ------------------------------------------------------------------*/
+  void refine_boundary_edges()
+  {
+    for ( auto e : coarse_bdry_edges_ )
     {
-      Vertex& v = mesh.add_vertex( e->xy() );
-      mesh.boundary_edges().add_edge( e->v1(), v, e->marker() );
-      mesh.boundary_edges().add_edge( v, e->v2(), e->marker() );
+      Vertex& v = mesh_->add_vertex( e->xy() );
+      mesh_->boundary_edges().add_edge( e->v1(), v, e->marker() );
+      mesh_->boundary_edges().add_edge( v, e->v2(), e->marker() );
       e->sub_vertex( &v );
       v.on_boundary( true );
 
       if ( e->v1().is_fixed() && e->v2().is_fixed() )
         v.is_fixed( true );
     }
+  }
 
-    // Refine all triangle elements
-    for ( auto t : coarse_tris )
+  /*------------------------------------------------------------------
+  | Refine triangles
+  ------------------------------------------------------------------*/
+  void refine_triangles()
+  {
+    for ( auto t : coarse_tris_ )
     {
       Vertex& v1 = t->v1();
       Vertex& v3 = t->v2();
       Vertex& v5 = t->v3();
 
-      Edge* e13 = mesh.get_edge( v1, v3 );
-      Edge* e35 = mesh.get_edge( v3, v5 );
-      Edge* e51 = mesh.get_edge( v5, v1 );
+      Edge* e13 = mesh_->get_edge( v1, v3 );
+      Edge* e35 = mesh_->get_edge( v3, v5 );
+      Edge* e51 = mesh_->get_edge( v5, v1 );
 
       Vertex* v2 = e13->sub_vertex();
       Vertex* v4 = e35->sub_vertex();
       Vertex* v6 = e51->sub_vertex();
 
       // Create new vertex at center of quad
-      Vertex& v7 = mesh.add_vertex( t->xy() );
+      Vertex& v7 = mesh_->add_vertex( t->xy() );
 
       // Create new sub-quads 
-      Quad& q1 = mesh.add_quad( v1, *v2, v7, *v6 );
-      Quad& q2 = mesh.add_quad( v3, *v4, v7, *v2 );
-      Quad& q3 = mesh.add_quad( v5, *v6, v7, *v4 );
+      Quad& q1 = mesh_->add_quad( v1, *v2, v7, *v6 );
+      Quad& q2 = mesh_->add_quad( v3, *v4, v7, *v2 );
+      Quad& q3 = mesh_->add_quad( v5, *v6, v7, *v4 );
 
       // New quads get assigned to colors of old element
       q1.color( t->color() );
@@ -152,23 +220,28 @@ public:
       q3.color( t->color() );
 
       // Create new interior edges
-      mesh.interior_edges().add_edge( *v2, v7 );
-      mesh.interior_edges().add_edge( *v4, v7 );
-      mesh.interior_edges().add_edge( *v6, v7 );
+      mesh_->interior_edges().add_edge( *v2, v7 );
+      mesh_->interior_edges().add_edge( *v4, v7 );
+      mesh_->interior_edges().add_edge( *v6, v7 );
     }
+  }
 
-    // Refine all quad elements
-    for ( auto q : coarse_quads )
+  /*------------------------------------------------------------------
+  | Refine quads
+  ------------------------------------------------------------------*/
+  void refine_quads()
+  {
+    for ( auto q : coarse_quads_ )
     {
       Vertex& v1 = q->v1();
       Vertex& v3 = q->v2();
       Vertex& v5 = q->v3();
       Vertex& v7 = q->v4();
 
-      Edge* e13 = mesh.get_edge( v1, v3 );
-      Edge* e35 = mesh.get_edge( v3, v5 );
-      Edge* e57 = mesh.get_edge( v5, v7 );
-      Edge* e71 = mesh.get_edge( v7, v1 );
+      Edge* e13 = mesh_->get_edge( v1, v3 );
+      Edge* e35 = mesh_->get_edge( v3, v5 );
+      Edge* e57 = mesh_->get_edge( v5, v7 );
+      Edge* e71 = mesh_->get_edge( v7, v1 );
 
       Vertex* v2 = e13->sub_vertex();
       Vertex* v4 = e35->sub_vertex();
@@ -176,13 +249,13 @@ public:
       Vertex* v8 = e71->sub_vertex();
 
       // Create new vertex at center of quad
-      Vertex& v9 = mesh.add_vertex( q->xy() );
+      Vertex& v9 = mesh_->add_vertex( q->xy() );
 
       // Create new sub-quads 
-      Quad& q1 = mesh.add_quad( v1, *v2, v9, *v8 );
-      Quad& q2 = mesh.add_quad( v3, *v4, v9, *v2 );
-      Quad& q3 = mesh.add_quad( v5, *v6, v9, *v4 );
-      Quad& q4 = mesh.add_quad( v7, *v8, v9, *v6 );
+      Quad& q1 = mesh_->add_quad( v1, *v2, v9, *v8 );
+      Quad& q2 = mesh_->add_quad( v3, *v4, v9, *v2 );
+      Quad& q3 = mesh_->add_quad( v5, *v6, v9, *v4 );
+      Quad& q4 = mesh_->add_quad( v7, *v8, v9, *v6 );
 
       // New quads get assigned to colors of old element
       q1.color( q->color() );
@@ -191,37 +264,39 @@ public:
       q4.color( q->color() );
 
       // Create new interior edges
-      mesh.interior_edges().add_edge( *v2, v9 );
-      mesh.interior_edges().add_edge( *v4, v9 );
-      mesh.interior_edges().add_edge( *v6, v9 );
-      mesh.interior_edges().add_edge( *v8, v9 );
+      mesh_->interior_edges().add_edge( *v2, v9 );
+      mesh_->interior_edges().add_edge( *v4, v9 );
+      mesh_->interior_edges().add_edge( *v6, v9 );
+      mesh_->interior_edges().add_edge( *v8, v9 );
     }
+  }
 
-    // Remove old entitires
-    for ( auto e : coarse_intr_edges )
-      mesh.remove_interior_edge( *e );
-      
-    for ( auto e : coarse_bdry_edges )
-      mesh.remove_boundary_edge( *e );
-
-    for ( auto t : coarse_tris )
-      mesh.remove_triangle( *t );
-
-    for ( auto q : coarse_quads )
-      mesh.remove_quad( *q );
-
-    return true;
-    
-  } // refine_to_quads()
-
-
-private:
   /*------------------------------------------------------------------
-  | We hide the constructor, since this class acts only as container
-  | for static inline functions
+  | Remove old entities 
   ------------------------------------------------------------------*/
-  RefinementStrategy() = default;
-  ~RefinementStrategy() {};
+  void remove_old_entities()
+  {
+    for ( auto e : coarse_intr_edges_ )
+      mesh_->remove_interior_edge( *e );
+      
+    for ( auto e : coarse_bdry_edges_ )
+      mesh_->remove_boundary_edge( *e );
+
+    for ( auto t : coarse_tris_ )
+      mesh_->remove_triangle( *t );
+
+    for ( auto q : coarse_quads_ )
+      mesh_->remove_quad( *q );
+  }
+
+  /*------------------------------------------------------------------
+  | Attributes
+  ------------------------------------------------------------------*/
+  EdgeVector coarse_intr_edges_ {};
+  EdgeVector coarse_bdry_edges_ {};
+  QuadVector coarse_quads_      {};
+  TriVector  coarse_tris_       {};
+
 };
 
 

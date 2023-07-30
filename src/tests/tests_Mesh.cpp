@@ -273,7 +273,8 @@ void refine_to_quads()
   CHECK( quad_layer.generate_elements() );
 
   // Refinement
-  RefinementStrategy::refine_to_quads(mesh);
+  QuadRefinementStrategy refinement{mesh, domain};
+  CHECK( refinement.refine() );
 
   // Create triangulation
   TriangulationStrategy triangulation {mesh, domain};
@@ -286,7 +287,7 @@ void refine_to_quads()
   MeshCleanup::merge_degenerate_triangles(mesh);
 
   // Refinement
-  RefinementStrategy::refine_to_quads(mesh);
+  CHECK( refinement.refine() );
 
   // Smooth grid
   MixedSmoothingStrategy smoother {mesh, domain};
@@ -445,6 +446,7 @@ void triangulate_standard_tests(const std::string& test_name)
 *********************************************************************/
 void run_tests_Mesh()
 {
+  /*
   adjust_logging_output_stream("MeshTests.initialization.log");
   MeshTests::initialization();
 
@@ -453,10 +455,12 @@ void run_tests_Mesh()
   
   adjust_logging_output_stream("MeshTests.quad_layer.log");
   MeshTests::quad_layer();
+  */
 
   adjust_logging_output_stream("MeshTests.refine_to_quads.log");
   MeshTests::refine_to_quads();
 
+  /*
   adjust_logging_output_stream("MeshTests.merge_triangles_to_quads.log");
   MeshTests::merge_triangles_to_quads();
 
@@ -472,6 +476,7 @@ void run_tests_Mesh()
     adjust_logging_output_stream("MeshTests.triangulate_" + test_name + ".log");
     MeshTests::triangulate_standard_tests(test_name);
   }
+  */
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");

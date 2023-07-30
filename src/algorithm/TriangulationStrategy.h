@@ -51,12 +51,18 @@ public:
   /*------------------------------------------------------------------
   | Setters 
   ------------------------------------------------------------------*/
-  void n_elements(size_t n) { n_elements_ = n; }
-  void mesh_range_factor(double v) { mesh_range_factor_ = v; }
-  void wide_search_factor(double v) { wide_search_factor_ = v; }
-  void min_cell_quality(double v) { front_update_.min_cell_quality(v); }
-  void max_cell_angle(double v) { front_update_.max_cell_angle(v); }
-  void base_vertex_factor(double v) { base_vertex_factor_ = v; }
+  TriangulationStrategy& n_elements(size_t n) 
+  { n_elements_ = n; return *this; }
+  TriangulationStrategy& mesh_range_factor(double v) 
+  { mesh_range_factor_ = v; return *this; }
+  TriangulationStrategy& wide_search_factor(double v) 
+  { wide_search_factor_ = v; return *this; }
+  TriangulationStrategy& min_cell_quality(double v) 
+  { front_update_.min_cell_quality(v); return *this; }
+  TriangulationStrategy& max_cell_angle(double v) 
+  { front_update_.max_cell_angle(v); return *this; }
+  TriangulationStrategy& base_vertex_factor(double v) 
+  { base_vertex_factor_ = v; return *this; }
 
   /*------------------------------------------------------------------
   | Triangulate a given initialized mesh structure
@@ -83,6 +89,14 @@ public:
 
     // Remove remaining edges from the front
     front_.clear_edges();
+
+    // Improve mesh quality
+    if ( success ) 
+    {
+      MeshCleanup::clear_double_quad_edges(mesh_);
+      MeshCleanup::clear_double_triangle_edges(mesh_);
+      MeshCleanup::merge_degenerate_triangles(mesh_);
+    }
 
     return success;
   }

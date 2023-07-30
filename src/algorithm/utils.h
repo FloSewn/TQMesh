@@ -33,10 +33,5 @@ constexpr double TQ_SMALL              = 1.0E-13;
 constexpr double TQ_MAX                = DBL_MAX;
 constexpr double TQ_MIN                = DBL_MIN;
 
-/*********************************************************************
-* 
-*********************************************************************/
-enum class ExportType { cout, txt, vtu };
-
 } // namespace TQAlgorithm
 } // namespace TQMesh 

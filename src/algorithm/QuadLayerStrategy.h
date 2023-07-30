@@ -113,10 +113,6 @@ public:
   DoubleVector& heights() { return heights_; }
 
   /*------------------------------------------------------------------
-  | Setters
-  ------------------------------------------------------------------*/
-
-  /*------------------------------------------------------------------
   | Smooth the heights of all quad projections in the layer according
   | to the local size function
   ------------------------------------------------------------------*/
@@ -550,13 +546,20 @@ public:
   /*------------------------------------------------------------------
   | Setters 
   ------------------------------------------------------------------*/
-  void n_layers(size_t n) { n_layers_ = n; }
-  void first_height(double h) { first_height_ = h; }
-  void growth_rate(double r) { growth_rate_ = r; }
-  void starting_position(const Vec2d& v) { xy_start_ = v; }
-  void starting_position(double x, double y) { xy_start_ = {x,y}; }
-  void ending_position(const Vec2d& v) { xy_end_ = v; }
-  void ending_position(double x, double y) { xy_end_ = {x,y}; }
+  QuadLayerStrategy& n_layers(size_t n) 
+  { n_layers_ = n; return *this; }
+  QuadLayerStrategy& first_height(double h) 
+  { first_height_ = h; return *this; }
+  QuadLayerStrategy& growth_rate(double r) 
+  { growth_rate_ = r; return *this; }
+  QuadLayerStrategy& starting_position(const Vec2d& v) 
+  { xy_start_ = v; return *this; }
+  QuadLayerStrategy& starting_position(double x, double y) 
+  { xy_start_ = {x,y}; return *this; }
+  QuadLayerStrategy& ending_position(const Vec2d& v) 
+  { xy_end_ = v; return *this; }
+  QuadLayerStrategy& ending_position(double x, double y) 
+  { xy_end_ = {x,y}; return *this; }
 
   /*------------------------------------------------------------------
   | 
