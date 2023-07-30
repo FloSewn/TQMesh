@@ -24,11 +24,11 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "MeshBuilder.h"
-#include "MeshRefinement.h"
+#include "RefinementStrategy.h"
 #include "MeshCleanup.h"
-#include "MeshSmoother.h"
-#include "FrontTriangulation.h"
-#include "FrontQuadLayering.h"
+#include "TriangulationStrategy.h"
+#include "QuadLayerStrategy.h"
+#include "SmoothingStrategy.h"
 
 namespace MeshTests 
 {
@@ -86,7 +86,7 @@ void triangulate()
   Mesh mesh = mesh_builder.create_empty_mesh(domain);
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
-  FrontTriangulation triangulation {mesh, domain};
+  TriangulationStrategy triangulation {mesh, domain};
 
   //CHECK( triangulation.generate_elements() );
     
@@ -202,22 +202,22 @@ void quad_layer()
   Mesh mesh = mesh_builder.create_empty_mesh(domain);
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
-  FrontQuadLayering quadlayering {mesh, domain};
-  quadlayering.n_layers( 2 );
-  quadlayering.first_height( 0.20 );
-  quadlayering.growth_rate( 1.0 );
-  quadlayering.starting_position( 0.0, 2.5 );
-  quadlayering.ending_position( 7.5, 5.0 );
+  QuadLayerStrategy quad_layer {mesh, domain};
+  quad_layer.n_layers( 2 );
+  quad_layer.first_height( 0.20 );
+  quad_layer.growth_rate( 1.0 );
+  quad_layer.starting_position( 0.0, 2.5 );
+  quad_layer.ending_position( 7.5, 5.0 );
 
-  CHECK( quadlayering.generate_elements() );
+  CHECK( quad_layer.generate_elements() );
 
   /*
-  FrontTriangulation triangulation {mesh, domain};
+  TriangulationStrategy triangulation {mesh, domain};
   triangulation.n_elements(0);
   CHECK( triangulation.generate_elements() );
 
-  MeshSmoother smoother {};
-  smoother.smooth(domain, mesh, 2);
+  MixedSmoothingStrategy smoother {mesh, domain};
+  smoother.smooth(2);
   */
 
   // Export mesh
@@ -266,20 +266,20 @@ void refine_to_quads()
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
   // Create quad layers
-  FrontQuadLayering quadlayering {mesh, domain};
-  quadlayering.n_layers( 3 );
-  quadlayering.first_height( 0.35 );
-  quadlayering.growth_rate( 1.0 );
-  quadlayering.starting_position( 0.0, 2.5 );
-  quadlayering.ending_position( 7.5, 5.0 );
+  QuadLayerStrategy quad_layer {mesh, domain};
+  quad_layer.n_layers( 3 );
+  quad_layer.first_height( 0.35 );
+  quad_layer.growth_rate( 1.0 );
+  quad_layer.starting_position( 0.0, 2.5 );
+  quad_layer.ending_position( 7.5, 5.0 );
 
-  CHECK( quadlayering.generate_elements() );
+  CHECK( quad_layer.generate_elements() );
 
   // Refinement
-  MeshRefinement::refine_to_quads(mesh);
+  RefinementStrategy::refine_to_quads(mesh);
 
   // Create triangulation
-  FrontTriangulation triangulation {mesh, domain};
+  TriangulationStrategy triangulation {mesh, domain};
   triangulation.n_elements(0);
 
   CHECK( triangulation.generate_elements() );
@@ -289,11 +289,11 @@ void refine_to_quads()
   MeshCleanup::merge_degenerate_triangles(mesh);
 
   // Refinement
-  MeshRefinement::refine_to_quads(mesh);
+  RefinementStrategy::refine_to_quads(mesh);
 
   // Smooth grid
-  MeshSmoother smoother {};
-  smoother.smooth(domain, mesh, 2);
+  MixedSmoothingStrategy smoother {mesh, domain};
+  smoother.smooth(2);
 
   // Export mesh
   MeshCleanup::assign_size_function_to_vertices(mesh, domain);
@@ -321,15 +321,15 @@ void merge_triangles_to_quads()
   Mesh mesh = mesh_builder.create_empty_mesh( domain );
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
-  FrontTriangulation triangulation {mesh, domain};
+  TriangulationStrategy triangulation {mesh, domain};
 
   CHECK( triangulation.generate_elements() );
   
   MeshCleanup::merge_triangles_to_quads(mesh);
 
   // Smooth grid
-  MeshSmoother smoother {};
-  smoother.smooth(domain, mesh, 2);
+  MixedSmoothingStrategy smoother {mesh, domain};
+  smoother.smooth(2);
 
   // Export mesh
   MeshCleanup::assign_size_function_to_vertices(mesh, domain);
@@ -415,7 +415,7 @@ void triangulate_standard_tests(const std::string& test_name)
   if ( !success )
     return;
 
-  FrontTriangulation triangulation {mesh, domain};
+  TriangulationStrategy triangulation {mesh, domain};
 
   success &= triangulation.generate_elements();
   CHECK( success );

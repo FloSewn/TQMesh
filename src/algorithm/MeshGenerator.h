@@ -16,9 +16,9 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "MeshBuilder.h"
-#include "FrontAlgorithm.h"
-#include "FrontTriangulation.h"
-#include "FrontQuadLayering.h"
+#include "MeshingStrategy.h"
+#include "TriangulationStrategy.h"
+#include "QuadLayerStrategy.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -35,13 +35,14 @@ enum class Algorithm {
   QuadLayer,
 };
 
+
 /*********************************************************************
 * The actual interface to generate meshes
 *********************************************************************/
 class MeshGenerator
 {
-  using MeshVector        = std::vector<std::unique_ptr<Mesh>>;
-  using FrontAlgorithmPtr = std::unique_ptr<FrontAlgorithm>;
+  using MeshVector         = std::vector<std::unique_ptr<Mesh>>;
+  using MeshingStrategyPtr = std::unique_ptr<MeshingStrategy>;
 
 public:
   /*------------------------------------------------------------------
@@ -93,13 +94,13 @@ public:
     {
       case Algorithm::Triangulation:
         front_algorithm_ 
-          = std::make_unique<FrontTriangulation>(mesh, *domain);
+          = std::make_unique<TriangulationStrategy>(mesh, *domain);
         algorithm_ = Algorithm::Triangulation;
         break;
 
       case Algorithm::QuadLayer:
         front_algorithm_ 
-          = std::make_unique<FrontQuadLayering>(mesh, *domain);
+          = std::make_unique<QuadLayerStrategy>(mesh, *domain);
         algorithm_ = Algorithm::QuadLayer;
         break;
 
@@ -124,23 +125,23 @@ public:
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  FrontQuadLayering& quad_layer()
+  QuadLayerStrategy& quad_layer()
   {
     if ( algorithm_ != Algorithm::QuadLayer )
       TERMINATE("MeshGenerator::quad_layer(): "
         "QuadLayer is not chosen as current algorithm.");
-    return *dynamic_cast<FrontQuadLayering*>(front_algorithm_.get());
+    return *dynamic_cast<QuadLayerStrategy*>(front_algorithm_.get());
   }
 
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  FrontTriangulation& triangulation()
+  TriangulationStrategy& triangulation()
   {
     if ( algorithm_ != Algorithm::Triangulation )
       TERMINATE("MeshGenerator::triangulation(): "
         "Triangulation is not chosen as current algorithm.");
-    return *dynamic_cast<FrontTriangulation*>(front_algorithm_.get());
+    return *dynamic_cast<TriangulationStrategy*>(front_algorithm_.get());
   }
 
 
@@ -151,7 +152,7 @@ private:
   MeshVector         meshes_ {};
   MeshBuilder        mesh_builder_ {};
 
-  FrontAlgorithmPtr  front_algorithm_;
+  MeshingStrategyPtr front_algorithm_;
   Algorithm          algorithm_ { Algorithm::None };
 
 }; // MeshGenerator

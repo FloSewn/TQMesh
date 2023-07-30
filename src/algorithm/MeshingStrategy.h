@@ -21,12 +21,10 @@ namespace TQAlgorithm {
 
 using namespace CppUtils;
 
-
-
 /*********************************************************************
 * 
 *********************************************************************/
-class FrontAlgorithm 
+class MeshingStrategy 
 {
 public:
   using VertexVector   = std::vector<Vertex*>;
@@ -35,13 +33,13 @@ public:
   /*------------------------------------------------------------------
   | Constructor / Destructor 
   ------------------------------------------------------------------*/
-  FrontAlgorithm(Mesh& mesh, const Domain& domain)
+  MeshingStrategy(Mesh& mesh, const Domain& domain)
   : mesh_ { mesh }
   , domain_ { domain }
   , front_update_ {mesh, domain, front_} 
   {}
 
-  virtual ~FrontAlgorithm() {}
+  virtual ~MeshingStrategy() {}
 
   /*------------------------------------------------------------------
   | Triangulate a given initialized mesh structure
@@ -57,7 +55,7 @@ protected:
   {
     front_.init_front(mesh_);
     Edge* base = front_.set_base_first();
-    ASSERT( base, "FrontTriangulation::generate_elements(): "
+    ASSERT( base, "MeshingStrategy::generate_elements(): "
       "Invalid advancing front structure.");
 
     if (sort_edges)
@@ -120,7 +118,7 @@ protected:
   Front         front_ {};
   ProgressBar   progress_bar_ {};
 
-}; // FrontAlgorithm
+}; // MeshingStrategy
 
 } // namespace TQAlgorithm
 } // namespace TQMesh

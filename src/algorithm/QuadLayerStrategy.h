@@ -17,7 +17,7 @@
 #include "Domain.h"
 #include "Boundary.h"
 #include "Mesh.h"
-#include "FrontAlgorithm.h"
+#include "MeshingStrategy.h"
 #include "MeshCleanup.h"
 
 namespace TQMesh {
@@ -524,7 +524,7 @@ private:
 /*********************************************************************
 * 
 *********************************************************************/
-class FrontQuadLayering : public FrontAlgorithm
+class QuadLayerStrategy : public MeshingStrategy
 {
 public:
   using VertexVector   = std::vector<Vertex*>;
@@ -533,10 +533,10 @@ public:
   /*------------------------------------------------------------------
   | Constructor / Destructor 
   ------------------------------------------------------------------*/
-  FrontQuadLayering(Mesh& mesh, const Domain& domain)
-  : FrontAlgorithm(mesh, domain) {}
+  QuadLayerStrategy(Mesh& mesh, const Domain& domain)
+  : MeshingStrategy(mesh, domain) {}
 
-  ~FrontQuadLayering() {}
+  ~QuadLayerStrategy() {}
 
   /*------------------------------------------------------------------
   | Getters 
@@ -671,7 +671,7 @@ private:
 
     return true;
 
-  } // FrontQuadLayering::find_next_layer_endings()
+  } // QuadLayerStrategy::find_next_layer_endings()
 
   /*------------------------------------------------------------------
   | This function creates a new layer of quad elements   
@@ -710,7 +710,7 @@ private:
       v2_proj[i] = v_proj.second;
     }
 
-  } // FrontQuadLayering::create_quad_layer() 
+  } // QuadLayerStrategy::create_quad_layer() 
 
 
   /*------------------------------------------------------------------
@@ -787,7 +787,7 @@ private:
 
     return v_proj;
 
-  } // FrontQuadLayering::create_quad_layer_element()
+  } // QuadLayerStrategy::create_quad_layer_element()
 
 
   /*------------------------------------------------------------------
@@ -809,7 +809,7 @@ private:
       close_quad_layer_gap(*v2_proj[i-1], *v1_base[i], *v1_proj[i]);
     }
 
-  } // FrontQuadLayering::finish_quad_layer()
+  } // QuadLayerStrategy::finish_quad_layer()
 
   /*------------------------------------------------------------------
   | In some cases, gaps might be formed during the initial quad layer
@@ -867,12 +867,12 @@ private:
     Edge* base = nullptr;
 
     base = front_.get_edge( v_a, v_b );
-    ASSERT( base, "FrontQuadLayering::close_quad_layer_gabs(): "
+    ASSERT( base, "QuadLayerStrategy::close_quad_layer_gabs(): "
       "Front data structure seems to be corrupted.");
     front_update_.advance_front( *base, v_new, t1_new );
 
     base = front_.get_edge( v_b, v_c );
-    ASSERT( base, "FrontQuadLayering::close_quad_layer_gabs(): "
+    ASSERT( base, "QuadLayerStrategy::close_quad_layer_gabs(): "
       "Front data structure seems to be corrupted.");
     front_update_.advance_front( *base, v_new, t2_new );
 
@@ -901,7 +901,7 @@ private:
     Edge* e_end   = front_.get_edge(v_end, 2); 
 
     ASSERT((e_start && e_end), 
-      "FrontQuadLayering::find_start_and_ending_edges(): "
+      "QuadLayerStrategy::find_start_and_ending_edges(): "
       "Vertex-edge-connectivity seems to be corrupted.");
 
     if ( !front_.is_traversable(*e_start, *e_end) )
@@ -956,7 +956,7 @@ private:
 
 
 
-}; // FrontQuadLayering
+}; // QuadLayerStrategy
 
 } // namespace TQAlgorithm
 } // namespace TQMesh

@@ -20,7 +20,7 @@
 #include "Edge.h"
 #include "Domain.h"
 #include "Mesh.h"
-#include "MeshSmoother.h"
+#include "SmoothingStrategy.h"
 
 namespace MeshSmootherTests 
 {
@@ -28,7 +28,7 @@ using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
-* Test MeshSmoother::smooth() for a pure triangle mesh
+* Test SmoothingStrategy::smooth() for a pure triangle mesh
 *********************************************************************
 void tri_mesh()
 {
@@ -62,7 +62,7 @@ void tri_mesh()
 
   // Create the mesh
   Mesh mesh { domain, 0, 0, 50.0 };
-  MeshSmoother smoother {};
+  SmoothingStrategy smoother {};
 
   mesh.init_advancing_front();
   mesh.triangulate();
@@ -80,9 +80,9 @@ void tri_mesh()
 
 
 /*********************************************************************
-* Run tests for: MeshSmoother.h
+* Run tests for: SmoothingStrategy.h
 *********************************************************************/
-void run_tests_MeshSmoother()
+void run_tests_SmoothingStrategy()
 {
   //MeshSmootherTests::tri_mesh();
 

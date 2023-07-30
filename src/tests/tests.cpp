@@ -75,10 +75,10 @@ int run_tests(const std::string& test_case)
     LOG(INFO) << "  Running tests for \"SizeFunction\" class...";
     run_tests_SizeFunction();
   } 
-  else if ( !test_case.compare("MeshSmoother") )
+  else if ( !test_case.compare("SmoothingStrategy") )
   {
-    LOG(INFO) << "  Running tests for \"MeshSmoother\" class...";
-    run_tests_MeshSmoother();
+    LOG(INFO) << "  Running tests for \"SmoothingStrategy\" class...";
+    run_tests_SmoothingStrategy();
   }
   else if ( !test_case.compare("Mesh") )
   {

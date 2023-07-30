@@ -14,7 +14,7 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "MeshCleanup.h"
-#include "FrontAlgorithm.h"
+#include "MeshingStrategy.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -24,7 +24,7 @@ using namespace CppUtils;
 /*********************************************************************
 * 
 *********************************************************************/
-class FrontTriangulation : public FrontAlgorithm
+class TriangulationStrategy : public MeshingStrategy
 {
 public:
   using VertexVector   = std::vector<Vertex*>;
@@ -33,10 +33,10 @@ public:
   /*------------------------------------------------------------------
   | Constructor / Destructor 
   ------------------------------------------------------------------*/
-  FrontTriangulation(Mesh& mesh, const Domain& domain)
-  : FrontAlgorithm(mesh, domain) {}
+  TriangulationStrategy(Mesh& mesh, const Domain& domain)
+  : MeshingStrategy(mesh, domain) {}
 
-  ~FrontTriangulation() {}
+  ~TriangulationStrategy() {}
 
   /*------------------------------------------------------------------
   | Getters 
@@ -175,7 +175,7 @@ private:
         return false;
     }
 
-  } // FrontTriangulation::advancing_front_loop()
+  } // TriangulationStrategy::advancing_front_loop()
 
   /*------------------------------------------------------------------
   | Attributes
@@ -185,7 +185,7 @@ private:
   double base_vertex_factor_ = 1.5;
   double wide_search_factor_ = 10.0;
 
-}; // FrontTriangulation
+}; // TriangulationStrategy
 
 } // namespace TQAlgorithm
 } // namespace TQMesh

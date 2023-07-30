@@ -84,6 +84,6 @@ add_test(NAME SizeFunction COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "SizeFuncti
 add_test(NAME Mesh COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Mesh")
 add_test(NAME MeshGenerator COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "MeshGenerator")
 add_test(NAME MeshCleanup COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "MeshCleanup")
-add_test(NAME MeshSmoother COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "MeshSmoother")
+add_test(NAME SmoothingStrategy COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "SmoothingStrategy")
 
 

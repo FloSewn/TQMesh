@@ -24,10 +24,9 @@
 #include "Mesh.h"
 #include "MeshGenerator.h"
 #include "MeshMerger.h"
-#include "MeshRefinement.h"
+#include "RefinementStrategy.h"
 #include "MeshCleanup.h"
-#include "FrontTriangulation.h"
-#include "MeshSmoother.h"
+#include "SmoothingStrategy.h"
 #include "EntityChecks.h"
 
 namespace MeshGeneratorTests 
@@ -176,7 +175,7 @@ void mesh_initializer()
 
   CHECK( mesh_2.n_quads() == 8 );
 
-  MeshRefinement::refine_to_quads( mesh_1 );
+  RefinementStrategy::refine_to_quads( mesh_1 );
 
   MeshMerger merger { mesh_1, mesh_2 };
   CHECK( merger.merge() );
@@ -186,13 +185,13 @@ void mesh_initializer()
   //MeshCleanup::merge_triangles_to_quads(mesh_1);
   //MeshCleanup::merge_degenerate_triangles(mesh_1);
     
-  MeshRefinement::refine_to_quads( mesh_1 );
-  MeshRefinement::refine_to_quads( mesh_1 );
-  MeshRefinement::refine_to_quads( mesh_1 );
+  RefinementStrategy::refine_to_quads( mesh_1 );
+  RefinementStrategy::refine_to_quads( mesh_1 );
+  RefinementStrategy::refine_to_quads( mesh_1 );
 
   CHECK( EntityChecks::check_mesh_validity( mesh_1 ) );
 
-  //MeshSmoother smoother {};
+  //SmoothingStrategy smoother {};
   //smoother.smooth(domain_1, mesh_1, 4);
 
   MeshCleanup::assign_size_function_to_vertices(mesh_1, domain_1);
@@ -202,6 +201,136 @@ void mesh_initializer()
   LOG(INFO) << "\n" << mesh_1;
 
 } // mesh_initializer()
+
+/*********************************************************************
+* Test multiple neighboring meshes
+*********************************************************************/
+void multiple_neighbors()
+{
+  UserSizeFunction f_c  = [](const Vec2d& p) { return 2.5; };
+  UserSizeFunction f_n  = [](const Vec2d& p) { return 2.5; };
+  UserSizeFunction f_ne = [](const Vec2d& p) { return 2.5; };
+  UserSizeFunction f_e  = [](const Vec2d& p) { return 2.5; };
+  UserSizeFunction f_se = [](const Vec2d& p) { return 2.5; };
+
+  Domain domain_c  { f_c,  25.0 };
+  Domain domain_n  { f_n,  25.0 };
+  Domain domain_ne { f_ne, 25.0 };
+  Domain domain_e  { f_e,  25.0 };
+  Domain domain_se { f_se, 25.0 };
+
+  // Center mesh
+  Vertex& v1_c = domain_c.add_vertex( -2.5, -2.5 );
+  Vertex& v2_c = domain_c.add_vertex(  2.5, -2.5 );
+  Vertex& v3_c = domain_c.add_vertex(  2.5,  2.5 );
+  Vertex& v4_c = domain_c.add_vertex( -2.5,  2.5 );
+
+  // North mesh
+  Vertex& v1_n = domain_n.add_vertex( -2.5,  2.5 );
+  Vertex& v2_n = domain_n.add_vertex(  2.5,  2.5 );
+  Vertex& v3_n = domain_n.add_vertex(  2.5,  5.0 );
+  Vertex& v4_n = domain_n.add_vertex( -2.5,  5.0 );
+
+  // North east mesh
+  Vertex& v1_ne = domain_ne.add_vertex(  2.5,  2.5 );
+  Vertex& v2_ne = domain_ne.add_vertex(  5.0,  2.5 );
+  Vertex& v3_ne = domain_ne.add_vertex(  5.0,  5.0 );
+  Vertex& v4_ne = domain_ne.add_vertex(  2.5,  5.0 );
+
+  // East mesh
+  Vertex& v1_e = domain_e.add_vertex(  2.5, -2.5 );
+  Vertex& v2_e = domain_e.add_vertex(  5.0, -2.5 );
+  Vertex& v3_e = domain_e.add_vertex(  5.0,  2.5 );
+  Vertex& v4_e = domain_e.add_vertex(  2.5,  2.5 );
+
+  // South east mesh
+  Vertex& v1_se = domain_se.add_vertex(  2.5, -5.0 );
+  Vertex& v2_se = domain_se.add_vertex(  5.0, -5.0 );
+  Vertex& v3_se = domain_se.add_vertex(  5.0, -2.5 );
+  Vertex& v4_se = domain_se.add_vertex(  2.5, -2.5 );
+
+
+  Boundary& bdry_c = domain_c.add_exterior_boundary();
+  bdry_c.add_edge( v1_c, v2_c, 1 );
+  bdry_c.add_edge( v2_c, v3_c, 1 );
+  bdry_c.add_edge( v3_c, v4_c, 1 );
+  bdry_c.add_edge( v4_c, v1_c, 1 );
+
+  Boundary& bdry_n = domain_n.add_exterior_boundary();
+  bdry_n.add_edge( v1_n, v2_n, 2 );
+  bdry_n.add_edge( v2_n, v3_n, 2 );
+  bdry_n.add_edge( v3_n, v4_n, 2 );
+  bdry_n.add_edge( v4_n, v1_n, 2 );
+
+  Boundary& bdry_ne = domain_ne.add_exterior_boundary();
+  bdry_ne.add_edge( v1_ne, v2_ne, 3 );
+  bdry_ne.add_edge( v2_ne, v3_ne, 3 );
+  bdry_ne.add_edge( v3_ne, v4_ne, 3 );
+  bdry_ne.add_edge( v4_ne, v1_ne, 3 );
+
+  Boundary& bdry_e = domain_e.add_exterior_boundary();
+  bdry_e.add_edge( v1_e, v2_e, 4 );
+  bdry_e.add_edge( v2_e, v3_e, 4 );
+  bdry_e.add_edge( v3_e, v4_e, 4 );
+  bdry_e.add_edge( v4_e, v1_e, 4 );
+
+  Boundary& bdry_se = domain_se.add_exterior_boundary();
+  bdry_se.add_edge( v1_se, v2_se, 5 );
+  bdry_se.add_edge( v2_se, v3_se, 5 );
+  bdry_se.add_edge( v3_se, v4_se, 5 );
+  bdry_se.add_edge( v4_se, v1_se, 5 );
+
+
+
+
+  // Setup the generator
+  MeshGenerator generator {};
+  Mesh& mesh_c  = generator.new_mesh( domain_c,  1, 1);
+  Mesh& mesh_n  = generator.new_mesh( domain_n,  2, 2);
+  Mesh& mesh_ne = generator.new_mesh( domain_ne, 3, 3);
+  Mesh& mesh_e  = generator.new_mesh( domain_e,  4, 4);
+  Mesh& mesh_se = generator.new_mesh( domain_se, 5, 5);
+
+
+  // Generate meshes
+  generator.set_meshing_algorithm(mesh_c, Algorithm::Triangulation);
+  CHECK( generator.generate_mesh_elements() );
+
+  generator.set_meshing_algorithm(mesh_n, Algorithm::Triangulation);
+  CHECK( generator.generate_mesh_elements() );
+
+  generator.set_meshing_algorithm(mesh_ne, Algorithm::Triangulation);
+  CHECK( generator.generate_mesh_elements() );
+
+  generator.set_meshing_algorithm(mesh_e, Algorithm::Triangulation);
+  CHECK( generator.generate_mesh_elements() );
+
+  generator.set_meshing_algorithm(mesh_se, Algorithm::Triangulation);
+  CHECK( generator.generate_mesh_elements() );
+
+
+  MeshMerger merger_1 { mesh_c, mesh_n };
+  CHECK( merger_1.merge() );
+
+  MeshMerger merger_2 { mesh_c, mesh_ne };
+  CHECK( merger_2.merge() );
+
+  MeshMerger merger_3 { mesh_c, mesh_e };
+  CHECK( merger_3.merge() );
+
+  MeshMerger merger_4 { mesh_c, mesh_se };
+  CHECK( merger_4.merge() );
+
+
+
+  MeshCleanup::assign_size_function_to_vertices(mesh_c, domain_c);
+  MeshCleanup::assign_mesh_indices(mesh_c);
+  MeshCleanup::setup_facet_connectivity(mesh_c);
+
+  LOG(INFO) << "\n" << mesh_c;
+
+
+} // multiple_neighbors()
 
 } // namespace MeshGeneratorTests
 
@@ -215,6 +344,9 @@ void run_tests_MeshGenerator()
 
   adjust_logging_output_stream("MeshGeneratorTests.mesh_initializer.log");
   MeshGeneratorTests::mesh_initializer();
+
+  adjust_logging_output_stream("MeshGeneratorTests.multiple_neighbors.log");
+  MeshGeneratorTests::multiple_neighbors();
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");

@@ -317,6 +317,14 @@ public:
     return false;
   }
 
+private:
+  /*------------------------------------------------------------------
+  | We hide the constructor, since this class acts only as container
+  | for static inline functions
+  ------------------------------------------------------------------*/
+  TriangleGeometry() = default;
+  ~TriangleGeometry() {};
+
 }; // TriangleGeometry
 
 
@@ -680,6 +688,14 @@ public:
 
     return false;
   }
+
+private:
+  /*------------------------------------------------------------------
+  | We hide the constructor, since this class acts only as container
+  | for static inline functions
+  ------------------------------------------------------------------*/
+  QuadGeometry() = default;
+  ~QuadGeometry() {};
 
 }; // QuadGeometry
 
