@@ -17,6 +17,7 @@
 #include "Mesh.h"
 #include "MeshBuilder.h"
 #include "MeshingStrategy.h"
+#include "SmoothingStrategy.h"
 #include "TriangulationStrategy.h"
 #include "QuadLayerStrategy.h"
 
@@ -26,13 +27,19 @@ namespace TQAlgorithm {
 using namespace CppUtils;
 
 /*********************************************************************
-* Different element generation algorithms that utlize an advancing
-* front approach
+* Different element generation / manipulation algorithms 
 *********************************************************************/
-enum class Algorithm { 
+enum class MeshingAlgorithm { 
   None,
   Triangulation,
   QuadLayer,
+};
+
+enum class SmoothingAlgorithm {
+  None,
+  Laplace,
+  Torsion,
+  Mixed,
 };
 
 
@@ -41,8 +48,9 @@ enum class Algorithm {
 *********************************************************************/
 class MeshGenerator
 {
-  using MeshVector         = std::vector<std::unique_ptr<Mesh>>;
-  using MeshingStrategyPtr = std::unique_ptr<MeshingStrategy>;
+  using MeshVector           = std::vector<std::unique_ptr<Mesh>>;
+  using MeshingStrategyPtr   = std::unique_ptr<MeshingStrategy>;
+  using SmoothingStrategyPtr = std::unique_ptr<SmoothingStrategy>;
 
 public:
   /*------------------------------------------------------------------
@@ -51,7 +59,7 @@ public:
   MeshGenerator() {}
 
   /*------------------------------------------------------------------
-  | 
+  | Getters
   ------------------------------------------------------------------*/
   Mesh& mesh(std::size_t i_mesh)
   {
@@ -79,11 +87,11 @@ public:
   }
 
   /*------------------------------------------------------------------
-  | Set an advancing front algorithm for a specified mesh.
+  | Set a mesh generation algorithm for a specified mesh.
   | Returns false if the mesh is not connected to this MeshGenerator
   | or if the algorithm was not found.
   ------------------------------------------------------------------*/
-  bool set_meshing_algorithm(Mesh& mesh, Algorithm algorithm_type)
+  bool set_algorithm(Mesh& mesh, MeshingAlgorithm algorithm_type)
   {
     Domain* domain = mesh_builder_.get_domain( mesh );
 
@@ -92,20 +100,59 @@ public:
 
     switch (algorithm_type)
     {
-      case Algorithm::Triangulation:
-        front_algorithm_ 
+      case MeshingAlgorithm::Triangulation:
+        meshing_algorithm_ 
           = std::make_unique<TriangulationStrategy>(mesh, *domain);
-        algorithm_ = Algorithm::Triangulation;
+        meshing_algorithm_type_ = MeshingAlgorithm::Triangulation;
         break;
 
-      case Algorithm::QuadLayer:
-        front_algorithm_ 
+      case MeshingAlgorithm::QuadLayer:
+        meshing_algorithm_ 
           = std::make_unique<QuadLayerStrategy>(mesh, *domain);
-        algorithm_ = Algorithm::QuadLayer;
+        meshing_algorithm_type_ = MeshingAlgorithm::QuadLayer;
         break;
 
       default:
-        algorithm_ = Algorithm::None;
+        meshing_algorithm_type_ = MeshingAlgorithm::None;
+    }
+
+    return true;
+  }
+
+  /*------------------------------------------------------------------
+  | Set a mesh smoothing algorithm for a specified mesh.
+  | Returns false if the mesh is not connected to this MeshGenerator
+  | or if the algorithm was not found.
+  ------------------------------------------------------------------*/
+  bool set_algorithm(Mesh& mesh, SmoothingAlgorithm algorithm_type)
+  {
+    Domain* domain = mesh_builder_.get_domain( mesh );
+
+    if ( !domain ) 
+      return false;
+
+    switch (algorithm_type)
+    {
+      case SmoothingAlgorithm::Laplace:
+        smoothing_algorithm_ 
+          = std::make_unique<LaplaceSmoothingStrategy>(mesh, *domain);
+        smoothing_algorithm_type_ = SmoothingAlgorithm::Laplace;
+        break;
+
+      case SmoothingAlgorithm::Torsion:
+        smoothing_algorithm_ 
+          = std::make_unique<TorsionSmoothingStrategy>(mesh, *domain);
+        smoothing_algorithm_type_ = SmoothingAlgorithm::Torsion;
+        break;
+
+      case SmoothingAlgorithm::Mixed:
+        smoothing_algorithm_ 
+          = std::make_unique<MixedSmoothingStrategy>(mesh, *domain);
+        smoothing_algorithm_type_ = SmoothingAlgorithm::Mixed;
+        break;
+
+      default:
+        smoothing_algorithm_type_ = SmoothingAlgorithm::None;
     }
 
     return true;
@@ -117,20 +164,32 @@ public:
   ------------------------------------------------------------------*/
   bool generate_mesh_elements()
   {
-    if ( algorithm_ == Algorithm::None )
+    if ( meshing_algorithm_type_ == MeshingAlgorithm::None )
       return false;
-    return front_algorithm_->generate_elements();
+    return meshing_algorithm_->generate_elements();
   }
+
+  /*------------------------------------------------------------------
+  | Use the current smoothing algorithm to smooth the grid elements
+  ------------------------------------------------------------------*/
+  bool smooth_mesh_elements(int iterations)
+  {
+    if ( smoothing_algorithm_type_ == SmoothingAlgorithm::None )
+      return false;
+    return smoothing_algorithm_->smooth(iterations);
+  }
+
+
 
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
   QuadLayerStrategy& quad_layer()
   {
-    if ( algorithm_ != Algorithm::QuadLayer )
+    if ( meshing_algorithm_type_ != MeshingAlgorithm::QuadLayer )
       TERMINATE("MeshGenerator::quad_layer(): "
         "QuadLayer is not chosen as current algorithm.");
-    return *dynamic_cast<QuadLayerStrategy*>(front_algorithm_.get());
+    return *dynamic_cast<QuadLayerStrategy*>(meshing_algorithm_.get());
   }
 
   /*------------------------------------------------------------------
@@ -138,22 +197,59 @@ public:
   ------------------------------------------------------------------*/
   TriangulationStrategy& triangulation()
   {
-    if ( algorithm_ != Algorithm::Triangulation )
+    if ( meshing_algorithm_type_ != MeshingAlgorithm::Triangulation )
       TERMINATE("MeshGenerator::triangulation(): "
         "Triangulation is not chosen as current algorithm.");
-    return *dynamic_cast<TriangulationStrategy*>(front_algorithm_.get());
+    return *dynamic_cast<TriangulationStrategy*>(meshing_algorithm_.get());
   }
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  LaplaceSmoothingStrategy& laplace_smoothing()
+  {
+    if ( smoothing_algorithm_type_ != SmoothingAlgorithm::Laplace )
+      TERMINATE("MeshGenerator::laplace_smoothing(): "
+        "Laplace is not chosen as current smoothing algorithm.");
+    return *dynamic_cast<LaplaceSmoothingStrategy*>(smoothing_algorithm_.get());
+  }
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  TorsionSmoothingStrategy& torsion_smoothing()
+  {
+    if ( smoothing_algorithm_type_ != SmoothingAlgorithm::Torsion )
+      TERMINATE("MeshGenerator::torsion_smoothing(): "
+        "Torsion is not chosen as current smoothing algorithm.");
+    return *dynamic_cast<TorsionSmoothingStrategy*>(smoothing_algorithm_.get());
+  }
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  MixedSmoothingStrategy& mixed_smoothing()
+  {
+    if ( smoothing_algorithm_type_ != SmoothingAlgorithm::Mixed )
+      TERMINATE("MeshGenerator::mixed_smoothing(): "
+        "Mixed is not chosen as current smoothing algorithm.");
+    return *dynamic_cast<MixedSmoothingStrategy*>(smoothing_algorithm_.get());
+  }
+
 
 
 private:
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
-  MeshVector         meshes_ {};
-  MeshBuilder        mesh_builder_ {};
+  MeshVector           meshes_ {};
+  MeshBuilder          mesh_builder_ {};
 
-  MeshingStrategyPtr front_algorithm_;
-  Algorithm          algorithm_ { Algorithm::None };
+  MeshingStrategyPtr   meshing_algorithm_;
+  MeshingAlgorithm     meshing_algorithm_type_ { MeshingAlgorithm::None };
+
+  SmoothingStrategyPtr smoothing_algorithm_;
+  SmoothingAlgorithm   smoothing_algorithm_type_ { SmoothingAlgorithm::None };
 
 }; // MeshGenerator
 

@@ -92,60 +92,6 @@ public:
 
 
   /*------------------------------------------------------------------
-  | Every vertex gets assigned its neighboring vertices and these 
-  | are then sorted by means of ascending angles
-  | This function requires, that all the interior edges and 
-  | boundary edges of the mesh have been generated 
-  | -> element adjacency of the edges is not required here
-  ------------------------------------------------------------------*/
-  template <typename Mesh>
-  static inline void setup_vertex_connectivity(Mesh& mesh)
-  {
-    // Remove all current vertex-to-vertex connectivities
-    for ( auto& v_ptr : mesh.vertices() )
-      v_ptr->vertices().clear();
-
-    // Get vertex-to-vertex connectivity from interior edges
-    for ( const auto& e : mesh.interior_edges() )
-    {
-      Vertex* v1 = &(e->v1());
-      Vertex* v2 = &(e->v2());
-
-      v1->vertices().push_back( v2 );
-      v2->vertices().push_back( v1 );
-    }
-
-    // Get vertex-to-vertex connectivity from boundary edges
-    for ( const auto& e : mesh.boundary_edges() )
-    {
-      Vertex* v1 = &(e->v1());
-      Vertex* v2 = &(e->v2());
-
-      v1->vertices().push_back( v2 );
-      v2->vertices().push_back( v1 );
-    }
-
-    // Sort local vertex connectivities by ascending angle
-    for ( auto& v_ptr : mesh.vertices() )
-    {
-      const Vec2d xy = v_ptr->xy();
-
-      std::sort( v_ptr->vertices().begin(), v_ptr->vertices().end(),
-      [xy] ( Vertex* v1, Vertex* v2 )
-      {
-        const Vec2d dxy1 = v1->xy() - xy;
-        const Vec2d dxy2 = v2->xy() - xy;
-        const double a1 = std::atan2(dxy1.y, dxy1.x);
-        const double a2 = std::atan2(dxy2.y, dxy2.x);
-
-        return ( a1 < a2 );
-      });
-    }
-
-  } // MeshCleanup::setup_vertex_connectivity()
-
-
-  /*------------------------------------------------------------------
   | Initialize the connectivity between facets and facets, as well  
   | as between edges and facets
   ------------------------------------------------------------------*/
@@ -258,8 +204,8 @@ public:
   |                     v4                       v1
   |
   | -> This function requires a finalized mesh and that the functions
-  |    assign_mesh_indices(), setup_vertex_connectivity() 
-  |    and setup_facet_connectivity() have been called before.
+  |    assign_mesh_indices() and setup_facet_connectivity() 
+  |    have been called before.
   |
   ------------------------------------------------------------------*/
   template <typename Mesh>
@@ -268,7 +214,6 @@ public:
     if (init)
     {
       MeshCleanup::assign_mesh_indices(mesh);
-      MeshCleanup::setup_vertex_connectivity(mesh);
       MeshCleanup::setup_facet_connectivity(mesh);
     }
 
@@ -433,7 +378,6 @@ public:
 
     // Re-initialize facet-to-facet connectivity
     MeshCleanup::assign_mesh_indices(mesh);
-    MeshCleanup::setup_vertex_connectivity(mesh);
     MeshCleanup::setup_facet_connectivity(mesh);
 
   } // MeshCleanup::clear_double_quad_edges() 
@@ -469,8 +413,8 @@ public:
   |                                  v4
   |
   | -> This function requires a finalized mesh and that the functions
-  |    assign_mesh_indices(), setup_vertex_connectivity() 
-  |    and setup_facet_connectivity() have been called before.
+  |    assign_mesh_indices() and setup_facet_connectivity() have 
+  |    been called before.
   |
   | -> This function should be called after the function 
   |    clean_double_quad_edges(), because such triangles might be 
@@ -483,7 +427,6 @@ public:
     if (init)
     {
       MeshCleanup::assign_mesh_indices(mesh);
-      MeshCleanup::setup_vertex_connectivity(mesh);
       MeshCleanup::setup_facet_connectivity(mesh);
     }
 
@@ -627,7 +570,6 @@ public:
 
     // Re-initialize facet-to-facet connectivity
     MeshCleanup::assign_mesh_indices(mesh);
-    MeshCleanup::setup_vertex_connectivity(mesh);
     MeshCleanup::setup_facet_connectivity(mesh);
 
   } // MeshCleanup::clear_double_triangle_edges()
@@ -735,7 +677,6 @@ public:
 
     // Re-initialize facet-to-facet connectivity
     MeshCleanup::assign_mesh_indices(mesh);
-    MeshCleanup::setup_vertex_connectivity(mesh);
     MeshCleanup::setup_facet_connectivity(mesh);
    
   } // merge_degenerate_triangles()

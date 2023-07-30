@@ -78,7 +78,6 @@ void clear_double_quad_edges()
   CHECK( EntityChecks::check_mesh_validity(mesh) );
 
   MeshCleanup::assign_mesh_indices(mesh);
-  MeshCleanup::setup_vertex_connectivity(mesh);
   MeshCleanup::setup_facet_connectivity(mesh);
 
   CHECK( q1.index() == 0 );
@@ -88,9 +87,6 @@ void clear_double_quad_edges()
 
   CHECK( intr_edge_4_6.facet_l() == &q3 );
   CHECK( intr_edge_4_6.facet_r() == &q2 );
-
-  CHECK( v4.vertices().size() == 5 );
-
 
   MeshCleanup::clear_double_quad_edges(mesh, false);
 
@@ -147,7 +143,6 @@ void clear_double_triangle_edges()
   CHECK( EntityChecks::check_mesh_validity(mesh) );
 
   MeshCleanup::assign_mesh_indices(mesh);
-  MeshCleanup::setup_vertex_connectivity(mesh);
   MeshCleanup::setup_facet_connectivity(mesh);
 
   MeshCleanup::clear_double_triangle_edges(mesh, false);

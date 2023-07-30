@@ -110,36 +110,11 @@ public:
     return *(*iter);
   }
 
-  /*------------------------------------------------------------------
-  | Access vertices that are adjacent to this vertex 
-  ------------------------------------------------------------------*/
-  const VertexVector& vertices() const { return verts_; }
-  VertexVector& vertices() { return verts_; }
-  const Vertex* adjacent_vertex(size_t i) const { return verts_[i]; }
-  Vertex* adjacent_vertex(size_t i) { return verts_[i]; }
-
-  /*------------------------------------------------------------------
-  | Add / remove adjacent simplices 
-  ------------------------------------------------------------------*/
-  void add_vertex(Vertex& v) { verts_.push_back(&v); }
-  void remove_vertex(Vertex& v) 
-  { verts_.erase(std::remove(verts_.begin(), verts_.end(), &v), verts_.end()); }
-
   void add_edge(Edge& e) { edges_.push_back(&e); }
   void remove_edge(Edge& e) { edges_.remove(&e); }
 
   void add_facet(Facet& t) { facets_.push_back(&t); }
   void remove_facet(Facet& t) { facets_.remove(&t); }
-
-  /*------------------------------------------------------------------
-  | Functions for adjacency checks
-  ------------------------------------------------------------------*/
-  bool is_adjacent(const Vertex& q) 
-  {
-    for ( auto v : verts_ )
-      if ( &q == v ) return true;
-    return false;
-  }
 
   bool is_adjacent(const Edge& q) 
   {
@@ -212,7 +187,6 @@ private:
   ------------------------------------------------------------------*/
   EdgeList            edges_    { };
   FacetList           facets_   { };
-  VertexVector        verts_    { };
 
   double              mesh_size_  { 0.0 };
   double              size_range_ { 0.0 };

@@ -57,7 +57,6 @@ void initialization()
   mesh.add_interior_edge(v3, v1);
 
   MeshCleanup::assign_mesh_indices(mesh);
-  MeshCleanup::setup_vertex_connectivity(mesh);
 
   LOG(INFO) << mesh;
 
@@ -105,7 +104,6 @@ void triangulate()
   // Export mesh
   MeshCleanup::assign_size_function_to_vertices(mesh, domain);
   MeshCleanup::assign_mesh_indices(mesh);
-  MeshCleanup::setup_vertex_connectivity(mesh);
   MeshCleanup::setup_facet_connectivity(mesh);
   LOG(DEBUG) << "\n" << mesh;
 
@@ -223,7 +221,6 @@ void quad_layer()
   // Export mesh
   MeshCleanup::assign_size_function_to_vertices(mesh, domain);
   MeshCleanup::assign_mesh_indices(mesh);
-  MeshCleanup::setup_vertex_connectivity(mesh);
   MeshCleanup::setup_facet_connectivity(mesh);
   LOG(DEBUG) << "\n" << mesh;
 
@@ -298,7 +295,6 @@ void refine_to_quads()
   // Export mesh
   MeshCleanup::assign_size_function_to_vertices(mesh, domain);
   MeshCleanup::assign_mesh_indices(mesh);
-  MeshCleanup::setup_vertex_connectivity(mesh);
   MeshCleanup::setup_facet_connectivity(mesh);
   LOG(DEBUG) << "\n" << mesh;
 
@@ -334,7 +330,6 @@ void merge_triangles_to_quads()
   // Export mesh
   MeshCleanup::assign_size_function_to_vertices(mesh, domain);
   MeshCleanup::assign_mesh_indices(mesh);
-  MeshCleanup::setup_vertex_connectivity(mesh);
   MeshCleanup::setup_facet_connectivity(mesh);
   LOG(DEBUG) << "\n" << mesh;
 
@@ -387,7 +382,6 @@ void pave()
   // Export mesh
   MeshCleanup::assign_size_function_to_vertices(mesh, domain);
   MeshCleanup::assign_mesh_indices(mesh);
-  MeshCleanup::setup_vertex_connectivity(mesh);
   MeshCleanup::setup_facet_connectivity(mesh);
   LOG(DEBUG) << "\n" << mesh;
 
@@ -434,7 +428,6 @@ void triangulate_standard_tests(const std::string& test_name)
 
   if ( success )
   {
-    MeshCleanup::setup_vertex_connectivity(mesh);
     MeshCleanup::setup_facet_connectivity(mesh);
   }
 

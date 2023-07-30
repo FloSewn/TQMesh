@@ -141,11 +141,11 @@ void mesh_initializer()
   bdry_2.add_edge( v3_2, v4_2, edge_marker );
   bdry_2.add_edge( v4_2, v1_2, edge_marker );
 
-  // Setup the generator
+  // Generate mesh 1
   MeshGenerator generator {};
   Mesh& mesh_1 = generator.new_mesh( domain_1, 1, 1);
 
-  generator.set_meshing_algorithm(mesh_1, Algorithm::QuadLayer);
+  generator.set_algorithm(mesh_1, MeshingAlgorithm::QuadLayer);
   generator.quad_layer().n_layers( 1 );
   generator.quad_layer().first_height( 0.20 );
   generator.quad_layer().growth_rate( 1.0 );
@@ -153,16 +153,14 @@ void mesh_initializer()
   generator.quad_layer().ending_position( 0.0, 0.0 );
   CHECK( generator.generate_mesh_elements() );
 
+  generator.set_algorithm(mesh_1, MeshingAlgorithm::Triangulation);
+  CHECK( generator.generate_mesh_elements() );
   CHECK( mesh_1.n_quads() == 8 );
 
-  generator.set_meshing_algorithm(mesh_1, Algorithm::Triangulation);
-  CHECK( generator.generate_mesh_elements() );
-
-
-
+  // Generate mesh 2
   Mesh& mesh_2 = generator.new_mesh( domain_2, 2, 2);
 
-  generator.set_meshing_algorithm(mesh_2, Algorithm::QuadLayer);
+  generator.set_algorithm(mesh_2, MeshingAlgorithm::QuadLayer);
   generator.quad_layer().n_layers( 1 );
   generator.quad_layer().first_height( 0.20 );
   generator.quad_layer().growth_rate( 1.0 );
@@ -170,13 +168,15 @@ void mesh_initializer()
   generator.quad_layer().ending_position( 0.0, 0.0 );
   CHECK( generator.generate_mesh_elements() );
 
-  generator.set_meshing_algorithm(mesh_2, Algorithm::Triangulation);
+  generator.set_algorithm(mesh_2, MeshingAlgorithm::Triangulation);
   CHECK( generator.generate_mesh_elements() );
-
   CHECK( mesh_2.n_quads() == 8 );
 
-  RefinementStrategy::refine_to_quads( mesh_1 );
+  // Refinement of mesh 1 must fail, since it is connected to 
+  // mesh 2
+  CHECK( !RefinementStrategy::refine_to_quads( mesh_1 ) );
 
+  // Merge both meshes
   MeshMerger merger { mesh_1, mesh_2 };
   CHECK( merger.merge() );
 
@@ -185,15 +185,19 @@ void mesh_initializer()
   //MeshCleanup::merge_triangles_to_quads(mesh_1);
   //MeshCleanup::merge_degenerate_triangles(mesh_1);
     
-  RefinementStrategy::refine_to_quads( mesh_1 );
-  RefinementStrategy::refine_to_quads( mesh_1 );
-  RefinementStrategy::refine_to_quads( mesh_1 );
+  // Refinement of mesh 1 must work now, since it has been
+  // merged with mesh 2
+  CHECK( RefinementStrategy::refine_to_quads( mesh_1 ) );
+  CHECK( RefinementStrategy::refine_to_quads( mesh_1 ) );
+  CHECK( RefinementStrategy::refine_to_quads( mesh_1 ) );
+
+  // Smoothing of mesh 1
+  generator.set_algorithm(mesh_1, SmoothingAlgorithm::Mixed);
+  CHECK( generator.smooth_mesh_elements(2) );
 
   CHECK( EntityChecks::check_mesh_validity( mesh_1 ) );
 
-  //SmoothingStrategy smoother {};
-  //smoother.smooth(domain_1, mesh_1, 4);
-
+  // Prepare for output
   MeshCleanup::assign_size_function_to_vertices(mesh_1, domain_1);
   MeshCleanup::assign_mesh_indices(mesh_1);
   MeshCleanup::setup_facet_connectivity(mesh_1);
@@ -293,19 +297,19 @@ void multiple_neighbors()
 
 
   // Generate meshes
-  generator.set_meshing_algorithm(mesh_c, Algorithm::Triangulation);
+  generator.set_algorithm(mesh_c, MeshingAlgorithm::Triangulation);
   CHECK( generator.generate_mesh_elements() );
 
-  generator.set_meshing_algorithm(mesh_n, Algorithm::Triangulation);
+  generator.set_algorithm(mesh_n, MeshingAlgorithm::Triangulation);
   CHECK( generator.generate_mesh_elements() );
 
-  generator.set_meshing_algorithm(mesh_ne, Algorithm::Triangulation);
+  generator.set_algorithm(mesh_ne, MeshingAlgorithm::Triangulation);
   CHECK( generator.generate_mesh_elements() );
 
-  generator.set_meshing_algorithm(mesh_e, Algorithm::Triangulation);
+  generator.set_algorithm(mesh_e, MeshingAlgorithm::Triangulation);
   CHECK( generator.generate_mesh_elements() );
 
-  generator.set_meshing_algorithm(mesh_se, Algorithm::Triangulation);
+  generator.set_algorithm(mesh_se, MeshingAlgorithm::Triangulation);
   CHECK( generator.generate_mesh_elements() );
 
 
