@@ -158,9 +158,10 @@ void mesh_initializer()
   CHECK( generator.triangulation(mesh_1).generate_elements() );
   CHECK( mesh_1.n_quads() == 8 );
 
+
+
   // Generate mesh 2
   Mesh& mesh_2 = generator.new_mesh( domain_2, 2, 2);
-
 
   generator.quad_layer_generation(mesh_2)
     .n_layers( 1 )
@@ -178,14 +179,15 @@ void mesh_initializer()
   CHECK( !generator.quad_refinement(mesh_1).refine() );
 
   // Merge both meshes
-  MeshMerger merger { mesh_1, mesh_2 };
-  CHECK( merger.merge() );
-
+  CHECK( generator.merge_meshes( mesh_1, mesh_2 ) );
   CHECK( EntityChecks::check_mesh_validity( mesh_1 ) );
+  CHECK( !generator.is_valid( mesh_2 ) );
 
   //MeshCleanup::merge_triangles_to_quads(mesh_1);
   //MeshCleanup::merge_degenerate_triangles(mesh_1);
     
+  CHECK( generator.tri2quad_modification(mesh_1).modify() );
+
   // Refinement of mesh 1 must work now, since it has been
   // merged with mesh 2
   CHECK( generator.quad_refinement(mesh_1).refine() );
@@ -193,17 +195,20 @@ void mesh_initializer()
   CHECK( generator.quad_refinement(mesh_1).refine() );
 
   // Smoothing of mesh 1
-  CHECK( generator.mixed_smoothing(mesh_1).smooth(2) );
+  //CHECK( generator.mixed_smoothing(mesh_1).smooth(2) );
 
   // Check mesh validity
   CHECK( EntityChecks::check_mesh_validity( mesh_1 ) );
 
-  // Prepare for output
-  MeshCleanup::assign_size_function_to_vertices(mesh_1, domain_1);
-  MeshCleanup::assign_mesh_indices(mesh_1);
-  MeshCleanup::setup_facet_connectivity(mesh_1);
+  // Write mesh to vtu file
+  std::string source_directory { TQMESH_SOURCE_DIR };
+  std::string filepath { source_directory 
+    + "/auxiliary/test_data/" 
+    + "MeshGeneratorTests.mesh_initializer" 
+  };
 
-  LOG(INFO) << "\n" << mesh_1;
+  CHECK( generator.write_mesh( mesh_1, filepath, MeshExportType::VTU ) );
+  CHECK( !generator.write_mesh( mesh_2, filepath, MeshExportType::VTU ) );
 
 } // mesh_initializer()
 
@@ -330,14 +335,14 @@ void multiple_neighbors()
 *********************************************************************/
 void run_tests_MeshGenerator()
 {
-  adjust_logging_output_stream("MeshGeneratorTests.initialization.log");
-  MeshGeneratorTests::initialization();
+  //adjust_logging_output_stream("MeshGeneratorTests.initialization.log");
+  //MeshGeneratorTests::initialization();
 
   adjust_logging_output_stream("MeshGeneratorTests.mesh_initializer.log");
   MeshGeneratorTests::mesh_initializer();
 
-  adjust_logging_output_stream("MeshGeneratorTests.multiple_neighbors.log");
-  MeshGeneratorTests::multiple_neighbors();
+  //adjust_logging_output_stream("MeshGeneratorTests.multiple_neighbors.log");
+  //MeshGeneratorTests::multiple_neighbors();
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");

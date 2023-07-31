@@ -22,11 +22,10 @@ using namespace CppUtils;
 /*********************************************************************
 * 
 *********************************************************************/
-enum class MeshExportType 
-{ 
-  cout, 
-  txt, 
-  vtu 
+enum class MeshExportType { 
+  COUT, 
+  TXT, 
+  VTU 
 };
 
 
@@ -57,14 +56,14 @@ public:
 
     switch (export_type)
     {
-      case MeshExportType::cout:
+      case MeshExportType::COUT:
         std::cout << (*mesh_);
         return true;
 
-      case MeshExportType::txt:
+      case MeshExportType::TXT:
         return write_to_txt( filename );
 
-      case MeshExportType::vtu:
+      case MeshExportType::VTU:
         return write_to_vtu( filename );
     }
 

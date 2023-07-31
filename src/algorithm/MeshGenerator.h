@@ -21,6 +21,7 @@
 #include "MeshingStrategy.h"
 #include "SmoothingStrategy.h"
 #include "RefinementStrategy.h"
+#include "ModificationStrategy.h"
 #include "TriangulationStrategy.h"
 #include "QuadLayerStrategy.h"
 
@@ -50,16 +51,23 @@ enum class RefinementAlgorithm {
   Quad,
 };
 
+enum class ModificationAlgorithm {
+  None,
+  Tri2Quad,
+  QMorph,
+};
+
 
 /*********************************************************************
 * The actual interface to generate meshes
 *********************************************************************/
 class MeshGenerator
 {
-  using MeshVector            = std::vector<std::unique_ptr<Mesh>>;
-  using MeshingStrategyPtr    = std::unique_ptr<MeshingStrategy>;
-  using SmoothingStrategyPtr  = std::unique_ptr<SmoothingStrategy>;
-  using RefinementStrategyPtr = std::unique_ptr<RefinementStrategy>;
+  using MeshVector              = std::vector<std::unique_ptr<Mesh>>;
+  using MeshingStrategyPtr      = std::unique_ptr<MeshingStrategy>;
+  using SmoothingStrategyPtr    = std::unique_ptr<SmoothingStrategy>;
+  using RefinementStrategyPtr   = std::unique_ptr<RefinementStrategy>;
+  using ModificationStrategyPtr = std::unique_ptr<ModificationStrategy>;
 
 public:
   /*------------------------------------------------------------------
@@ -76,6 +84,10 @@ public:
       TERMINATE("MeshGenerator::mesh(): Mesh index out of range");
     return *meshes_[i_mesh];
   }
+  
+  bool is_valid(Mesh& mesh)
+  { return ( mesh_builder_.get_domain(mesh) != nullptr ); }
+
 
   /*------------------------------------------------------------------
   | Initialize a new mesh for a given domain
@@ -124,6 +136,23 @@ public:
     }
 
     return true;
+
+  } // MeshGenerator::merge_meshes()
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  bool write_mesh(Mesh& mesh, const std::string& filename,
+                  MeshExportType export_type)
+  {
+    Domain* domain = mesh_builder_.get_domain( mesh );
+
+    if ( !domain )
+      return false;
+
+    MeshWriter writer { mesh, *domain };
+
+    return writer.write(filename, export_type);
   }
 
   /*------------------------------------------------------------------
@@ -202,6 +231,20 @@ public:
         TERMINATE("MeshGenerator::quad_refinement(): Invalid mesh provided.");
 
     return *dynamic_cast<QuadRefinementStrategy*>(refinement_algorithm_.get());
+  }
+
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  Tri2QuadStrategy& tri2quad_modification(Mesh& mesh)
+  {
+    if ( modification_algorithm_type_ != ModificationAlgorithm::Tri2Quad ||
+         &modification_algorithm_->mesh() != &mesh )
+      if ( !set_algorithm(mesh, ModificationAlgorithm::Tri2Quad) )
+        TERMINATE("MeshGenerator::tri2quad_modification(): Invalid mesh provided.");
+
+    return *dynamic_cast<Tri2QuadStrategy*>(modification_algorithm_.get());
   }
 
 
@@ -306,22 +349,52 @@ private:
     return true;
   }
 
+  /*------------------------------------------------------------------
+  | Set a mesh modification algorithm for a specified mesh.
+  | Returns false if the mesh is not connected to this MeshGenerator
+  | or if the algorithm was not found.
+  ------------------------------------------------------------------*/
+  bool set_algorithm(Mesh& mesh, ModificationAlgorithm algorithm_type)
+  {
+    Domain* domain = mesh_builder_.get_domain( mesh );
+
+    if ( !domain ) 
+      return false;
+
+    switch (algorithm_type)
+    {
+      case ModificationAlgorithm::Tri2Quad:
+        modification_algorithm_ 
+          = std::make_unique<Tri2QuadStrategy>(mesh, *domain);
+        modification_algorithm_type_ = ModificationAlgorithm::Tri2Quad;
+        break;
+
+      default:
+        modification_algorithm_type_ = ModificationAlgorithm::None;
+    }
+
+    return true;
+  }
+
 
 
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
-  MeshVector            meshes_ {};
-  MeshBuilder           mesh_builder_ {};
+  MeshVector              meshes_ {};
+  MeshBuilder             mesh_builder_ {};
 
-  MeshingStrategyPtr    meshing_algorithm_;
-  MeshingAlgorithm      meshing_algorithm_type_ { MeshingAlgorithm::None };
+  MeshingStrategyPtr      meshing_algorithm_;
+  MeshingAlgorithm        meshing_algorithm_type_ { MeshingAlgorithm::None };
 
-  SmoothingStrategyPtr  smoothing_algorithm_;
-  SmoothingAlgorithm    smoothing_algorithm_type_ { SmoothingAlgorithm::None };
+  SmoothingStrategyPtr    smoothing_algorithm_;
+  SmoothingAlgorithm      smoothing_algorithm_type_ { SmoothingAlgorithm::None };
 
-  RefinementStrategyPtr refinement_algorithm_;
-  RefinementAlgorithm   refinement_algorithm_type_ { RefinementAlgorithm::None };
+  RefinementStrategyPtr   refinement_algorithm_;
+  RefinementAlgorithm     refinement_algorithm_type_ { RefinementAlgorithm::None };
+
+  ModificationStrategyPtr modification_algorithm_;
+  ModificationAlgorithm   modification_algorithm_type_ { ModificationAlgorithm::None };
 
 }; // MeshGenerator
 
