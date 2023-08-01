@@ -28,6 +28,7 @@ enum class BdryType
   INTERIOR 
 }; 
 
+class Domain;
 
 /*********************************************************************
 * A mesh boundary - defined by a list of edges
@@ -41,9 +42,10 @@ public:
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  Boundary(BdryType btype)
+  Boundary(Vertices& domain_vertices, BdryType btype)
   : EdgeList( (btype == BdryType::EXTERIOR 
               ? Orientation::CCW : Orientation::CW) ) 
+  , domain_vertices_ { &domain_vertices }
   , btype_ { btype }
   { }
 
@@ -87,29 +89,29 @@ public:
   /*------------------------------------------------------------------
   | Set the boundary to square shape
   ------------------------------------------------------------------*/
-  void set_shape_square(Vertices& vertices, int marker, 
+  void set_shape_square(int marker, 
                         const Vec2d& xy, double w,
                         double sizing=1.0, double range=1.0)
   {
-    set_shape_rectangle(vertices, marker, xy, w, w, sizing, range);
+    set_shape_rectangle(marker, xy, w, w, sizing, range);
 
   } // Boundary::set_shape_square()
 
   /*------------------------------------------------------------------
   | Set the boundary to equilateral triangle
   ------------------------------------------------------------------*/
-  void set_shape_triangle(Vertices& vertices, int marker,
+  void set_shape_triangle(int marker,
                           const Vec2d& xy, double a,
                           double sizing=1.0, double range=1.0)
   {
-    set_shape_circle(vertices, marker, xy, a/sqrt(3), 3, sizing, range);
+    set_shape_circle(marker, xy, a/sqrt(3), 3, sizing, range);
 
   } // Boundary::set_shape_square()
 
   /*------------------------------------------------------------------
   | Set the boundary to rectangular shape
   ------------------------------------------------------------------*/
-  void set_shape_rectangle(Vertices& vertices, int marker,
+  void set_shape_rectangle(int marker,
                            const Vec2d& xy, double w, double h,
                            double sizing=1.0, double range=1.0)
   {
@@ -123,14 +125,14 @@ public:
       {xy[0] - half_w, xy[1] + half_h},
     };
 
-    create_boundary_shape(vertices, v_shape, marker, sizing, range);
+    create_boundary_shape(v_shape, marker, sizing, range);
 
   } // Boundary::set_shape_rectangle()
 
   /*------------------------------------------------------------------
   | Set the boundary to circular shape
   ------------------------------------------------------------------*/
-  void set_shape_circle(Vertices& vertices, int marker,
+  void set_shape_circle(int marker,
                         const Vec2d& xy, double r, size_t n=30,
                         double sizing=1.0, double range=1.0)
   {
@@ -149,7 +151,7 @@ public:
       v_shape.push_back( xy + r * d_xy );
     }
 
-    create_boundary_shape(vertices, v_shape, marker, sizing, range);
+    create_boundary_shape(v_shape, marker, sizing, range);
 
   } // Boundary::set_shape_Circle()
 
@@ -159,8 +161,7 @@ private:
   /*------------------------------------------------------------------
   | Create the boundary from a given shape
   ------------------------------------------------------------------*/
-  void create_boundary_shape(Vertices&           vertices, 
-                             std::vector<Vec2d>& v_shape,
+  void create_boundary_shape(std::vector<Vec2d>& v_shape,
                              int                 marker,
                              double              sizing,
                              double              range) 
@@ -176,7 +177,7 @@ private:
 
     for (int i = 0; i < N; ++i)
     {
-      Vertex& v_new = vertices.push_back( v_shape[i], sizing, range );
+      Vertex& v_new = domain_vertices_->push_back( v_shape[i], sizing, range );
       new_verts.push_back( &v_new );
     }
 
@@ -204,7 +205,9 @@ private:
   /*------------------------------------------------------------------
   | Boundary attributes
   ------------------------------------------------------------------*/
-  BdryType   btype_;
+  BdryType  btype_;
+  Vertices* domain_vertices_;
+
 
 }; // Boundary
 

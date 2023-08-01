@@ -16,11 +16,7 @@
 #include "VecND.h"
 #include "Log.h"
 
-#include "Vertex.h"
-#include "Edge.h"
-#include "Domain.h"
-#include "Mesh.h"
-#include "Smoother.h"
+#include "MeshGenerator.h"
 
 using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
@@ -50,7 +46,7 @@ void run_example_3()
   | the domain.
   ------------------------------------------------------------------*/
   Boundary& b_ext = domain.add_exterior_boundary();
-  b_ext.set_shape_rectangle( domain.vertices(), 1, {1.0,1.0}, 8.0, 8.0 );
+  b_ext.set_shape_rectangle(1, {1.0,1.0}, 8.0, 8.0);
 
   /*------------------------------------------------------------------
   | Next we will place a circular interior boundary insides the 
@@ -61,7 +57,7 @@ void run_example_3()
   | Accordingly, 30 new vertices will be added to the domain.
   ------------------------------------------------------------------*/
   Boundary& b_shape_1 = domain.add_interior_boundary();
-  b_shape_1.set_shape_circle( domain.vertices(), 2, {0.0,1.0}, 1.25, 30 );
+  b_shape_1.set_shape_circle(2, {0.0,1.0}, 1.25, 30);
 
   /*------------------------------------------------------------------
   | Finally we will add two more interior boundaries: A suqare 
@@ -69,16 +65,16 @@ void run_example_3()
   | and both will feature the edge length of 1.75.
   ------------------------------------------------------------------*/
   Boundary& b_shape_2 = domain.add_interior_boundary();
-  b_shape_2.set_shape_square( domain.vertices(), 3, {3.0,2.5}, 1.75);
+  b_shape_2.set_shape_square(3, {3.0,2.5}, 1.75);
 
   Boundary& b_shape_3 = domain.add_interior_boundary();
-  b_shape_3.set_shape_triangle( domain.vertices(), 4, {3.0,-0.5}, 1.75 );
+  b_shape_3.set_shape_triangle(4, {3.0,-0.5}, 1.75);
 
   /*------------------------------------------------------------------
   | Initialize the mesh
   ------------------------------------------------------------------*/
-  Mesh mesh { domain };
-  mesh.init_advancing_front();
+  MeshGenerator generator {};
+  Mesh& mesh = generator.new_mesh( domain );
 
   /*------------------------------------------------------------------
   | Here we will create some quad layers. Due to the boundary 
@@ -92,27 +88,48 @@ void run_example_3()
   // The following domain vertex is located on the circular 
   // interior boundary
   Vertex& v4 = domain.vertices()[4];
-  mesh.create_quad_layers(v4, v4, 3, 0.05, 1.3);
 
   // These next two vertices are located on the interior quad boundary
   Vertex& v34 = domain.vertices()[34];
   Vertex& v36 = domain.vertices()[36];
-  mesh.create_quad_layers(v36, v34, 1, 0.25, 1.0);
 
   // This last vertices is located on the interior triangle boundary
   Vertex& v38 = domain.vertices()[38];
-  mesh.create_quad_layers(v38, v38, 1, 0.30, 1.0);
+
+  // Generate quad layers at the interior boundaries
+  generator.quad_layer_generation(mesh)
+    .n_layers(3)
+    .first_height(0.05)
+    .growth_rate(1.3)
+    .starting_position(v4.xy())
+    .ending_position(v4.xy())
+    .generate_elements();
+
+  generator.quad_layer_generation(mesh)
+    .n_layers(3)
+    .first_height(0.05)
+    .growth_rate(1.3)
+    .starting_position(v34.xy())
+    .ending_position(v36.xy())
+    .generate_elements();
+
+  generator.quad_layer_generation(mesh)
+    .n_layers(3)
+    .first_height(0.05)
+    .growth_rate(1.3)
+    .starting_position(v38.xy())
+    .ending_position(v38.xy())
+    .generate_elements();
 
   /*------------------------------------------------------------------
   | Now generate the mesh elements
   ------------------------------------------------------------------*/
-  mesh.triangulate();
+  generator.triangulation(mesh).generate_elements();
 
   /*------------------------------------------------------------------
   | Smooth the mesh for four iterations
   ------------------------------------------------------------------*/
-  Smoother smoother {};
-  smoother.smooth(domain, mesh, 4);
+  generator.mixed_smoothing(mesh).smooth(4); 
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in TXT format.
@@ -120,8 +137,8 @@ void run_example_3()
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
   { source_dir + "/auxiliary/example_data/Example_3" };
-  LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
+  LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
 
-  mesh.write_to_file( file_name, ExportType::txt );
+  generator.write_mesh(mesh, file_name, MeshExportType::VTU);
 
 } // run_example_3()

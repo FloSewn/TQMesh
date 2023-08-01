@@ -270,7 +270,7 @@ public:
   Boundary& insert_boundary( const_iterator pos, Args&&... args )
   {
     std::unique_ptr<Boundary> b_ptr 
-      = std::make_unique<Boundary>(args...);
+      = std::make_unique<Boundary>(this->verts_, args...);
 
     Boundary* ptr = b_ptr.get();
 

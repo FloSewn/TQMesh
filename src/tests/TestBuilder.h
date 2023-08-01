@@ -102,8 +102,7 @@ private:
 
     Boundary& b_ext = domain_.add_exterior_boundary();
 
-    b_ext.set_shape_circle(domain_.vertices(), marker, 
-                           center, radius, n_segments, 
+    b_ext.set_shape_circle(marker, center, radius, n_segments, 
                            mesh_size, size_range );
 
   } // TestBuilder::init_UnitCircle()
@@ -117,21 +116,19 @@ private:
 
     // Exterior boundary
     Boundary& b_ext = domain_.add_exterior_boundary();
-    b_ext.set_shape_rectangle(domain_.vertices(), 1, 
-                              {1.0, 1.0}, 10.0, 8.0);
+    b_ext.set_shape_rectangle(1, {1.0, 1.0}, 10.0, 8.0);
 
     // Interior circle boundary
     Boundary& b_circle = domain_.add_interior_boundary();
-    b_circle.set_shape_circle(domain_.vertices(), 2, 
-                              {0.0,1.0}, 1.25, 40 );
+    b_circle.set_shape_circle(2, {0.0,1.0}, 1.25, 40 );
 
     // Interior square boundary
     Boundary& b_square = domain_.add_interior_boundary();
-    b_square.set_shape_square(domain_.vertices(), 3, {3.0,2.5}, 1.75);
+    b_square.set_shape_square(3, {3.0,2.5}, 1.75);
 
     // Interior triangle boundary
     Boundary& b_triangle = domain_.add_interior_boundary();
-    b_triangle.set_shape_triangle(domain_.vertices(), 4, {3.0,-0.5}, 1.75 );
+    b_triangle.set_shape_triangle(4, {3.0,-0.5}, 1.75 );
 
   } // TestBuilder::init_TriangleSquareCircle()
 
@@ -144,7 +141,7 @@ private:
 
     // Exterior boundary
     Boundary&  b_ext = domain_.add_exterior_boundary();
-    b_ext.set_shape_square(domain_.vertices(), 1, {2.5,2.5}, 5.0);
+    b_ext.set_shape_square(1, {2.5,2.5}, 5.0);
 
     // Interior triangle boundary
     Boundary&  b_int = domain_.add_interior_boundary();

@@ -16,11 +16,7 @@
 #include "VecND.h"
 #include "Log.h"
 
-#include "Vertex.h"
-#include "Edge.h"
-#include "Domain.h"
-#include "Mesh.h"
-#include "Smoother.h"
+#include "MeshGenerator.h"
 
 using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
@@ -36,7 +32,7 @@ void run_example_4()
   ------------------------------------------------------------------*/
   UserSizeFunction f = [](const Vec2d& p) 
   { 
-    return 0.4;
+    return 0.2;
   };
 
   Domain domain   { f };
@@ -63,14 +59,14 @@ void run_example_4()
   ------------------------------------------------------------------*/
   Boundary& b_ext = domain.add_exterior_boundary();
 
-  Vertex& v0 = domain.add_vertex(  0.0,  0.0,  1.0,  1.0 );
-  Vertex& v1 = domain.add_vertex(  1.0,  0.0,  1.0,  1.0 );
-  Vertex& v2 = domain.add_vertex(  1.0,  2.0,  0.5,  1.5 );
-  Vertex& v3 = domain.add_vertex(  2.0,  2.0,  0.5,  1.5 );
-  Vertex& v4 = domain.add_vertex(  2.0,  1.0,  0.5,  1.2 );
-  Vertex& v5 = domain.add_vertex(  3.0,  1.0,  0.5,  1.2 );
-  Vertex& v6 = domain.add_vertex(  3.0,  3.0,  1.0,  1.0 );
-  Vertex& v7 = domain.add_vertex(  0.0,  3.0,  1.0,  1.0 );
+  Vertex& v0 = domain.add_vertex(  0.0,  0.0 );
+  Vertex& v1 = domain.add_vertex(  1.0,  0.0 );
+  Vertex& v2 = domain.add_vertex(  1.0,  2.0 );
+  Vertex& v3 = domain.add_vertex(  2.0,  2.0 );
+  Vertex& v4 = domain.add_vertex(  2.0,  1.0 );
+  Vertex& v5 = domain.add_vertex(  3.0,  1.0 );
+  Vertex& v6 = domain.add_vertex(  3.0,  3.0 );
+  Vertex& v7 = domain.add_vertex(  0.0,  3.0 );
 
   b_ext.add_edge( v0, v1, 1 );
   b_ext.add_edge( v1, v2, 1 );
@@ -87,17 +83,17 @@ void run_example_4()
   | We reduce their scaling-factors, in order to refine the mesh
   | locally.
   ------------------------------------------------------------------*/
-  domain.add_fixed_vertex(0.5, 1.0, 0.1, 0.5);
-  domain.add_fixed_vertex(0.5, 2.0, 0.1, 0.5);
+  domain.add_fixed_vertex(0.5, 1.0, 0.005, 0.5);
+  domain.add_fixed_vertex(0.5, 2.0, 0.005, 0.5);
 
   /*------------------------------------------------------------------
   | Initialize the mesh. We also provide the index of the mesh,
   | as well as a color index that will be passed to all mesh elements
   ------------------------------------------------------------------*/
   int mesh_index = 0;
-  int element_color = 0;
-  Mesh mesh { domain, mesh_index, element_color };
-  mesh.init_advancing_front();
+  int mesh_color = 0;
+  MeshGenerator generator {};
+  Mesh& mesh = generator.new_mesh( domain, mesh_index, mesh_color );
 
   /*------------------------------------------------------------------
   | Next, we add three quad layers. This will create several quad-
@@ -105,7 +101,13 @@ void run_example_4()
   | All these quad elements will be given the current mesh color 
   | index, which is set to zero.
   ------------------------------------------------------------------*/
-  mesh.create_quad_layers(v0, v7, 3, 0.02, 1.5);
+  generator.quad_layer_generation(mesh)
+    .n_layers(3)
+    .first_height(0.02)
+    .growth_rate(1.5)
+    .starting_position(v0.xy())
+    .ending_position(v7.xy())
+    .generate_elements();
 
   /*------------------------------------------------------------------
   | Now generate the remaining mesh elements. But before this,
@@ -113,13 +115,12 @@ void run_example_4()
   | remaining elements will be given this color index
   ------------------------------------------------------------------*/
   mesh.element_color(1);
-  mesh.triangulate();
+  generator.triangulation(mesh).generate_elements();
 
   /*------------------------------------------------------------------
   | Smooth the mesh for four iterations
   ------------------------------------------------------------------*/
-  Smoother smoother {};
-  smoother.smooth(domain, mesh, 4);
+  generator.mixed_smoothing(mesh).smooth(4); 
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in TXT format.
@@ -127,8 +128,8 @@ void run_example_4()
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
   { source_dir + "/auxiliary/example_data/Example_4" };
-  LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
+  LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
 
-  mesh.write_to_file( file_name, ExportType::txt );
+  generator.write_mesh(mesh, file_name, MeshExportType::VTU);
 
 } // run_example_4()

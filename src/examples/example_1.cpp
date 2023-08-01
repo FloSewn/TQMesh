@@ -16,11 +16,7 @@
 #include "VecND.h"
 #include "Log.h"
 
-#include "Vertex.h"
-#include "Edge.h"
-#include "Domain.h"
-#include "Mesh.h"
-#include "Smoother.h"
+#include "MeshGenerator.h"
 
 using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
@@ -44,7 +40,7 @@ void run_example_1()
   | Next, we need to define the domain. It requires the size function
   | as argument.
   ------------------------------------------------------------------*/
-  Domain domain { f };
+  Domain domain { f, 20.0 };
 
   /*------------------------------------------------------------------
   | Now we define the exteriour boundary of the domain. The boundary 
@@ -69,7 +65,7 @@ void run_example_1()
   | Exterior boundary edges must always be defined in counter-
   | clockwise direction.
   ------------------------------------------------------------------*/
-  Boundary&  b_ext = domain.add_exterior_boundary();
+  Boundary& b_ext = domain.add_exterior_boundary();
 
   Vertex& v0 = domain.add_vertex(  0.0,  0.0 );
   Vertex& v1 = domain.add_vertex(  5.0,  0.0 );
@@ -100,16 +96,16 @@ void run_example_1()
   | This boundary is made up from the edges (v5,v6), (v6,v7), (v7,v5).
   | Interior boundary edges must always be defined in clockwise 
   | direction.
-  | At vertex v4, we will refine the mesh locally by adjusting its 
-  | sizing factor to 0.1. We also adjust the range to 1.5, in which 
-  | this lower sizing will be applied. 
+  | At vertex v4, we will refine the mesh locally by adjusting the 
+  | size function locally to a value 0.05. This is applied within a 
+  | distance of 0.2 to the vertex.
   ------------------------------------------------------------------*/
-  Boundary&  b_int = domain.add_interior_boundary();
+  Boundary& b_int = domain.add_interior_boundary();
 
-  double sizing = 0.1;
-  double range  = 1.5;
+  double size  = 0.05;
+  double range = 0.2;
 
-  Vertex& v4 = domain.add_vertex(  1.5,  1.5, sizing, range );
+  Vertex& v4 = domain.add_vertex(  1.5,  1.5, size, range );
   Vertex& v5 = domain.add_vertex(  1.5,  3.5 );
   Vertex& v6 = domain.add_vertex(  3.5,  3.5 );
 
@@ -118,30 +114,31 @@ void run_example_1()
   b_int.add_edge( v6, v4, 2 );
 
   /*------------------------------------------------------------------
-  | In the following lines, the mesh will be initialized, as well 
-  | as its advancing front structure (which is nescessary for the 
-  | mesh generation)
-  | After that, we simply triangulate the domain.
+  | In the following lines, the mesh will be initialized  
+  | triangulated.
   ------------------------------------------------------------------*/
-  Mesh mesh { domain };
-  mesh.init_advancing_front();
-  mesh.triangulate();
+  MeshGenerator generator {};
+  Mesh& mesh = generator.new_mesh( domain );
+
+  /*------------------------------------------------------------------
+  | Here we generate the actual mesh elements using a triangulation
+  ------------------------------------------------------------------*/
+  generator.triangulation(mesh).generate_elements();
 
   /*------------------------------------------------------------------
   | Here we use a smoother, in order to improve the mesh quality.
   | The smoothing is applied for four iterations. 
   ------------------------------------------------------------------*/
-  Smoother smoother {};
-  smoother.smooth(domain, mesh, 4);
+  generator.mixed_smoothing(mesh).smooth(2);
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in TXT format.
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
-  std::string file_name 
-  { source_dir + "/auxiliary/example_data/Example_1" };
-  LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
+  std::string filename 
+  { source_dir + "/auxiliary/example_data/Example_1.vtu" };
+  LOG(INFO) << "Writing mesh output to: " << filename;
 
-  mesh.write_to_file( file_name, ExportType::txt );
+  generator.write_mesh(mesh, filename, MeshExportType::VTU);
 
 } // run_example_1()

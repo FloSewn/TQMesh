@@ -1,11 +1,11 @@
 set( EXAMPLES run_examples )
 
 add_executable( ${EXAMPLES}
-  example_9.cpp
-  example_8.cpp
-  example_7.cpp
-  example_6.cpp
-  example_5.cpp
+  #example_9.cpp
+  #example_8.cpp
+  #example_7.cpp
+  #example_6.cpp
+  #example_5.cpp
   example_4.cpp
   example_3.cpp
   example_2.cpp
