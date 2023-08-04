@@ -72,9 +72,9 @@ public:
     {
       ASSERT( v_new.on_front(), "Grid structure corrupted." );
 
-      base.v1().on_front( false );
-      base.v2().on_front( false );
-      v_new.on_front( false );
+      update_front_state(base.v1());
+      update_front_state(base.v2());
+      update_front_state(v_new);
 
       if ( e1->is_interior() )
         mesh_.add_interior_edge(e1->v1(), e1->v2());
@@ -92,7 +92,7 @@ public:
     {
       ASSERT( v_new.on_front(), "Grid structure corrupted." );
 
-      base.v1().on_front( false );
+      update_front_state(base.v1());
 
       if ( e1->is_interior() )
         mesh_.add_interior_edge(e1->v1(), e1->v2());
@@ -108,7 +108,7 @@ public:
     {
       ASSERT( v_new.on_front(), "Grid structure corrupted." );
 
-      base.v2().on_front( false );
+      update_front_state(base.v2());
 
       if ( e2->is_interior() )
         mesh_.add_interior_edge(e2->v1(), e2->v2());
@@ -121,7 +121,7 @@ public:
     //     -> Vertex now part of the advancing front
     else
     {
-      v_new.on_front( true );
+      update_front_state(v_new);
       front_.add_edge(base.v1(), v_new);
       front_.add_edge(v_new, base.v2());
     }
@@ -178,6 +178,33 @@ public:
     return &t_new;
 
   } // update_front()
+
+  /*------------------------------------------------------------------
+  | Update the advancing front 
+  ------------------------------------------------------------------*/
+  Triangle* update_front_exhaustive(Edge& base_edge, Vertex& v)
+  {
+    if ( !v.on_front() )
+      return nullptr;
+
+    auto o = orientation(base_edge.v1().xy(), 
+                         base_edge.v2().xy(), v.xy());
+
+    if ( o != Orientation::CCW )
+      return nullptr;
+     
+    // Create new potential triangle 
+    Triangle& t_new 
+      = mesh_.add_triangle(base_edge.v1(), base_edge.v2(), v);
+
+    if ( remove_from_mesh_if_invalid(t_new) )
+      return nullptr;
+
+    advance_front(base_edge, v, t_new);
+
+    return &t_new;
+
+  } // update_front_exhaustive()
 
   /*------------------------------------------------------------------
   | Check if mesh entities are invalid. If yes, remove them from
@@ -308,7 +335,7 @@ private:
     Quads&         quads = mesh_.quads();
 
     const double rho   = domain_.size_function( tri.xy() );
-    const double range = 2.0 * rho;
+    const double range = tri.max_edge_length();
 
     DEBUG_LOG("CHECK NEW TRIANGLE: " << tri);
 
@@ -317,6 +344,9 @@ private:
 
     if ( tri.intersects_front( front_, range ) )
     { DEBUG_LOG("  > FRONT INTERSECTION"); return false; }
+
+    if ( tri.intersects_domain( domain_ ) )
+    { DEBUG_LOG("  > DOMAIN INTERSECTION"); return false; }
 
     if ( tri.intersects_vertex( vertices, range ) )
     { DEBUG_LOG("  > VERTEX INTERSECTION"); return false; }
@@ -370,6 +400,24 @@ private:
   } // Mesh::vertex_is_valid()
 
 
+  /*------------------------------------------------------------------
+  | Update the "on_front" state of a given vertex
+  ------------------------------------------------------------------*/
+  void update_front_state(Vertex& v)
+  {
+    bool on_front = false;
+
+    for ( const auto& e_ptr : v.edges() )
+      if ( &e_ptr->edgelist() == &front_ )
+      {
+        on_front = true;
+        break;
+      }
+
+    v.on_front( on_front );
+
+    return;
+  }
   
   /*------------------------------------------------------------------
   | Attributes

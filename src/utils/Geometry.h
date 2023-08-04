@@ -127,6 +127,37 @@ static inline bool in_on_segment(const Vec2<T>& p,
 }
 
 /*--------------------------------------------------------------------
+| Check if two lines (p1,q1) and (p2,q2) cross
+| 
+| * Returns true, if segments intersect at any point but
+|   their edges
+| * Returns false, if one line contains a part of the other
+| * Returns false, if both lines share both end points
+| * Returns false in all other cases
+--------------------------------------------------------------------*/
+template <typename T>
+static inline bool line_line_crossing(const Vec2<T>& p1,
+                                      const Vec2<T>& q1,
+                                      const Vec2<T>& p2,
+                                      const Vec2<T>& q2)
+{
+  Orientation o1 = orientation(p1, q1, p2);
+  Orientation o2 = orientation(p1, q1, q2);
+  Orientation o3 = orientation(p2, q2, p1);
+  Orientation o4 = orientation(p2, q2, q1);
+
+  if (  ( (o1 == Orientation::CCW && o2 == Orientation::CW ) ||
+          (o1 == Orientation::CW  && o2 == Orientation::CCW) ) 
+     && ( (o3 == Orientation::CCW && o4 == Orientation::CW ) ||
+          (o3 == Orientation::CW  && o4 == Orientation::CCW) ) )
+  {
+    return true;
+  }
+
+  return false;
+}
+
+/*--------------------------------------------------------------------
 | Check if two lines (p1,q1) and (p2,q2) intersect
 | 
 | * Returns true, if segments intersect at any point but
@@ -173,6 +204,8 @@ static inline bool line_line_intersection(const Vec2<T>& p1,
   return false;
 }
 
+
+
 /*--------------------------------------------------------------------
 | Check if a line segment (a,b) intersects with a 
 | triangle (p,q,r) 
@@ -196,6 +229,31 @@ static inline bool line_tri_intersection(const Vec2<T>& a,
   return ( line_line_intersection(a,b, p,q) || 
            line_line_intersection(a,b, q,r) || 
            line_line_intersection(a,b, r,p)  );
+}
+
+/*--------------------------------------------------------------------
+| Check if a line segment (a,b) crosses a 
+| triangle (p,q,r)  
+| 
+| * Returns true, if segment intersects at any 
+|   point but the triangle edges
+| * Returns false, if one segment edge contains a part of 
+|   the triangle (since only crossing of edges is checked)
+| * Returns false, if both the edge segment and the triangle
+|   share both end points
+|   -> proper adjacent triangles (share edge points)
+| * Returns false in all other cases
+--------------------------------------------------------------------*/
+template <typename T>
+static inline bool line_tri_crossing(const Vec2<T>& a,
+                                     const Vec2<T>& b,
+                                     const Vec2<T>& p,
+                                     const Vec2<T>& q,
+                                     const Vec2<T>& r)
+{
+  return ( line_line_crossing(a,b, p,q) || 
+           line_line_crossing(a,b, q,r) || 
+           line_line_crossing(a,b, r,p)  );
 }
 
 /*--------------------------------------------------------------------

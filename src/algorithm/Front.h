@@ -339,6 +339,37 @@ public:
 
   } // Front::sort_edges()
 
+
+  /*------------------------------------------------------------------
+  | Sort all edges by distance to a given point in ascending order
+  | and lets the base segment point to the first edge
+  ------------------------------------------------------------------*/
+  void sort_edges(const Vec2d& xy, bool ascending = true)
+  {
+    // Sort by edge lengths in ascending order
+    if ( ascending )
+      edges_.sort(
+      [xy]( std::unique_ptr<Edge>& a, std::unique_ptr<Edge>& b )
+      {
+        const double d_a = (xy - a->v1().xy()).norm_sqr();
+        const double d_b = (xy - b->v1().xy()).norm_sqr();
+        return d_a < d_b;
+      });
+    // Sort by edge lengths in descending order
+    else
+      edges_.sort(
+      [xy]( std::unique_ptr<Edge>& a, std::unique_ptr<Edge>& b )
+      {
+        const double d_a = (xy - a->v1().xy()).norm_sqr();
+        const double d_b = (xy - b->v1().xy()).norm_sqr();
+        return d_a > d_b;
+      });
+
+    // Reset base segment
+    set_base_first();
+
+  } // Front::sort_edges()
+
 private:
 
   /*------------------------------------------------------------------

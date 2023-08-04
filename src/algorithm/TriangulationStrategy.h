@@ -72,6 +72,9 @@ public:
     if (mesh_.n_boundary_edges() < 1)
       return false;
 
+    // Reset counter for generated elements
+    n_generated_ = 0;
+
     // Prepare the mesh  
     MeshCleanup::setup_facet_connectivity(mesh_);
 
@@ -83,6 +86,14 @@ public:
 
     // Perform the actual mesh generation
     bool success = advancing_front_loop(base_edge, n_elements_);
+
+    // In case of a failed meshing attempt, use the exhaustive 
+    // search approach to fill gaps
+    if ( !success )
+    {
+      int n_remaining = MAX(0, static_cast<int>(n_elements_-n_generated_));
+      success = exhaustive_search_loop(base_edge, n_remaining);
+    }
 
     // Finish mesh structure for output
     add_remaining_front_edges_to_mesh();
@@ -99,7 +110,43 @@ public:
     }
 
     return success;
-  }
+
+  } // TriangulationStrategy::generate_elements()
+
+
+  /*------------------------------------------------------------------
+  | Triangulate a given initialized mesh structure using the 
+  | exhaustive search approach 
+  ------------------------------------------------------------------*/
+  bool generate_elements_exhaustive() 
+  {
+    if (mesh_.n_boundary_edges() < 1)
+      return false;
+
+    // Reset counter for generated elements
+    n_generated_ = 0;
+
+    // Prepare the mesh  
+    MeshCleanup::setup_facet_connectivity(mesh_);
+
+    // Initialize the advancing front and its base edge
+    Edge* base_edge = init_advancing_front();
+
+    // Remove invalid mesh edges that are no longer needed
+    remove_invalid_mesh_edges();
+
+    // Perform the actual mesh generation
+    bool success = exhaustive_search_loop(base_edge, n_elements_);
+
+    // Finish mesh structure for output
+    add_remaining_front_edges_to_mesh();
+
+    // Remove remaining edges from the front
+    front_.clear_edges();
+
+    return success;
+
+  } // TriangulationStrategy::generate_elements_exhaustive()
 
 private:
 
@@ -125,7 +172,7 @@ private:
 
     return front_update_.update_front(base_edge, v_xy, v_xy, range);
 
-  } // Mesh::advance_front_triangle() */
+  } // TriangulationStrategy::advance_front_triangle() */
 
   /*------------------------------------------------------------------
   | The actual main loop for the advancing front mesh generation
@@ -134,14 +181,13 @@ private:
   {
     unsigned int iteration   = 0;
     bool         wide_search = false;
-    int          n_generated = 0;
 
     while ( true )
     {
       // Advance current base edge 
       if ( advance_front_triangle(*base_edge, wide_search) )
       {
-        ++n_generated;
+        ++n_generated_;
 
         // Sort front edges after a wide search
         if ( wide_search )
@@ -179,7 +225,7 @@ private:
         return true;
       
       // Maximum number of elements has been generated
-      if (n_elements > 0 && n_generated == n_elements)
+      if (n_elements > 0 && n_generated_ == n_elements)
         return true;
 
       // All front edges faild to create new elements, even
@@ -191,6 +237,76 @@ private:
 
   } // TriangulationStrategy::advancing_front_loop()
 
+
+  /*------------------------------------------------------------------
+  | Triangulate the advancing front using an exhaustive search 
+  | approach
+  ------------------------------------------------------------------*/
+  bool exhaustive_search_loop(Edge* base_edge, int n_elements)
+  {
+    unsigned int iteration = 0;
+    front_.sort_edges();
+    n_generated_ = 0;
+
+    DEBUG_LOG("USE EXHAUSTIVE SEARCH FOR " << n_elements << " ELEMENTS");
+
+    while ( true )
+    {
+      if ( exhaustive_search_triangle(*base_edge) )
+      {
+        ++n_generated_;
+        iteration = 0;
+        base_edge = front_.set_base_first();
+        mesh_.clear_waste();
+      }
+      else
+      {
+        base_edge = front_.set_base_next();
+        ++iteration;
+      }
+
+      update_progress_bar();
+
+      if ( base_edge && iteration == front_.size() )
+        return false;
+
+      if ( front_.size() == 0 )
+        return true;
+
+      if ( n_elements > 0 && n_generated_ == n_elements )
+        return true;
+    }
+
+    return true;
+
+  } // TriangulationStrategy::exhaustive_search_loop()
+
+
+  /*------------------------------------------------------------------
+  | Search through all advancing front edges for a possible triangle
+  ------------------------------------------------------------------*/
+  bool exhaustive_search_triangle(Edge& base_edge)
+  {
+    std::size_t i = 0;
+
+    Edge* next_edge = base_edge.get_next_edge();
+
+    while ( next_edge && next_edge != &base_edge && i < front_.size() )
+    {
+      Vertex& v = next_edge->v2();
+
+      if ( v != base_edge.v1() && v != base_edge.v2() )
+        if ( front_update_.update_front_exhaustive(base_edge, v) )
+          return true;
+
+      ++i;
+      next_edge = next_edge->get_next_edge();
+    }
+
+    return false;
+
+  } // TriangulationStrategy::exhaustive_search_triangle()
+
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
@@ -198,6 +314,7 @@ private:
   double mesh_range_factor_  = 1.0;
   double base_vertex_factor_ = 1.5;
   double wide_search_factor_ = 10.0;
+  int    n_generated_        = 0;
 
 }; // TriangulationStrategy
 

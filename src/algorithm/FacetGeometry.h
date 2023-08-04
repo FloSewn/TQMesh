@@ -186,9 +186,25 @@ public:
   template <typename T, typename D>
   static inline bool check_intersection(const T& tri,
                                         const D& domain)
-  { return !( domain.is_inside( tri.v1() ) 
-           && domain.is_inside( tri.v2() ) 
-           && domain.is_inside( tri.v3() ) ); }
+  { 
+    const Vec2d& xy = tri.xy();
+    const double r  = tri.max_edge_length();
+
+    const Vec2d& t1 = tri.v1().xy();
+    const Vec2d& t2 = tri.v2().xy();
+    const Vec2d& t3 = tri.v3().xy();
+
+    for ( const auto& e_ptr : domain.get_edges(xy, r) )
+    {
+      const Vec2d& e1 = e_ptr->v1().xy();
+      const Vec2d& e2 = e_ptr->v2().xy();
+
+      if ( line_tri_crossing( e1,e2, t1,t2,t3 ) )
+        return true;
+    }
+
+    return false;
+  }
 
   /*------------------------------------------------------------------
   | Check intersection between a triangle <tri> and all triangles of a 
@@ -274,14 +290,14 @@ public:
   static inline bool check_intersection(const T& tri, const F& front,
                                         const double range)
   {
+    const Vec2d& t1 = tri.v1().xy();
+    const Vec2d& t2 = tri.v2().xy();
+    const Vec2d& t3 = tri.v3().xy();
+
     for (const auto& e : front.edges().get_items(tri.xy(), range))
     {
       const Vec2d& e1 = e->v1().xy();
       const Vec2d& e2 = e->v2().xy();
-
-      const Vec2d& t1 = tri.v1().xy();
-      const Vec2d& t2 = tri.v2().xy();
-      const Vec2d& t3 = tri.v3().xy();
 
       if ( line_tri_intersection( e1,e2, t1,t2,t3 ) )
         return true;
