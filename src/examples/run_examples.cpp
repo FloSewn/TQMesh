@@ -60,19 +60,19 @@ int run_examples(const std::string& example)
     LOG(INFO) << "Running example 4...";
     LOG(INFO) << "";
     run_example_4();
-  } /*
+  } 
   else if ( !example.compare("5") )
   {
     LOG(INFO) << "Running example 5...";
     LOG(INFO) << "";
     run_example_5();
-  }
+  } 
   else if ( !example.compare("6") )
   {
     LOG(INFO) << "Running example 6...";
     LOG(INFO) << "";
     run_example_6();
-  }
+  } /*
   else if ( !example.compare("7") )
   {
     LOG(INFO) << "Running example 7...";

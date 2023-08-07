@@ -16,11 +16,7 @@
 #include "VecND.h"
 #include "Log.h"
 
-#include "Vertex.h"
-#include "Edge.h"
-#include "Domain.h"
-#include "Mesh.h"
-#include "Smoother.h"
+#include "MeshGenerator.h"
 
 using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
@@ -44,7 +40,7 @@ void run_example_6()
     const double alpha = 0.4 * M_PI;
 
     double rho = 0.55;
-    const double rho_min = 0.125;
+    const double rho_min = 0.025;
 
     for (int i=0; i<5; i++)
     {
@@ -75,10 +71,10 @@ void run_example_6()
   /*------------------------------------------------------------------
   | Vertices for exterior boundary 
   ------------------------------------------------------------------*/
-  Vertex& b0  = domain.add_vertex( -22.0, -10.00,  0.5,  2.0 );
-  Vertex& b1  = domain.add_vertex(  22.0, -10.00,  0.5,  2.0 );
-  Vertex& b2  = domain.add_vertex(  22.0,  10.00,  0.5,  2.0 );
-  Vertex& b3  = domain.add_vertex( -22.0,  10.00,  0.5,  2.0 );
+  Vertex& b0  = domain.add_vertex( -22.0, -10.00 );
+  Vertex& b1  = domain.add_vertex(  22.0, -10.00 );
+  Vertex& b2  = domain.add_vertex(  22.0,  10.00 );
+  Vertex& b3  = domain.add_vertex( -22.0,  10.00 );
 
   b_ext.add_edge( b0, b1, 1 );
   b_ext.add_edge( b1, b2, 1 );
@@ -88,14 +84,14 @@ void run_example_6()
   /*------------------------------------------------------------------
   | Vertices for letter "T"
   ------------------------------------------------------------------*/
-  Vertex& T0  = domain.add_vertex( -14.0,  -6.00,  1.0,  1.0 );
-  Vertex& T1  = domain.add_vertex( -14.0,   3.00,  0.7,  2.0 );
-  Vertex& T2  = domain.add_vertex( -18.0,   3.00,  1.0,  1.0 );
-  Vertex& T3  = domain.add_vertex( -18.0,   6.00,  1.0,  1.0 );
-  Vertex& T4  = domain.add_vertex(  -7.0,   6.00,  0.7,  2.0 );
-  Vertex& T5  = domain.add_vertex(  -7.0,   3.00,  0.7,  2.0 );
-  Vertex& T6  = domain.add_vertex( -11.0,   3.00,  1.0,  1.0 );
-  Vertex& T7  = domain.add_vertex( -11.0,  -6.00,  1.0,  1.0 );
+  Vertex& T0  = domain.add_vertex( -14.0,  -6.00 );
+  Vertex& T1  = domain.add_vertex( -14.0,   3.00 );
+  Vertex& T2  = domain.add_vertex( -18.0,   3.00 );
+  Vertex& T3  = domain.add_vertex( -18.0,   6.00 );
+  Vertex& T4  = domain.add_vertex(  -7.0,   6.00 );
+  Vertex& T5  = domain.add_vertex(  -7.0,   3.00 );
+  Vertex& T6  = domain.add_vertex( -11.0,   3.00 );
+  Vertex& T7  = domain.add_vertex( -11.0,  -6.00 );
 
   b_T.add_edge( T0, T1, 2 );
   b_T.add_edge( T1, T2, 2 );
@@ -109,19 +105,19 @@ void run_example_6()
   /*------------------------------------------------------------------
   | Vertices for letter "Q"
   ------------------------------------------------------------------*/
-  Vertex& Q0  = domain.add_vertex(  -3.0,  -6.00,  1.0,  1.0 );
-  Vertex& Q1  = domain.add_vertex(  -5.0,  -5.00,  1.0,  1.0 );
-  Vertex& Q2  = domain.add_vertex(  -5.0,   4.00,  1.0,  1.0 );
-  Vertex& Q3  = domain.add_vertex(  -3.0,   6.00,  1.0,  1.0 );
-  Vertex& Q4  = domain.add_vertex(   3.0,   6.00,  1.0,  1.0 );
-  Vertex& Q5  = domain.add_vertex(   5.0,   4.00,  1.0,  1.0 );
-  Vertex& Q6  = domain.add_vertex(   5.0,  -4.00,  1.0,  1.0 );
-  Vertex& Q7  = domain.add_vertex(   2.0,   0.00,  1.0,  1.0 );
-  Vertex& Q8  = domain.add_vertex(   2.0,   3.00,  1.0,  1.0 );
-  Vertex& Q9  = domain.add_vertex(  -2.0,   3.00,  1.0,  1.0 );
-  Vertex& Q10 = domain.add_vertex(  -2.0,  -3.00,  1.0,  1.0 );
-  Vertex& Q11 = domain.add_vertex(   2.0,  -3.00,  0.7,  2.0 );
-  Vertex& Q12 = domain.add_vertex(   4.0,  -6.00,  1.0,  1.0 );
+  Vertex& Q0  = domain.add_vertex(  -3.0,  -6.00  );
+  Vertex& Q1  = domain.add_vertex(  -5.0,  -5.00  );
+  Vertex& Q2  = domain.add_vertex(  -5.0,   4.00  );
+  Vertex& Q3  = domain.add_vertex(  -3.0,   6.00  );
+  Vertex& Q4  = domain.add_vertex(   3.0,   6.00  );
+  Vertex& Q5  = domain.add_vertex(   5.0,   4.00  );
+  Vertex& Q6  = domain.add_vertex(   5.0,  -4.00  );
+  Vertex& Q7  = domain.add_vertex(   2.0,   0.00  );
+  Vertex& Q8  = domain.add_vertex(   2.0,   3.00  );
+  Vertex& Q9  = domain.add_vertex(  -2.0,   3.00, 0.3, 0.4 );
+  Vertex& Q10 = domain.add_vertex(  -2.0,  -3.00  );
+  Vertex& Q11 = domain.add_vertex(   2.0,  -3.00  );
+  Vertex& Q12 = domain.add_vertex(   4.0,  -6.00  );
 
   b_Q.add_edge( Q0,  Q1, 3 );
   b_Q.add_edge( Q1,  Q2, 3 );
@@ -140,20 +136,20 @@ void run_example_6()
   /*------------------------------------------------------------------
   | Vertices for letter "M"
   ------------------------------------------------------------------*/
-  Vertex& M0  = domain.add_vertex(   7.0,  -6.00,  1.0,  1.0 );
-  Vertex& M1  = domain.add_vertex(   7.0,   6.00,  1.0,  1.0 );
-  Vertex& M2  = domain.add_vertex(  10.0,   6.00,  1.0,  1.0 );
-  Vertex& M3  = domain.add_vertex(  12.0,   3.00,  1.0,  1.0 );
-  Vertex& M4  = domain.add_vertex(  14.0,   3.00,  1.0,  1.0 );
-  Vertex& M5  = domain.add_vertex(  16.0,   6.00,  1.0,  1.0 );
-  Vertex& M6  = domain.add_vertex(  19.0,   6.00,  1.0,  1.0 );
-  Vertex& M7  = domain.add_vertex(  19.0,  -6.00,  1.0,  1.0 );
-  Vertex& M8  = domain.add_vertex(  16.0,  -6.00,  1.0,  1.0 );
-  Vertex& M9  = domain.add_vertex(  16.0,   1.00,  0.7,  2.0 );
-  Vertex& M10 = domain.add_vertex(  14.0,  -1.00,  1.0,  1.0 );
-  Vertex& M11 = domain.add_vertex(  12.0,  -1.00,  1.0,  1.0 );
-  Vertex& M12 = domain.add_vertex(  10.0,   1.00,  0.7,  2.0 );
-  Vertex& M13 = domain.add_vertex(  10.0,  -6.00,  1.0,  1.0 );
+  Vertex& M0  = domain.add_vertex(   7.0,  -6.00 );
+  Vertex& M1  = domain.add_vertex(   7.0,   6.00 );
+  Vertex& M2  = domain.add_vertex(  10.0,   6.00 );
+  Vertex& M3  = domain.add_vertex(  12.0,   3.00 );
+  Vertex& M4  = domain.add_vertex(  14.0,   3.00 );
+  Vertex& M5  = domain.add_vertex(  16.0,   6.00 );
+  Vertex& M6  = domain.add_vertex(  19.0,   6.00 );
+  Vertex& M7  = domain.add_vertex(  19.0,  -6.00 );
+  Vertex& M8  = domain.add_vertex(  16.0,  -6.00 );
+  Vertex& M9  = domain.add_vertex(  16.0,   1.00 );
+  Vertex& M10 = domain.add_vertex(  14.0,  -1.00 );
+  Vertex& M11 = domain.add_vertex(  12.0,  -1.00 );
+  Vertex& M12 = domain.add_vertex(  10.0,   1.00 );
+  Vertex& M13 = domain.add_vertex(  10.0,  -6.00 );
 
   b_M.add_edge( M0,   M1, 4 );
   b_M.add_edge( M1,   M2, 4 );
@@ -173,27 +169,53 @@ void run_example_6()
   /*------------------------------------------------------------------
   | Initialize the mesh
   ------------------------------------------------------------------*/
-  Mesh mesh { domain };
-  mesh.init_advancing_front();
+  MeshGenerator generator {};
+  Mesh& mesh = generator.new_mesh( domain );
 
   /*------------------------------------------------------------------
-  | 
+  | Generate some quad layers 
   ------------------------------------------------------------------*/
-  mesh.create_quad_layers(b0, b0, 2, 0.5, 1.0);
-  mesh.create_quad_layers(Q0, Q0, 2, 0.3, 1.0);
-  mesh.create_quad_layers(M0, M0, 3, 0.1, 1.5);
-  mesh.create_quad_layers(T0, T0, 2, 0.3, 1.0);
+  generator.quad_layer_generation(mesh)
+    .n_layers(3)
+    .first_height(0.1)
+    .growth_rate(1.5)
+    .starting_position(b0.xy())
+    .ending_position(b0.xy())
+    .generate_elements();
+
+  generator.quad_layer_generation(mesh)
+    .n_layers(3)
+    .first_height(0.1)
+    .growth_rate(1.3)
+    .starting_position(Q0.xy())
+    .ending_position(Q0.xy())
+    .generate_elements();
+
+  generator.quad_layer_generation(mesh)
+    .n_layers(3)
+    .first_height(0.1)
+    .growth_rate(1.3)
+    .starting_position(M0.xy())
+    .ending_position(M0.xy())
+    .generate_elements();
+
+  generator.quad_layer_generation(mesh)
+    .n_layers(3)
+    .first_height(0.1)
+    .growth_rate(1.3)
+    .starting_position(T0.xy())
+    .ending_position(T0.xy())
+    .generate_elements();
 
   /*------------------------------------------------------------------
   | Now generate the mesh elements
   ------------------------------------------------------------------*/
-  mesh.triangulate();
+  generator.triangulation(mesh).generate_elements();
 
   /*------------------------------------------------------------------
   | Smooth the mesh for four iterations
   ------------------------------------------------------------------*/
-  Smoother smoother {};
-  smoother.smooth(domain, mesh, 4);
+  generator.mixed_smoothing(mesh).smooth(4);
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in TXT format.
@@ -203,6 +225,6 @@ void run_example_6()
   { source_dir + "/auxiliary/example_data/Example_6" };
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
 
-  mesh.write_to_file( file_name, ExportType::txt );
+  generator.write_mesh(mesh, file_name, MeshExportType::TXT);
 
 } // run_example_6()
