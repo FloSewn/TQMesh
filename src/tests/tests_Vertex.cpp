@@ -70,6 +70,59 @@ void facets()
 
 } // facets()
 
+/*********************************************************************
+* Test vertex properties
+*********************************************************************/
+void properties()
+{
+  Vertex v { 0.0, 0.0 };
+  CHECK( v.has_no_property() );
+
+  v.add_property(VertexProperty::on_front);
+  CHECK( !v.has_no_property() );
+  CHECK( v.has_property(VertexProperty::on_front) );
+  CHECK( !v.has_property(VertexProperty::on_boundary) );
+  CHECK( !v.has_property(VertexProperty::is_fixed) );
+  CHECK( !v.has_property(VertexProperty::in_quad_layer) );
+
+  v.add_property(VertexProperty::is_fixed);
+  CHECK( !v.has_no_property() );
+  CHECK( v.has_property(VertexProperty::on_front) );
+  CHECK( !v.has_property(VertexProperty::on_boundary) );
+  CHECK( v.has_property(VertexProperty::is_fixed) );
+  CHECK( !v.has_property(VertexProperty::in_quad_layer) );
+
+  v.remove_property(VertexProperty::is_fixed);
+  CHECK( !v.has_no_property() );
+  CHECK( v.has_property(VertexProperty::on_front) );
+  CHECK( !v.has_property(VertexProperty::on_boundary) );
+  CHECK( !v.has_property(VertexProperty::is_fixed) );
+  CHECK( !v.has_property(VertexProperty::in_quad_layer) );
+
+  v.add_property(VertexProperty::on_boundary);
+
+  Vertex b { 1.0, 1.0 };
+  b.set_property( v.properties() );
+  CHECK( !b.has_no_property() );
+  CHECK( b.has_property(VertexProperty::on_front) );
+  CHECK( b.has_property(VertexProperty::on_boundary) );
+  CHECK( !b.has_property(VertexProperty::is_fixed) );
+  CHECK( !b.has_property(VertexProperty::in_quad_layer) );
+
+  b.remove_property(VertexProperty::on_boundary);
+  b.remove_property(VertexProperty::on_front);
+  CHECK( b.has_no_property() );
+
+
+  b.remove_property(VertexProperty::is_fixed);
+  CHECK( b.has_no_property() );
+  CHECK( !b.has_property(VertexProperty::on_front) );
+  CHECK( !b.has_property(VertexProperty::on_boundary) );
+  CHECK( !b.has_property(VertexProperty::is_fixed) );
+  CHECK( !b.has_property(VertexProperty::in_quad_layer) );
+
+} // properties()
+
 } // namespace VertexTests
 
 
@@ -80,5 +133,6 @@ void run_tests_Vertex()
 {
   VertexTests::constructor();
   VertexTests::facets();
+  VertexTests::properties();
 
 } // run_tests_Vertex()

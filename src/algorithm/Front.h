@@ -281,6 +281,8 @@ public:
     {
       Vertex& v1 = e_ptr->v1();
       Vertex& v2 = e_ptr->v2();
+      v1.add_property(VertexProperty::on_front);
+      v2.add_property(VertexProperty::on_front);
       this->add_edge( v1, v2, e_ptr->marker() );
     }
 
@@ -406,18 +408,6 @@ private:
 
   } // Front::refine_front_edges()
 
-
-  /*------------------------------------------------------------------
-  | Mark new vertices and edges to be part of the
-  | advancing front
-  ------------------------------------------------------------------*/
-  virtual 
-  void mark_objects(Vertex& v1, Vertex& v2, Edge& e) override
-  {
-    v1.on_front( true );
-    v2.on_front( true );
-  }
-
   /*------------------------------------------------------------------
   | Initialize the vertices of the advancing front.
   | Returns a vector of pointers to the generated vertices
@@ -436,9 +426,8 @@ private:
       Vertex& v1 = ( !is_twin_edge[i] ) ? e->v1() : e->v2();
 
       Vertex& v_new = mesh_vertices.push_back( v1.xy() ); 
-      v_new.on_front( true );
-      v_new.on_boundary( true );
-      v_new.is_fixed( true );
+      v_new.add_property( VertexProperty::on_front );
+      v_new.add_property( VertexProperty::on_boundary );
 
       new_vertices.push_back( &v_new );
     }
@@ -668,20 +657,16 @@ private:
     {
       Vertex& v_n = mesh_vertices.insert( e.v2().pos(), xy_new[i] );
 
-      // We fix the position of all new vertices on the front,
-      // such that they won't be shifted during grid smoothing 
-      v_n.is_fixed(true);
+      // Set vertex properties
+      v_n.add_property( VertexProperty::on_front );
+      v_n.add_property( VertexProperty::on_boundary );
 
-      Edge& e_new = this->insert_edge(e.pos(), *v_cur, v_n, e.marker());
-      e_new.v1().on_boundary( true );
-      e_new.v2().on_boundary( true );
+      this->insert_edge(e.pos(), *v_cur, v_n, e.marker());
 
       v_cur = &v_n;
     }
 
-    Edge& e_new = this->insert_edge( e.pos(), *v_cur, e.v2(), e.marker() );
-    e_new.v1().on_boundary( true );
-    e_new.v2().on_boundary( true );
+    this->insert_edge( e.pos(), *v_cur, e.v2(), e.marker() );
 
   } // create_sub_edges()
 

@@ -69,6 +69,12 @@ void clear_double_quad_edges()
   mesh.add_boundary_edge(v3, v4, 4);
   mesh.add_boundary_edge(v4, v1, 4);
 
+  for ( auto& e_ptr : mesh.boundary_edges() )
+  {
+    e_ptr->v1().add_property( VertexProperty::on_boundary );
+    e_ptr->v2().add_property( VertexProperty::on_boundary );
+  }
+
   CHECK( mesh.n_elements() == 4 );
   CHECK( mesh.n_quads() == 3 );
   CHECK( mesh.n_triangles() == 1 );
@@ -134,6 +140,12 @@ void clear_double_triangle_edges()
   mesh.add_boundary_edge(v3, v4, 4);
   mesh.add_boundary_edge(v4, v1, 4);
 
+  for ( auto& e_ptr : mesh.boundary_edges() )
+  {
+    e_ptr->v1().add_property( VertexProperty::on_boundary );
+    e_ptr->v2().add_property( VertexProperty::on_boundary );
+  }
+
   CHECK( mesh.n_elements() == 4 );
   CHECK( mesh.n_quads() == 2 );
   CHECK( mesh.n_triangles() == 2 );
@@ -177,6 +189,12 @@ void merge_degenerate_triangles()
   mesh.add_boundary_edge(v1, v2, 1);
   mesh.add_boundary_edge(v2, v4, 2);
   mesh.add_boundary_edge(v4, v1, 3);
+
+  for ( auto& e_ptr : mesh.boundary_edges() )
+  {
+    e_ptr->v1().add_property( VertexProperty::on_boundary );
+    e_ptr->v2().add_property( VertexProperty::on_boundary );
+  }
 
   CHECK( mesh.n_elements() == 3 );
   CHECK( mesh.n_triangles() == 3 );

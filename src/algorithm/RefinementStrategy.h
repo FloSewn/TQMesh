@@ -164,8 +164,12 @@ private:
       mesh_->interior_edges().add_edge( v, e->v2() );
       e->sub_vertex( &v );
 
-      if ( e->v1().is_fixed() && e->v2().is_fixed() )
-        v.is_fixed( true );
+      v.add_property( e->v1().properties() );
+      v.add_property( e->v2().properties() );
+
+      // Interior vertices can not be boundary vertices
+      if ( v.has_property( VertexProperty::on_boundary ) )
+        v.remove_property( VertexProperty::on_boundary );
     }
   }
 
@@ -180,10 +184,13 @@ private:
       mesh_->boundary_edges().add_edge( e->v1(), v, e->marker() );
       mesh_->boundary_edges().add_edge( v, e->v2(), e->marker() );
       e->sub_vertex( &v );
-      v.on_boundary( true );
 
-      if ( e->v1().is_fixed() && e->v2().is_fixed() )
-        v.is_fixed( true );
+      v.add_property( e->v1().properties() );
+      v.add_property( e->v2().properties() );
+
+      ASSERT( v.has_property( VertexProperty::on_boundary ),
+        "RefinementStrategy::refine_boundary_edges(): Missing "
+        "vertex property \"on_boundary\".");
     }
   }
 

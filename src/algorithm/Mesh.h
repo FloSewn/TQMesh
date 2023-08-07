@@ -210,18 +210,18 @@ public:
   ------------------------------------------------------------------*/
   EdgeVector get_front_edges() const
   {
-    EdgeVector invalid_edges {};
+    EdgeVector front_edges {};
 
     for ( const auto& e_ptr : intr_edges_ )
       if ( NullFacet::is_null( e_ptr->facet_l() ) || 
            NullFacet::is_null( e_ptr->facet_r() )  )
-        invalid_edges.push_back( e_ptr.get() );
+        front_edges.push_back( e_ptr.get() );
 
     for ( const auto& e_ptr : bdry_edges_ )
       if ( NullFacet::is_null( e_ptr->facet_l() ) )
-        invalid_edges.push_back( e_ptr.get() );
+        front_edges.push_back( e_ptr.get() );
 
-    return std::move(invalid_edges);
+    return std::move(front_edges);
   }
 
   /*------------------------------------------------------------------

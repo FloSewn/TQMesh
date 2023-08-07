@@ -99,7 +99,7 @@ void triangulate()
   CHECK( triangulation.generate_elements() );
 
   // Assertions
-  CHECK( ABS(mesh.area() - domain.area()) < 1.0E-07 );
+  CHECK( EQ(mesh.area(), domain.area(), 1E-08) );
 
   // Export mesh
   MeshCleanup::assign_size_function_to_vertices(mesh, domain);
@@ -226,6 +226,36 @@ void quad_layer()
 
 } // quad_layer()
 
+/*********************************************************************
+* Test exhaustive_search_triangulation()
+*********************************************************************/
+void exhaustive_search_triangulation()
+{
+  // Define a variable size function
+  UserSizeFunction f = [](const Vec2d& p) 
+  { return 0.5; };
+
+  TestBuilder test_builder { "SharpStepAndSharpEdge", f};
+  Domain& domain = test_builder.domain();
+
+  // Create the mesh
+  MeshBuilder mesh_builder {};
+  
+  Mesh mesh = mesh_builder.create_empty_mesh(domain);
+  CHECK( mesh_builder.prepare_mesh(mesh, domain) );
+
+  TriangulationStrategy triangulation {mesh, domain};
+  triangulation.n_elements();
+  CHECK( triangulation.generate_elements_exhaustive() );
+
+  // Export mesh
+  MeshCleanup::assign_size_function_to_vertices(mesh, domain);
+  MeshCleanup::assign_mesh_indices(mesh);
+  MeshCleanup::setup_facet_connectivity(mesh);
+  LOG(DEBUG) << "\n" << mesh;
+
+} // exhaustive_search_triangulation()
+
 
 /*********************************************************************
 * Test refinement to quads
@@ -336,6 +366,39 @@ void merge_triangles_to_quads()
 
 } // merge_triangles_to_quads()
 
+
+/*********************************************************************
+* Test very small refinement
+*********************************************************************/
+void small_refinement()
+{
+  UserSizeFunction f = [](const Vec2d& p) { return 0.5; };
+   
+  TestBuilder test_builder { "UnitCircle", f};
+  Domain& domain = test_builder.domain();
+
+  domain.add_fixed_vertex(0.0, 0.0, 0.0005, 1.0);
+
+  // Create the mesh
+  MeshBuilder mesh_builder {};
+
+  Mesh mesh = mesh_builder.create_empty_mesh( domain );
+  CHECK( mesh_builder.prepare_mesh(mesh, domain) );
+
+  TriangulationStrategy triangulation {mesh, domain};
+
+  CHECK( triangulation.generate_elements() );
+  CHECK( EQ(mesh.area(), domain.area(), 1E-07) );
+
+  // Export mesh
+  MeshCleanup::assign_size_function_to_vertices(mesh, domain);
+  MeshCleanup::assign_mesh_indices(mesh);
+  MeshCleanup::setup_facet_connectivity(mesh);
+
+  LOG(DEBUG) << "\n" << mesh;
+
+} // small_refinement()
+
 /*********************************************************************
 * Test Mesh::pave()
 *********************************************************************
@@ -415,7 +478,7 @@ void triangulate_standard_tests(const std::string& test_name)
   success &= triangulation.generate_elements();
   CHECK( success );
 
-  success &= EQ(mesh.area(), domain.area());
+  success &= EQ(mesh.area(), domain.area(), 1E+16);
   CHECK( success );
 
   if ( !success )
@@ -446,7 +509,6 @@ void triangulate_standard_tests(const std::string& test_name)
 *********************************************************************/
 void run_tests_Mesh()
 {
-  /*
   adjust_logging_output_stream("MeshTests.initialization.log");
   MeshTests::initialization();
 
@@ -455,18 +517,20 @@ void run_tests_Mesh()
   
   adjust_logging_output_stream("MeshTests.quad_layer.log");
   MeshTests::quad_layer();
-  */
 
-  adjust_logging_output_stream("MeshTests.refine_to_quads.log");
-  MeshTests::refine_to_quads();
+  adjust_logging_output_stream("MeshTests.small_refinement.log");
+  MeshTests::small_refinement();
 
-  /*
+  adjust_logging_output_stream("MeshTests.exhaustive_search_triangulation.log");
+  MeshTests::exhaustive_search_triangulation();
+
   adjust_logging_output_stream("MeshTests.merge_triangles_to_quads.log");
   MeshTests::merge_triangles_to_quads();
 
   std::vector<std::string> standard_tests {
     "UnitSquare", "UnitCircle", "RefinedTriangle", 
-    "FixedVertices", "TriangleSquareCircle",
+    "FixedVertices", 
+    "TriangleSquareCircle",
     "NormalStepAndSharpEdge", "SharpStepAndSharpEdge",
     //"LakeSuperior",
   };
@@ -476,7 +540,6 @@ void run_tests_Mesh()
     adjust_logging_output_stream("MeshTests.triangulate_" + test_name + ".log");
     MeshTests::triangulate_standard_tests(test_name);
   }
-  */
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");

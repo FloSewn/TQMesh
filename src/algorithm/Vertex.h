@@ -27,6 +27,48 @@ class Edge;
 class Facet;
 
 /*********************************************************************
+* Different properties for mesh vertices 
+*********************************************************************/
+enum class VertexProperty : uint8_t {
+  no_property   = 0b00000000,
+  on_front      = 0b00000001,
+  in_quad_layer = 0b00000010,
+  is_fixed      = 0b00000100,
+  on_boundary   = 0b00001000,
+};
+
+// Overloaded bitwise NOT operator
+static inline VertexProperty operator~(VertexProperty prop) 
+{ return static_cast<VertexProperty>(~static_cast<uint8_t>(prop)); }
+
+// Overloaded compound bitwise OR operator for adding properties
+static inline VertexProperty&
+operator|=(VertexProperty& lhs, VertexProperty rhs) 
+{ 
+  lhs = static_cast<VertexProperty>(
+    static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs)
+  );
+  return lhs;
+}
+
+// Overloaded compound bitwise AND operator for removing properties
+static inline VertexProperty& 
+operator&=(VertexProperty& lhs, VertexProperty rhs) 
+{
+  lhs = static_cast<VertexProperty>(
+    static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs)
+  );
+  return lhs;
+}
+
+// Overloaded bitwise AND operator for checking vertex properties
+static inline bool 
+operator&(VertexProperty lhs, VertexProperty rhs) 
+{ return (static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs)) != 0; }
+
+
+
+/*********************************************************************
 * This class describes a Vertex in a 2 dimensional domain
 *********************************************************************/
 class Vertex : public ContainerEntry<Vertex>
@@ -53,9 +95,6 @@ public:
   void mesh_size(double s) { mesh_size_ = s; }
   void size_range(double r) { size_range_ = r; }
   void index (unsigned int i) { index_ = i; }
-  void on_front( bool f ) { on_front_ = f; }
-  void on_boundary( bool b ) { on_bdry_ = b; }
-  void is_fixed( bool f ) { is_fixed_ = f; }
 
   /*------------------------------------------------------------------
   | Getters 
@@ -63,9 +102,23 @@ public:
   double       mesh_size() const { return mesh_size_; }
   double       size_range() const { return size_range_; }
   unsigned int index() const { return index_; }
-  bool         on_front() const { return on_front_; }
-  bool         on_boundary() const { return on_bdry_; }
-  bool         is_fixed() const { return is_fixed_; }
+
+
+  /*------------------------------------------------------------------
+  | Handle vertex properties 
+  ------------------------------------------------------------------*/
+  const VertexProperty& properties() const { return properties_; }
+  void add_property(VertexProperty p) { properties_ |= p; }
+  void set_property(VertexProperty p) { properties_ = p; }
+  void remove_property(VertexProperty p) { properties_ &= ~p; }
+  bool has_property(VertexProperty p) const { return (properties_ & p); }
+  bool has_no_property() const 
+  { return (properties_ == VertexProperty::no_property); }
+
+  bool on_front() const { return has_property(VertexProperty::on_front); }
+  bool on_boundary() const { return has_property(VertexProperty::on_boundary); }
+  bool is_fixed() const { return has_property(VertexProperty::is_fixed); }
+  bool in_quad_layer() const { return has_property(VertexProperty::in_quad_layer); }
 
   /*------------------------------------------------------------------
   | Change vertex coordinate 
@@ -191,9 +244,7 @@ private:
   double              mesh_size_  { 0.0 };
   double              size_range_ { 0.0 };
   unsigned int        index_      { 0   };
-  bool                on_front_   { false };
-  bool                on_bdry_    { false };
-  bool                is_fixed_   { false };
+  VertexProperty      properties_ { VertexProperty::no_property};
 
 }; // Vertex 
 

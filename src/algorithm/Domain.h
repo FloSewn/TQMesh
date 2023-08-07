@@ -376,9 +376,6 @@ public:
   Vertex& add_vertex( Args&&... args )
   {
     Vertex& v_new = verts_.push_back( args... );
-    v_new.is_fixed( false );
-    v_new.on_front( true );
-    v_new.on_boundary( false );
 
     return v_new;
 
@@ -398,9 +395,7 @@ public:
   Vertex& add_fixed_vertex( Args&&... args )
   {
     Vertex& v_new = verts_.push_back( args... );
-    v_new.is_fixed( true );
-    v_new.on_front( true );
-    v_new.on_boundary( false );
+    v_new.add_property(VertexProperty::is_fixed);
 
     fixed_verts_.push_back( &v_new );
 

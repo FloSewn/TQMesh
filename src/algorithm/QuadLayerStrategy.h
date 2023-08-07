@@ -309,7 +309,7 @@ private:
       double sf = (h * ang_fac) / e_prev->length();
 
       auto new_edges 
-        = front.split_edge(*e_prev, mesh_vertices, sf, false);
+        = front.split_edge(*e_prev, mesh_vertices, sf);
 
       // Remove the splitted edge in the mesh data structure
       if ( e_bdry_rem )
@@ -427,7 +427,7 @@ private:
       const double ang_fac = cos(alpha); 
       double sf = 1.0 - (h * ang_fac) / e_next->length();
 
-      auto new_edges = front.split_edge(*e_next, verts, sf, false);
+      auto new_edges = front.split_edge(*e_next, verts, sf);
 
       // Remove the splitted edge in the mesh data structure
       if ( e_bdry_rem ) 
@@ -746,7 +746,7 @@ private:
       return v_proj;
 
     Vertex& v_proj_p1 = t1->v3();
-    v_proj_p1.is_fixed(true);
+    v_proj_p1.add_property(VertexProperty::in_quad_layer);
     v_proj.first = &v_proj_p1;
 
 
@@ -767,7 +767,7 @@ private:
       return v_proj;
 
     Vertex& v_proj_p2 = t2->v3();
-    v_proj_p2.is_fixed(true);
+    v_proj_p2.add_property(VertexProperty::in_quad_layer);
     v_proj.second = &v_proj_p2;
 
 
@@ -860,6 +860,7 @@ private:
     const Vec2d v_xy = v_b.xy() + l1 + l2;
 
     Vertex& v_new = mesh_.add_vertex( v_xy );
+    v_new.add_property(VertexProperty::in_quad_layer);
 
     Triangle& t1_new = mesh_.add_triangle(v_a, v_b, v_new);
     Triangle& t2_new = mesh_.add_triangle(v_b, v_c, v_new);
@@ -878,8 +879,6 @@ private:
     ASSERT( base, "QuadLayerStrategy::close_quad_layer_gabs(): "
       "Front data structure seems to be corrupted.");
     front_update_.advance_front( *base, v_new, t2_new );
-
-    v_new.is_fixed( true );
 
     return;
 

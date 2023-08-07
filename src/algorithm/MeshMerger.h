@@ -74,6 +74,16 @@ public:
     // interior edges
     convert_boundary_interface_edges();
 
+    // Finally, we need to make sure that all boundary vertices 
+    // are still marked as "on_boundary" (this information might have
+    // been lost while collecting interface boundary vertices )
+    for ( const auto& e_ptr : receiver_->boundary_edges() )
+    {
+      e_ptr->v1().add_property(VertexProperty::on_boundary);
+      e_ptr->v2().add_property(VertexProperty::on_boundary);
+    }
+
+
     // Forbid to run again
     merged_ = true;
 
@@ -113,6 +123,13 @@ private:
       new_vertices_[v2_index] = &(e_ptr->v1());
       new_vertices_[v1_index] = &(e_ptr->v2());
 
+      // We remove the "on_boundary" property, but we want to preserve the 
+      // location of the interface vertices and thus set them as "fixed"
+      new_vertices_[v1_index]->remove_property( VertexProperty::on_boundary );
+      new_vertices_[v2_index]->remove_property( VertexProperty::on_boundary );
+      new_vertices_[v1_index]->add_property( VertexProperty::is_fixed );
+      new_vertices_[v2_index]->add_property( VertexProperty::is_fixed );
+
       ++n_twins;
     }
 
@@ -133,6 +150,8 @@ private:
       if ( !new_vertices_[v_index] )
       {
         Vertex& v_new = receiver_->add_vertex( v_ptr->xy() );
+        v_new.add_property( v_ptr->properties() );
+
         new_vertices_[v_index] = &v_new;
       }
     }

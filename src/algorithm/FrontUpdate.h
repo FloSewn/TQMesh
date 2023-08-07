@@ -72,10 +72,6 @@ public:
     {
       ASSERT( v_new.on_front(), "Grid structure corrupted." );
 
-      update_front_state(base.v1());
-      update_front_state(base.v2());
-      update_front_state(v_new);
-
       if ( e1->is_interior() )
         mesh_.add_interior_edge(e1->v1(), e1->v2());
       if ( e2->is_interior() )
@@ -92,8 +88,6 @@ public:
     {
       ASSERT( v_new.on_front(), "Grid structure corrupted." );
 
-      update_front_state(base.v1());
-
       if ( e1->is_interior() )
         mesh_.add_interior_edge(e1->v1(), e1->v2());
 
@@ -108,8 +102,6 @@ public:
     {
       ASSERT( v_new.on_front(), "Grid structure corrupted." );
 
-      update_front_state(base.v2());
-
       if ( e2->is_interior() )
         mesh_.add_interior_edge(e2->v1(), e2->v2());
 
@@ -121,10 +113,13 @@ public:
     //     -> Vertex now part of the advancing front
     else
     {
-      update_front_state(v_new);
       front_.add_edge(base.v1(), v_new);
       front_.add_edge(v_new, base.v2());
     }
+
+    update_front_state(base.v1());
+    update_front_state(base.v2());
+    update_front_state(v_new);
 
     // If current base is not at the boundary, add it to the 
     // interior edge list
@@ -335,7 +330,7 @@ private:
     Quads&         quads = mesh_.quads();
 
     const double rho   = domain_.size_function( tri.xy() );
-    const double range = tri.max_edge_length();
+    const double range = MAX( 2.0 * rho, tri.max_edge_length() );
 
     DEBUG_LOG("CHECK NEW TRIANGLE: " << tri);
 
@@ -414,7 +409,10 @@ private:
         break;
       }
 
-    v.on_front( on_front );
+    if ( on_front )
+      v.add_property( VertexProperty::on_front );
+    else
+      v.remove_property( VertexProperty::on_front );
 
     return;
   }

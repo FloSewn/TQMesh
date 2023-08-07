@@ -90,8 +90,11 @@ protected:
     // Add remaining front edges to the mesh 
     for ( auto& e_ptr : front_.edges() )
     {
-      const Vertex& v1 = e_ptr->v1();
-      const Vertex& v2 = e_ptr->v2();
+      Vertex& v1 = e_ptr->v1();
+      Vertex& v2 = e_ptr->v2();
+
+      v1.remove_property( VertexProperty::on_front );
+      v2.remove_property( VertexProperty::on_front );
 
       if ( mesh_.interior_edges().get_edge(v1, v2) )
         continue;

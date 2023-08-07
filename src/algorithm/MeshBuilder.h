@@ -150,7 +150,7 @@ public:
     // We require an empty mesh
     if ( !mesh.is_empty() )
     {
-      LOG(ERROR) << "Failed mesh preparation: Mesh not empty.";
+      LOG(ERROR) << "Failed mesh preparation: Mesh is not empty.";
       return false;
     }
 
@@ -193,6 +193,13 @@ public:
       Vertex& v2 = e->v2();
       int marker = e->marker();
       Edge& e_new = mesh.boundary_edges().add_edge( v1, v2, marker );
+
+      ASSERT( v1.has_property( VertexProperty::on_boundary ),
+        "MeshBuilder::prepare_mesh(): Missing "
+        "vertex property \"on_boundary\".");
+      ASSERT( v2.has_property( VertexProperty::on_boundary ),
+        "MeshBuilder::prepare_mesh(): Missing "
+        "vertex property \"on_boundary\".");
 
       // Connect boundary edges of this mesh and its parner mesh
       Edge* e_twin = e->twin_edge();

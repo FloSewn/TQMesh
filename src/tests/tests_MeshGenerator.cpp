@@ -157,6 +157,7 @@ void mesh_initializer()
 
   CHECK( generator.triangulation(mesh_1).generate_elements() );
   CHECK( mesh_1.n_quads() == 8 );
+  CHECK( EntityChecks::check_mesh_validity( mesh_1 ) );
 
 
 
@@ -173,6 +174,7 @@ void mesh_initializer()
 
   CHECK( generator.triangulation(mesh_2).generate_elements() );
   CHECK( mesh_2.n_quads() == 8 );
+  CHECK( EntityChecks::check_mesh_validity( mesh_2 ) );
 
   // Refinement of mesh 1 must fail, since it is connected to 
   // mesh 2

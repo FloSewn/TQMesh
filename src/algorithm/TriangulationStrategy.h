@@ -15,6 +15,7 @@
 #include "Mesh.h"
 #include "MeshCleanup.h"
 #include "MeshingStrategy.h"
+#include "EntityChecks.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -102,7 +103,7 @@ public:
     front_.clear_edges();
 
     // Improve mesh quality
-    if ( success ) 
+    if ( EntityChecks::check_mesh_validity(mesh_) ) 
     {
       MeshCleanup::clear_double_quad_edges(mesh_);
       MeshCleanup::clear_double_triangle_edges(mesh_);
@@ -248,9 +249,11 @@ private:
     front_.sort_edges();
     n_generated_ = 0;
 
+    base_edge = front_.set_base_first();
+
     DEBUG_LOG("USE EXHAUSTIVE SEARCH FOR " << n_elements << " ELEMENTS");
 
-    while ( true )
+    while ( base_edge )
     {
       if ( exhaustive_search_triangle(*base_edge) )
       {
@@ -269,6 +272,9 @@ private:
 
       if ( base_edge && iteration == front_.size() )
         return false;
+
+      if ( !base_edge && iteration == front_.size() )
+        return true;
 
       if ( front_.size() == 0 )
         return true;

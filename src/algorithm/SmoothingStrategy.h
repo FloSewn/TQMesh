@@ -67,9 +67,9 @@ protected:
     {
       if ( t_ptr->max_angle() > crit_tri_max_angle_ )
       {
-        t_ptr->v1().is_fixed( false );
-        t_ptr->v2().is_fixed( false );
-        t_ptr->v3().is_fixed( false );
+        t_ptr->v1().remove_property( VertexProperty::is_fixed );
+        t_ptr->v2().remove_property( VertexProperty::is_fixed );
+        t_ptr->v3().remove_property( VertexProperty::is_fixed );
       }
     }
 
@@ -77,10 +77,10 @@ protected:
     {
       if ( q_ptr->min_angle() < crit_quad_min_angle_ )
       {
-        q_ptr->v1().is_fixed( false );
-        q_ptr->v2().is_fixed( false );
-        q_ptr->v3().is_fixed( false );
-        q_ptr->v4().is_fixed( false );
+        q_ptr->v1().remove_property( VertexProperty::is_fixed );
+        q_ptr->v2().remove_property( VertexProperty::is_fixed );
+        q_ptr->v3().remove_property( VertexProperty::is_fixed );
+        q_ptr->v4().remove_property( VertexProperty::is_fixed );
       }
     }
 
@@ -261,7 +261,9 @@ private:
         auto& nbrs = v_conn_[i_v].second;
 
         // Fixed vertices keep their location
-        if ( v->is_fixed() || v->on_boundary() )
+        if ( v->has_property( VertexProperty::is_fixed )      || 
+             v->has_property( VertexProperty::in_quad_layer ) ||
+             v->has_property( VertexProperty::on_boundary )    )
         {
           xy_new[i_v] = v->xy();
           continue;
@@ -396,7 +398,9 @@ private:
         auto& nbrs = v_conn_[i_v].second;
 
         // Fixed vertices keep their location
-        if ( v->is_fixed() || v->on_boundary() )
+        if ( v->has_property( VertexProperty::is_fixed )      || 
+             v->has_property( VertexProperty::in_quad_layer ) ||
+             v->has_property( VertexProperty::on_boundary )    )
         {
           xy_new[i_v] = v->xy();
           continue;

@@ -136,6 +136,13 @@ public:
       const Vertex& v1 = e_ptr->v1();
       const Vertex& v2 = e_ptr->v2();
 
+      ASSERT( v1.has_property( VertexProperty::on_boundary ),
+        "EntityChecks::check_mesh_validity(): Missing "
+        "vertex property \"on_boundary\".");
+      ASSERT( v2.has_property( VertexProperty::on_boundary ),
+        "EntityChecks::check_mesh_validity(): Missing "
+        "vertex property \"on_boundary\".");
+
       bool check_1 = false; bool check_2 = false;
 
       // Traverse adjacents facets of both vertices 

@@ -181,8 +181,7 @@ public:
   | The old edge is removed from the edgelist.
   ------------------------------------------------------------------*/
   std::pair<Edge*, Edge*>
-  split_edge(Edge& edge, Vertices& vertices, const double s,
-             bool fix_new_vertex=false) 
+  split_edge(Edge& edge, Vertices& vertices, const double s) 
   {
     if ( &edge.edgelist() != this )
       return std::move( std::pair<Edge*,Edge*>(nullptr,nullptr) );
@@ -202,18 +201,18 @@ public:
     // Place new vertex between v1 and v2
     Vertex& v_new = vertices.insert(v2.pos(), xy_new, sizing, range);
 
-    if ( fix_new_vertex )
-      v_new.is_fixed( true );
+    // Set vertex properties
+    v_new.add_property( v1.properties() );
+    v_new.add_property( v2.properties() );
 
-    int marker = edge.marker();
-    bool on_boundary = edge.on_boundary();
+    if ( !edge.on_boundary() )
+      v_new.remove_property( VertexProperty::on_boundary );
+
+    int marker       = edge.marker();
 
     Edge& e1_new = this->insert_edge(edge.pos(), v1, v_new, marker);
     Edge& e2_new = this->insert_edge(edge.pos(), v_new, v2, marker);
 
-    v1.on_boundary( on_boundary );
-    v_new.on_boundary( on_boundary );
-    v2.on_boundary( on_boundary );
 
     // Remove old edge
     this->remove(edge);
