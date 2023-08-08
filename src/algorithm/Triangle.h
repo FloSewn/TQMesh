@@ -111,8 +111,8 @@ public:
   /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
-  const Vertex& vertex(size_t i) const { return *vertices_[i]; }
-  Vertex&       vertex(size_t i)       { return *vertices_[i]; }
+  const Vertex& vertex(size_t i) const override { return *vertices_[i]; }
+  Vertex&       vertex(size_t i) override       { return *vertices_[i]; }
   const Vertex& v1() const { return *vertices_[0]; }
   Vertex&       v1()       { return *vertices_[0]; }
   const Vertex& v2() const { return *vertices_[1]; }
@@ -132,19 +132,19 @@ public:
   size_t        n_vertices() const override { return 3; }
   const  Vec2d& xy() const override { return ContainerEntry<Triangle>::xy_; }
   const  Vec2d& circumcenter() const { return circumcenter_; }
-  Mesh*         mesh() const { return mesh_; }
+  Mesh*         mesh() const override { return mesh_; }
   int           color() const override { return color_; }
   int           index() const override { return index_; }
   bool          is_active() const { return active_; }
   //bool          marker() const { return marker_; }
   double        area() const { return area_; }
   double        circumradius() const { return circumradius_; }
-  double        min_angle() const { return min_angle_; }
-  double        max_angle() const { return max_angle_; }
+  double        min_angle() const override { return min_angle_; }
+  double        max_angle() const override { return max_angle_; }
   double        edgelength(unsigned int i) const { return edge_lengths_[i]; }
   double        angle(unsigned int i) const { return angles_[i]; }
-  double        min_edge_length() const { return min_edge_length_; }
-  double        max_edge_length() const { return max_edge_length_; }
+  double        min_edge_length() const override { return min_edge_length_; }
+  double        max_edge_length() const override { return max_edge_length_; }
 
   /*------------------------------------------------------------------
   | Setters
@@ -154,7 +154,7 @@ public:
   void nbr2(Facet* f) { facets_[1] = f; }
   void nbr3(Facet* f) { facets_[2] = f; }
 
-  void mesh(Mesh* m) { mesh_ = m; }
+  void mesh(Mesh* m) override { mesh_ = m; }
   void color(int i) override { color_ = i; }
   void index(int i) override { index_ = i; }
   void is_active(bool a) { active_ = a; }
