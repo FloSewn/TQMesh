@@ -19,9 +19,9 @@ namespace CppUtils {
 /*********************************************************************
 * GLOBAL CONSTANTS
 *********************************************************************/
-constexpr double CPPUTILS_SMALL  = std::numeric_limits<double>::epsilon(); //DBL_EPSILON;
-constexpr double CPPUTILS_MAX    = DBL_MAX;
-constexpr double CPPUTILS_MIN    = DBL_MIN;
+constexpr double CPPUTILS_SMALL  = std::numeric_limits<double>::epsilon();
+constexpr double CPPUTILS_MAX    = std::numeric_limits<double>::max();
+constexpr double CPPUTILS_MIN    = std::numeric_limits<double>::min();
 
 /*********************************************************************
 * USEFUL FUNCTIONS

@@ -161,7 +161,7 @@ public:
   VecND<T,N> operator+=(const T &v) 
   {
     std::transform(cbegin(), cend(), begin(),
-                   std::bind2nd(std::plus<T>(), v));
+                   [&](auto const& elem) { return elem + v; });
     return *this;
   }
 
@@ -171,7 +171,7 @@ public:
   VecND<T,N> operator-=(const T &v) 
   {
     std::transform(cbegin(), cend(), begin(),
-                   std::bind2nd(std::minus<T>(), v));
+                   [&](auto const& elem) { return elem - v; });
     return *this;
   }
 
@@ -181,7 +181,7 @@ public:
   VecND<T,N> operator*=(const T &v) 
   {
     std::transform(cbegin(), cend(), begin(),
-                   std::bind2nd(std::multiplies<T>(), v));
+                   [&](auto const& elem) { return elem * v; });
     return *this;
   }
 
@@ -191,7 +191,7 @@ public:
   VecND<T,N> operator/=(const T &v) 
   {
     std::transform(cbegin(), cend(), begin(),
-                   std::bind2nd(std::divides<T>(), v));
+                   [&](auto const& elem) { return elem / v; });
     return *this;
   }
 
@@ -369,7 +369,7 @@ inline VecND<T,N> operator+(const VecND<T,N>& a, const T& b)
 {
   std::array<T,N> out {};
   std::transform(a.cbegin(), a.cend(), out.begin(),
-                 std::bind2nd(std::plus<T>(), b));
+                 [&](auto const& elem) { return elem + b; });
   return VecND<T,N> { std::move(out) };
 }
 template <typename T, std::size_t N>
@@ -377,7 +377,7 @@ inline VecND<T,N> operator+(const T& b, const VecND<T,N>& a)
 {
   std::array<T,N> out {};
   std::transform(a.cbegin(), a.cend(), out.begin(),
-                 std::bind2nd(std::plus<T>(), b));
+                 [&](auto const& elem) { return elem + b; });
   return VecND<T,N> { std::move(out) };
 }
 
@@ -389,7 +389,7 @@ inline VecND<T,N> operator-(const VecND<T,N>& a, const T& b)
 {
   std::array<T,N> out {};
   std::transform(a.cbegin(), a.cend(), out.begin(),
-                 std::bind2nd(std::minus<T>(), b));
+                 [&](auto const& elem) { return elem - b; });
   return VecND<T,N> { std::move(out) };
 }
 template <typename T, std::size_t N>
@@ -397,7 +397,7 @@ inline VecND<T,N> operator-(const T& b, const VecND<T,N>& a)
 {
   std::array<T,N> out {};
   std::transform(a.cbegin(), a.cend(), out.begin(),
-    [&](T ai) { return b - ai; });
+                [&](T elem) { return b - elem; });
   return VecND<T,N> { std::move(out) };
 }
 
@@ -409,7 +409,7 @@ inline VecND<T,N> operator*(const VecND<T,N>& a, const T& b)
 {
   std::array<T,N> out {};
   std::transform(a.cbegin(), a.cend(), out.begin(),
-                 std::bind2nd(std::multiplies<T>(), b));
+                 [&](auto const& elem) { return elem * b; });
   return VecND<T,N> { std::move(out) };
 }
 template <typename T, std::size_t N>
@@ -417,7 +417,7 @@ inline VecND<T,N> operator*(const T& b, const VecND<T,N>& a)
 {
   std::array<T,N> out {};
   std::transform(a.cbegin(), a.cend(), out.begin(),
-                 std::bind2nd(std::multiplies<T>(), b));
+                 [&](auto const& elem) { return elem * b; });
   return VecND<T,N> { std::move(out) };
 }
 
@@ -429,7 +429,7 @@ inline VecND<T,N> operator/(const VecND<T,N>& a, const T& b)
 {
   std::array<T,N> out {};
   std::transform(a.cbegin(), a.cend(), out.begin(),
-                 std::bind2nd(std::divides<T>(), b));
+                 [&](auto const& elem) { return elem / b; });
   return VecND<T,N> { std::move(out) };
 }
 
@@ -438,7 +438,7 @@ inline VecND<T,N> operator/(const T& b, const VecND<T,N>& a)
 {
   std::array<T,N> out {};
   std::transform(a.cbegin(), a.cend(), out.begin(),
-    [&](T ai) { return b / ai; } );
+                [&](T elem) { return b / elem; } );
   return VecND<T,N> { std::move(out) };
 }
 
