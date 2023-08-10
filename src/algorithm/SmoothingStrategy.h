@@ -11,6 +11,7 @@
 #include "ProgressBar.h"
 
 #include "Vertex.h"
+#include "MeshCleanup.h"
 #include "Mesh.h"
 
 namespace TQMesh {
@@ -27,10 +28,11 @@ class MixedSmoothingStrategy;
 *********************************************************************/
 class SmoothingStrategy
 {
-  using VertexConnectivity = std::vector<std::pair<Vertex*, 
-                                         std::vector<Vertex*>>>;
-
 public:
+  using VConn          = std::pair<Vertex*,std::vector<Vertex*>>;
+  using Connectivities = std::vector<VConn>;
+  using Vec2dVector    = std::vector<Vec2d>;
+
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
@@ -52,6 +54,11 @@ public:
   virtual bool smooth(int iterations) = 0;
 
 protected:
+  /*------------------------------------------------------------------
+  | This is the general loop for smoothing strategies
+  ------------------------------------------------------------------*/
+  virtual Vec2d compute_displacement(const VConn& v_conn) const = 0;
+
   /*------------------------------------------------------------------
   | This function checks the element qualities and in case of 
   | bad elements, it sets fixed vertices to be unfixed (e.g. vertices
@@ -85,6 +92,55 @@ protected:
     }
 
   } // SmoothingStrategy::unfix_vertices()
+
+  /*------------------------------------------------------------------
+  | For each vertex in a quad layer, we collect its direction to
+  | the nearest point at a boundary edge. This information is used
+  | later on, in order to preserve the prescribed quad layer height 
+  | of these vertices during the smoothing process
+  ------------------------------------------------------------------*/
+  void collect_dispalcement_directions() 
+  {
+    Vertices& vertices = mesh_->vertices();
+    EdgeList& boundary_edges = mesh_->boundary_edges();
+
+    // Clear vector that contains the direction to the nearest
+    // boundary edge for all quad layer vertices
+    bdry_direction_.clear();
+    bdry_direction_.assign(vertices.size(), {0.0, 0.0} );
+
+    if ( !quad_layer_smoothing_ )
+      return;
+
+    for ( auto& v_ptr : vertices )
+    {
+      // Skip all vertices except those located in quad layers
+      if ( !v_ptr->has_property(VertexProperty::in_quad_layer) )
+        continue;
+
+      // Obtain nearest boundary edge
+      const Vec2d& v_xy = v_ptr->xy();
+      Edge* e_ptr = boundary_edges.get_nearest_edge( v_xy );
+
+      if ( !e_ptr )
+        continue;
+
+      // Locate closest point to current vertex on the given edge
+      const Vec2d& e1_xy = e_ptr->v1().xy(); 
+      const Vec2d& e2_xy = e_ptr->v2().xy(); 
+
+      const Vec2d delta_e = e2_xy - e1_xy;
+      const Vec2d delta_v = v_xy - e1_xy;
+
+      const double dot_p = dot(delta_v, delta_e) / delta_e.norm_sqr();
+      const double t = std::clamp(dot_p, 0.0, 1.0);
+      const Vec2d p_xy = e1_xy + t * delta_e;
+      const Vec2d delta_p = p_xy - v_xy;
+
+      bdry_direction_.push_back( delta_p / delta_p.norm() );
+    }
+
+  } // collect_dispalcement_directions()
 
   /*------------------------------------------------------------------
   | Sets up the vertex->vertex connectivity that is needed for the 
@@ -138,15 +194,14 @@ protected:
   } // Smoothin::init_vertex_connectivity()
 
   /*------------------------------------------------------------------
-  | Apply the grid smoothing with a laplace approach 
+  | Check if a new coordinate for a given vertex is valid
   ------------------------------------------------------------------*/
-  bool check_coordinate(const Vec2d& xy_n, const Vertex& v)
+  bool check_coordinate(const Vec2d& xy_n, const Vertex& v) const
   {
     const Triangles& triangles  = mesh_->triangles();
     const Quads&     quads      = mesh_->quads();
 
-    const double rho = domain_->size_function( xy_n );
-    const double range = 2.0 * rho;
+    const double range = 2.0 * (xy_n - v.xy()).norm();
 
     for ( const auto& tri : triangles.get_items(xy_n, range) )
     {
@@ -177,14 +232,140 @@ protected:
 
     return ( domain_->is_inside( xy_n ) );
 
-  } // SmoothingStrategy::check_coordinate_validity()
+  } // SmoothingStrategy::check_coordinate()
+
+  /*------------------------------------------------------------------
+  | Check if a new coordinate for a given vertex is valid
+  ------------------------------------------------------------------*/
+  bool new_vertex_position_is_valid(const Vertex& v, double range) const
+  {
+    const double rho = domain_->size_function( v.xy() );
+    const double edge_factor = 0.01;
+
+    if ( !domain_->is_inside( v ) )
+      return false;
+
+    if ( v.intersects_facet(mesh_->triangles(), 2.0*range) )
+      return false;
+
+    if ( v.intersects_facet(mesh_->quads(), 2.0*range) )
+      return false;
+
+    if ( v.intersects_mesh_edges(*mesh_, 2.0*range, edge_factor * rho) )
+      return false;
+
+    return true;
+
+  } // SmoothingStrategy::new_vertex_position_is_valid()
+
+  /*------------------------------------------------------------------
+  | This is the general loop for smoothing strategies
+  ------------------------------------------------------------------*/
+  void smoothing_iteration() const
+  {
+    /*
+    Triangles& triangles  = mesh_->triangles();
+    Quads&     quads      = mesh_->quads();
+    EdgeList&  intr_edges = mesh_->interior_edges();
+    */
+
+    std::vector<Vec2d> xy_new ( v_conn_.size() );
+
+    for (std::size_t i_v = 0; i_v < v_conn_.size(); ++i_v) 
+    {
+      Vertex& v  = *(v_conn_[i_v].first);
+
+      // Fixed vertices keep their location
+      if ( v.has_property( VertexProperty::is_fixed )    || 
+           v.has_property( VertexProperty::on_boundary )  )
+        continue;
+
+      // If quad layer smoothing is not enabled, 
+      // fix quad layer vertices
+      if ( !quad_layer_smoothing_ && 
+           v.has_property( VertexProperty::in_quad_layer ) ) 
+        continue;
+
+      // Compute vertex displacement (handeled differently by 
+      // each smoothing strategy)
+      Vec2d delta = compute_displacement( v_conn_[i_v] );
+
+      // For quad layer vertices, we substract the projection of the
+      // displacement onto the directional vector towards the nearest
+      // boundary, in order to preserve quad layer heights
+      if ( v.has_property( VertexProperty::in_quad_layer ) )
+      {
+        const Vec2d& bdry_dir = bdry_direction_[i_v];
+        delta -= bdry_dir * dot(delta, bdry_dir);
+      }
+
+      // Check the validity of the new coordinate and possibly change 
+      // it back, if it violates the mesh structure
+      const Vec2d& xy_old = v.xy();
+      const Vec2d  xy_n = xy_old + eps_ * delta;
+
+      if ( check_coordinate( xy_n, v ) )
+      {
+        MeshCleanup::set_vertex_coordinates(v, xy_n);
+
+        if ( !new_vertex_position_is_valid(v, (xy_old-xy_n).norm()) )
+          MeshCleanup::set_vertex_coordinates(v, xy_old);
+      }
+
+      /*
+      if ( check_coordinate( xy_n, v ) )
+        xy_new[i_v] = xy_n;
+      else
+        xy_new[i_v] = xy_old;
+      */
+    }
+
+    /*
+    // Apply new vertex positions
+    for ( std::size_t i = 0; i < xy_new.size(); ++i )
+    {
+      Vertex* v = v_conn_[i].first;
+      v->adjust_xy( xy_new[i] );
+    }
+
+    // Update mesh entities
+    for ( auto& tri : triangles )
+      tri->update_metrics();
+
+    for ( auto& quad : quads )
+      quad->update_metrics();
+
+    for ( auto& edge : intr_edges )
+      edge->update_metrics();
+    */
+
+  } // SmoothingStrategy::smoothing_iteration()
+
+  /*------------------------------------------------------------------
+  | This is the general loop for smoothing strategies
+  ------------------------------------------------------------------*/
+  void smoothing_loop(int iterations) 
+  {
+    for (int iter = 0; iter < iterations; ++iter)
+    {
+      smoothing_iteration();
+      eps_ *= -decay_;
+    }
+
+  } // SmoothingStrategy::smoothing_loop() 
 
   /*------------------------------------------------------------------
   | Attributes 
   ------------------------------------------------------------------*/
   Mesh*              mesh_;
   const Domain*      domain_;
-  VertexConnectivity v_conn_ {};
+  Connectivities     v_conn_ {};
+  Vec2dVector        bdry_direction_ {};
+
+  double             eps_                  = 0.75;
+  double             decay_                = 1.00;
+  bool               quad_layer_smoothing_ = false;
+  double             angle_factor_         = 0.5;
 
   double crit_tri_min_angle_   {  10.0 * M_PI / 180.0 };
   double crit_tri_max_angle_   { 150.0 * M_PI / 180.0 };
@@ -218,12 +399,15 @@ public:
   ------------------------------------------------------------------*/
   double epsilon() const { return eps_; }
   double decay() const { return decay_; }
+  bool quad_layer_smoothing() const { return quad_layer_smoothing_; }
 
   /*------------------------------------------------------------------
   | Setters
   ------------------------------------------------------------------*/
   LaplaceSmoothingStrategy& epsilon(double e) { eps_ = e; return *this;} 
   LaplaceSmoothingStrategy& decay(double d) { decay_ = d; return *this;} 
+  LaplaceSmoothingStrategy& quad_layer_smoothing(bool b) 
+  { quad_layer_smoothing_ = b; return *this;} 
 
   /*------------------------------------------------------------------
   | Apply mesh smoothing
@@ -234,91 +418,35 @@ public:
 
     init_vertex_connectivity();
 
-    smooth_laplace(iterations);
+    collect_dispalcement_directions();
+
+    smoothing_loop(iterations);
     
     return true;
 
   } // LaplaceSmoothingStrategy::smooth()
 
 
-private:
+protected:
   /*------------------------------------------------------------------
-  | Apply the grid smoothing with a laplace approach 
+  | This is the general loop for smoothing strategies
   ------------------------------------------------------------------*/
-  void smooth_laplace(int iterations)
+  Vec2d compute_displacement(const VConn& v_conn) const override
   {
-    Triangles& triangles  = mesh_->triangles();
-    Quads&     quads      = mesh_->quads();
-    EdgeList&  intr_edges = mesh_->interior_edges();
+    Vertex* v  = v_conn.first;
+    auto& nbrs = v_conn.second;
+    int n_nbrs = static_cast<int>( nbrs.size() );
 
-    for (int iter = 0; iter < iterations; ++iter)
-    {
-      std::vector<Vec2d> xy_new ( v_conn_.size() );
+    Vec2d xy_m { 0.0, 0.0 };
 
-      for (std::size_t i_v = 0; i_v < v_conn_.size(); ++i_v) 
-      {
-        Vertex* v  = v_conn_[i_v].first;
-        auto& nbrs = v_conn_[i_v].second;
+    for ( int j = 0; j < n_nbrs; ++j )
+      xy_m += nbrs[j]->xy();
 
-        // Fixed vertices keep their location
-        if ( v->has_property( VertexProperty::is_fixed )      || 
-             v->has_property( VertexProperty::in_quad_layer ) ||
-             v->has_property( VertexProperty::on_boundary )    )
-        {
-          xy_new[i_v] = v->xy();
-          continue;
-        }
+    xy_m /= static_cast<double>( n_nbrs );
 
-        // Compute new vertex location
-        int n_nbrs = static_cast<int>( nbrs.size() );
+    return xy_m - v->xy();
 
-        Vec2d xy_m { 0.0, 0.0 };
-
-        for ( int j = 0; j < n_nbrs; ++j )
-          xy_m += nbrs[j]->xy();
-
-        xy_m /= static_cast<double>( n_nbrs );
-
-        // Compute relaxed new vertex location
-        const Vec2d xy_old = v->xy();
-        const Vec2d d_xy   = xy_m - xy_old;
-        const Vec2d xy_n   = xy_old + eps_ * d_xy;
-        
-        // Check validity of new coordinate
-        if ( check_coordinate( xy_n, *v ) )
-          xy_new[i_v] = xy_n;
-        else
-          xy_new[i_v] = xy_old;
-      }
-
-      // Apply new vertex positions
-      for ( std::size_t i = 0; i < xy_new.size(); ++i )
-      {
-        Vertex* v = v_conn_[i].first;
-        v->adjust_xy( xy_new[i] );
-      }
-
-      // Update mesh entities
-      for ( auto& tri : triangles )
-        tri->update_metrics();
-
-      for ( auto& quad : quads )
-        quad->update_metrics();
-
-      for ( auto& edge : intr_edges )
-        edge->update_metrics();
-
-      eps_ *= -decay_;
-    }
-
-  } // SmoothingStrategy::smooth_laplace()
-
-
-  /*------------------------------------------------------------------
-  | Attributes
-  ------------------------------------------------------------------*/
-  double eps_   = 0.75;
-  double decay_ = 1.00;
+  } // LaplaceSmoothingStrategy::compute_displacement()
 
 }; // LaplaceSmoothingStrategy
 
@@ -354,6 +482,7 @@ public:
   double epsilon() const { return eps_; }
   double decay() const { return decay_; }
   double angle_factor() const { return angle_factor_; }
+  bool quad_layer_smoothing() const { return quad_layer_smoothing_; }
 
   /*------------------------------------------------------------------
   | Setters
@@ -362,6 +491,8 @@ public:
   TorsionSmoothingStrategy& decay(double d) { decay_ = d; return *this;} 
   TorsionSmoothingStrategy& angle_factor(double a) 
   { angle_factor_ = a; return *this; } 
+  TorsionSmoothingStrategy& quad_layer_smoothing(bool b) 
+  { quad_layer_smoothing_ = b; return *this;} 
 
   /*------------------------------------------------------------------
   | Apply mesh smoothing
@@ -372,110 +503,55 @@ public:
 
     init_vertex_connectivity();
 
-    smooth_torsion(iterations);
+    collect_dispalcement_directions();
+
+    smoothing_loop(iterations);
     
     return true;
 
   } // TorsionSmoothingStrategy::smooth()
 
-private:
+protected:
   /*------------------------------------------------------------------
-  | Apply the grid smoothing with a torsion spring approach 
+  | This is the general loop for smoothing strategies
   ------------------------------------------------------------------*/
-  void smooth_torsion(int iterations)
+  Vec2d compute_displacement(const VConn& v_conn) const override
   {
-    Triangles& triangles  = mesh_->triangles();
-    Quads&     quads      = mesh_->quads();
-    EdgeList&  intr_edges = mesh_->interior_edges();
+    Vertex* v  = v_conn.first;
+    auto& nbrs = v_conn.second;
+    int n_nbrs = static_cast<int>( nbrs.size() );
 
-    for (int iter = 0; iter < iterations; ++iter)
+    Vec2d xy_m { 0.0, 0.0 };
+
+    for ( int j = 0; j < n_nbrs; ++j ) 
     {
-      std::vector<Vec2d> xy_new ( v_conn_.size() );
+      int i = MOD(j-1, n_nbrs);
+      int k = MOD(j+1, n_nbrs);
 
-      for (std::size_t i_v = 0; i_v < v_conn_.size(); ++i_v) 
-      {
-        Vertex* v  = v_conn_[i_v].first;
-        auto& nbrs = v_conn_[i_v].second;
+      const Vec2d vi = v->xy() - nbrs[i]->xy();
+      const Vec2d vj = v->xy() - nbrs[j]->xy();
+      const Vec2d vk = v->xy() - nbrs[k]->xy();
 
-        // Fixed vertices keep their location
-        if ( v->has_property( VertexProperty::is_fixed )      || 
-             v->has_property( VertexProperty::in_quad_layer ) ||
-             v->has_property( VertexProperty::on_boundary )    )
-        {
-          xy_new[i_v] = v->xy();
-          continue;
-        }
+      const double a1 = angle( vj, vk );
+      const double a2 = angle( vj, vi );
 
-        // Compute new vertex location
-        int n_nbrs = static_cast<int>( nbrs.size() );
+      const double b = angle_factor_ * (a2 - a1);
 
-        Vec2d xy_m { 0.0, 0.0 };
+      const double sin_b = sin( b );
+      const double cos_b = cos( b );
 
-        for ( int j = 0; j < n_nbrs; ++j ) 
-        {
-          int i = MOD(j-1, n_nbrs);
-          int k = MOD(j+1, n_nbrs);
+      const double xj = nbrs[j]->xy().x;
+      const double yj = nbrs[j]->xy().y;
 
-          const Vec2d vi = v->xy() - nbrs[i]->xy();
-          const Vec2d vj = v->xy() - nbrs[j]->xy();
-          const Vec2d vk = v->xy() - nbrs[k]->xy();
-
-          const double a1 = angle( vj, vk );
-          const double a2 = angle( vj, vi );
-
-          const double b = angle_factor_ * (a2 - a1);
-
-          const double sin_b = sin( b );
-          const double cos_b = cos( b );
-
-          const double xj = nbrs[j]->xy().x;
-          const double yj = nbrs[j]->xy().y;
-
-          xy_m.x += xj + cos_b * vj.x - sin_b * vj.y;
-          xy_m.y += yj + sin_b * vj.x + cos_b * vj.y;
-        }
-
-        xy_m /= static_cast<double>( n_nbrs );
-
-        // Compute relaxed new vertex location
-        const Vec2d xy_old = v->xy();
-        const Vec2d d_xy   = xy_m - xy_old;
-        const Vec2d xy_n   = xy_old + eps_ * d_xy;
-        
-        // Check validity of new coordinate
-        if ( check_coordinate( xy_n, *v ) )
-          xy_new[i_v] = xy_n;
-        else
-          xy_new[i_v] = xy_old;
-      }
-
-      // Apply new vertex positions
-      for ( std::size_t i = 0; i < xy_new.size(); ++i )
-      {
-        Vertex* v = v_conn_[i].first;
-        v->adjust_xy( xy_new[i] );
-      }
-
-      // Update mesh entities
-      for ( auto& tri : triangles )
-        tri->update_metrics();
-
-      for ( auto& quad : quads )
-        quad->update_metrics();
-
-      for ( auto& edge : intr_edges )
-        edge->update_metrics();
-
-      eps_ *= -decay_;
+      xy_m.x += xj + cos_b * vj.x - sin_b * vj.y;
+      xy_m.y += yj + sin_b * vj.x + cos_b * vj.y;
     }
-  } // SmoothingStrategy::smooth_torsion() */
 
-  /*------------------------------------------------------------------
-  | Attributes
-  ------------------------------------------------------------------*/
-  double eps_          = 0.75;
-  double decay_        = 1.00;
-  double angle_factor_ = 0.5;
+    xy_m /= static_cast<double>( n_nbrs );
+
+    return xy_m - v->xy();
+
+  } // TorsionSmoothingStrategy::compute_displacement()
 
 }; // TorsionSmoothingStrategy
 
@@ -501,6 +577,7 @@ public:
   double epsilon() const { return eps_; }
   double decay() const { return decay_; }
   double angle_factor() const { return angle_factor_; }
+  bool quad_layer_smoothing() const { return quad_layer_smoothing_; }
 
   /*------------------------------------------------------------------
   | Setters
@@ -509,6 +586,8 @@ public:
   MixedSmoothingStrategy& decay(double d) { decay_ = d; return *this;} 
   MixedSmoothingStrategy& angle_factor(double a) 
   { angle_factor_ = a; return *this; } 
+  MixedSmoothingStrategy& quad_layer_smoothing(bool b) 
+  { quad_layer_smoothing_ = b; return *this;} 
 
   /*------------------------------------------------------------------
   | Apply mesh smoothing
@@ -518,20 +597,24 @@ public:
     LaplaceSmoothingStrategy laplace { *mesh_, *domain_ };
     laplace.epsilon( eps_ );
     laplace.decay( decay_ );
+    laplace.quad_layer_smoothing( quad_layer_smoothing_ );
     laplace.unfix_vertices();
     laplace.init_vertex_connectivity();
+    laplace.collect_dispalcement_directions();
 
     TorsionSmoothingStrategy torsion { *mesh_, *domain_ };
     torsion.epsilon( eps_ );
     torsion.decay( decay_ );
     torsion.angle_factor( angle_factor_ );
+    torsion.quad_layer_smoothing( quad_layer_smoothing_ );
     torsion.unfix_vertices();
     torsion.init_vertex_connectivity();
+    torsion.collect_dispalcement_directions();
 
     for (int i = 0; i < iterations; ++i)
     {
-      torsion.smooth_torsion(2);
-      laplace.smooth_laplace(2);
+      torsion.smoothing_iteration();
+      laplace.smoothing_iteration();
 
       eps_ *= decay_;
 
@@ -543,13 +626,12 @@ public:
 
   } // MixedSmoothingStrategy::smooth()
 
-private:
+protected:
   /*------------------------------------------------------------------
-  | Attributes
+  | Dummy function
   ------------------------------------------------------------------*/
-  double eps_          = 0.75;
-  double decay_        = 1.00;
-  double angle_factor_ = 0.5;
+  Vec2d compute_displacement(const VConn& v_conn) const override
+  { return {0.0, 0.0}; }
 
 }; // MixedSmoothingStrategy
 

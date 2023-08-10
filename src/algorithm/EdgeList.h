@@ -86,6 +86,12 @@ public:
   ------------------------------------------------------------------*/
   EdgeVector get_edges(const Vec2d& center, const double radius) const
   { return std::move( edges_.get_items(center, radius) ); }
+
+  /*------------------------------------------------------------------
+  | Return the nearest edge to a given location
+  ------------------------------------------------------------------*/
+  Edge* get_nearest_edge(const Vec2d& location) const
+  { return edges_.get_nearest(location); }
   
 
   /*------------------------------------------------------------------

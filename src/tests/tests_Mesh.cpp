@@ -201,22 +201,20 @@ void quad_layer()
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
   QuadLayerStrategy quad_layer {mesh, domain};
-  quad_layer.n_layers( 2 );
-  quad_layer.first_height( 0.20 );
+  quad_layer.n_layers( 4 );
+  quad_layer.first_height( 0.15 );
   quad_layer.growth_rate( 1.0 );
   quad_layer.starting_position( 0.0, 2.5 );
   quad_layer.ending_position( 7.5, 5.0 );
 
   CHECK( quad_layer.generate_elements() );
 
-  /*
   TriangulationStrategy triangulation {mesh, domain};
   triangulation.n_elements(0);
   CHECK( triangulation.generate_elements() );
 
   MixedSmoothingStrategy smoother {mesh, domain};
-  smoother.smooth(2);
-  */
+  smoother.smooth(5);
 
   // Export mesh
   MeshCleanup::assign_size_function_to_vertices(mesh, domain);
@@ -478,6 +476,9 @@ void triangulate_standard_tests(const std::string& test_name)
   success &= triangulation.generate_elements();
   CHECK( success );
 
+  MixedSmoothingStrategy smoother {mesh, domain};
+  smoother.smooth(5);
+
   success &= EQ(mesh.area(), domain.area(), 1E+16);
   CHECK( success );
 
@@ -514,7 +515,7 @@ void run_tests_Mesh()
 
   adjust_logging_output_stream("MeshTests.triangulate.log");
   MeshTests::triangulate();
-  
+
   adjust_logging_output_stream("MeshTests.quad_layer.log");
   MeshTests::quad_layer();
 

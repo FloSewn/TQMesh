@@ -110,6 +110,7 @@ private:
     std::vector<size_t> offsets {};
     std::vector<size_t> types {};
     std::vector<double> size_function {};
+    std::vector<int>    in_quad_layer {};
     std::vector<int>    element_color {};
     std::vector<double> edge_length {};
     std::vector<double> max_angle {};
@@ -124,6 +125,7 @@ private:
       points.push_back( 0.0 );
 
       size_function.push_back( domain_->size_function(v_ptr->xy()) ); 
+      in_quad_layer.push_back( static_cast<int>( v_ptr->in_quad_layer() ) );
     }
 
     for ( const auto& q_ptr : mesh_->quads() )
@@ -173,6 +175,7 @@ private:
     VtuWriter writer { points, connectivity, offsets, types };
 
     writer.add_point_data( size_function, "size_function", 1 );
+    writer.add_point_data( in_quad_layer, "in_quad_layer", 1 );
     writer.add_cell_data( element_color, "element_color", 1 );
     writer.add_cell_data( edge_length, "edge_length", 1 );
     writer.add_cell_data( max_angle, "max_angle", 1 );

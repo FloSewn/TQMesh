@@ -100,17 +100,28 @@ void properties()
   CHECK( !v.has_property(VertexProperty::in_quad_layer) );
 
   v.add_property(VertexProperty::on_boundary);
+  v.add_property(VertexProperty::in_quad_layer);
+  v.add_property(VertexProperty::is_fixed);
+  v.remove_property(VertexProperty::on_front);
+
+  CHECK( !v.has_no_property() );
+  CHECK( v.has_property(VertexProperty::on_boundary) );
+  CHECK( v.has_property(VertexProperty::in_quad_layer) );
+  CHECK( v.has_property(VertexProperty::is_fixed) );
+  CHECK( !v.has_property(VertexProperty::on_front) );
+
 
   Vertex b { 1.0, 1.0 };
   b.set_property( v.properties() );
   CHECK( !b.has_no_property() );
-  CHECK( b.has_property(VertexProperty::on_front) );
   CHECK( b.has_property(VertexProperty::on_boundary) );
-  CHECK( !b.has_property(VertexProperty::is_fixed) );
-  CHECK( !b.has_property(VertexProperty::in_quad_layer) );
+  CHECK( b.has_property(VertexProperty::in_quad_layer) );
+  CHECK( b.has_property(VertexProperty::is_fixed) );
+  CHECK( !b.has_property(VertexProperty::on_front) );
 
   b.remove_property(VertexProperty::on_boundary);
-  b.remove_property(VertexProperty::on_front);
+  b.remove_property(VertexProperty::is_fixed);
+  b.remove_property(VertexProperty::in_quad_layer);
   CHECK( b.has_no_property() );
 
 
@@ -120,6 +131,14 @@ void properties()
   CHECK( !b.has_property(VertexProperty::on_boundary) );
   CHECK( !b.has_property(VertexProperty::is_fixed) );
   CHECK( !b.has_property(VertexProperty::in_quad_layer) );
+
+  b.add_property( v.properties() );
+
+  CHECK( !b.has_no_property() );
+  CHECK( b.has_property(VertexProperty::on_boundary) );
+  CHECK( b.has_property(VertexProperty::in_quad_layer) );
+  CHECK( b.has_property(VertexProperty::is_fixed) );
+  CHECK( !b.has_property(VertexProperty::on_front) );
 
 } // properties()
 

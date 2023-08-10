@@ -216,6 +216,14 @@ private:
       // Create new vertex at center of quad
       Vertex& v7 = mesh_->add_vertex( t->xy() );
 
+      v7.add_property( v1.properties() );
+      v7.add_property( v3.properties() );
+      v7.add_property( v5.properties() );
+
+      // Interior vertices can not be boundary vertices
+      if ( v7.has_property( VertexProperty::on_boundary ) )
+        v7.remove_property( VertexProperty::on_boundary );
+
       // Create new sub-quads 
       Quad& q1 = mesh_->add_quad( v1, *v2, v7, *v6 );
       Quad& q2 = mesh_->add_quad( v3, *v4, v7, *v2 );
@@ -257,6 +265,15 @@ private:
 
       // Create new vertex at center of quad
       Vertex& v9 = mesh_->add_vertex( q->xy() );
+
+      v9.add_property( v1.properties() );
+      v9.add_property( v3.properties() );
+      v9.add_property( v5.properties() );
+      v9.add_property( v7.properties() );
+
+      // Interior vertices can not be boundary vertices
+      if ( v9.has_property( VertexProperty::on_boundary ) )
+        v9.remove_property( VertexProperty::on_boundary );
 
       // Create new sub-quads 
       Quad& q1 = mesh_->add_quad( v1, *v2, v9, *v8 );

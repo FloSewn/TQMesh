@@ -907,7 +907,11 @@ private:
       "Vertex-edge-connectivity seems to be corrupted.");
 
     if ( !front_.is_traversable(*e_start, *e_end) )
+    {
+      DEBUG_LOG("QUADLAYER START/ENDING SEARCH FAILED");
+      DEBUG_LOG("  > FRONT IS NOT TRAVERSABLE");
       return false;
+    }
 
     bool is_closed = (v_start == v_end);
 
@@ -947,7 +951,7 @@ private:
 
   // Meshing constants
   double quad_layer_angle_ = 1.57079633; // = 1/2 pi
-  double quad_layer_range_ = 0.9;
+  double quad_layer_range_ = 1.1;
 
   // Attributes that change during the layer generation
   Vec2d  xy_start_     {};

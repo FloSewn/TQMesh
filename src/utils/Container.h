@@ -128,6 +128,12 @@ public:
   }
 
   /*------------------------------------------------------------------
+  | Get the nearest element to a given location
+  ------------------------------------------------------------------*/
+  T* get_nearest(const Vec2d& location) const
+  { return qtree_.get_nearest(location); }
+
+  /*------------------------------------------------------------------
   | Insert any simplex through constructor before 
   | a specified position
   ------------------------------------------------------------------*/
