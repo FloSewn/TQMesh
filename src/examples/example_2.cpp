@@ -136,8 +136,10 @@ void run_example_2()
   | Smooth the mesh for four iterations
   ------------------------------------------------------------------*/
   generator.mixed_smoothing(mesh)
-    .epsilon(0.9)  // This parameter controls the smoothing strength 
-    .smooth(8);    // We apply 8 smoothing iterations
+    .epsilon(0.2) // This parameter controls the smoothing strength 
+    .quad_layer_smoothing(false) // Apply smoothing to quad layers
+    .smooth(26); // We apply 8 smoothing iterations
+
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in TXT format.

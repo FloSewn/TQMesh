@@ -120,7 +120,7 @@ void run_example_4()
   /*------------------------------------------------------------------
   | Smooth the mesh for four iterations
   ------------------------------------------------------------------*/
-  generator.mixed_smoothing(mesh).smooth(4); 
+  generator.mixed_smoothing(mesh).quad_layer_smoothing(true).smooth(10); 
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in TXT format.
