@@ -185,8 +185,11 @@ void run_example_5()
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
   { source_dir + "/auxiliary/example_data/Example_5" };
-  LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
 
+  LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
   generator.write_mesh(inner_mesh, file_name, MeshExportType::VTU);
+
+  LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
+  generator.write_mesh(inner_mesh, file_name, MeshExportType::TXT);
 
 } // run_example_5()

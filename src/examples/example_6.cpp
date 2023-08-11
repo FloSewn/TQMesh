@@ -215,7 +215,11 @@ void run_example_6()
   /*------------------------------------------------------------------
   | Smooth the mesh for four iterations
   ------------------------------------------------------------------*/
-  generator.mixed_smoothing(mesh).smooth(4);
+  //generator.mixed_smoothing(mesh).smooth(4);
+  generator.mixed_smoothing(mesh)
+    .epsilon(0.7) // The smoothing strength 
+    .quad_layer_smoothing(true) // Enable smoothing to quad layers
+    .smooth(3); // The number of smoothing iterations
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in TXT format.
@@ -223,8 +227,11 @@ void run_example_6()
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
   { source_dir + "/auxiliary/example_data/Example_6" };
-  LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
 
+  LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
   generator.write_mesh(mesh, file_name, MeshExportType::TXT);
+
+  LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
+  generator.write_mesh(mesh, file_name, MeshExportType::VTU);
 
 } // run_example_6()
