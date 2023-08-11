@@ -41,7 +41,7 @@ class Facet
   virtual int           index() const = 0;
   // virtual bool          is_active() const = 0;
   // virtual bool          marker() const = 0;
-  // virtual double        area() const = 0;
+  virtual double        area() const = 0;
   virtual double        min_angle() const = 0;
   virtual double        max_angle() const = 0;
   virtual double        min_edge_length() const = 0;
@@ -136,6 +136,7 @@ public:
   size_t n_vertices() const override { return 0; }
   int    color() const override { return -1; }
   int    index() const override { return -1; }
+  double area() const override { return 0; }
   double min_angle() const override { return 0; }
   double max_angle() const override { return 0; }
   double min_edge_length() const override { return 0; }

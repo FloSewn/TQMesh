@@ -194,6 +194,18 @@ protected:
   } // Smoothin::init_vertex_connectivity()
 
   /*------------------------------------------------------------------
+  | Check if a given coordinate is valid for a vertex
+  ------------------------------------------------------------------*/
+  bool check_new_vertex_coordinate(const Vec2d& xy_n, const Vertex& v) const
+  {
+    if ( !domain_->is_inside( xy_n ) )
+        return false;
+
+    return true;
+
+  } // Smoothing::check_new_vertex_coordinate()
+
+  /*------------------------------------------------------------------
   | Check if a new coordinate for a given vertex is valid
   ------------------------------------------------------------------*/
   bool check_coordinate(const Vec2d& xy_n, const Vertex& v) const
@@ -239,11 +251,99 @@ protected:
   ------------------------------------------------------------------*/
   bool new_vertex_position_is_valid(const Vertex& v, double range) const
   {
-    const double rho = domain_->size_function( v.xy() );
-    const double edge_factor = 0.01;
-
     if ( !domain_->is_inside( v ) )
       return false;
+
+    // Check facet orientation
+    for ( const auto& f_ptr : v.facets() )
+    {
+      if ( f_ptr->n_vertices() == 3 )
+      {
+        const Triangle& tri = *(static_cast<const Triangle*>(f_ptr));
+        const Vec2d& v1 = tri.v1().xy();
+        const Vec2d& v2 = tri.v2().xy();
+        const Vec2d& v3 = tri.v3().xy();
+        if ( orientation(v1, v2, v3) != Orientation::CCW )
+          return false;
+      }
+
+      if ( f_ptr->n_vertices() == 4 )
+      {
+        const Quad& quad = *(static_cast<const Quad*>(f_ptr));
+        const Vec2d& v1 = quad.v1().xy();
+        const Vec2d& v2 = quad.v2().xy();
+        const Vec2d& v3 = quad.v3().xy();
+        const Vec2d& v4 = quad.v4().xy();
+        if ( orientation(v1, v2, v3) != Orientation::CCW )
+          return false;
+        if ( orientation(v2, v3, v4) != Orientation::CCW )
+          return false;
+      }
+    }
+
+    // Check edge crossings between local facet edges
+    double search_radius = 0.0;
+    for ( const auto& f_ptr : v.facets() )
+      search_radius = MAX(search_radius, f_ptr->max_edge_length());
+    
+    const EdgeList& interior_edges = mesh_->interior_edges();
+    const EdgeList& boundary_edges = mesh_->boundary_edges();
+
+    auto i_edges = interior_edges.get_edges(v.xy(), search_radius);
+    auto b_edges = boundary_edges.get_edges(v.xy(), search_radius);
+
+    for (std::size_t i = 0; i < i_edges.size(); ++i)
+    {
+      const Vec2d& v1 = i_edges[i]->v1().xy();
+      const Vec2d& v2 = i_edges[i]->v2().xy();
+
+      for (std::size_t j = 0; j < i_edges.size(); ++j)
+      {
+        if (i == j) 
+          continue;
+
+        const Vec2d& w1 = i_edges[j]->v1().xy();
+        const Vec2d& w2 = i_edges[j]->v2().xy();
+
+        if ( line_line_crossing( v1, v2, w1, w2 ) )
+          return false;
+      }
+
+      for (std::size_t j = 0; j < b_edges.size(); ++j)
+      {
+        const Vec2d& w1 = b_edges[j]->v1().xy();
+        const Vec2d& w2 = b_edges[j]->v2().xy();
+
+        if ( line_line_crossing( v1, v2, w1, w2 ) )
+          return false;
+      }
+    }
+
+    return true;
+
+    //auto Edges = mesh_->get_interior_edges(
+
+    /*
+
+    for ( const auto& f_ptr : v.facets() )
+    {
+      // Check correct facet orientation!!
+
+      if ( f_ptr->n_vertices() == 3 )
+      {
+        const Triangle& tri = *(static_cast<const Triangle*>(f_ptr));
+        if ( tri.intersects_domain(*domain_) ) 
+          return false;
+      }
+
+      if ( f_ptr->n_vertices() == 4 )
+      {
+        const Quad& quad = *(static_cast<const Quad*>(f_ptr));
+        if ( quad.intersects_domain(*domain_) ) 
+          return false;
+      }
+
+    }
 
     if ( v.intersects_facet(mesh_->triangles(), 2.0*range) )
       return false;
@@ -253,6 +353,7 @@ protected:
 
     if ( v.intersects_mesh_edges(*mesh_, 2.0*range, edge_factor * rho) )
       return false;
+    */
 
     return true;
 
@@ -263,14 +364,6 @@ protected:
   ------------------------------------------------------------------*/
   void smoothing_iteration() const
   {
-    /*
-    Triangles& triangles  = mesh_->triangles();
-    Quads&     quads      = mesh_->quads();
-    EdgeList&  intr_edges = mesh_->interior_edges();
-    */
-
-    std::vector<Vec2d> xy_new ( v_conn_.size() );
-
     for (std::size_t i_v = 0; i_v < v_conn_.size(); ++i_v) 
     {
       Vertex& v  = *(v_conn_[i_v].first);
@@ -301,43 +394,19 @@ protected:
 
       // Check the validity of the new coordinate and possibly change 
       // it back, if it violates the mesh structure
-      const Vec2d& xy_old = v.xy();
-      const Vec2d  xy_n = xy_old + eps_ * delta;
+      // --> xy_old must be a copy of v.xy(), in order to store its
+      //     state!
+      const Vec2d xy_old = v.xy();
+      const Vec2d xy_n   = xy_old + eps_ * delta;
 
-      if ( check_coordinate( xy_n, v ) )
+      if ( check_new_vertex_coordinate( xy_n, v ) )
       {
         MeshCleanup::set_vertex_coordinates(v, xy_n);
 
         if ( !new_vertex_position_is_valid(v, (xy_old-xy_n).norm()) )
           MeshCleanup::set_vertex_coordinates(v, xy_old);
       }
-
-      /*
-      if ( check_coordinate( xy_n, v ) )
-        xy_new[i_v] = xy_n;
-      else
-        xy_new[i_v] = xy_old;
-      */
     }
-
-    /*
-    // Apply new vertex positions
-    for ( std::size_t i = 0; i < xy_new.size(); ++i )
-    {
-      Vertex* v = v_conn_[i].first;
-      v->adjust_xy( xy_new[i] );
-    }
-
-    // Update mesh entities
-    for ( auto& tri : triangles )
-      tri->update_metrics();
-
-    for ( auto& quad : quads )
-      quad->update_metrics();
-
-    for ( auto& edge : intr_edges )
-      edge->update_metrics();
-    */
 
   } // SmoothingStrategy::smoothing_iteration()
 

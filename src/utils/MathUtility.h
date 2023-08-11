@@ -19,9 +19,11 @@ namespace CppUtils {
 /*********************************************************************
 * GLOBAL CONSTANTS
 *********************************************************************/
-constexpr double CPPUTILS_SMALL  = std::numeric_limits<double>::epsilon();
-constexpr double CPPUTILS_MAX    = std::numeric_limits<double>::max();
-constexpr double CPPUTILS_MIN    = std::numeric_limits<double>::min();
+constexpr double CPPUTILS_SMALL   = std::numeric_limits<double>::epsilon();
+constexpr double CPPUTILS_MAX     = std::numeric_limits<double>::max();
+constexpr double CPPUTILS_MIN     = std::numeric_limits<double>::min();
+constexpr double CPPUTILS_PI      = 3.14159265358979323846;
+constexpr double CPPUTILS_PI_HALF = 0.5 * 3.14159265358979323846;
 
 /*********************************************************************
 * USEFUL FUNCTIONS

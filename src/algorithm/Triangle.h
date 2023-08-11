@@ -136,7 +136,7 @@ public:
   int           color() const override { return color_; }
   int           index() const override { return index_; }
   bool          is_active() const { return active_; }
-  double        area() const { return area_; }
+  double        area() const override { return area_; }
   double        circumradius() const { return circumradius_; }
   double        min_angle() const override { return min_angle_; }
   double        max_angle() const override { return max_angle_; }

@@ -53,11 +53,13 @@ public:
   | Constructor
   ------------------------------------------------------------------*/
   QuadLayerVertices(Edge& e_start, Edge& e_end, 
-                    bool is_closed, double height)
-  : e_start_   { &e_start }
-  , e_end_     { &e_end   }
-  , is_closed_ { is_closed }
-  , height_    { height }
+                    bool is_closed, double height,
+                    double angle_factor=1.0)
+  : e_start_      { &e_start }
+  , e_end_        { &e_end   }
+  , is_closed_    { is_closed }
+  , height_       { height }
+  , angle_factor_ { angle_factor }
   {
     // Initialize edges
     Edge* e_cur = e_start_;
@@ -191,7 +193,7 @@ private:
     // create a wedge in between. In this case we use the default 
     // projection coordinates v1_proj_xy and v2_proj_xy that were already 
     // calculated in the constructor
-    if ( is_left(p, r, q) && alpha <= quad_layer_angle_ )
+    if ( is_left(p, r, q) && alpha <= angle_factor_ * CPPUTILS_PI_HALF )
       return;
 
     // Otherwise, the projected vertex coordinate will be placed
@@ -492,10 +494,11 @@ private:
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
-  Edge*        e_start_   {nullptr};
-  Edge*        e_end_     {nullptr};
-  bool         is_closed_ { false };
-  double       height_    {  0.0  };
+  Edge*        e_start_      {nullptr};
+  Edge*        e_end_        {nullptr};
+  bool         is_closed_    { false };
+  double       height_       {  0.0  };
+  double       angle_factor_ {  0.5  };
 
   EdgeVector   base_edges_ {};
   VertexVector v1_base_    {};
@@ -508,9 +511,6 @@ private:
   Vec2dVector  v2_proj_xy_ {};
 
   DoubleVector heights_    {};
-
-
-  double quad_layer_angle_ = 1.57079633; // = 1/2 pi
 
 }; // QuadLayerVertices
 
@@ -540,6 +540,7 @@ public:
   size_t n_layers() const { return n_layers_; }
   double first_height() const { return first_height_; }
   double growth_rate() const { return growth_rate_; }
+  double angle_factor() const { return angle_factor_; }
   const Vec2d& starting_position() const { return xy_start_; }
   const Vec2d& ending_position() const { return xy_end_; }
 
@@ -560,6 +561,9 @@ public:
   { xy_end_ = v; return *this; }
   QuadLayerStrategy& ending_position(double x, double y) 
   { xy_end_ = {x,y}; return *this; }
+  QuadLayerStrategy& angle_factor(double a) 
+  { angle_factor_ = a; return *this; }
+
 
   /*------------------------------------------------------------------
   | 
@@ -616,7 +620,8 @@ private:
     // vertex coordinates, that are projected from the base vertex 
     // coordinates
     QuadLayerVertices quad_layer_verts { *e_start_, *e_end_, 
-                                          closed_layer_, height };
+                                          closed_layer_, height,
+                                          angle_factor_ };
     quad_layer_verts.smooth_heights( domain_ );
     quad_layer_verts.setup_vertex_projection( mesh_, front_ );
 
@@ -739,14 +744,13 @@ private:
 
 
     // Create first triangle (v1_base, v2_base, v1_proj)
-    double r1 = quad_layer_range_ * (v1_base.xy() - v1_proj_xy).norm();
+    double r1 = range_factor_ * (v1_base.xy() - v1_proj_xy).norm();
     Triangle* t1 = front_update_.update_front(base, v1_proj_xy, 
                                               v1_proj_xy, r1);
     if ( !t1 )
       return v_proj;
 
     Vertex& v_proj_p1 = t1->v3();
-    v_proj_p1.add_property(VertexProperty::in_quad_layer);
     v_proj.first = &v_proj_p1;
 
 
@@ -759,7 +763,7 @@ private:
 
 
     // Create second triangle (v1_proj, v2_base, v2_proj)
-    double r2 = quad_layer_range_ * (v2_base.xy() - v2_proj_xy).norm();
+    double r2 = range_factor_ * (v2_base.xy() - v2_proj_xy).norm();
     Triangle* t2 
       = front_update_.update_front(*diagonal, v2_proj_xy, 
                                    v2_proj_xy, r2);
@@ -767,7 +771,6 @@ private:
       return v_proj;
 
     Vertex& v_proj_p2 = t2->v3();
-    v_proj_p2.add_property(VertexProperty::in_quad_layer);
     v_proj.second = &v_proj_p2;
 
 
@@ -800,6 +803,7 @@ private:
   void finish_quad_layer(QuadLayerVertices& quad_layer_verts)
   {
     auto& v1_base        = quad_layer_verts.v1_base();
+    auto& v2_base        = quad_layer_verts.v2_base();
     auto& v1_proj        = quad_layer_verts.v1_proj();
     auto& v2_proj        = quad_layer_verts.v2_proj();
 
@@ -810,6 +814,19 @@ private:
       if ( !v1_proj[i] || !v2_proj[i-1] || v1_proj[i] == v2_proj[i-1] )
         continue;
       close_quad_layer_gap(*v2_proj[i-1], *v1_base[i], *v1_proj[i]);
+    }
+
+    // Mark all vertices to be located within a quad layer
+    for ( int i = 0; i < n_base_edges; ++i )
+    {
+      if ( v1_base[i] )
+        v1_base[i]->add_property(VertexProperty::in_quad_layer);
+      if ( v2_base[i] )
+        v2_base[i]->add_property(VertexProperty::in_quad_layer);
+      if ( v1_proj[i] )
+        v1_proj[i]->add_property(VertexProperty::in_quad_layer);
+      if ( v2_proj[i] )
+        v2_proj[i]->add_property(VertexProperty::in_quad_layer);
     }
 
   } // QuadLayerStrategy::finish_quad_layer()
@@ -843,7 +860,7 @@ private:
     const double alpha = angle(l1,l2);
 
     // Don't add v_a new vertex and instead only connect (v_a,v_b,v_c)
-    if ( alpha <= quad_layer_angle_ )
+    if ( alpha <= angle_factor_ * CPPUTILS_PI_HALF )
     {
       Triangle* t_new = &( mesh_.add_triangle(v_a, v_b, v_c) );
 
@@ -860,7 +877,6 @@ private:
     const Vec2d v_xy = v_b.xy() + l1 + l2;
 
     Vertex& v_new = mesh_.add_vertex( v_xy );
-    v_new.add_property(VertexProperty::in_quad_layer);
 
     Triangle& t1_new = mesh_.add_triangle(v_a, v_b, v_new);
     Triangle& t2_new = mesh_.add_triangle(v_b, v_c, v_new);
@@ -926,7 +942,7 @@ private:
 
       Edge *e_next = e_start->get_next_edge();
 
-      if ( e_next && ang <= quad_layer_angle_ )
+      if ( e_next && ang <= angle_factor_ * CPPUTILS_PI_HALF )
       {
         e_end = e_start;
         e_start = e_next; 
@@ -950,8 +966,8 @@ private:
   double growth_rate_  {};
 
   // Meshing constants
-  double quad_layer_angle_ = 1.57079633; // = 1/2 pi
-  double quad_layer_range_ = 1.1;
+  double angle_factor_ = 1.0;
+  double range_factor_ = 1.1;
 
   // Attributes that change during the layer generation
   Vec2d  xy_start_     {};

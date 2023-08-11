@@ -214,7 +214,7 @@ void quad_layer()
   CHECK( triangulation.generate_elements() );
 
   MixedSmoothingStrategy smoother {mesh, domain};
-  smoother.smooth(5);
+  smoother.smooth(2);
 
   // Export mesh
   MeshCleanup::assign_size_function_to_vertices(mesh, domain);
@@ -477,7 +477,7 @@ void triangulate_standard_tests(const std::string& test_name)
   CHECK( success );
 
   MixedSmoothingStrategy smoother {mesh, domain};
-  smoother.smooth(5);
+  smoother.smooth(2);
 
   success &= EQ(mesh.area(), domain.area(), 1E+16);
   CHECK( success );
