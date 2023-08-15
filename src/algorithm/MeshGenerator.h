@@ -88,6 +88,8 @@ public:
   bool is_valid(Mesh& mesh)
   { return ( mesh_builder_.get_domain(mesh) != nullptr ); }
 
+  std::size_t size() const { return meshes_.size(); }
+
 
   /*------------------------------------------------------------------
   | Initialize a new mesh for a given domain
@@ -232,7 +234,6 @@ public:
 
     return *dynamic_cast<QuadRefinementStrategy*>(refinement_algorithm_.get());
   }
-
 
   /*------------------------------------------------------------------
   | 

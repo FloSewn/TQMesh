@@ -773,7 +773,7 @@ private:
     // Gather sub strings
     std::vector<string> sub_strings {};
 
-    for (int i = start_data.line_index+1; i < end_data.line_index; i++)
+    for (size_t i = start_data.line_index+1; i < end_data.line_index; i++)
       sub_strings.push_back( content[i] );
 
     // Convert substring to a vector of type T
