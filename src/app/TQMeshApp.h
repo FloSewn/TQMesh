@@ -32,13 +32,13 @@ using namespace TQAlgorithm;
 /*--------------------------------------------------------------------
 | Class for error handling
 --------------------------------------------------------------------*/
-class Invalid
+class Invalid : public std::exception
 {
 public:
-  Invalid(const std::string& msg){ error_message = msg; }
-  const std::string& what() const { return error_message; }
+  Invalid(const string& msg) : message_ {msg} {}
+  const char* what() const noexcept override { return message_.c_str(); }
 private:
-  std::string error_message;
+  std::string message_;
 };
 
 
@@ -186,7 +186,8 @@ private:
         .first_height(h)
         .growth_rate(g)
         .starting_position(v1.xy())
-        .ending_position(v2.xy());
+        .ending_position(v2.xy())
+        .generate_elements();
     }
 
     // Start meshing 
@@ -205,7 +206,7 @@ private:
     }
 
     // Merge with other meshes
-    if ( mesh_generator_.size() > 0 )
+    if ( mesh_generator_.size() > 1 )
     {
       Mesh& other_mesh = mesh_generator_.mesh(0);
       ASSERT( &other_mesh != &mesh, "MeshConstruction::generate_mesh: "
@@ -221,7 +222,9 @@ private:
       mesh_generator_.quad_refinement(mesh).refine();
 
     // Apply mesh smoothing
-    mesh_generator_.mixed_smoothing(mesh).smooth(4);
+    mesh_generator_.mixed_smoothing(mesh)
+      .quad_layer_smoothing(true)
+      .smooth(2);
 
     // Export the mesh
     if ( output_format_ == "VTU" || output_format_ == "vtu" )
@@ -382,7 +385,7 @@ private:
         int     m = para_intr_bdry.get_value(2, i);
 
         // Throw error if indices are larger than number of vertices
-        if ( i1 > n_vertices || i2 > n_vertices )
+        if ( i1 >= n_vertices || i2 >= n_vertices )
           error("Invalid interior boundary definition: " 
                 "Some vertex index is larger that the number of "
                 "provided input vertices.");
@@ -648,7 +651,7 @@ private:
     // Vertices are given in the input file
     // -> Put vertex coordinates and properties into arrays 
     //    and set domain extents
-    if ( mesh_reader.query<double>("vertices") )
+    if ( mesh_reader.query<double>("vertices", true, -1.0) )
     {
       auto para_vertices 
         = mesh_reader.get_parameter<double>("vertices");
@@ -784,36 +787,12 @@ public:
       LOG(INFO) << "============== " << "Create mesh " << mesh_id 
                 << " ==============";
 
-      try 
-      {
-        mesh_construction.construct_mesh(mesh_id, mesh_reader);
-      }
-      catch(const Invalid& inv)
-      {
-        LOG(ERROR) << inv.what();
-      }
+      mesh_construction.construct_mesh(mesh_id, mesh_reader);
 
       ++mesh_id;
-
-      /*
-      meshes_.push_back( mesh_id );
-
-      MeshGenerator& new_mesh = meshes_.back();
-
-      bool success = new_mesh.create_new_mesh( base_mesh,
-                                               mesh_reader );
-
-      if ( !success )
-        return false;
-
-      base_mesh = new_mesh.mesh_ptr();
-
-      */
     }
 
-
     return true;
-
 
   } // TQMeshApp::run()
 

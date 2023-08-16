@@ -8,7 +8,7 @@
 Define mesh:
   Element size: 0.1 
   Element color: 1
-  Meshing algorithm: Paving
+  Meshing algorithm: Tri-to-Quad
   Number of quad refinements: 1
 
   # Output formats: COUT, TXT, VTU
@@ -24,14 +24,14 @@ Define mesh:
   #   4) Range parameter
   #---------------------------------------------------------
   Define vertices:
-    0.0,   0.0,   1.0,  1.0     # 0
-    4.0,   0.0,   1.0,  1.0     # 1
-    4.0,   1.0,   1.0,  1.0     # 2
-    0.0,   1.0,   1.0,  1.0     # 3
-    0.35,  0.35,  0.8,  1.2     # 4
-    0.35,  0.65,  0.8,  1.2     # 5
-    0.65,  0.65,  0.8,  1.2     # 6
-    0.65,  0.35,  0.8,  1.2     # 7
+    0.0,   0.0                  # 0
+    4.0,   0.0                  # 1
+    4.0,   1.0                  # 2
+    0.0,   1.0                  # 3
+    0.35,  0.35, 0.03, 0.10     # 4
+    0.35,  0.65, 0.03, 0.10     # 5
+    0.65,  0.65, 0.03, 0.10     # 6
+    0.65,  0.35, 0.03, 0.10     # 7
   End vertices
 
   #---------------------------------------------------------
@@ -46,10 +46,10 @@ Define mesh:
   # > Interior boundaries must be defined clockwise
   #---------------------------------------------------------
   Define exterior boundary:
-   0,  1,  2 # WALL 
-   1,  2,  3 # OUTLET
-   2,  3,  2 # WALL
-   3,  0,  1 # INLET
+   0,  1,  2        # WALL 
+   1,  2,  3        # OUTLET
+   2,  3,  2        # WALL
+   3,  0,  1        # INLET
   End exterior boundary
 
   Define interior boundary:

@@ -65,10 +65,19 @@ int main(int argc, char* argv[])
     return EXIT_SUCCESS;
   }
 
-  TQMeshApp app { argv[1] };
+  try
+  {
+    TQMeshApp app { argv[1] };
 
-  if ( !app.run() )
+    if ( !app.run() )
+      return EXIT_FAILURE;
+  }
+  catch (const std::exception& e)
+  {
+    LOG(ERROR) << e.what();
     return EXIT_FAILURE;
+  }
+
 
   return EXIT_SUCCESS;
 }
