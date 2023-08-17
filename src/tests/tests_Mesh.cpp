@@ -500,6 +500,21 @@ void triangulate_standard_tests(const std::string& test_name)
 
 } // triangulate_standard_tests()
 
+/*********************************************************************
+* Test CSV import
+*********************************************************************/
+void csv_import()
+{
+  // Define dummy domain & mesh builder
+  UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
+  Domain domain { f };
+
+  Boundary& b_ext = domain.add_exterior_boundary();
+  b_ext.set_shape_rectangle(1, {0.0, 0.0}, 10.0, 10.,0);
+
+  Boundary& b_int = domain.add_interior_boundary();
+
+} // csv_import()
 
 
 } // namespace MeshTests
@@ -541,6 +556,9 @@ void run_tests_Mesh()
     adjust_logging_output_stream("MeshTests.triangulate_" + test_name + ".log");
     MeshTests::triangulate_standard_tests(test_name);
   }
+
+  //adjust_logging_output_stream("MeshTests.csv_import.log");
+  //MeshTests::csv_import();
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");

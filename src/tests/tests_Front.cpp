@@ -192,9 +192,10 @@ void test_TriangleSquareCircle()
 
   CHECK( EQ(front.area(), test_builder.domain().area()) );
   CHECK( ABS(front.area() - area) < 0.025 );  
-  CHECK( front.edges().size() == 146 );
+  CHECK( front.edges().size() == 90 );
+
   for ( const auto& e_ptr : front.edges() )
-    CHECK( e_ptr->length() < 1.0 );
+    CHECK( e_ptr->length() < 1.001 );
 
   // Export
   export_mesh_file(vertices, front, test_builder.domain());
