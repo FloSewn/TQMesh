@@ -12,51 +12,30 @@ Define mesh:
   Number of quad refinements: 1
 
   # Output formats: COUT, TXT, VTU
-  Output file format: TXT
+  Output file format: VTU
   Output file prefix: ./Example_2
-
-  #---------------------------------------------------------
-  #                         VERTICES     
-  # Arguments:
-  #   1) X-coordinate
-  #   2) Y-coordinate
-  #   3) Scale parameter
-  #   4) Range parameter
-  #---------------------------------------------------------
-  Define vertices:
-    0.0,   0.0                  # 0
-    4.0,   0.0                  # 1
-    4.0,   1.0                  # 2
-    0.0,   1.0                  # 3
-    0.35,  0.35, 0.03, 0.10     # 4
-    0.35,  0.65, 0.03, 0.10     # 5
-    0.65,  0.65, 0.03, 0.10     # 6
-    0.65,  0.35, 0.03, 0.10     # 7
-  End vertices
 
   #---------------------------------------------------------
   #                        BOUNDARIES     
   # Arguments:
-  #   1) Index of starting vertex
-  #   2) Index of ending vertex
-  #   3) Boundary marker
-  #
-  # > All boundaries must be closed 
-  # > Exterior boundaries must be defined counter-clockwise
-  # > Interior boundaries must be defined clockwise
+  #   1) X-coordinate of starting vertex
+  #   2) Y-coordinate of starting vertex
+  #   3) Boundary edge marker
+  #   4) Local mesh scale (optional)
+  #   5) Local range for mesh scale (optional)
   #---------------------------------------------------------
   Define exterior boundary:
-   0,  1,  2        # WALL 
-   1,  2,  3        # OUTLET
-   2,  3,  2        # WALL
-   3,  0,  1        # INLET
+    0.0, 0.0,   2  # WALL 
+    4.0, 0.0,   3  # OUTLET
+    4.0, 1.0,   2  # WALL
+    0.0, 1.0,   1  # INLET
   End exterior boundary
 
   Define interior boundary:
-   4,  5,  4  
-   5,  6,  4  
-   6,  7,  4  
-   7,  4,  4  
+    0.35, 0.35,   4,   0.03, 0.10 
+    0.35, 0.65,   4,   0.03, 0.10 
+    0.65, 0.65,   4,   0.03, 0.10 
+    0.65, 0.35,   4,   0.03, 0.10 
   End interior boundary
 
   #---------------------------------------------------------

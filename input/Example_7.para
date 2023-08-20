@@ -1,0 +1,44 @@
+#===========================================================
+#                         TQMESH     
+#===========================================================
+ 
+#-----------------------------------------------------------
+#                          Mesh #1 
+#-----------------------------------------------------------
+Define mesh:
+  Element size: 0.003 
+  Element color: 1
+  Meshing algorithm: Triangulation
+  Number of quad refinements: 0
+
+  # Output formats: COUT, TXT, VTU
+  Output file format: VTU
+  Output file prefix: ./Example_7
+
+  #---------------------------------------------------------
+  #                        BOUNDARIES     
+  #---------------------------------------------------------
+  Define exterior circular boundary: 1, 0.77, 0.09, 0.14, 220
+
+  Define interior boundary from CSV file: ../auxiliary/test_data/Airfoil.csv
+
+  Add quad layers: 0.69132, 0.09754, 0.69132, 0.09754, 10, 0.0003, 1.10
+
+End mesh
+
+#-----------------------------------------------------------
+#                          Mesh #2 
+#-----------------------------------------------------------
+# Define mesh:
+#   Element size: 0.003 
+#   Element color: 2
+#   Meshing algorithm: Triangulation
+#   Number of quad refinements: 0
+# 
+#   # Output formats: COUT, TXT, VTU
+#   Output file format: VTU
+#   Output file prefix: ./Example_7
+# 
+#   Define exterior boundary from CSV file: ../auxiliary/test_data/Airfoil.csv
+# 
+# End mesh

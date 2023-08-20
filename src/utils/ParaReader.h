@@ -584,7 +584,8 @@ public:
     }
     else if ( para.type() == ParaType::vector ) 
     {
-      return query_vector( para, *(content_) );
+      return query_vector( para, *(content_), 
+                           use_default_value, default_value );
     }
     else if ( para.type() == ParaType::matrix )
     {
@@ -688,7 +689,8 @@ private:
   | Query vector parameters 
   ------------------------------------------------------------------*/
   template <typename T>
-  bool query_vector(Parameter<T>& para, const strVec& content)
+  bool query_vector(Parameter<T>& para, const strVec& content, 
+                    bool use_default_value, T default_value)
   {
     auto query_data = para.get_query_data(para.start_key(), content );
 
@@ -709,31 +711,11 @@ private:
         sub_string.end()
     );
 
+
     // Convert substring to a vector of type T
-    std::vector<T> out;
-
-    string s;
-    std::stringstream ss(sub_string);
-
-    // Split string at delimiter and put every sub-string
-    // into "out" vector
-    while(std::getline(ss, s, ParaFileDelimiter))
-    {
-      // Remove parantheses
-      s.erase(std::remove(s.begin(), s.end(), '('), s.end());
-      s.erase(std::remove(s.begin(), s.end(), ')'), s.end());
-      s.erase(std::remove(s.begin(), s.end(), '['), s.end());
-      s.erase(std::remove(s.begin(), s.end(), ']'), s.end());
-
-      try
-      { 
-        out.push_back( string_to_single_value<T>(s) );
-      }
-      catch (...)
-      {
-        continue;
-      }
-    }
+    std::vector<T> out = process_vector_query(para, sub_string, 
+                                              use_default_value, 
+                                              default_value);
 
     // Return false,  if not enough parameters
     if ( out.size() < para.columns() )
@@ -804,6 +786,59 @@ private:
     return true;
 
   } // ParaBlock::query_matrix()
+
+  /*------------------------------------------------------------------
+  | Handle the actual query for vector parameters 
+  ------------------------------------------------------------------*/
+  template <typename T> std::vector<T> 
+  process_vector_query(Parameter<T>& para, 
+                       string& sub_string,
+                       bool use_default_value, T default_value) const
+  {
+    // Convert substring to a vector of type T
+    std::vector<T> out;
+
+    string s;
+    std::stringstream ss(sub_string);
+
+    std::size_t j = 0;
+
+    // Split string at delimiter and put every sub-string
+    // into "out" vector
+    while(std::getline(ss, s, ParaFileDelimiter))
+    {
+      // Remove parantheses
+      s.erase(std::remove(s.begin(), s.end(), '('), s.end());
+      s.erase(std::remove(s.begin(), s.end(), ')'), s.end());
+      s.erase(std::remove(s.begin(), s.end(), '['), s.end());
+      s.erase(std::remove(s.begin(), s.end(), ']'), s.end());
+
+      try
+      { 
+        // Type conversion succeeded -> Add value
+        out.push_back( string_to_single_value<T>(s) );
+        ++j;
+      }
+      catch (...)
+      {
+        // In case we do not want to use default values, continue
+        if ( !use_default_value )
+          continue;
+
+        // Type conversion failed -> Add default value
+        out.push_back( default_value );
+        ++j;
+      }
+    }
+
+    // Fill missing entries with default values
+    if ( use_default_value )
+      for ( ; j < para.columns(); ++j)
+        out.push_back( default_value );
+
+    return std::move(out);
+
+  } // process_vector_query()
 
   /*------------------------------------------------------------------
   | Handle the actual query for matrix parameters 

@@ -353,15 +353,29 @@ private:
     Domain&   domain   = *( domain_.get() );
     Vertices& vertices = domain.vertices();
 
-    size_t n_vertices = vertices.size();
-
-    // Query and initialize interior boundary definitions
-    while( mesh_reader.query<int>("intr_bdry") )
+    // Query and initialize interior boundaries from CSV file
+    while( mesh_reader.query<std::string>("intr_bdry_csv") )
     {
       Boundary& b_int = domain.add_interior_boundary();
 
-      auto para_intr_bdry = mesh_reader.get_parameter<int>("intr_bdry");
-      print_parameter<int>(mesh_reader, "intr_bdry");
+      b_int.set_shape_from_csv( 
+          mesh_reader.get_value<std::string>("intr_bdry_csv") );
+
+      print_parameter<std::string>(mesh_reader, "intr_bdry_csv");
+    }
+
+
+    // Query and initialize interior boundaries from edge definitions
+    while( mesh_reader.query<int>("intr_bdry_edges") )
+    {
+      size_t n_vertices = vertices.size();
+
+      Boundary& b_int = domain.add_interior_boundary();
+
+      auto para_intr_bdry 
+        = mesh_reader.get_parameter<int>("intr_bdry_edges");
+
+      print_parameter<int>(mesh_reader, "intr_bdry_edges");
 
       for ( size_t i = 0; i < para_intr_bdry.rows(); ++i )
       {
@@ -418,7 +432,7 @@ private:
 
 
     // Query and initialize interior boundary rectangles
-    while( mesh_reader.query<double>("intr_bdry_rect") )
+    while( mesh_reader.query<double>("intr_bdry_rect", true, -1.0) )
     {
       Boundary& b_int = domain.add_interior_boundary();
 
@@ -431,13 +445,15 @@ private:
       double y = para_intr_bdry_rect.get_value(2);
       double w = para_intr_bdry_rect.get_value(3);
       double h = para_intr_bdry_rect.get_value(4);
+      double s = para_intr_bdry_rect.get_value(5);
+      double r = para_intr_bdry_rect.get_value(6);
 
-      b_int.set_shape_rectangle( m, {x,y}, w, h );
+      b_int.set_shape_rectangle( m, {x,y}, w, h, s, r );
     }
 
 
     // Query and initialize interior boundary circles
-    while( mesh_reader.query<double>("intr_bdry_circ") )
+    while( mesh_reader.query<double>("intr_bdry_circ", true, -1.0) )
     {
       Boundary& b_int = domain.add_interior_boundary();
 
@@ -450,12 +466,14 @@ private:
       double y = para_intr_bdry_circ.get_value(2);
       double r = para_intr_bdry_circ.get_value(3);
       int    n = static_cast<int>( para_intr_bdry_circ.get_value(4) );
+      double ms = para_intr_bdry_circ.get_value(5);
+      double mr = para_intr_bdry_circ.get_value(6);
 
-      b_int.set_shape_circle( m, {x,y}, r, n );
+      b_int.set_shape_circle( m, {x,y}, r, n, ms, mr );
     }
 
     // Query and initialize interior boundary squares
-    while( mesh_reader.query<double>("intr_bdry_square") )
+    while( mesh_reader.query<double>("intr_bdry_square", true, -1.0) )
     {
       Boundary& b_int = domain.add_interior_boundary();
 
@@ -467,12 +485,14 @@ private:
       double x = para_intr_bdry_square.get_value(1);
       double y = para_intr_bdry_square.get_value(2);
       double h = para_intr_bdry_square.get_value(3);
+      double ms = para_intr_bdry_square.get_value(4);
+      double mr = para_intr_bdry_square.get_value(5);
 
-      b_int.set_shape_square( m, {x,y}, h );
+      b_int.set_shape_square( m, {x,y}, h, ms, mr );
     }
 
     // Query and initialize interior boundary triangle
-    while( mesh_reader.query<double>("intr_bdry_triangle") )
+    while( mesh_reader.query<double>("intr_bdry_triangle", true, -1.0) )
     {
       Boundary& b_int = domain.add_interior_boundary();
 
@@ -484,8 +504,10 @@ private:
       double x = para_intr_bdry_triangle.get_value(1);
       double y = para_intr_bdry_triangle.get_value(2);
       double h = para_intr_bdry_triangle.get_value(3);
+      double ms = para_intr_bdry_triangle.get_value(4);
+      double mr = para_intr_bdry_triangle.get_value(5);
 
-      b_int.set_shape_triangle( m, {x,y}, h );
+      b_int.set_shape_triangle( m, {x,y}, h, ms, mr );
     }
 
   } // MeshConstruction::init_interior_boundaries() 
@@ -501,12 +523,24 @@ private:
     Domain&   domain   = *( domain_.get() );
     Vertices& vertices = domain.vertices();
 
-    // External boundary definition via direct edge placement
-    mesh_reader.query<int>("extr_bdry");
-    auto para_extr_bdry = mesh_reader.get_parameter<int>("extr_bdry");
-
-    if ( para_extr_bdry.found() )
+    // External boundary definition from CSV file
+    if ( mesh_reader.query<std::string>("extr_bdry_csv") )
     {
+      Boundary& b_ext = domain.add_exterior_boundary();
+      b_ext.set_shape_from_csv( 
+          mesh_reader.get_value<std::string>("extr_bdry_csv") );
+
+      print_parameter<std::string>(mesh_reader, "extr_bdry_csv");
+
+      return;
+    }
+
+    // External boundary definition via direct edge placement
+    if ( mesh_reader.query<int>("extr_bdry_edges") )
+    {
+      auto para_extr_bdry 
+        = mesh_reader.get_parameter<int>("extr_bdry_edges");
+
       Boundary& b_ext = domain.add_exterior_boundary();
 
       size_t n_vertices = vertices.size();
@@ -529,32 +563,30 @@ private:
         b_ext.add_edge( v1, v2, m );
       }
 
-      print_parameter<int>(mesh_reader, "extr_bdry");
+      print_parameter<int>(mesh_reader, "extr_bdry_edges");
 
       return;
     }
 
-
-    // External boundary  definition via direct edge coordinates placement
-    mesh_reader.query<double>("extr_bdry_coords", true, -1.0);
-    auto para_extr_bdry_coords 
-      = mesh_reader.get_parameter<double>("extr_bdry_coords");
-
-    if ( para_extr_bdry_coords.found() )
+    // External boundary  definition via direct edge coordinates 
+    if ( mesh_reader.query<double>("extr_bdry_coords", true, -1.0) )
     {
+      auto para_extr_bdry 
+        = mesh_reader.get_parameter<double>("extr_bdry_coords");
+
       Boundary& b_ext = domain.add_exterior_boundary();
 
       std::vector<Vec2d> vertex_coords {};
       std::vector<Vec2d> vertex_props {};
       std::vector<int>   edge_markers {};
 
-      for ( size_t i = 0; i < para_extr_bdry_coords.rows(); ++i )
+      for ( size_t i = 0; i < para_extr_bdry.rows(); ++i )
       {
-        double x = para_extr_bdry_coords.get_value(0, i);
-        double y = para_extr_bdry_coords.get_value(1, i);
-        int m    = static_cast<int>( para_extr_bdry_coords.get_value(2, i) );
-        double s = para_extr_bdry_coords.get_value(3, i);
-        double r = para_extr_bdry_coords.get_value(4, i);
+        double x = para_extr_bdry.get_value(0, i);
+        double y = para_extr_bdry.get_value(1, i);
+        int m    = static_cast<int>( para_extr_bdry.get_value(2, i) );
+        double s = para_extr_bdry.get_value(3, i);
+        double r = para_extr_bdry.get_value(4, i);
 
         if ( m < 0 )
           throw_error("Invalid exterior boundary definition");
@@ -574,87 +606,91 @@ private:
 
 
     // External boundary via rectangular boundary shape
-    mesh_reader.query<double>("extr_bdry_rect");
-    auto para_extr_bdry_rect
-      = mesh_reader.get_parameter<double>("extr_bdry_rect");
-
-    if ( para_extr_bdry_rect.found() )
+    if ( mesh_reader.query<double>("extr_bdry_rect", true, -1.0) )
     {
-      Boundary& b_ext    = domain.add_exterior_boundary();
+      auto para_extr_bdry
+        = mesh_reader.get_parameter<double>("extr_bdry_rect");
+
+      Boundary& b_ext = domain.add_exterior_boundary();
       
       print_parameter<double>(mesh_reader, "extr_bdry_rect");
 
-      int    m = static_cast<int>( para_extr_bdry_rect.get_value(0) );
-      double x = para_extr_bdry_rect.get_value(1);
-      double y = para_extr_bdry_rect.get_value(2);
-      double w = para_extr_bdry_rect.get_value(3);
-      double h = para_extr_bdry_rect.get_value(4);
+      int    m = static_cast<int>( para_extr_bdry.get_value(0) );
+      double x = para_extr_bdry.get_value(1);
+      double y = para_extr_bdry.get_value(2);
+      double w = para_extr_bdry.get_value(3);
+      double h = para_extr_bdry.get_value(4);
+      double s = para_extr_bdry.get_value(5);
+      double r = para_extr_bdry.get_value(6);
 
-      b_ext.set_shape_rectangle( m, {x,y}, w, h );
+      b_ext.set_shape_rectangle( m, {x,y}, w, h, s, r );
 
       return;
     }
 
     // External boundary via circular boundary shape
-    mesh_reader.query<double>("extr_bdry_circ");
-    auto para_extr_bdry_circ
-      = mesh_reader.get_parameter<double>("extr_bdry_circ");
-
-    if ( para_extr_bdry_circ.found() )
+    if ( mesh_reader.query<double>("extr_bdry_circ", true, -1.0) )
     {
+      auto para_extr_bdry
+        = mesh_reader.get_parameter<double>("extr_bdry_circ");
+
       Boundary& b_ext    = domain.add_exterior_boundary();
       
       print_parameter<double>(mesh_reader, "extr_bdry_circ");
 
-      int    m = static_cast<int>( para_extr_bdry_circ.get_value(0) );
-      double x = para_extr_bdry_circ.get_value(1);
-      double y = para_extr_bdry_circ.get_value(2);
-      double r = para_extr_bdry_circ.get_value(3);
-      double n = static_cast<int>( para_extr_bdry_circ.get_value(4) );
+      int    m = static_cast<int>( para_extr_bdry.get_value(0) );
+      double x = para_extr_bdry.get_value(1);
+      double y = para_extr_bdry.get_value(2);
+      double r = para_extr_bdry.get_value(3);
+      double n = static_cast<int>( para_extr_bdry.get_value(4) );
+      double ms = para_extr_bdry.get_value(5);
+      double mr = para_extr_bdry.get_value(6);
 
-      b_ext.set_shape_circle( m, {x,y}, r, n );
+      b_ext.set_shape_circle( m, {x,y}, r, n, ms, mr );
 
       return;
     }
 
     // External boundary via squared boundary shape
-    mesh_reader.query<double>("extr_bdry_square");
-    auto para_extr_bdry_square
-      = mesh_reader.get_parameter<double>("extr_bdry_square");
-
-    if ( para_extr_bdry_square.found() )
+    if ( mesh_reader.query<double>("extr_bdry_square", true, -1.0) )
     {
+      auto para_extr_bdry
+        = mesh_reader.get_parameter<double>("extr_bdry_square");
+
       Boundary& b_ext    = domain.add_exterior_boundary();
       
       print_parameter<double>(mesh_reader, "extr_bdry_square");
 
-      int    m = static_cast<int>( para_extr_bdry_square.get_value(0) );
-      double x = para_extr_bdry_square.get_value(1);
-      double y = para_extr_bdry_square.get_value(2);
-      double h = para_extr_bdry_square.get_value(3);
+      int    m = static_cast<int>( para_extr_bdry.get_value(0) );
+      double x = para_extr_bdry.get_value(1);
+      double y = para_extr_bdry.get_value(2);
+      double h = para_extr_bdry.get_value(3);
+      double ms = para_extr_bdry.get_value(4);
+      double mr = para_extr_bdry.get_value(5);
 
-      b_ext.set_shape_square( m, {x,y}, h );
+      b_ext.set_shape_square( m, {x,y}, h, ms, mr );
 
       return;
     }
 
     // External boundary via triangular boundary shape
-    mesh_reader.query<double>("extr_bdry_triangle");
-    auto para_extr_bdry_triangle
-      = mesh_reader.get_parameter<double>("extr_bdry_triangle");
-
-    if ( para_extr_bdry_triangle.found() )
+    if ( mesh_reader.query<double>("extr_bdry_triangle", true, -1.0) )
     {
+      auto para_extr_bdry
+        = mesh_reader.get_parameter<double>("extr_bdry_triangle");
+
       Boundary& b_ext    = domain.add_exterior_boundary();
       
       print_parameter<double>(mesh_reader, "extr_bdry_triangle");
 
-      int    m = static_cast<int>( para_extr_bdry_triangle.get_value(0) );
-      double x = para_extr_bdry_triangle.get_value(1);
-      double y = para_extr_bdry_triangle.get_value(2);
-      double h = para_extr_bdry_triangle.get_value(3);
+      int    m = static_cast<int>( para_extr_bdry.get_value(0) );
+      double x = para_extr_bdry.get_value(1);
+      double y = para_extr_bdry.get_value(2);
+      double h = para_extr_bdry.get_value(3);
+      double ms = para_extr_bdry.get_value(4);
+      double mr = para_extr_bdry.get_value(5);
 
-      b_ext.set_shape_triangle( m, {x,y}, h );
+      b_ext.set_shape_triangle( m, {x,y}, h, ms, mr );
 
       return;
     }
@@ -877,7 +913,7 @@ private:
         "output_format", "Output file format:");
 
     mesh_reader.new_matrix_parameter<double>(
-        "vertices", "Define vertices:", "End vertices", 4);
+        "vertices", "Define boundary vertices:", "End boundary vertices", 4);
 
     mesh_reader.new_scalar_parameter<std::string>(
         "size_function", "Element size:");
@@ -895,45 +931,62 @@ private:
         "quad_layers", "Add quad layers:", 7);
 
     mesh_reader.new_matrix_parameter<double>(
-        "fixed_vertices", "Define fixed vertices:", "End fixed vertices", 4);
+        "fixed_vertices", "Define inner vertices:", "End inner vertices", 4);
+
+
+    mesh_reader.new_scalar_parameter<std::string>(
+        "extr_bdry_csv", "Define exterior boundary from CSV file:");
+
+    mesh_reader.new_scalar_parameter<std::string>(
+        "intr_bdry_csv", "Define interior boundary from CSV file:");
+
 
     mesh_reader.new_matrix_parameter<int>(
-        "extr_bdry", "Define exterior boundary:", "End exterior boundary", 3);
-
-    mesh_reader.new_matrix_parameter<double>(
-        "extr_bdry_coords", "Define exterior boundary coordinates:", 
-        "End exterior boundary coordinates", 5);
-
-    mesh_reader.new_vector_parameter<double>(
-        "extr_bdry_rect", "Define exterior rectangular boundary:", 5);
-    
-    mesh_reader.new_vector_parameter<double>(
-        "extr_bdry_circ", "Define exterior circular boundary:", 5);
-
-    mesh_reader.new_vector_parameter<double>(
-        "extr_bdry_square", "Define exterior squared boundary:", 4);
-
-    mesh_reader.new_vector_parameter<double>(
-        "extr_bdry_triangle", "Define exterior triangular boundary:", 4);
+        "extr_bdry_edges", "Define exterior boundary edges:", 
+        "End exterior boundary edges", 3);
 
     mesh_reader.new_matrix_parameter<int>(
-        "intr_bdry", "Define interior boundary:", "End interior boundary", 3);
+        "intr_bdry_edges", "Define interior boundary edges:", 
+        "End interior boundary edges", 3);
+
 
     mesh_reader.new_matrix_parameter<double>(
-        "intr_bdry_coords", "Define interior boundary coordinates:", 
-        "End interior boundary coordinates", 5);
+        "extr_bdry_coords", "Define exterior boundary:", 
+        "End exterior boundary", 5);
+
+    mesh_reader.new_matrix_parameter<double>(
+        "intr_bdry_coords", "Define interior boundary:", 
+        "End interior boundary", 5);
+
 
     mesh_reader.new_vector_parameter<double>(
-        "intr_bdry_rect", "Define interior rectangular boundary:", 5);
+        "extr_bdry_rect", "Define exterior rectangular boundary:", 7);
+
+    mesh_reader.new_vector_parameter<double>(
+        "intr_bdry_rect", "Define interior rectangular boundary:", 7);
+
     
     mesh_reader.new_vector_parameter<double>(
-        "intr_bdry_circ", "Define interior circular boundary:", 5);
+        "extr_bdry_circ", "Define exterior circular boundary:", 7);
 
     mesh_reader.new_vector_parameter<double>(
-        "intr_bdry_square", "Define interior squared boundary:", 4);
+        "intr_bdry_circ", "Define interior circular boundary:", 7);
+
 
     mesh_reader.new_vector_parameter<double>(
-        "intr_bdry_triangle", "Define interior triangular boundary:", 4);
+        "extr_bdry_square", "Define exterior squared boundary:", 6);
+
+    mesh_reader.new_vector_parameter<double>(
+        "intr_bdry_square", "Define interior squared boundary:", 6);
+
+
+    mesh_reader.new_vector_parameter<double>(
+        "extr_bdry_triangle", "Define exterior triangular boundary:", 6);
+
+    mesh_reader.new_vector_parameter<double>(
+        "intr_bdry_triangle", "Define interior triangular boundary:", 6);
+
+
 
   } // TQMeshApp::init_parameter_file_reader()
 
