@@ -509,10 +509,47 @@ void csv_import()
   UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
   Domain domain { f };
 
-  Boundary& b_ext = domain.add_exterior_boundary();
-  b_ext.set_shape_rectangle(1, {0.0, 0.0}, 10.0, 10.,0);
+  std::string b_ext_file { TQMESH_SOURCE_DIR };
+  b_ext_file += "/auxiliary/test_data/ExteriorBoundary.csv";
 
-  Boundary& b_int = domain.add_interior_boundary();
+  Boundary& b_ext = domain.add_exterior_boundary();
+  b_ext.set_shape_from_csv(b_ext_file);
+
+
+  std::string b_int_1_file { TQMESH_SOURCE_DIR };
+  b_int_1_file += "/auxiliary/test_data/InteriorBoundary_1.csv";
+
+  Boundary& b_int_1 = domain.add_interior_boundary();
+  b_int_1.set_shape_from_csv(b_int_1_file);
+
+  std::string b_int_2_file { TQMESH_SOURCE_DIR };
+  b_int_2_file += "/auxiliary/test_data/InteriorBoundary_2.csv";
+
+  Boundary& b_int_2 = domain.add_interior_boundary();
+  b_int_2.set_shape_from_csv(b_int_2_file);
+    
+    
+  // Create the mesh
+  MeshBuilder mesh_builder {};
+  Mesh mesh = mesh_builder.create_empty_mesh( domain );
+
+  CHECK( mesh_builder.prepare_mesh(mesh, domain) );
+
+  TriangulationStrategy triangulation {mesh, domain};
+
+  CHECK( triangulation.generate_elements() );
+  CHECK( EQ(mesh.area(), domain.area(), 1E-07) );
+
+  // Smooth grid
+  MixedSmoothingStrategy smoother {mesh, domain};
+  smoother.smooth(2);
+
+  // Export mesh
+  MeshCleanup::assign_size_function_to_vertices(mesh, domain);
+  MeshCleanup::assign_mesh_indices(mesh);
+  MeshCleanup::setup_facet_connectivity(mesh);
+
+  LOG(DEBUG) << "\n" << mesh;
 
 } // csv_import()
 
@@ -557,8 +594,8 @@ void run_tests_Mesh()
     MeshTests::triangulate_standard_tests(test_name);
   }
 
-  //adjust_logging_output_stream("MeshTests.csv_import.log");
-  //MeshTests::csv_import();
+  adjust_logging_output_stream("MeshTests.csv_import.log");
+  MeshTests::csv_import();
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");

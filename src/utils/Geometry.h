@@ -500,8 +500,6 @@ inline double distance_point_edge_sqr(const VecND<CoordType,Dim>& p,
   return (p - proj_p).norm_sqr();
 }
 
-
-
 /*--------------------------------------------------------------------
 | Check if two segments (which are defined by their ending vertices 
 | (v,w) overlap
@@ -517,6 +515,29 @@ inline bool segment_overlap(const Vec2<T>& v1, const Vec2<T> w1,
     return true;
 
   return false;
+}
+
+/*--------------------------------------------------------------------
+| Use Shoelace formula to compute the area of a 2D polygon. The 
+| latter is defined as a oriented list of edge segments, that are 
+| passed in terms of a vector of 2D vertex coordinates.
+| Returns a positive area if the polygon is defined in a 
+| counter-clockwise direction and a negative area vice versa.
+--------------------------------------------------------------------*/
+template <typename T>
+inline T polygon_area(const std::vector<Vec2<T>>& vertices)
+{
+  T area {};
+  std::size_t n = vertices.size();
+
+  for ( std::size_t i = 0; i < n; ++i )
+  {
+    std::size_t j = MOD(i + 1, n);
+    area += (vertices[i].y + vertices[j].y) 
+          * (vertices[i].x - vertices[j].x);
+  }
+
+  return area / 2;
 }
 
 } // namespace CppUtils

@@ -15,6 +15,7 @@
 
 #include "MeshGenerator.h"
 
+#include "Error.h"
 #include "ParaReader.h"
 #include "VecND.h"
 #include "Helpers.h"
@@ -29,31 +30,13 @@ namespace TQMesh {
 using namespace CppUtils;
 using namespace TQAlgorithm;
 
-/*--------------------------------------------------------------------
-| Class for error handling
---------------------------------------------------------------------*/
-class Invalid : public std::exception
-{
-public:
-  Invalid(const string& msg) : message_ {msg} {}
-  const char* what() const noexcept override { return message_.c_str(); }
-private:
-  std::string message_;
-};
-
-
 /*********************************************************************
 * The actual class to handle the generation of meshes 
 *********************************************************************/
 class MeshConstruction
 {
 public:
-  using VertexPair = std::pair<Vertex&,Vertex&>;
-
-  /*------------------------------------------------------------------
-  | Function for error handling
-  ------------------------------------------------------------------*/
-  void error(std::string msg) { throw Invalid{ msg }; }
+  using Vec2dPair = std::pair<Vec2d,Vec2d>;
 
   /*------------------------------------------------------------------
   | Constructor
@@ -175,8 +158,8 @@ private:
     // Create quad layers
     for ( size_t i = 0; i < quad_layer_vertices_.size(); ++i )
     {
-      Vertex& v1 = quad_layer_vertices_[i].first;
-      Vertex& v2 = quad_layer_vertices_[i].second;
+      const Vec2d& v1 = quad_layer_vertices_[i].first;
+      const Vec2d& v2 = quad_layer_vertices_[i].second;
       int      n = quad_layer_numbers_[i];
       double   h = quad_layer_heights_[i];
       double   g = quad_layer_growth_[i];
@@ -185,8 +168,8 @@ private:
         .n_layers(n)
         .first_height(h)
         .growth_rate(g)
-        .starting_position(v1.xy())
-        .ending_position(v2.xy())
+        .starting_position(v1)
+        .ending_position(v2)
         .generate_elements();
     }
 
@@ -202,7 +185,7 @@ private:
     }
     else
     {
-      error("Invalid meshing algorithm provided: " + algorithm_ );
+      throw_error("Invalid meshing algorithm provided: " + algorithm_ );
     }
 
     // Merge with other meshes
@@ -305,22 +288,24 @@ private:
     quad_layer_heights_.clear();
     quad_layer_growth_.clear();
 
-    Domain&   domain   = *( domain_.get() );
-    Vertices& vertices = domain.vertices();
-
     while( mesh_reader.query<double>("quad_layers") )
     {
       auto para_quad_layers 
         = mesh_reader.get_parameter<double>("quad_layers");
       print_parameter<double>(mesh_reader, "quad_layers");
 
-        int   i1 = static_cast<int>( para_quad_layers.get_value(0) );
-        int   i2 = static_cast<int>( para_quad_layers.get_value(1) );
-        int    n = static_cast<int>( para_quad_layers.get_value(2) );
-        double h = para_quad_layers.get_value(3);
-        double g = para_quad_layers.get_value(4);
+        double x1 = para_quad_layers.get_value(0);
+        double y1 = para_quad_layers.get_value(1);
 
-        quad_layer_vertices_.push_back( {vertices[i1], vertices[i2]} );
+        double x2 = para_quad_layers.get_value(2);
+        double y2 = para_quad_layers.get_value(3);
+
+        int    n = static_cast<int>( para_quad_layers.get_value(4) );
+
+        double h = para_quad_layers.get_value(5);
+        double g = para_quad_layers.get_value(6);
+
+        quad_layer_vertices_.push_back( { {x1,y1}, {x2,y2} } );
         quad_layer_numbers_.push_back( n );
         quad_layer_heights_.push_back( h );
         quad_layer_growth_.push_back( g );
@@ -386,15 +371,49 @@ private:
 
         // Throw error if indices are larger than number of vertices
         if ( i1 >= n_vertices || i2 >= n_vertices )
-          error("Invalid interior boundary definition: " 
-                "Some vertex index is larger that the number of "
-                "provided input vertices.");
+          throw_error("Invalid interior boundary definition: " 
+            "Some vertex index is larger that the number of "
+            "provided input vertices.");
 
         Vertex& v1 = vertices[i1];
         Vertex& v2 = vertices[i2];
 
         b_int.add_edge( v1, v2, m );
       }
+    }
+
+
+    // Query and initialize interior boundary coordinate definitions
+    while( mesh_reader.query<double>("intr_bdry_coords", true, -1.0) )
+    {
+      Boundary& b_int = domain.add_interior_boundary();
+
+      auto para_intr_bdry 
+        = mesh_reader.get_parameter<double>("intr_bdry_coords");
+      print_parameter<double>(mesh_reader, "intr_bdry_coords");
+
+      std::vector<Vec2d> vertex_coords {};
+      std::vector<Vec2d> vertex_props {};
+      std::vector<int>   edge_markers {};
+
+      for ( size_t i = 0; i < para_intr_bdry.rows(); ++i )
+      {
+        double x = para_intr_bdry.get_value(0, i);
+        double y = para_intr_bdry.get_value(1, i);
+        int m    = static_cast<int>( para_intr_bdry.get_value(2, i) );
+        double s = para_intr_bdry.get_value(3, i);
+        double r = para_intr_bdry.get_value(4, i);
+
+        if ( m < 0 )
+          throw_error("Invalid interior boundary definition");
+
+        vertex_coords.push_back( {x,y} );
+        vertex_props.push_back( {s,r} );
+        edge_markers.push_back( m );
+      }
+
+      b_int.set_shape_from_coords(vertex_coords, vertex_props, 
+                                  edge_markers );
     }
 
 
@@ -488,7 +507,7 @@ private:
 
     if ( para_extr_bdry.found() )
     {
-      Boundary& b_ext    = domain.add_exterior_boundary();
+      Boundary& b_ext = domain.add_exterior_boundary();
 
       size_t n_vertices = vertices.size();
 
@@ -500,9 +519,9 @@ private:
 
         // Throw error if indices are larger than number of vertices
         if ( i1 > n_vertices || i2 > n_vertices )
-          error("Invalid exterior boundary definition: " 
-                "Some vertex index is larger that the number of "
-                "provided input vertices.");
+          throw_error("Invalid exterior boundary definition: " 
+            "Some vertex index is larger that the number of "
+            "provided input vertices.");
 
         Vertex& v1 = vertices[i1];
         Vertex& v2 = vertices[i2];
@@ -514,6 +533,45 @@ private:
 
       return;
     }
+
+
+    // External boundary  definition via direct edge coordinates placement
+    mesh_reader.query<double>("extr_bdry_coords", true, -1.0);
+    auto para_extr_bdry_coords 
+      = mesh_reader.get_parameter<double>("extr_bdry_coords");
+
+    if ( para_extr_bdry_coords.found() )
+    {
+      Boundary& b_ext = domain.add_exterior_boundary();
+
+      std::vector<Vec2d> vertex_coords {};
+      std::vector<Vec2d> vertex_props {};
+      std::vector<int>   edge_markers {};
+
+      for ( size_t i = 0; i < para_extr_bdry_coords.rows(); ++i )
+      {
+        double x = para_extr_bdry_coords.get_value(0, i);
+        double y = para_extr_bdry_coords.get_value(1, i);
+        int m    = static_cast<int>( para_extr_bdry_coords.get_value(2, i) );
+        double s = para_extr_bdry_coords.get_value(3, i);
+        double r = para_extr_bdry_coords.get_value(4, i);
+
+        if ( m < 0 )
+          throw_error("Invalid exterior boundary definition");
+
+        vertex_coords.push_back( {x,y} );
+        vertex_props.push_back( {s,r} );
+        edge_markers.push_back( m );
+      }
+
+      b_ext.set_shape_from_coords(vertex_coords, vertex_props, 
+                                  edge_markers );
+
+      print_parameter<double>(mesh_reader, "extr_bdry_coords");
+
+      return;
+    }
+
 
     // External boundary via rectangular boundary shape
     mesh_reader.query<double>("extr_bdry_rect");
@@ -699,16 +757,16 @@ private:
   void query_mandatory_parameters(ParaReader& mesh_reader)
   {
     if ( !mesh_reader.query<std::string>("output_prefix") )
-      error("No output file prefix defined for mesh " + mesh_id_ );
+      throw_error("No output file prefix defined for mesh " + mesh_id_ );
 
     if ( !mesh_reader.query<std::string>("output_format") )
-      error("No output format defined for mesh " + mesh_id_ ); 
+      throw_error("No output format defined for mesh " + mesh_id_ ); 
 
     output_prefix_ = mesh_reader.get_value<std::string>("output_prefix");
     output_format_ = mesh_reader.get_value<std::string>("output_format");
 
     if ( !mesh_reader.query<std::string>("size_function") )
-      error("Invalid size function definition for mesh " + mesh_id_);
+      throw_error("Invalid size function definition for mesh " + mesh_id_);
 
   } // MeshConstruction::query_mandatory_parameters()
 
@@ -729,7 +787,7 @@ private:
   double                  domain_extent_;
   std::unique_ptr<Domain> domain_;
 
-  std::vector<VertexPair> quad_layer_vertices_ {};
+  std::vector<Vec2dPair>  quad_layer_vertices_ {};
   std::vector<int>        quad_layer_numbers_  {};
   std::vector<double>     quad_layer_heights_  {};
   std::vector<double>     quad_layer_growth_   {};
@@ -747,12 +805,6 @@ private:
 class TQMeshApp
 {
 public:
-
-  /*------------------------------------------------------------------
-  | Function for error handling
-  ------------------------------------------------------------------*/
-  void error(std::string msg) { throw Invalid{ "[ERROR] " + msg}; }
-
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
@@ -771,7 +823,7 @@ public:
     {
       query_mandatory_parameters( );
     }
-    catch(const Invalid& inv)
+    catch(const Error& inv)
     {
       LOG(ERROR) << inv.what();
       return false;
@@ -840,13 +892,17 @@ private:
         "quad_refinements", "Number of quad refinements:");
 
     mesh_reader.new_vector_parameter<double>(
-        "quad_layers", "Add quad layers:", 5);
+        "quad_layers", "Add quad layers:", 7);
 
     mesh_reader.new_matrix_parameter<double>(
         "fixed_vertices", "Define fixed vertices:", "End fixed vertices", 4);
 
     mesh_reader.new_matrix_parameter<int>(
         "extr_bdry", "Define exterior boundary:", "End exterior boundary", 3);
+
+    mesh_reader.new_matrix_parameter<double>(
+        "extr_bdry_coords", "Define exterior boundary coordinates:", 
+        "End exterior boundary coordinates", 5);
 
     mesh_reader.new_vector_parameter<double>(
         "extr_bdry_rect", "Define exterior rectangular boundary:", 5);
@@ -862,6 +918,10 @@ private:
 
     mesh_reader.new_matrix_parameter<int>(
         "intr_bdry", "Define interior boundary:", "End interior boundary", 3);
+
+    mesh_reader.new_matrix_parameter<double>(
+        "intr_bdry_coords", "Define interior boundary coordinates:", 
+        "End interior boundary coordinates", 5);
 
     mesh_reader.new_vector_parameter<double>(
         "intr_bdry_rect", "Define interior rectangular boundary:", 5);

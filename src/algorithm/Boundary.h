@@ -16,6 +16,7 @@
 #include "VecND.h"
 #include "Geometry.h"
 
+#include "Error.h"
 #include "EdgeList.h"
 #include "Edge.h"
 #include "Vertex.h"
@@ -44,23 +45,6 @@ class CSVBoundaryReader
 {
 public:
   /*------------------------------------------------------------------
-  | Class for error handling
-  ------------------------------------------------------------------*/
-  class Invalid : public std::exception
-  {
-  public:
-    Invalid(const std::string& msg) : message_ {msg} {}
-    const char* what() const noexcept override { return message_.c_str(); }
-  private:
-    std::string message_;
-  };
-
-  /*------------------------------------------------------------------
-  | Function for error handling
-  ------------------------------------------------------------------*/
-  void error(std::string msg) { throw Invalid{ msg }; }
-
-  /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
   CSVBoundaryReader(const std::string& filename) 
@@ -71,8 +55,10 @@ public:
   ------------------------------------------------------------------*/
   std::vector<Vec2d>& vertex_coords() { return vertex_coords_; }
   std::vector<Vec2d>& vertex_props() { return vertex_props_; }
+  std::vector<int>& edge_markers() { return edge_markers_; }
   const std::vector<Vec2d>& vertex_coords() const { return vertex_coords_; }
   const std::vector<Vec2d>& vertex_props() const { return vertex_props_; }
+  const std::vector<int>& edge_markers() const { return edge_markers_; }
 
 private:
   /*------------------------------------------------------------------
@@ -80,11 +66,14 @@ private:
   ------------------------------------------------------------------*/
   void read_csv_file(const std::string& filename)
   {
+    vertex_coords_.clear();
+    vertex_props_.clear();
+    edge_markers_.clear();
 
     std::ifstream file { filename };
 
     if ( !file.is_open() )
-      error("Failed to open CSV file " + filename);
+      throw_error("Failed to open CSV file " + filename);
 
     std::string line;
 
@@ -94,6 +83,7 @@ private:
     {
       Vec2d coords { 0.0, 0.0 };
       Vec2d props { 0.0, 0.0 };
+      int marker { -1 };
 
       std::istringstream line_stream( line );
       std::string cell;
@@ -109,29 +99,39 @@ private:
           if ( i_cell == 1 )
             coords.y = std::stod(cell);
           if ( i_cell == 2 )
-            props.x = std::stod(cell);
+            marker = std::stoi(cell);
           if ( i_cell == 3 )
+            props.x = std::stod(cell);
+          if ( i_cell == 4 )
             props.y = std::stod(cell);
         }
         catch (const std::invalid_argument& e)
         {
-          error("Failed to read CSV file " + filename 
+          throw_error("Failed to read CSV file " + filename 
               + ": Invalid value in line " + std::to_string(i_line));
         }
         catch (const std::out_of_range& e)
         {
-          error("Failed to read CSV file " + filename 
+          throw_error("Failed to read CSV file " + filename 
               + ": Invalid value in line " + std::to_string(i_line));
         }
 
         ++i_cell;
       }
 
+      if ( i_cell < 2 )
+        throw_error("Failed to read CSV file " + filename 
+            + ": Missing input data in in line " + std::to_string(i_line));
+
+      if ( marker < 0 )
+        throw_error("Failed to read CSV file " + filename 
+            + ": Invalid boundary marker definition in line " + std::to_string(i_line));
+
       vertex_coords_.push_back( coords );
       vertex_props_.push_back( props );
+      edge_markers_.push_back( marker );
       ++i_line;
     }
-
 
   } // CSVBoundaryReader::read_csv_file()
 
@@ -140,6 +140,7 @@ private:
   ------------------------------------------------------------------*/
   std::vector<Vec2d> vertex_coords_;
   std::vector<Vec2d> vertex_props_;
+  std::vector<int>   edge_markers_;
 
 }; // CSVBoundaryReader
 
@@ -185,11 +186,6 @@ public:
 
     Edge& new_edge = EdgeList::insert_edge(pos, v1, v2, marker); 
 
-    // Initialize the boundary data structure of the new edge,
-    // which keeps track of all mesh edges that will be created 
-    // on it
-    //new_edge.init_bdry_data();
-
     return new_edge;
   }
 
@@ -202,14 +198,25 @@ public:
   { return this->insert_edge( edges_.end(), v1, v2, marker ); }
 
   /*------------------------------------------------------------------
-  | Set the boundary to square shape
+  | Set the boundary to a shape that is defined from a list of 
+  | connected vertices
   ------------------------------------------------------------------*/
-  void set_shape_from_csv(int marker, const std::string& filename)
+  void set_shape_from_coords(const std::vector<Vec2d>& v_coords,
+                             const std::vector<Vec2d>& v_props,
+                             const std::vector<int>& markers) 
+  { create_boundary_shape(v_coords, v_props, markers); }
+
+  /*------------------------------------------------------------------
+  | Set the boundary to a shape that is defined from a list of 
+  | connected vertices, defined in a csv file
+  ------------------------------------------------------------------*/
+  void set_shape_from_csv(const std::string& filename)
   {
     CSVBoundaryReader reader { filename };
 
-    create_boundary_shape(marker, reader.vertex_coords(), 
-                          reader.vertex_props(), true );
+    create_boundary_shape(reader.vertex_coords(), 
+                          reader.vertex_props(), 
+                          reader.edge_markers());
 
   } // Boundary::set_shape_from_csv()
 
@@ -259,9 +266,9 @@ public:
       {mesh_size, mesh_range},
     };
 
-    bool orientation = (btype_ == BdryType::EXTERIOR);
+    std::vector<int> e_markers(4, marker);
 
-    create_boundary_shape(marker, v_shape, v_properties, orientation);
+    create_boundary_shape(v_shape, v_properties, e_markers);
 
   } // Boundary::set_shape_rectangle()
 
@@ -277,6 +284,7 @@ public:
 
     std::vector<Vec2d> v_shape;
     std::vector<Vec2d> v_properties;
+    std::vector<int>   e_markers;
 
     double delta_a = 2.0 * M_PI / static_cast<double>(n);
 
@@ -287,11 +295,10 @@ public:
 
       v_shape.push_back( xy + r * d_xy );
       v_properties.push_back( {mesh_size, mesh_range} );
+      e_markers.push_back( marker );
     }
 
-    bool orientation = (btype_ == BdryType::EXTERIOR);
-
-    create_boundary_shape(marker, v_shape, v_properties, orientation);
+    create_boundary_shape(v_shape, v_properties, e_markers);
 
   } // Boundary::set_shape_Circle()
 
@@ -301,14 +308,16 @@ private:
   /*------------------------------------------------------------------
   | Create the boundary from a given shape
   ------------------------------------------------------------------*/
-  void create_boundary_shape(int marker,
-                             const std::vector<Vec2d>& v_shape,
+  void create_boundary_shape(const std::vector<Vec2d>& v_shape,
                              const std::vector<Vec2d>& v_properties,
-                             bool forward_orientation)
+                             const std::vector<int>& e_markers)
   {
-    // Do nothinng if the boundary contains edges
+    // Do nothinng if the boundary contains no edges
     if ( edges_.size() > 0 )
       return;
+
+    double area = polygon_area(v_shape);
+    bool is_ccw = area > 0.0;
 
     // Create new vertices
     std::vector<Vertex*> new_verts {};
@@ -320,16 +329,29 @@ private:
       const Vec2d& xy = v_shape[i];
       const Vec2d& props = v_properties[i];
 
-      Vertex& v_new = domain_vertices_->push_back( xy, props.x, props.y );
+      // Search for already exiting vertex at this location
+      Vertex* nearest = domain_vertices_->get_nearest(xy);
+
+      if ( nearest && EQ0( ( nearest->xy() - xy ).norm_sqr() ) ) 
+      {
+        new_verts.push_back( nearest );
+        continue;
+      }
+
+      // No nearest vertex found -> Generate new one
+      Vertex& v_new = domain_vertices_->push_back(xy, props.x, props.y);
       new_verts.push_back( &v_new );
     }
 
-    if ( forward_orientation )
+    // CCW orientation for exteriror boundary
+    // CW orientation for interior boundary
+    if ( (btype_ == BdryType::EXTERIOR &&  is_ccw) ||
+         (btype_ == BdryType::INTERIOR && !is_ccw) )
     {
       for (int i = 0; i < N; ++i)
       {
         int j = MOD(i+1, N);
-        add_edge( *new_verts[i], *new_verts[j], marker );
+        add_edge( *new_verts[i], *new_verts[j], e_markers[i] );
       }
     }
     else 
@@ -337,31 +359,9 @@ private:
       for (int i = N-1; i >= 0; --i)
       {
         int j = MOD(i+1, N);
-        add_edge( *new_verts[j], *new_verts[i], marker );
+        add_edge( *new_verts[j], *new_verts[i], e_markers[j] );
       }
     }
-
-    /*
-    // CCW orientation for exteriror boundary
-    if ( btype_ == BdryType::EXTERIOR )
-    {
-      for (int i = 0; i < N; ++i)
-      {
-        int j = MOD(i+1, N);
-        add_edge( *new_verts[i], *new_verts[j], marker );
-      }
-    }
-    // CW orientation for interior boundary
-    else if ( btype_ == BdryType::INTERIOR )
-    {
-      for (int i = N-1; i >= 0; --i)
-      {
-        int j = MOD(i+1, N);
-        add_edge( *new_verts[j], *new_verts[i], marker );
-      }
-    }
-    */
-
   };
 
   /*------------------------------------------------------------------

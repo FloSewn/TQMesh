@@ -23,8 +23,6 @@ using namespace CppUtils;
 
 /*********************************************************************
 * This class represents a directed list of edges
-*
-*
 *********************************************************************/
 class EdgeList
 {
