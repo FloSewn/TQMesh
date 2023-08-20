@@ -1,13 +1,24 @@
-# TQMesh
+# Introducing TQMesh: Simplifying Two-Dimensional Mesh Generation
 -----------------------
 <img src="doc/Example_6.png" alt="TQMesh-Example-6" width="750"/>
 
-**TQMesh** is a simple C++ library/application for the generation of two-dimensional meshes, that consist of triangles and quadrilaterals.
-The application is intended for learning purposes, e.g. to easily create two-dimensional grids for Computational Fluid Dynamics or Finite Element Methods.
-The elements are generated with an advancing-front method, where the user must define edge segments that define the boundary of the domain to tesselate. 
-A user-defined size function makes it easy to adjust the element size locally.
-**TQMesh** also offers the possibility to treat the near boundary region explicitly with quadrilateral elements. 
-This might especially be helpful for the discretization of Computational Fluid Dynamics problems.
+**TQMesh** is a user-friendly C++ library/application designed to streamline the process 
+of generating two-dimensional meshes comprising triangles and quadrilaterals. 
+Whether you're involved in Computational Fluid Dynamics (CFD), Finite Element Methods (FEM), 
+or other fields, this tool simplifies the creation of grids for various applications.
+
+## Key Features
+
+- **Effortless Element Generation:** TQMesh employs an advancing-front method, 
+requiring users to define edge segments that outline the domain. This automated approach ensures smooth and accurate mesh generation.
+
+- **Localized Element Sizing:** Customize mesh properties effortlessly using the user-defined 
+size function. Achieve precise control over element sizing, allowing you to adapt the mesh to your specific needs.
+
+- **Boundary Flexibility:** Beyond triangles, TQMesh introduces the option of including quadrilateral 
+elements along the near boundary region. This is particularly advantageous for enhancing mesh accuracy in various scenarios 
+(e.g. to resolve boundary layers in fluid dynamics problems).
+
 
 ## Installation
 **TQMesh** is a header-only library, which requires the files in the directories *src/algorithm* and *src/utils*.
