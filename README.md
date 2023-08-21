@@ -23,9 +23,10 @@ elements along the near boundary region. This is particularly advantageous for e
 ## Installation
 
 **TQMesh** is a header-only library, which requires the files in the directories *src/algorithm* and *src/utils*. 
-The directory *src/app* contains the code for the application, as described below.
+Simply include these files in your projects and start meshing!
 
-To install TQMesh, follow these steps:
+The directory *src/app* contains the code for the application. 
+To install it, follow these steps:
 
 1. Clone the repository to your local machine:
 
@@ -54,14 +55,24 @@ To install TQMesh, follow these steps:
    ```
    
 And that's it! TQMesh is now installed and ready to be used. 
-You can include the necessary header files in your projects and start meshing!
 
 ## Usage of the TQMesh library
-Several examples on how to use the **TQMesh**-library functions are given in the *src/examples* directory.
-After installation, you can run them simply with 
-```sh
-./bin/run_examples <Example-ID>
-```
+The **TQMesh** library comes with a set of examples showcasing how to utilize its functions. 
+These examples can be found in the *src/examples* directory of the project.
+
+After successfully installing TQMesh, you can run these examples using the provided tool:
+
+1. Navigate to the main project directory in your terminal:
+   ```sh
+   cd TQMesh  # Enter the project directory
+   ```
+
+2. Run the examples tool along with the desired example identifier:
+   ```sh
+   ./bin/run_examples <Example-ID>
+   ```
+   Replace `<Example-ID>` with the specific example identifier you want to run.
+
 
 ## Usage of the TQMesh application
 The **TQMesh** application uses simple parameter files as input for the mesh generation.
