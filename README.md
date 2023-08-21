@@ -21,19 +21,40 @@ elements along the near boundary region. This is particularly advantageous for e
 
 
 ## Installation
-**TQMesh** is a header-only library, which requires the files in the directories *src/algorithm* and *src/utils*.
-The directory *src/app* contains the code for the application, that is described below.
-For installation, simply create a build directory and run 
-```sh
-cmake ..
-make install
-```
-To use other compilers (e.g. clang), specify during the CMake configuration:
-```sh
-cmake -DCMAKE_CXX_COMPILER=<your-compiler> ..
-make install
-```
-To run in debug mode, use the additional flag `-DCMAKE_BUILD_TYPE=Debug`.
+
+**TQMesh** is a header-only library, which requires the files in the directories *src/algorithm* and *src/utils*. 
+The directory *src/app* contains the code for the application, as described below.
+
+To install TQMesh, follow these steps:
+
+1. Clone the repository to your local machine:
+
+   ```sh
+   git clone https://github.com/FloSewn/TQMesh
+   cd TQMesh  # Enter the project directory
+   ```
+2. Create a build directory:
+   ```sh
+   mkdir build
+   cd build
+   ```
+3. Configure the build using CMake
+   ```sh
+   cmake ..
+   ```
+   If you want to use a specific compiler (e.g. clang), specify it during CMake configuration:
+   ```
+   cmake -DCMAKE_CXX_COMPILER=<your-compiler> ..
+   ```
+   If you'd like to run in debug mode, use the additional flag `-DCMAKE_BUILD_TYPE=Debug` during the CMake configuration.
+
+4. Build and install TQMesh:
+   ```
+   make install 
+   ```
+   
+And that's it! TQMesh is now installed and ready to be used. 
+You can include the necessary header files in your projects and start meshing!
 
 ## Usage of the TQMesh library
 Several examples on how to use the **TQMesh**-library functions are given in the *src/examples* directory.
