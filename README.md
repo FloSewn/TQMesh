@@ -85,16 +85,6 @@ To use the application, navigate to your main project directory in your terminal
 Replace `<Input-file>` with the name of your chosen input parameter file.
 
 ## Examples
-For the mesh generation, you simply need to define a few global parameters and the mesh boundaries in terms of boundary nodes and edges. 
-There is the possibility to assign markers to each defined boundary-edge. 
-These markers are then assigned to the final mesh boundary edges.
-It is also possible to create several meshes successively and assign color values to their elements.
-For a better overview on the capabilities of **TQMesh**, check out the examples below. 
-These are also the results of the examples given in the *input/* and the *src/examples* directories.
-
-
-## Examples
-
 Generating a mesh with **TQMesh** is a straightforward process that involves defining a few key global parameters 
 along with mesh boundaries represented by boundary nodes and edges. You have the option to assign markers 
 to each boundary edge, which are then applied to the final mesh's boundary edges. 
@@ -105,9 +95,8 @@ Explore the examples below to get an overview of **TQMesh**'s capabilities.
 You can find both the example input files and their corresponding 
 results in the *input/* and *src/examples* directories.
 
-
 <details>
-<summary>Example 1: Triangular Mesh with Local Element Refinement</summary>
+<summary>Simple local mesh refinement</summary>
 
 This example shows a triangular mesh which features local element refinement. 
 The element size is determined either by the domain's edge segments, 
@@ -117,7 +106,7 @@ through sizing factors that are attributed to boundary vertices or through a siz
 </details>
 
 <details>
-<summary>Example 2</summary>
+<summary>Quad layers and subdivision</summary>
 
 **TQMesh** also features the generation of quadrilateral elements, as well as layers of quad elements in the vicinity of boundaries.
 This example mesh was created by using the paving algorithm (which generates mixed-element meshes that are dominated by quads) and a subsequent quad-refinement of all elements.
@@ -129,7 +118,7 @@ In this way, it is possile to generate elements that consist only of quadrilater
 </details>
 
 <details>
-<summary>Example 3</summary>
+<summary>Boundary shapes</summary>
 
 It is possible to create meshes through predefined boundary shapes, such as rectangles, circles or triangles.
 
@@ -139,7 +128,7 @@ It is possible to create meshes through predefined boundary shapes, such as rect
 </details>
 
 <details>
-<summary>Example 4</summary>
+<summary>Local mesh refinement and element coloring</summary>
 
 During the meshing process, each element gets an associated color value. 
 These colors can be adjusted during the meshing process, as indicated in this example.
@@ -149,7 +138,7 @@ It also possible to define interior mesh vertices, in order to influence the loc
 </details>
 
 <details>
-<summary>Example 5</summary>
+<summary>Merge meshes</summary>
 
 **TQMesh** gives also the possibility to create and merge several meshes, preserving the conformity of their boundary edges.
 This makes it even easier to assign different color values to different element areas in the domain.
