@@ -201,10 +201,17 @@ public:
   | Set the boundary to a shape that is defined from a list of 
   | connected vertices
   ------------------------------------------------------------------*/
-  void set_shape_from_coords(const std::vector<Vec2d>& v_coords,
-                             const std::vector<Vec2d>& v_props,
-                             const std::vector<int>& markers) 
+  void set_shape_from_coordinates(const std::vector<Vec2d>& v_coords,
+                                  const std::vector<int>& markers, 
+                                  const std::vector<Vec2d>& v_props)
   { create_boundary_shape(v_coords, v_props, markers); }
+
+  void set_shape_from_coordinates(const std::vector<Vec2d>& v_coords,
+                                  const std::vector<int>& markers) 
+  { 
+    std::vector<Vec2d> v_props ( v_coords.size(), {-1.0, -1.0} );
+    create_boundary_shape(v_coords, v_props, markers); 
+  }
 
   /*------------------------------------------------------------------
   | Set the boundary to a shape that is defined from a list of 

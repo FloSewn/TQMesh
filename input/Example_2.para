@@ -3,7 +3,12 @@
 #===========================================================
  
 #-----------------------------------------------------------
-#                          Mesh #1 
+#                     MESH DEFINITION
+#
+# For this example, we will use the Tri-to-Quad meshing
+# algorithm and a subsequent quad-refinement of elements.
+# In this way, we can generate a mesh that only consists of
+# quadrilateral elements.
 #-----------------------------------------------------------
 Define mesh:
   Element size: 0.1 
@@ -17,29 +22,76 @@ Define mesh:
 
   #---------------------------------------------------------
   #                        BOUNDARIES     
-  # Arguments:
-  #   1) X-coordinate of starting vertex
-  #   2) Y-coordinate of starting vertex
-  #   3) Boundary edge marker
-  #   4) Local mesh scale (optional)
-  #   5) Local range for mesh scale (optional)
+  #
+  # We will build the following mesh boundaries:
+  #
+  #     v3                                             v2
+  #    *----------------------------------------------* 
+  #    |      v5    v6                                |
+  #    |       *---*                                  |
+  #    |       |   |                                  |
+  #    |       *---*                                  |
+  #    |      v4    v7                                |
+  #    *----------------------------------------------*
+  #     v0                                             v1
+  #
+  # In contrast to example 1, we can also generate boundaries
+  # through a separate definition of vertices and edges.
+  # But compared to providing the edges in terms of closed 
+  # polygonal chains (as in example 1), this construction 
+  # requires us to maintain a correct orientation of all 
+  # defined edges. We must ensure that:
+  #
+  # - Exterior boundaries are defined in 
+  #   counter-clockwise orientation
+  # 
+  # - Interior boundaries are defined in 
+  #   clockwise orientation
+  #
+  # To build the boundaries, we first need to defined the 
+  # respective boundary vertices (where a local mesh 
+  # refinement ins applied to the vertices v5 to v8)
   #---------------------------------------------------------
-  Define exterior boundary:
-    0.0, 0.0,   2  # WALL 
-    4.0, 0.0,   3  # OUTLET
-    4.0, 1.0,   2  # WALL
-    0.0, 1.0,   1  # INLET
-  End exterior boundary
+  Define boundary vertices:
+    0.00, 0.00                 # v0
+    4.00, 0.00                 # v1
+    4.00, 1.00                 # v2
+    0.00, 1.00                 # v3
+    0.35, 0.35,  0.03, 0.10    # v4 
+    0.35, 0.65,  0.03, 0.10    # v5  
+    0.65, 0.65,  0.03, 0.10    # v6
+    0.65, 0.35,  0.03, 0.10    # v7
+  End boundary vertices
 
-  Define interior boundary:
-    0.35, 0.35,   4,   0.03, 0.10 
-    0.35, 0.65,   4,   0.03, 0.10 
-    0.65, 0.65,   4,   0.03, 0.10 
-    0.65, 0.35,   4,   0.03, 0.10 
-  End interior boundary
+  Define exterior boundary edges:
+    0, 1,    2                 # 2: Marker for bottom edge
+    1, 2,    3                 # 3: Marker for right edge
+    2, 3,    2                 # 2: Marker for top edge
+    3, 0,    1                 # 1: Marker for left edge
+  End exterior boundary edges
+
+  Define interior boundary edges:
+    4, 5,    4                 # Marker 4 for all interior edges
+    5, 6,    4                 # ...
+    6, 7,    4
+    7, 4,    4
+  End interior boundary edges
 
   #---------------------------------------------------------
   #                       QUAD-LAYERS     
+  #
+  # Finally, we define several layers of quads next to the
+  # following boundary edges:
+  # 1) Edge (v0,v1)
+  # 2) Edge (v2,v3)
+  # 3) Edges (v4,v5), (v5,v6), (v6,v7), (v7,v4)
+  #
+  # This done via the following command, where we must 
+  # provide the start and ending locations of the 
+  # quad layer (arguments 1-4), as well as the number 
+  # of layers, the first layer height and the layer growth
+  # ratio:
+  # 
   # Arguments: 
   #   1+2) Starting vertex x-/y-coordinates
   #   3+4) Ending vertex x-/y-coordinates
@@ -47,9 +99,9 @@ Define mesh:
   #   6) First layer height
   #   7) Growth ratio
   #
-  # > A closed layer of quadrilateral elements will be
-  #   generated if the same start and ending vertex is 
-  #   provided
+  # A closed layer of quadrilateral elements will be
+  # generated if the same start and ending location is 
+  # defined
   #---------------------------------------------------------
   Add quad layers: 0.0, 0.0, 4.0, 0.0, 3, 0.01, 2.0
   Add quad layers: 4.0, 1.0, 0.0, 1.0, 3, 0.01, 2.0

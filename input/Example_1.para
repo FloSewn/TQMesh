@@ -3,7 +3,11 @@
 #===========================================================
  
 #-----------------------------------------------------------
-#                          Mesh #1 
+#                     MESH DEFINITION
+#
+# First, we provide some general meshing properties,
+# such as the overall element size, element color and 
+# the applied meshing algorithm:
 #-----------------------------------------------------------
 Define mesh:
   Element size: 0.35 
@@ -16,46 +20,68 @@ Define mesh:
   Output file prefix: ./Example_1
 
   #---------------------------------------------------------
-  #                    BOUNDARY VERTICES     
-  # Arguments:
-  #   1) X-coordinate
-  #   2) Y-coordinate
-  #   3) Scale parameter
-  #   4) Range parameter
-  #---------------------------------------------------------
-  Define boundary vertices:
-    0.0,   0.0                     # 0
-    5.0,   0.0                     # 1
-    5.0,   5.0                     # 2
-    0.0,   5.0                     # 3
-    1.5,   1.5,   0.01,   0.20     # 4
-    1.5,   3.5                     # 5
-    3.5,   3.5                     # 6
-  End boundary vertices
-
-  #---------------------------------------------------------
-  #                        BOUNDARIES     
-  # Arguments:
-  #   1) Index of starting vertex
-  #   2) Index of ending vertex
-  #   3) Boundary marker
+  #                    EXTERIOR BOUNDARY
+  # 
+  # Boundaries are generally defined in terms of squeces of 
+  # vertex coordinates that define a closed polygonal chain.
+  # Additionally, each boundary edge is associated to an 
+  # integer which we refer to as "marker".
+  # We will define the exterior boundary of our mesh, that 
+  # has the following shape:
+  #     
+  #         (0.0, 5.0)                 (5.0, 5.0)
+  #                   o---------------o
+  #                   |      [2]      |             
+  #                   |               |
+  #                   |               |
+  #                   | [2]       [1] | 
+  #                   |               |
+  #                   |               |
+  #                   |      [1]      |
+  #                   o---------------o
+  #         (0.0, 0.0)                 (5.0, 0.0)
   #
-  # > All boundaries must be closed 
-  # > Exterior boundaries must be defined counter-clockwise
-  # > Interior boundaries must be defined clockwise
+  # The tuples denote boundary vertex coordinates and the 
+  # numbers in brackets denote corresponding edge markers.
   #---------------------------------------------------------
-  Define exterior boundary edges:
-   0,  1,  1   
-   1,  2,  1  
-   2,  3,  1  
-   3,  0,  1  
-  End exterior boundary edges
+  Define exterior boundary:
+   0.0, 0.0, 1
+   5.0, 0.0, 1
+   5.0, 5.0, 2
+   0.0, 5.0, 2
+  End exterior boundary
 
-  Define interior boundary edges:
-   4,  5,  2  
-   5,  6,  2  
-   6,  4,  2  
-  End interior boundary edges
+  #---------------------------------------------------------
+  #                    INTERIOR BOUNDARY
+  #
+  # In the next step, we will define an interior boundary of  
+  # triangular shape: 
+  #                    o---------------o
+  #                    |               |
+  #                    |          o    |
+  #                    |         /|    |
+  #                    |       /  |    |
+  #                    |     /    |    |
+  #                    |    o-----o    |
+  #                    |               |
+  #                    o---------------o
+  #
+  # This boundary is made up from the vertex sequence: 
+  #        [(1.5,1.5), (1.5,3.5), (3.5,3.5)] 
+  # All edges will obtain the marker number "3". 
+  #
+  # At vertex (1.5,1.5), we will refine the mesh locally by 
+  # providing additional refinement properties to it.
+  # The first value (0.1) corresponds to the a local mesh 
+  # size around that vertex and the second value (0.2)
+  # defines a local range scale within this mesh size is 
+  # applied.
+  #---------------------------------------------------------
+  Define interior boundary:
+   1.5, 1.5, 3, 0.1, 0.2  
+   1.5, 3.5, 3  
+   3.5, 3.5, 3  
+  End interior boundary
 
 End mesh
 

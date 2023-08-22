@@ -43,96 +43,111 @@ void run_example_1()
   Domain domain { f, 20.0 };
 
   /*------------------------------------------------------------------
-  | Now we define the exteriour boundary of the domain. The boundary 
-  | itself is created from four connected edges, which in turn are 
-  | defined by the four vertices v0, v1, v2 and v3.
+  | Now we define the exteriour boundary of the domain. To do this, 
+  | we provide it with a sequence of 2D vertex coordinates, which 
+  | define the boundary in terms of a closed polygonal chain.
+  |
+  | Additionally, each boundary edge is associated to an integer, 
+  | which we refer to as "markers". 
+  | We provide them throgh an additional sequence of integers, that
+  | correspond to the markers of the edges in the given polygonal 
+  | chain.
+  |
   | Our final exterior boundary will look like this:
   |
-  |                   v3                 v2
-  |                     *---------------*
+  |           (0.0, 5.0)                 (5.0, 5.0)
+  |                     o---------------o
+  |                     |      [2]      |
   |                     |               |
   |                     |               |
+  |                     | [2]       [1] | 
   |                     |               |
   |                     |               |
-  |                     |               |
-  |                     |               |
-  |                     |               |
-  |                     *---------------*
-  |                    v0                v1
-  |
-  | Notice the orientation of the edges (v0,v1), (v1,v2), (v2,v3) 
-  | and (v3,v0). 
-  | Exterior boundary edges must always be defined in counter-
-  | clockwise direction.
+  |                     |      [1]      |
+  |                     o---------------o
+  |           (0.0, 0.0)                 (5.0, 0.0)
+  | 
+  | The tuples denote boundary vertex coordinates and the numbers in 
+  | brackets denote the corresponding edge markers.
   ------------------------------------------------------------------*/
   Boundary& b_ext = domain.add_exterior_boundary();
 
-  Vertex& v0 = domain.add_vertex(  0.0,  0.0 );
-  Vertex& v1 = domain.add_vertex(  5.0,  0.0 );
-  Vertex& v2 = domain.add_vertex(  5.0,  5.0 );
-  Vertex& v3 = domain.add_vertex(  0.0,  5.0 );
+  std::vector<Vec2d> exterior_vertex_coordinates { 
+    { 0.0, 0.0 },
+    { 5.0, 0.0 },
+    { 5.0, 5.0 },
+    { 0.0, 5.0 } 
+  };
 
-  b_ext.add_edge( v0, v1, 1 );
-  b_ext.add_edge( v1, v2, 1 );
-  b_ext.add_edge( v2, v3, 1 );
-  b_ext.add_edge( v3, v0, 1 );
+  std::vector<int> exterior_edge_markers { 1, 1, 2, 2 };
+
+  b_ext.set_shape_from_coordinates( exterior_vertex_coordinates, 
+                                    exterior_edge_markers );
 
   /*------------------------------------------------------------------
-  | In this step, we will create an interior boundary, which has the 
-  | shape of a triangle.
-  |
-  |                   v3                 v2
-  |                     *---------------*
-  |                     |           v5  |
-  |                     |          *    |
+  | In the next step, we will define an interior boundary of  
+  | triangular shape: 
+  |                     o---------------o
+  |                     |               |
+  |                     |          o    |
   |                     |         /|    |
   |                     |       /  |    |
   |                     |     /    |    |
-  |                     |    *-----*    |
-  |                     |   v4      v6  |
-  |                     *---------------*
-  |                    v0                v1
+  |                     |    o-----o    |
+  |                     |               |
+  |                     o---------------o
   |
-  | This boundary is made up from the edges (v5,v6), (v6,v7), (v7,v5).
-  | Interior boundary edges must always be defined in clockwise 
-  | direction.
-  | At vertex v4, we will refine the mesh locally by adjusting the 
-  | size function locally to a value 0.05. This is applied within a 
-  | distance of 0.2 to the vertex.
+  | This boundary is made up from the vertex sequence: 
+  |       [(1.5,1.5), (1.5,3.5), (3.5,3.5)] 
+  | All edges will obtain the marker number "3". 
+  | 
+  | At vertex (1.5,1.5), we will refine the mesh locally. To do 
+  | this, we provide an additional sequence of refinement properties,
+  | where each entry corresponds to the local mesh size and a local
+  | range scale in which the local mesh size will be of influence.
+  | For vertices, where we do not want to apply a local mesh size,
+  | we simply use a default values tuple of (0.0, 0.0)
   ------------------------------------------------------------------*/
   Boundary& b_int = domain.add_interior_boundary();
 
-  double size  = 0.05;
-  double range = 0.2;
+  std::vector<Vec2d> interior_vertex_coordinates { 
+    { 1.5, 1.5 },
+    { 1.5, 3.5 },
+    { 3.5, 3.5 } 
+  };
 
-  Vertex& v4 = domain.add_vertex(  1.5,  1.5, size, range );
-  Vertex& v5 = domain.add_vertex(  1.5,  3.5 );
-  Vertex& v6 = domain.add_vertex(  3.5,  3.5 );
+  std::vector<int> interior_edge_markers { 3, 3, 3 };
 
-  b_int.add_edge( v4, v5, 2 );
-  b_int.add_edge( v5, v6, 2 );
-  b_int.add_edge( v6, v4, 2 );
+  std::vector<Vec2d> interior_vertex_properties { 
+    { 0.05, 0.2 },
+    { 0.00, 0.0 },
+    { 0.00, 0.0 },
+  };
+
+  b_int.set_shape_from_coordinates( interior_vertex_coordinates, 
+                                    interior_edge_markers,
+                                    interior_vertex_properties );
 
   /*------------------------------------------------------------------
-  | In the following lines, the mesh will be initialized  
-  | triangulated.
+  | Now we are ready to initialize a new mesh structure
   ------------------------------------------------------------------*/
   MeshGenerator generator {};
   Mesh& mesh = generator.new_mesh( domain );
 
   /*------------------------------------------------------------------
-  | Here we generate the actual mesh elements using a triangulation
+  | We generate the actual mesh elements using a triangulation
+  | algorithm
   ------------------------------------------------------------------*/
   generator.triangulation(mesh).generate_elements();
 
   /*------------------------------------------------------------------
-  | Here we use a smoother, in order to improve the mesh quality.
-  | The smoothing is applied for four iterations. 
+  | Then we use a smoothing operation, in order to improve the 
+  | mesh quality. The smoothing is applied for two iterations. 
   ------------------------------------------------------------------*/
   generator.mixed_smoothing(mesh).smooth(2);
 
   /*------------------------------------------------------------------
-  | Finally, the mesh is exportet to a file in TXT format.
+  | Finally, we export the mesh to a file in VTU / TXT format.
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string filename 

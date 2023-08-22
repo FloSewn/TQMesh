@@ -426,8 +426,8 @@ private:
         edge_markers.push_back( m );
       }
 
-      b_int.set_shape_from_coords(vertex_coords, vertex_props, 
-                                  edge_markers );
+      b_int.set_shape_from_coordinates(vertex_coords, edge_markers,
+                                       vertex_props); 
     }
 
 
@@ -596,8 +596,8 @@ private:
         edge_markers.push_back( m );
       }
 
-      b_ext.set_shape_from_coords(vertex_coords, vertex_props, 
-                                  edge_markers );
+      b_ext.set_shape_from_coordinates(vertex_coords, edge_markers,
+                                       vertex_props);
 
       print_parameter<double>(mesh_reader, "extr_bdry_coords");
 
