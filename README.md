@@ -78,11 +78,11 @@ After successfully installing TQMesh, you can run these examples using the provi
 The **TQMesh** application uses simple parameter files as input for the mesh generation.
 There are some sample files given in the *input/* directory.
 
-To start the application, run 
+To use the application, navigate to your main project directory in your terminal and run: 
 ```sh
 ./bin/TQMesh <Input-file> 
 ```
-from your command line.
+Replace `<Input-file>` with the name of your chosen input parameter file.
 
 ## Examples
 For the mesh generation, you simply need to define a few global parameters and the mesh boundaries in terms of boundary nodes and edges. 
@@ -92,11 +92,26 @@ It is also possible to create several meshes successively and assign color value
 For a better overview on the capabilities of **TQMesh**, check out the examples below. 
 These are also the results of the examples given in the *input/* and the *src/examples* directories.
 
+
+## Examples
+
+Generating a mesh with **TQMesh** is a straightforward process that involves defining a few key global parameters 
+along with mesh boundaries represented by boundary nodes and edges. You have the option to assign markers 
+to each boundary edge, which are then applied to the final mesh's boundary edges. 
+Furthermore, the application supports creating multiple meshes consecutively, 
+each with assigned color values for its elements.
+
+Explore the examples below to get an overview of **TQMesh**'s capabilities.
+You can find both the example input files and their corresponding 
+results in the *input/* and *src/examples* directories.
+
+
 <details>
-<summary>Example 1</summary>
+<summary>Example 1: Triangular Mesh with Local Element Refinement</summary>
 
 This example shows a triangular mesh which features local element refinement. 
-The element size is determined either by the domain's edge segments, through sizing factors that are attributed to boundary vertices or through a size function which is defined by the user.
+The element size is determined either by the domain's edge segments, 
+through sizing factors that are attributed to boundary vertices or through a size function which is defined by the user.
 
 <img src="doc/Example_1.png" alt="TQMesh-Example-1" width="300"/>
 </details>
