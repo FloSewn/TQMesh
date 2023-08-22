@@ -24,7 +24,7 @@ using namespace TQMesh::TQAlgorithm;
 /*********************************************************************
 * This example covers the generation of a simple triangular mesh
 *********************************************************************/
-void run_example_1()
+void simple_triangular_mesh()
 {
   /*------------------------------------------------------------------
   | First, we define the size function. This function describes
@@ -151,7 +151,7 @@ void run_example_1()
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string filename 
-  { source_dir + "/auxiliary/example_data/Example_1" };
+  { source_dir + "/auxiliary/example_data/simple_triangular_mesh" };
 
   LOG(INFO) << "Writing mesh output to: " << filename << ".vtu";
   generator.write_mesh(mesh, filename, MeshExportType::VTU);
@@ -159,4 +159,4 @@ void run_example_1()
   LOG(INFO) << "Writing mesh output to: " << filename << ".txt";
   generator.write_mesh(mesh, filename, MeshExportType::TXT);
 
-} // run_example_1()
+} // simple_triangular_mesh()

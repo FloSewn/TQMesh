@@ -38,7 +38,7 @@ using namespace TQMesh::TQAlgorithm;
 *   x-----------------------x
 *
 *********************************************************************/
-void run_example_5()
+void merge_meshes()
 {
   /*------------------------------------------------------------------
   | Define the size function of the outer mesh
@@ -184,7 +184,7 @@ void run_example_5()
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-  { source_dir + "/auxiliary/example_data/Example_5" };
+  { source_dir + "/auxiliary/example_data/merge_meshes" };
 
   LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
   generator.write_mesh(inner_mesh, file_name, MeshExportType::VTU);
@@ -192,4 +192,4 @@ void run_example_5()
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
   generator.write_mesh(inner_mesh, file_name, MeshExportType::TXT);
 
-} // run_example_5()
+} // merge_meshes()

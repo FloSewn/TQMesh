@@ -113,7 +113,7 @@ This example shows a triangular mesh which features local element refinement.
 The element size is determined either by the domain's edge segments, 
 through sizing factors that are attributed to boundary vertices or through a size function which is defined by the user.
 
-<img src="doc/Example_1.png" alt="TQMesh-Example-1" width="300"/>
+<img src="doc/simple_triangular_mesh.png" alt="TQMesh-simple-triangular-mesh" width="300"/>
 </details>
 
 <details>
@@ -123,7 +123,7 @@ through sizing factors that are attributed to boundary vertices or through a siz
 This example mesh was created by using the paving algorithm (which generates mixed-element meshes that are dominated by quads) and a subsequent quad-refinement of all elements.
 In this way, it is possile to generate elements that consist only of quadrilaterals.
 
-<img src="doc/Example_2.png" alt="TQMesh-Example-2" width="650"/>
+<img src="doc/square_in_channel.png" alt="TQMesh-square-in-channel" width="650"/>
 
 <img src="doc/MeshRefinement_1.png" alt="TQMesh-Refinement-1" width="250"/>
 </details>
@@ -133,7 +133,7 @@ In this way, it is possile to generate elements that consist only of quadrilater
 
 It is possible to create meshes through predefined boundary shapes, such as rectangles, circles or triangles.
 
-<img src="doc/Example_3.png" alt="TQMesh-Example-3" width="250"/>
+<img src="doc/boundary_shapes.png" alt="TQMesh-boundary-shapes" width="250"/>
 <img src="doc/MeshRefinement_2.png" alt="TQMesh-Refinement-2" width="250"/>
 <img src="doc/MeshRefinement_3.png" alt="TQMesh-Refinement-3" width="250"/>
 </details>
@@ -145,7 +145,7 @@ During the meshing process, each element gets an associated color value.
 These colors can be adjusted during the meshing process, as indicated in this example.
 It also possible to define interior mesh vertices, in order to influence the local element refinement, as shown below.
 
-<img src="doc/Example_4.png" alt="TQMesh-Example-4" width="250"/>
+<img src="doc/fixed_vertices.png" alt="TQMesh-fixed-vertices" width="250"/>
 </details>
 
 <details>
@@ -154,7 +154,7 @@ It also possible to define interior mesh vertices, in order to influence the loc
 **TQMesh** gives also the possibility to create and merge several meshes, preserving the conformity of their boundary edges.
 This makes it even easier to assign different color values to different element areas in the domain.
 
-<img src="doc/Example_5.png" alt="TQMesh-Example-5" width="250"/>
+<img src="doc/merge_meshes.png" alt="TQMesh-merge-meshes" width="250"/>
 </details>
 
 

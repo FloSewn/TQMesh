@@ -26,7 +26,7 @@ using namespace TQMesh::TQAlgorithm;
 * triangle / quad mesh which features quad layers at specified 
 * boundaries.
 *********************************************************************/
-void run_example_2()
+void square_in_channel()
 {
   /*------------------------------------------------------------------
   | Define the size function
@@ -167,7 +167,7 @@ void run_example_2()
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-  { source_dir + "/auxiliary/example_data/Example_2" };
+  { source_dir + "/auxiliary/example_data/square_in_channel" };
 
   LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
   generator.write_mesh(mesh, file_name, MeshExportType::VTU );
@@ -175,4 +175,4 @@ void run_example_2()
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
   generator.write_mesh(mesh, file_name, MeshExportType::TXT );
 
-} // run_example_2()
+} // square_in_channel()

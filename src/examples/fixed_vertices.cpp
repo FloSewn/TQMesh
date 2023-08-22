@@ -25,7 +25,7 @@ using namespace TQMesh::TQAlgorithm;
 * This example covers the mesh generation with fixed interior 
 * vertices, as well as the usage of different mesh element colors
 *********************************************************************/
-void run_example_4()
+void fixed_vertices()
 {
   /*------------------------------------------------------------------
   | Define the size function
@@ -127,7 +127,7 @@ void run_example_4()
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-  { source_dir + "/auxiliary/example_data/Example_4" };
+  { source_dir + "/auxiliary/example_data/fixed_vertices" };
 
   LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
   generator.write_mesh(mesh, file_name, MeshExportType::VTU);
@@ -136,4 +136,4 @@ void run_example_4()
   generator.write_mesh(mesh, file_name, MeshExportType::TXT);
 
 
-} // run_example_4()
+} // fixed_vertices()

@@ -4,12 +4,12 @@ add_executable( ${EXAMPLES}
   #example_9.cpp
   #example_8.cpp
   #example_7.cpp
-  example_6.cpp
-  example_5.cpp
-  example_4.cpp
-  example_3.cpp
-  example_2.cpp
-  example_1.cpp
+  tqmesh_banner.cpp
+  merge_meshes.cpp
+  fixed_vertices.cpp
+  boundary_shapes.cpp
+  square_in_channel.cpp
+  simple_triangular_mesh.cpp
   run_examples.cpp
   main.cpp
 )

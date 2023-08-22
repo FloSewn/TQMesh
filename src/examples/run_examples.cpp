@@ -37,41 +37,47 @@ int run_examples(const std::string& example)
   /*------------------------------------------------------------------
   | Run all examples
   ------------------------------------------------------------------*/
-  if ( !example.compare("1") )
+  if ( !example.compare("1") || 
+       !example.compare("simple_triangular_mesh") )
   {
-    LOG(INFO) << "Running example 1...";
+    LOG(INFO) << "Running example \"simple_triangular_mesh\"...";
     LOG(INFO) << "";
-    run_example_1();
+    simple_triangular_mesh();
   } 
-  else if ( !example.compare("2") )
+  else if ( !example.compare("2") ||
+            !example.compare("square_in_channel") )
   {
-    LOG(INFO) << "Running example 2...";
+    LOG(INFO) << "Running example \"square_in_channel\"...";
     LOG(INFO) << "";
-    run_example_2();
+    square_in_channel();
   } 
-  else if ( !example.compare("3") )
+  else if ( !example.compare("3") ||
+            !example.compare("boundary_shapes") )
   {
-    LOG(INFO) << "Running example 3...";
+    LOG(INFO) << "Running example \"boundary_shapes\"...";
     LOG(INFO) << "";
-    run_example_3();
+    boundary_shapes();
   }  
-  else if ( !example.compare("4") )
+  else if ( !example.compare("4") ||
+            !example.compare("fixed_vertices") )
   {
-    LOG(INFO) << "Running example 4...";
+    LOG(INFO) << "Running example \"fixed_vertices\"...";
     LOG(INFO) << "";
-    run_example_4();
+    fixed_vertices();
   } 
-  else if ( !example.compare("5") )
+  else if ( !example.compare("5") ||
+            !example.compare("merge_meshes") )
   {
-    LOG(INFO) << "Running example 5...";
+    LOG(INFO) << "Running example \"merge_meshes\"...";
     LOG(INFO) << "";
-    run_example_5();
+    merge_meshes();
   } 
-  else if ( !example.compare("6") )
+  else if ( !example.compare("6") ||
+            !example.compare("tqmesh_banner") )
   {
-    LOG(INFO) << "Running example 6...";
+    LOG(INFO) << "Running example \"tqmesh_banner\"...";
     LOG(INFO) << "";
-    run_example_6();
+    tqmesh_banner();
   } /*
   else if ( !example.compare("7") )
   {

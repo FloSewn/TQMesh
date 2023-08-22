@@ -24,7 +24,7 @@ using namespace TQMesh::TQAlgorithm;
 /*********************************************************************
 * This example involves the generation of the TQMesh banner
 *********************************************************************/
-void run_example_6()
+void tqmesh_banner()
 {
   /*------------------------------------------------------------------
   | Define the size function
@@ -226,7 +226,7 @@ void run_example_6()
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-  { source_dir + "/auxiliary/example_data/Example_6" };
+  { source_dir + "/auxiliary/example_data/tqmesh_banner" };
 
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
   generator.write_mesh(mesh, file_name, MeshExportType::TXT);
@@ -234,4 +234,4 @@ void run_example_6()
   LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
   generator.write_mesh(mesh, file_name, MeshExportType::VTU);
 
-} // run_example_6()
+} // tqmesh_banner()
