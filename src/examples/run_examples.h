@@ -23,6 +23,7 @@ void square_in_channel();
 void boundary_shapes();
 void fixed_vertices();
 void merge_meshes();
+void airfoil_from_csv();
 void tqmesh_banner();
 void run_example_7();
 void run_example_8();

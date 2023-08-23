@@ -13,7 +13,7 @@ Define mesh:
 
   # Output formats: COUT, TXT, VTU
   Output file format: VTU
-  Output file prefix: ./Example_5
+  Output file prefix: ./merge_meshes
 
   #---------------------------------------------------------
   #                         VERTICES     

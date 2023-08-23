@@ -553,6 +553,63 @@ void csv_import()
 
 } // csv_import()
 
+/*********************************************************************
+* Test CSV import
+*********************************************************************/
+void bad_csv_import()
+{
+  // Define dummy domain & mesh builder
+  UserSizeFunction f_outer = [](const Vec2d& p) { return 0.5; };
+  UserSizeFunction f_inner = [](const Vec2d& p) { return 0.5; };
+  Domain domain_outer { f_outer };
+  Domain domain_inner { f_inner };
+
+  std::string bdry_file { TQMESH_SOURCE_DIR };
+  bdry_file += "/auxiliary/test_data/BadCSVInput.csv";
+
+  domain_outer.add_exterior_boundary().set_shape_circle(1, {0.77, 0.09}, 0.14, 60);
+  domain_outer.add_interior_boundary().set_shape_from_csv(bdry_file);
+
+  domain_inner.add_exterior_boundary().set_shape_from_csv(bdry_file);
+
+  // Create the outer mesh
+  MeshBuilder mesh_builder {};
+
+  Mesh mesh_outer = mesh_builder.create_empty_mesh( domain_outer, 1 );
+
+  CHECK( mesh_builder.prepare_mesh(mesh_outer, domain_outer) );
+
+
+  TriangulationStrategy triangulation_outer {mesh_outer, domain_outer};
+  CHECK( triangulation_outer.generate_elements() );
+  CHECK( EQ(mesh_outer.area(), domain_outer.area(), 1E-07) );
+
+
+  // Create the inner mesh
+  Mesh mesh_inner = mesh_builder.create_empty_mesh( domain_inner, 2 );
+
+  CHECK( mesh_builder.prepare_mesh(mesh_inner, domain_inner) );
+
+  TriangulationStrategy triangulation_inner {mesh_inner, domain_inner};
+  CHECK( triangulation_inner.generate_elements() );
+  CHECK( EQ(mesh_inner.area(), domain_inner.area(), 1E-07) );
+
+
+  // Smooth grid
+  MixedSmoothingStrategy smoother_outer {mesh_outer, domain_outer};
+  smoother_outer.smooth(2);
+
+  // Export mesh
+  MeshCleanup::assign_size_function_to_vertices(mesh_outer, domain_outer);
+  MeshCleanup::assign_mesh_indices(mesh_outer);
+  MeshCleanup::setup_facet_connectivity(mesh_outer);
+
+  LOG(DEBUG) << "\n" << mesh_outer;
+  LOG(DEBUG) << "\n" << mesh_inner;
+
+
+} // bad_csv_import()
+
 
 } // namespace MeshTests
 
@@ -596,6 +653,9 @@ void run_tests_Mesh()
 
   adjust_logging_output_stream("MeshTests.csv_import.log");
   MeshTests::csv_import();
+   
+  adjust_logging_output_stream("MeshTests.bad_csv_import.log");
+  MeshTests::bad_csv_import();
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");

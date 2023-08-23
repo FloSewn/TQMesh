@@ -14,7 +14,7 @@ Define mesh:
 
   # Output formats: COUT, TXT, VTU
   Output file format: VTU
-  Output file prefix: ./Example_4
+  Output file prefix: ./fixed_vertices
 
   #---------------------------------------------------------
   #                         VERTICES     

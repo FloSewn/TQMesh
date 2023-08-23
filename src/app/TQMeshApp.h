@@ -353,18 +353,6 @@ private:
     Domain&   domain   = *( domain_.get() );
     Vertices& vertices = domain.vertices();
 
-    // Query and initialize interior boundaries from CSV file
-    while( mesh_reader.query<std::string>("intr_bdry_csv") )
-    {
-      Boundary& b_int = domain.add_interior_boundary();
-
-      b_int.set_shape_from_csv( 
-          mesh_reader.get_value<std::string>("intr_bdry_csv") );
-
-      print_parameter<std::string>(mesh_reader, "intr_bdry_csv");
-    }
-
-
     // Query and initialize interior boundaries from edge definitions
     while( mesh_reader.query<int>("intr_bdry_edges") )
     {
@@ -510,6 +498,17 @@ private:
       b_int.set_shape_triangle( m, {x,y}, h, ms, mr );
     }
 
+    // Query and initialize interior boundaries from CSV file
+    while( mesh_reader.query<std::string>("intr_bdry_csv") )
+    {
+      Boundary& b_int = domain.add_interior_boundary();
+
+      b_int.set_shape_from_csv( 
+          mesh_reader.get_value<std::string>("intr_bdry_csv") );
+
+      print_parameter<std::string>(mesh_reader, "intr_bdry_csv");
+    }
+
   } // MeshConstruction::init_interior_boundaries() 
 
   /*------------------------------------------------------------------
@@ -522,18 +521,6 @@ private:
 
     Domain&   domain   = *( domain_.get() );
     Vertices& vertices = domain.vertices();
-
-    // External boundary definition from CSV file
-    if ( mesh_reader.query<std::string>("extr_bdry_csv") )
-    {
-      Boundary& b_ext = domain.add_exterior_boundary();
-      b_ext.set_shape_from_csv( 
-          mesh_reader.get_value<std::string>("extr_bdry_csv") );
-
-      print_parameter<std::string>(mesh_reader, "extr_bdry_csv");
-
-      return;
-    }
 
     // External boundary definition via direct edge placement
     if ( mesh_reader.query<int>("extr_bdry_edges") )
@@ -695,6 +682,18 @@ private:
       return;
     }
 
+    // External boundary definition from CSV file
+    if ( mesh_reader.query<std::string>("extr_bdry_csv") )
+    {
+      Boundary& b_ext = domain.add_exterior_boundary();
+      b_ext.set_shape_from_csv( 
+          mesh_reader.get_value<std::string>("extr_bdry_csv") );
+
+      print_parameter<std::string>(mesh_reader, "extr_bdry_csv");
+
+      return;
+    }
+
   } // MeshConstruction::init_exterior_boundary()
 
   /*------------------------------------------------------------------
@@ -801,6 +800,9 @@ private:
     output_prefix_ = mesh_reader.get_value<std::string>("output_prefix");
     output_format_ = mesh_reader.get_value<std::string>("output_format");
 
+    print_parameter<std::string>(mesh_reader, "output_prefix");
+    print_parameter<std::string>(mesh_reader, "output_format");
+
     if ( !mesh_reader.query<std::string>("size_function") )
       throw_error("Invalid size function definition for mesh " + mesh_id_);
 
@@ -866,11 +868,12 @@ public:
     }
 
     MeshConstruction mesh_construction {};
-    ParaReader& mesh_reader = reader_.get_block("mesh_reader");
     int mesh_id = 0; 
 
     while( reader_.query( "mesh_reader" ) )
     {
+      ParaReader& mesh_reader = reader_.get_block("mesh_reader");
+
       LOG(INFO) << "";
       LOG(INFO) << "============== " << "Create mesh " << mesh_id 
                 << " ==============";

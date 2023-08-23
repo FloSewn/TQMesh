@@ -18,7 +18,7 @@ Define mesh:
 
   # Output formats: COUT, TXT, VTU
   Output file format: TXT
-  Output file prefix: ./Example_2
+  Output file prefix: ./square_in_channel
 
   #---------------------------------------------------------
   #                        BOUNDARIES     

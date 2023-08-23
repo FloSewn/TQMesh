@@ -17,7 +17,7 @@ Define mesh:
 
   # Output formats: COUT, TXT, VTU
   Output file format: TXT
-  Output file prefix: ./Example_1
+  Output file prefix: ./simple_triangular_mesh
 
   #---------------------------------------------------------
   #                    EXTERIOR BOUNDARY

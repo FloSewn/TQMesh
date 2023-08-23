@@ -13,7 +13,7 @@ Define mesh:
 
   # Output formats: COUT, TXT, VTU
   Output file format: VTU
-  Output file prefix: ./Example_3
+  Output file prefix: ./boundary_shapes
 
   #---------------------------------------------------------
   #                        BOUNDARIES     
@@ -39,9 +39,14 @@ Define mesh:
    
   Define interior circular boundary: 2, 0.0, 1.0, 1.25, 50
 
+  #---------------------------------------------------------
+  # For all shapes, you can provide two additional arguments
+  # that control the local mesh size and the respective 
+  # range of that local mesh size.
+  #---------------------------------------------------------
   Define interior squared boundary: 3, 3.0, 2.5, 1.75, 0.1, 0.2 
 
-  Define interior triangular boundary: 4, 3.0,-0.5, 1.75, 0.1, 0.3
+  Define interior triangular boundary: 4, 3.0,-0.5, 1.75, 0.1, 0.2
 
   #---------------------------------------------------------
   #                       QUAD-LAYERS     

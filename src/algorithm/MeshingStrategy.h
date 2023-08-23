@@ -113,7 +113,7 @@ protected:
   {
     double state = std::ceil(100.0 * mesh_.area() / domain_.area());
     progress_bar_.update( static_cast<int>(state) );
-    progress_bar_.show( LOG_PROPERTIES.get_ostream(INFO) );
+    //progress_bar_.show( LOG_PROPERTIES.get_ostream(INFO) );
   }
 
   /*------------------------------------------------------------------

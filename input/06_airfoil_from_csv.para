@@ -3,7 +3,7 @@
 #===========================================================
  
 #-----------------------------------------------------------
-#                          Mesh #1 
+#                     MESH DEFINITION
 #-----------------------------------------------------------
 Define mesh:
   Element size: 0.003 
@@ -13,12 +13,12 @@ Define mesh:
 
   # Output formats: COUT, TXT, VTU
   Output file format: VTU
-  Output file prefix: ./Example_7
+  Output file prefix: ./airfoil
 
   #---------------------------------------------------------
   #                        BOUNDARIES     
   #---------------------------------------------------------
-  Define exterior circular boundary: 1, 0.77, 0.09, 0.14, 220
+  Define exterior circular boundary: 1, 0.77, 0.09, 0.14, 60
 
   Define interior boundary from CSV file: ../auxiliary/test_data/Airfoil.csv
 
@@ -26,19 +26,20 @@ Define mesh:
 
 End mesh
 
+
 #-----------------------------------------------------------
-#                          Mesh #2 
+#                          Mesh #3 
 #-----------------------------------------------------------
-# Define mesh:
-#   Element size: 0.003 
-#   Element color: 2
-#   Meshing algorithm: Triangulation
-#   Number of quad refinements: 0
-# 
-#   # Output formats: COUT, TXT, VTU
-#   Output file format: VTU
-#   Output file prefix: ./Example_7
-# 
-#   Define exterior boundary from CSV file: ../auxiliary/test_data/Airfoil.csv
-# 
-# End mesh
+Define mesh:
+  Element size: 0.003 
+  Element color: 2
+  Meshing algorithm: Triangulation
+  Number of quad refinements: 0
+
+  # Output formats: COUT, TXT, VTU
+  Output file format: VTU
+  Output file prefix: ./airfoil
+
+  Define exterior boundary from CSV file: ../auxiliary/test_data/Airfoil.csv
+
+End mesh
