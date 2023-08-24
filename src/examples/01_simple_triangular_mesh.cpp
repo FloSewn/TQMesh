@@ -31,10 +31,7 @@ void simple_triangular_mesh()
   | the size of the mesh elements with respect to their location 
   | in the domain. In this case, we use a constant size of 0.35
   ------------------------------------------------------------------*/
-  UserSizeFunction f = [](const Vec2d& p) 
-  { 
-    return 0.35;
-  };
+  UserSizeFunction f = [](const Vec2d& p) { return 0.35; };
 
   /*------------------------------------------------------------------
   | Next, we need to define the domain. It requires the size function

@@ -10,6 +10,8 @@ Define mesh:
   Element color: 1
   Meshing algorithm: Triangulation
   Number of quad refinements: 0
+  Smooth quad layers: 0
+  Number of smoothing iterations: 2
 
   # Output formats: COUT, TXT, VTU
   Output file format: VTU
@@ -86,12 +88,14 @@ Define mesh:
   #Element size: 0.02 + 0.5 * ( pow(x-2.5, 2) + pow(y-2.5, 2) )
   Element size: 0.3
   Element color: 2
-  Meshing algorithm: Tri-to-Quad
+  Meshing algorithm: Triangulation
   Number of quad refinements: 0
+  Smooth quad layers: 0
+  Number of smoothing iterations: 2
 
   # Output formats: COUT, TXT, VTU
   Output file format: VTU
-  Output file prefix: ./Example_5
+  Output file prefix: ./merge_meshes
 
   #---------------------------------------------------------
   #                         VERTICES     

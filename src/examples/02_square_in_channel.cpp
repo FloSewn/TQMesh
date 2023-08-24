@@ -22,19 +22,19 @@ using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
-* This example covers the generation of a simple mixed 
-* triangle / quad mesh which features quad layers at specified 
-* boundaries.
+* This example covers the generation of a mesh for a square within 
+* a channel, a test case that is often considered as benchmark for 
+* computational fluid dynamics solvers.
+* The square and the channel boundaries will be discretized with 
+* dedicated quad layers and we will utilize a method to obtain an
+* all-quad mesh.
 *********************************************************************/
 void square_in_channel()
 {
   /*------------------------------------------------------------------
-  | Define the size function
+  | Define the size function and the domain structure
   ------------------------------------------------------------------*/
-  UserSizeFunction f = [](const Vec2d& p) 
-  { 
-    return 0.1;
-  };
+  UserSizeFunction f = [](const Vec2d& p) { return 0.1; };
 
   Domain domain { f };
 

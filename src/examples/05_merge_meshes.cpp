@@ -41,44 +41,35 @@ using namespace TQMesh::TQAlgorithm;
 void merge_meshes()
 {
   /*------------------------------------------------------------------
-  | Define the size function of the outer mesh
+  | Define the size function and domain of the outer mesh
   ------------------------------------------------------------------*/
-  UserSizeFunction f_outer = [](const Vec2d& p) 
-  { 
-    return 0.35;
-  };
+  UserSizeFunction f_outer = [](const Vec2d& p) { return 0.35; };
 
   Domain outer_domain   { f_outer };
 
   /*------------------------------------------------------------------
   | Exterior boundary of the outer mesh
   ------------------------------------------------------------------*/
-  Boundary&  b_outer_ext = outer_domain.add_exterior_boundary();
+  std::vector<Vec2d> outer_coords {
+    { 0.0, 0.0 }, { 5.0, 0.0 }, { 5.0, 5.0 }, { 0.0, 5.0 },
+  };
 
-  Vertex& v0_out = outer_domain.add_vertex(  0.0,  0.0 );
-  Vertex& v1_out = outer_domain.add_vertex(  5.0,  0.0 );
-  Vertex& v2_out = outer_domain.add_vertex(  5.0,  5.0 );
-  Vertex& v3_out = outer_domain.add_vertex(  0.0,  5.0 );
+  std::vector<int> outer_markers ( outer_coords.size(), 1 );
 
-  b_outer_ext.add_edge( v0_out, v1_out, 1 );
-  b_outer_ext.add_edge( v1_out, v2_out, 1 );
-  b_outer_ext.add_edge( v2_out, v3_out, 1 );
-  b_outer_ext.add_edge( v3_out, v0_out, 1 );
+  Boundary& bdry_outer_ext = outer_domain.add_exterior_boundary();
+  bdry_outer_ext.set_shape_from_coordinates(outer_coords, outer_markers);
 
   /*------------------------------------------------------------------
   | Interior boundary of the outer mesh
   ------------------------------------------------------------------*/
-  Boundary&  b_outer_int = outer_domain.add_interior_boundary();
+  std::vector<Vec2d> inner_coords {
+    { 1.5, 1.5 }, { 3.5, 1.5 }, { 3.5, 3.5 }, { 1.5, 3.5 },
+  };
 
-  Vertex& v4_out = outer_domain.add_vertex(  1.5,  1.5 );
-  Vertex& v5_out = outer_domain.add_vertex(  3.5,  1.5 );
-  Vertex& v6_out = outer_domain.add_vertex(  3.5,  3.5 );
-  Vertex& v7_out = outer_domain.add_vertex(  1.5,  3.5 );
+  std::vector<int> inner_markers ( inner_coords.size(), 2 );
 
-  b_outer_int.add_edge( v4_out, v7_out, 2 );
-  b_outer_int.add_edge( v7_out, v6_out, 2 );
-  b_outer_int.add_edge( v6_out, v5_out, 2 );
-  b_outer_int.add_edge( v5_out, v4_out, 2 );
+  Boundary& bdry_outer_int = outer_domain.add_interior_boundary();
+  bdry_outer_int.set_shape_from_coordinates(inner_coords, inner_markers);
 
   /*------------------------------------------------------------------
   | Initialize the outer mesh
@@ -87,8 +78,8 @@ void merge_meshes()
 
   int outer_mesh_id = 1;
   int outer_mesh_color = 1;
-  Mesh& outer_mesh 
-    = generator.new_mesh(outer_domain, outer_mesh_id, outer_mesh_color);
+  Mesh& outer_mesh = generator.new_mesh(outer_domain, outer_mesh_id, 
+                                        outer_mesh_color);
 
   /*------------------------------------------------------------------
   | Create two quad layers for the outer mesh
@@ -97,17 +88,17 @@ void merge_meshes()
     .n_layers(2)
     .first_height(0.05)
     .growth_rate(1.5)
-    .starting_position(v0_out.xy())
-    .ending_position(v0_out.xy())
+    .starting_position({0.0,0.0})
+    .ending_position({0.0,0.0})
     .generate_elements();
 
   generator.quad_layer_generation(outer_mesh)
     .n_layers(2)
     .first_height(0.05)
     .growth_rate(1.5)
-    .starting_position(v7_out.xy())
-    .ending_position(v7_out.xy())
-    .generate_elements();
+    .starting_position({1.5,3.5})
+    .ending_position({1.5,3.5})
+    .generate_elements(); 
 
   /*------------------------------------------------------------------
   | Generate the remaining elements of the outer mesh
@@ -117,9 +108,7 @@ void merge_meshes()
   /*------------------------------------------------------------------
   | Smooth the elements of the outer mesh
   ------------------------------------------------------------------*/
-  generator.mixed_smoothing(outer_mesh).smooth(4);   
-
-
+  generator.mixed_smoothing(outer_mesh).smooth(2);   
 
   /*------------------------------------------------------------------
   | Define the size function of the inner mesh
@@ -131,34 +120,22 @@ void merge_meshes()
 
   Domain inner_domain   { f_inner };
 
-
   /*------------------------------------------------------------------
   | Exterior boundary of the inner mesh
   | This boundary overlaps with the interior boundary of the outer 
   | mesh. It is thus important, that it features the same number of 
-  | edges and vertex coordinates - but it must be defined in 
-  | the opposite direction.
+  | edges and vertex coordinates.
   ------------------------------------------------------------------*/
-  Boundary&  b_inner = inner_domain.add_exterior_boundary();
-
-  Vertex& v4_in = inner_domain.add_vertex(  1.5,  1.5 );
-  Vertex& v5_in = inner_domain.add_vertex(  3.5,  1.5 );
-  Vertex& v6_in = inner_domain.add_vertex(  3.5,  3.5 );
-  Vertex& v7_in = inner_domain.add_vertex(  1.5,  3.5 );
-
-  b_inner.add_edge( v4_in, v5_in, 3 );
-  b_inner.add_edge( v5_in, v6_in, 3 );
-  b_inner.add_edge( v6_in, v7_in, 3 );
-  b_inner.add_edge( v7_in, v4_in, 3 );
-
+  Boundary& bdry_inner = inner_domain.add_exterior_boundary();
+  bdry_inner.set_shape_from_coordinates(inner_coords, inner_markers);
 
   /*------------------------------------------------------------------
   | Initialize the inner mesh
   ------------------------------------------------------------------*/
   int inner_mesh_id = 2;
   int inner_mesh_color = 2;
-  Mesh& inner_mesh 
-    = generator.new_mesh(inner_domain, inner_mesh_id, inner_mesh_color);
+  Mesh& inner_mesh = generator.new_mesh(inner_domain, inner_mesh_id, 
+                                        inner_mesh_color);
 
   /*------------------------------------------------------------------
   | Generate the inner mesh
@@ -177,7 +154,7 @@ void merge_meshes()
   /*------------------------------------------------------------------
   | Smooth the final mesh for four iterations
   ------------------------------------------------------------------*/
-  generator.mixed_smoothing(inner_mesh).smooth(4);   
+  generator.mixed_smoothing(inner_mesh).smooth(2);   
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in TXT format.

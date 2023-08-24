@@ -28,12 +28,9 @@ using namespace TQMesh::TQAlgorithm;
 void fixed_vertices()
 {
   /*------------------------------------------------------------------
-  | Define the size function
+  | Define the size function and the domain structure
   ------------------------------------------------------------------*/
-  UserSizeFunction f = [](const Vec2d& p) 
-  { 
-    return 0.2;
-  };
+  UserSizeFunction f = [](const Vec2d& p) { return 0.2; };
 
   Domain domain   { f };
 
@@ -57,25 +54,21 @@ void fixed_vertices()
   |  x-------x              
   |  v0       v1
   ------------------------------------------------------------------*/
-  Boundary& b_ext = domain.add_exterior_boundary();
+  std::vector<Vec2d> vertex_coordinates { 
+    { 0.0,  0.0 },
+    { 1.0,  0.0 },
+    { 1.0,  2.0 },
+    { 2.0,  2.0 },
+    { 2.0,  1.0 },
+    { 3.0,  1.0 },
+    { 3.0,  3.0 },
+    { 0.0,  3.0 },
+  };
 
-  Vertex& v0 = domain.add_vertex(  0.0,  0.0 );
-  Vertex& v1 = domain.add_vertex(  1.0,  0.0 );
-  Vertex& v2 = domain.add_vertex(  1.0,  2.0 );
-  Vertex& v3 = domain.add_vertex(  2.0,  2.0 );
-  Vertex& v4 = domain.add_vertex(  2.0,  1.0 );
-  Vertex& v5 = domain.add_vertex(  3.0,  1.0 );
-  Vertex& v6 = domain.add_vertex(  3.0,  3.0 );
-  Vertex& v7 = domain.add_vertex(  0.0,  3.0 );
+  std::vector<int> edge_markers ( vertex_coordinates.size(), 1 );
 
-  b_ext.add_edge( v0, v1, 1 );
-  b_ext.add_edge( v1, v2, 1 );
-  b_ext.add_edge( v2, v3, 1 );
-  b_ext.add_edge( v3, v4, 1 );
-  b_ext.add_edge( v4, v5, 1 );
-  b_ext.add_edge( v5, v6, 1 );
-  b_ext.add_edge( v6, v7, 1 );
-  b_ext.add_edge( v7, v0, 1 );
+  Boundary& boundary = domain.add_exterior_boundary();
+  boundary.set_shape_from_coordinates(vertex_coordinates, edge_markers);
 
   /*------------------------------------------------------------------
   | Here, we add two vertices in the interior of the domain,
@@ -105,8 +98,8 @@ void fixed_vertices()
     .n_layers(3)
     .first_height(0.02)
     .growth_rate(1.5)
-    .starting_position(v0.xy())
-    .ending_position(v7.xy())
+    .starting_position({0.0,0.0})
+    .ending_position({0.0,3.0})
     .generate_elements();
 
   /*------------------------------------------------------------------
@@ -120,7 +113,7 @@ void fixed_vertices()
   /*------------------------------------------------------------------
   | Smooth the mesh for four iterations
   ------------------------------------------------------------------*/
-  generator.mixed_smoothing(mesh).quad_layer_smoothing(true).smooth(10); 
+  generator.mixed_smoothing(mesh).smooth(2); 
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in TXT format.

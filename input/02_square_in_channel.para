@@ -15,9 +15,11 @@ Define mesh:
   Element color: 1
   Meshing algorithm: Tri-to-Quad
   Number of quad refinements: 1
+  Smooth quad layers: 1
+  Number of smoothing iterations: 2
 
   # Output formats: COUT, TXT, VTU
-  Output file format: TXT
+  Output file format: VTU
   Output file prefix: ./square_in_channel
 
   #---------------------------------------------------------

@@ -22,17 +22,15 @@ using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
-* This example covers the mesh generation with boundary shapes
+* This example covers the mesh generation where the domain boundaries 
+* are specified by predefined boundary shapes
 *********************************************************************/
 void boundary_shapes()
 {
   /*------------------------------------------------------------------
-  | Define the size function
+  | Define the size function and the domain structure
   ------------------------------------------------------------------*/
-  UserSizeFunction f = [](const Vec2d& p) 
-  { 
-    return 0.4;
-  };
+  UserSizeFunction f = [](const Vec2d& p) { return 0.4; };
 
   Domain domain   { f };
 
@@ -77,48 +75,30 @@ void boundary_shapes()
   Mesh& mesh = generator.new_mesh( domain );
 
   /*------------------------------------------------------------------
-  | Here we will create some quad layers. Due to the boundary 
-  | generation via shapes, we did not explicitly define any vertices
-  | that could be passed as starting and ending vertices for the 
-  | quad layer generation algorithm.
-  | However, since we know how many vertices were created during the
-  | generation of the given boundary shapes, we can use this 
-  | information to get the respecive vertices.
+  | Here we will create some quad layers. 
   ------------------------------------------------------------------*/
-  // The following domain vertex is located on the circular 
-  // interior boundary
-  Vertex& v4 = domain.vertices()[4];
-
-  // These next two vertices are located on the interior quad boundary
-  Vertex& v34 = domain.vertices()[34];
-  Vertex& v36 = domain.vertices()[36];
-
-  // This last vertices is located on the interior triangle boundary
-  Vertex& v38 = domain.vertices()[38];
-
-  // Generate quad layers at the interior boundaries
   generator.quad_layer_generation(mesh)
     .n_layers(3)
     .first_height(0.05)
     .growth_rate(1.3)
-    .starting_position(v4.xy())
-    .ending_position(v4.xy())
+    .starting_position({5.0,1.0})
+    .ending_position({5.0,1.0})
     .generate_elements();
 
   generator.quad_layer_generation(mesh)
     .n_layers(3)
     .first_height(0.05)
     .growth_rate(1.3)
-    .starting_position(v34.xy())
-    .ending_position(v36.xy())
+    .starting_position({0.0,2.25})
+    .ending_position({0.0,2.25})
     .generate_elements();
 
   generator.quad_layer_generation(mesh)
     .n_layers(3)
     .first_height(0.05)
     .growth_rate(1.3)
-    .starting_position(v38.xy())
-    .ending_position(v38.xy())
+    .starting_position({3.75,2.5})
+    .ending_position({3.75,2.5})
     .generate_elements();
 
   /*------------------------------------------------------------------
@@ -129,7 +109,7 @@ void boundary_shapes()
   /*------------------------------------------------------------------
   | Smooth the mesh for four iterations
   ------------------------------------------------------------------*/
-  generator.mixed_smoothing(mesh).smooth(4); 
+  generator.mixed_smoothing(mesh).smooth(2); 
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in TXT format.

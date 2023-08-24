@@ -16,7 +16,7 @@ Define mesh:
   Number of quad refinements: 0
 
   # Output formats: COUT, TXT, VTU
-  Output file format: TXT
+  Output file format: VTU
   Output file prefix: ./simple_triangular_mesh
 
   #---------------------------------------------------------

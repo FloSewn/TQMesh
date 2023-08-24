@@ -131,7 +131,9 @@ public:
 
     init_meshing_algorithm( mesh_reader );
 
-    init_quad_refinements( mesh_reader );
+    init_refinement_parameters( mesh_reader );
+
+    init_smoothing_parameters( mesh_reader );
 
     generate_mesh();
 
@@ -206,8 +208,8 @@ private:
 
     // Apply mesh smoothing
     mesh_generator_.mixed_smoothing(mesh)
-      .quad_layer_smoothing(true)
-      .smooth(2);
+      .quad_layer_smoothing(smooth_quad_layers_)
+      .smooth(smoothing_iterations_);
 
     // Export the mesh
     if ( output_format_ == "VTU" || output_format_ == "vtu" )
@@ -230,20 +232,41 @@ private:
   } // MeshConstruction::generate_mesh()
 
   /*------------------------------------------------------------------
+  | Initialize smoothing parameters
+  ------------------------------------------------------------------*/
+  void init_smoothing_parameters(ParaReader& mesh_reader)
+  {
+    smoothing_iterations_ = 2;
+    smooth_quad_layers_   = false;
+
+    if ( mesh_reader.query<size_t>("smoothing_iterations") )
+    {
+      smoothing_iterations_ = mesh_reader.get_value<size_t>("smoothing_iterations");
+      print_parameter<size_t>(mesh_reader, "smoothing_iterations");
+    }
+
+    if ( mesh_reader.query<bool>("smooth_quad_layers") )
+    {
+      smooth_quad_layers_ = mesh_reader.get_value<bool>("smooth_quad_layers");
+      print_parameter<bool>(mesh_reader, "smooth_quad_layers");
+    }
+
+  } // MeshConstruction::init_smoothing_parameters()
+
+  /*------------------------------------------------------------------
   | Initialize the number of quad refinements
   ------------------------------------------------------------------*/
-  void init_quad_refinements(ParaReader& mesh_reader)
+  void init_refinement_parameters(ParaReader& mesh_reader)
   {
     quad_refinements_ = 0;
 
     if ( mesh_reader.query<size_t>("quad_refinements") )
     {
-      quad_refinements_ = mesh_reader.get_value<size_t>(
-          "quad_refinements");
+      quad_refinements_ = mesh_reader.get_value<size_t>("quad_refinements");
       print_parameter<size_t>(mesh_reader, "quad_refinements");
     }
 
-  } // MeshConstruction::init_quad_refinements()
+  } // MeshConstruction::init_refinement_parameters()
 
   /*------------------------------------------------------------------
   | Initialize the meshing algorithm
@@ -831,8 +854,13 @@ private:
   std::vector<double>     quad_layer_growth_   {};
 
   std::string             algorithm_;
-  size_t                  quad_refinements_;
   int                     element_color_;
+
+  size_t                  quad_refinements_;
+
+  size_t                  smoothing_iterations_;
+  bool                    smooth_quad_layers_;
+
 
 }; // MeshConstruction
 
@@ -930,11 +958,17 @@ private:
     mesh_reader.new_scalar_parameter<size_t>(
         "quad_refinements", "Number of quad refinements:");
 
+    mesh_reader.new_scalar_parameter<size_t>(
+        "smoothing_iterations", "Number of smoothing iterations:");
+
+    mesh_reader.new_scalar_parameter<bool>(
+        "smooth_quad_layers", "Smooth quad layers:");
+
     mesh_reader.new_vector_parameter<double>(
         "quad_layers", "Add quad layers:", 7);
 
     mesh_reader.new_matrix_parameter<double>(
-        "fixed_vertices", "Define inner vertices:", "End inner vertices", 4);
+        "fixed_vertices", "Define fixed vertices:", "End fixed vertices", 4);
 
 
     mesh_reader.new_scalar_parameter<std::string>(
