@@ -23,7 +23,7 @@ using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
 * This example shows how to generate and merge several meshes with
-* different colors and size function.
+* different colors and size functions.
 * 
 *   x-----------------------x
 *   |  Outer                |
@@ -45,7 +45,7 @@ void merge_meshes()
   ------------------------------------------------------------------*/
   UserSizeFunction f_outer = [](const Vec2d& p) { return 0.35; };
 
-  Domain outer_domain   { f_outer };
+  Domain outer_domain { f_outer };
 
   /*------------------------------------------------------------------
   | Exterior boundary of the outer mesh

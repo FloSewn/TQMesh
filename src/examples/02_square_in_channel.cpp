@@ -161,7 +161,6 @@ void square_in_channel()
     .quad_layer_smoothing(true) // Enable smoothing to quad layers
     .smooth(3);                 // Smooth for three iterations
 
-
   /*------------------------------------------------------------------
   | Finally, we export the mesh to a file in VTU / TXT format.
   ------------------------------------------------------------------*/

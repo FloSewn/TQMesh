@@ -16,7 +16,7 @@ Define mesh:
   Meshing algorithm: Tri-to-Quad
   Number of quad refinements: 1
   Smooth quad layers: 1
-  Number of smoothing iterations: 2
+  Number of smoothing iterations: 3
 
   # Output formats: COUT, TXT, VTU
   Output file format: VTU
@@ -52,17 +52,17 @@ Define mesh:
   #
   # To build the boundaries, we first need to defined the 
   # respective boundary vertices (where a local mesh 
-  # refinement ins applied to the vertices v5 to v8)
+  # refinement ins applied to the vertices v4 to v7)
   #---------------------------------------------------------
   Define boundary vertices:
     0.00, 0.00                 # v0
     4.00, 0.00                 # v1
     4.00, 1.00                 # v2
     0.00, 1.00                 # v3
-    0.35, 0.35,  0.03, 0.10    # v4 
-    0.35, 0.65,  0.03, 0.10    # v5  
-    0.65, 0.65,  0.03, 0.10    # v6
-    0.65, 0.35,  0.03, 0.10    # v7
+    0.35, 0.35,  0.05, 0.20    # v4 
+    0.35, 0.65,  0.05, 0.20    # v5  
+    0.65, 0.65,  0.05, 0.20    # v6
+    0.65, 0.35,  0.05, 0.20    # v7
   End boundary vertices
 
   Define exterior boundary edges:

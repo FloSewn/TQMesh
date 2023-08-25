@@ -61,12 +61,17 @@ void boundary_shapes()
   | Finally we will add two more interior boundaries: A suqare 
   | and a triangle. These will get the markers 3 and respectively, 
   | and both will feature the edge length of 1.75.
+  |
+  | For all shapes, you can provide two optional arguments that 
+  | control the local mesh size and the respective range of that 
+  | local mesh size. Here we will refine the square edges locally to 
+  | a mesh scale of 0.05 within a range of 0.25.
   ------------------------------------------------------------------*/
   Boundary& b_shape_2 = domain.add_interior_boundary();
-  b_shape_2.set_shape_square(3, {3.0,2.5}, 1.75);
+  b_shape_2.set_shape_triangle(4, {3.0,-0.5}, 1.75);
 
   Boundary& b_shape_3 = domain.add_interior_boundary();
-  b_shape_3.set_shape_triangle(4, {3.0,-0.5}, 1.75);
+  b_shape_3.set_shape_square(3, {3.0,2.5}, 1.75, 0.05, 0.25);
 
   /*------------------------------------------------------------------
   | Initialize the mesh

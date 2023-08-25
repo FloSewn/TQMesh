@@ -37,18 +37,20 @@ Define mesh:
   #   (marker, x-center, y-center, edge length)
   #
   #---------------------------------------------------------
-  Define exterior rectangular boundary: 1, 1.0, 1.0, 8.00, 8.00, 0.1, 0.05
+  Define exterior rectangular boundary: 1, 1.0, 1.0, 8.00, 8.00
    
-  Define interior circular boundary: 2, 0.0, 1.0, 1.25, 40
-
-  #---------------------------------------------------------
-  # For all shapes, you can provide two additional arguments
-  # that control the local mesh size and the respective 
-  # range of that local mesh size.
-  #---------------------------------------------------------
-  Define interior squared boundary: 3, 3.0, 2.5, 1.75, 0.05, 0.25
+  Define interior circular boundary: 2, 0.0, 1.0, 1.25, 30
 
   Define interior triangular boundary: 4, 3.0,-0.5, 1.75
+
+  #---------------------------------------------------------
+  # For all shapes, you can provide two optional arguments
+  # that control the local mesh size and the respective 
+  # range of that local mesh size. Here we will refine 
+  # the square edges locally to a mesh scale of 0.05 
+  # within a range of 0.25
+  #---------------------------------------------------------
+  Define interior squared boundary: 3, 3.0, 2.5, 1.75, 0.05, 0.25
 
   #---------------------------------------------------------
   #                       QUAD-LAYERS     
@@ -65,9 +67,9 @@ Define mesh:
   #---------------------------------------------------------
   Add quad layers: 5.0, 1.0, 5.0, 1.0, 3, 0.05, 1.3  
 
-  Add quad layers: 0.0, 2.25, 0.0, 2.25, 3, 0.05, 1.1  
+  Add quad layers: 0.0, 2.25, 0.0, 2.25, 3, 0.05, 1.3  
 
-  Add quad layers: 3.75, 2.5, 3.75, 2.5, 3, 0.05, 1.0  
+  Add quad layers: 3.75, 2.5, 3.75, 2.5, 3, 0.05, 1.3  
 
 End mesh
 
