@@ -596,6 +596,10 @@ public:
 
     for ( const auto& vertex_ptr : mesh.vertices() )
     {
+      // Skip fixed vertices
+      if ( vertex_ptr->is_fixed() )
+        continue;
+
       if ( vertex_ptr->facets().size() != 3 )
         continue;
       if ( vertex_ptr->edges().size() != 3 )

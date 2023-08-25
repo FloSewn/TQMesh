@@ -60,40 +60,6 @@ protected:
   virtual Vec2d compute_displacement(const VConn& v_conn) const = 0;
 
   /*------------------------------------------------------------------
-  | This function checks the element qualities and in case of 
-  | bad elements, it sets fixed vertices to be unfixed (e.g. vertices
-  | in the quad layer), such that they can be shifted for a better
-  | mesh quality
-  ------------------------------------------------------------------*/
-  void unfix_vertices() 
-  {
-    Triangles& tris  = mesh_->triangles();
-    Quads&     quads = mesh_->quads();
-
-    for ( const auto& t_ptr : tris )
-    {
-      if ( t_ptr->max_angle() > crit_tri_max_angle_ )
-      {
-        t_ptr->v1().remove_property( VertexProperty::is_fixed );
-        t_ptr->v2().remove_property( VertexProperty::is_fixed );
-        t_ptr->v3().remove_property( VertexProperty::is_fixed );
-      }
-    }
-
-    for ( const auto& q_ptr : quads )
-    {
-      if ( q_ptr->min_angle() < crit_quad_min_angle_ )
-      {
-        q_ptr->v1().remove_property( VertexProperty::is_fixed );
-        q_ptr->v2().remove_property( VertexProperty::is_fixed );
-        q_ptr->v3().remove_property( VertexProperty::is_fixed );
-        q_ptr->v4().remove_property( VertexProperty::is_fixed );
-      }
-    }
-
-  } // SmoothingStrategy::unfix_vertices()
-
-  /*------------------------------------------------------------------
   | For each vertex in a quad layer, we collect its direction to
   | the nearest point at a boundary edge. This information is used
   | later on, in order to preserve the prescribed quad layer height 
@@ -436,13 +402,6 @@ protected:
   bool               quad_layer_smoothing_ = false;
   double             angle_factor_         = 0.5;
 
-  double crit_tri_min_angle_   {  10.0 * M_PI / 180.0 };
-  double crit_tri_max_angle_   { 150.0 * M_PI / 180.0 };
-
-  double crit_quad_min_angle_  {  10.0 * M_PI / 180.0 };
-  double crit_quad_max_angle_  { 150.0 * M_PI / 180.0 };
-
-
 }; // SmoothingStrategy
 
 
@@ -483,8 +442,6 @@ public:
   ------------------------------------------------------------------*/
   bool smooth(int iterations) override
   {
-    unfix_vertices();
-
     init_vertex_connectivity();
 
     collect_dispalcement_directions();
@@ -568,8 +525,6 @@ public:
   ------------------------------------------------------------------*/
   bool smooth(int iterations) override
   {
-    unfix_vertices();
-
     init_vertex_connectivity();
 
     collect_dispalcement_directions();
@@ -667,7 +622,6 @@ public:
     laplace.epsilon( eps_ );
     laplace.decay( decay_ );
     laplace.quad_layer_smoothing( quad_layer_smoothing_ );
-    laplace.unfix_vertices();
     laplace.init_vertex_connectivity();
     laplace.collect_dispalcement_directions();
 
@@ -676,7 +630,6 @@ public:
     torsion.decay( decay_ );
     torsion.angle_factor( angle_factor_ );
     torsion.quad_layer_smoothing( quad_layer_smoothing_ );
-    torsion.unfix_vertices();
     torsion.init_vertex_connectivity();
     torsion.collect_dispalcement_directions();
 
