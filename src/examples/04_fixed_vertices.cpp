@@ -120,15 +120,11 @@ void fixed_vertices()
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-<<<<<<< HEAD:src/examples/example_4.cpp
-  { source_dir + "/auxiliary/example_data/Example_4" };
-=======
   { source_dir + "/auxiliary/example_data/fixed_vertices" };
 
   LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
   generator.write_mesh(mesh, file_name, MeshExportType::VTU);
 
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940:src/examples/04_fixed_vertices.cpp
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
   generator.write_mesh(mesh, file_name, MeshExportType::TXT);
 

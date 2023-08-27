@@ -655,11 +655,7 @@ private:
 
     for ( std::size_t i = 1; i < xy_new.size()-1; i++ )
     {
-<<<<<<< HEAD
-      Vertex& v_n = vertices.insert( e.v2().pos(), xy_new[i], 1.0 );
-=======
       Vertex& v_n = mesh_vertices.insert( e.v2().pos(), xy_new[i] );
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
       // Set vertex properties
       v_n.add_property( VertexProperty::on_front );

@@ -40,20 +40,11 @@ using namespace TQMesh::TQAlgorithm;
 *********************************************************************/
 void initialization()
 {
-<<<<<<< HEAD
-  // Log debug messages to specified output-file
-  std::string source_dir { TQMESH_SOURCE_DIR };
-  std::string file_name 
-  { source_dir + "/auxiliary/test_data/MeshTests.initialization.log" };
-  LOG_PROPERTIES.set_info_ostream( TO_FILE, file_name );
-  LOG_PROPERTIES.set_debug_ostream( TO_FILE, file_name );
-=======
   // Define dummy domain & mesh builder
   UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
   Domain domain { f, 5.0 };
   MeshBuilder mesh_builder {};
   Mesh mesh = mesh_builder.create_empty_mesh(domain, 0, 0);
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
   Vertex& v1 = mesh.add_vertex({0.0, 0.0});
   Vertex& v2 = mesh.add_vertex({1.0, 0.0});
@@ -238,18 +229,9 @@ void quad_layer()
 *********************************************************************/
 void exhaustive_search_triangulation()
 {
-<<<<<<< HEAD
-  // Log debug messages to specified output-file
-  std::string source_dir { TQMESH_SOURCE_DIR };
-  std::string file_name 
-  { source_dir + "/auxiliary/test_data/MeshTests.triangulate.log" };
-  LOG_PROPERTIES.set_info_ostream( TO_FILE, file_name );
-  LOG_PROPERTIES.set_debug_ostream( TO_FILE, file_name );
-=======
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
   { return 0.5; };
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
   TestBuilder test_builder { "SharpStepAndSharpEdge", f};
   Domain& domain = test_builder.domain();
@@ -340,14 +322,10 @@ void refine_to_quads()
   smoother.smooth(2);
 
   // Export mesh
-<<<<<<< HEAD
-  file_name =  source_dir + "/auxiliary/test_data/MeshTests.triangulate.txt";
-=======
   MeshCleanup::assign_size_function_to_vertices(mesh, domain);
   MeshCleanup::assign_mesh_indices(mesh);
   MeshCleanup::setup_facet_connectivity(mesh);
   LOG(DEBUG) << "\n" << mesh;
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
 } // refine_to_quads()
 
@@ -392,14 +370,6 @@ void merge_triangles_to_quads()
 *********************************************************************/
 void small_refinement()
 {
-<<<<<<< HEAD
-  // Log debug messages to specified output-file
-  std::string source_dir { TQMESH_SOURCE_DIR };
-  std::string file_name 
-  { source_dir + "/auxiliary/test_data/MeshTests.pave.log" };
-  LOG_PROPERTIES.set_info_ostream( TO_FILE, file_name );
-  LOG_PROPERTIES.set_debug_ostream( TO_FILE, file_name );
-=======
   UserSizeFunction f = [](const Vec2d& p) { return 0.5; };
    
   TestBuilder test_builder { "UnitCircle", f};
@@ -414,7 +384,6 @@ void small_refinement()
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
   TriangulationStrategy triangulation {mesh, domain};
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
   CHECK( triangulation.generate_elements() );
   CHECK( EQ(mesh.area(), domain.area(), 1E-07) );
@@ -546,11 +515,6 @@ void csv_import()
   Boundary& b_ext = domain.add_exterior_boundary();
   b_ext.set_shape_from_csv(b_ext_file);
 
-<<<<<<< HEAD
-  // Export the mesh
-  file_name = source_dir + "/auxiliary/test_data/MeshTests.pave.txt";
-=======
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
   std::string b_int_1_file { TQMESH_SOURCE_DIR };
   b_int_1_file += "/auxiliary/test_data/InteriorBoundary_1.csv";

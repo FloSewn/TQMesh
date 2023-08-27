@@ -21,21 +21,15 @@ CPPUTILS_MIN	utils/MathUtility.h	/^constexpr double CPPUTILS_MIN    = DBL_MIN;$/
 CPPUTILS_SMALL	utils/MathUtility.h	/^constexpr double CPPUTILS_SMALL  = 1.0E-13; \/\/DBL_EPSILON;$/;"	m	namespace:CppUtils
 CW	utils/Geometry.h	/^  CW,     \/\/ Clockwise$/;"	m	class:CppUtils::Orientation
 CYAN	utils/Log.h	/^  CYAN     = 36,$/;"	e	enum:CppUtils::LogColor
-<<<<<<< HEAD
-=======
 CircQuery	utils/QuadTree.h	/^  typedef bool (*CircQuery)(T* item, $/;"	t	class:CppUtils::QuadTree
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 ConditionalDeleter	utils/Log.h	/^struct ConditionalDeleter$/;"	s	namespace:CppUtils
 Container	utils/Container.h	/^  Container(Container<T>&& c) $/;"	f	class:CppUtils::Container
 Container	utils/Container.h	/^  Container(const Container<T>& c) $/;"	f	class:CppUtils::Container
 Container	utils/Container.h	/^  Container(double        qtree_scale = ContainerQuadTreeScale,$/;"	f	class:CppUtils::Container
 Container	utils/Container.h	/^class Container$/;"	c	namespace:CppUtils
-<<<<<<< HEAD
-=======
 ContainerEntry	utils/Container.h	/^  ContainerEntry(const Vec2d& xy) : xy_ {xy} {}$/;"	f	class:CppUtils::ContainerEntry
 ContainerEntry	utils/Container.h	/^  ContainerEntry(double x, double y) : xy_ {x, y} {}$/;"	f	class:CppUtils::ContainerEntry
 ContainerEntry	utils/Container.h	/^class ContainerEntry$/;"	c	namespace:CppUtils
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 ContainerQuadTreeDepth	utils/Container.h	/^constexpr size_t ContainerQuadTreeDepth = 25;$/;"	m	namespace:CppUtils
 ContainerQuadTreeItems	utils/Container.h	/^constexpr size_t ContainerQuadTreeItems = 100;$/;"	m	namespace:CppUtils
 ContainerQuadTreeScale	utils/Container.h	/^constexpr double ContainerQuadTreeScale = 10000.0;$/;"	m	namespace:CppUtils
@@ -51,11 +45,7 @@ CppUtils	utils/QuadTree.h	/^namespace CppUtils {$/;"	n
 CppUtils	utils/StringOps.h	/^namespace CppUtils {$/;"	n
 CppUtils	utils/Testing.h	/^namespace CppUtils {$/;"	n
 CppUtils	utils/Timer.h	/^namespace CppUtils {$/;"	n
-<<<<<<< HEAD
-CppUtils	utils/Vec2.h	/^namespace CppUtils {$/;"	n
-=======
 CppUtils	utils/VecND.h	/^namespace CppUtils {$/;"	n
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 CppUtils	utils/VtkIO.h	/^namespace CppUtils {$/;"	n
 DEBUG	utils/Log.h	/^{ ERROR, WARNING, INFO, DEBUG };$/;"	e	enum:CppUtils::LogLevel
 DEBUG_LOG	utils/Log.h	316;"	d
@@ -68,11 +58,7 @@ EQ0	utils/MathUtility.h	/^static inline bool EQ0(T a)$/;"	f	namespace:CppUtils
 ERROR	utils/Log.h	/^{ ERROR, WARNING, INFO, DEBUG };$/;"	e	enum:CppUtils::LogLevel
 EXTERIOR	algorithm/Boundary.h	/^  EXTERIOR,$/;"	m	class:TQMesh::TQAlgorithm::BdryType
 Edge	algorithm/Edge.h	/^  Edge(Vertex& v1, Vertex& v2, EdgeList& edgelist, int m) $/;"	f	class:TQMesh::TQAlgorithm::Edge
-<<<<<<< HEAD
-Edge	algorithm/Edge.h	/^class Edge$/;"	c	namespace:TQMesh::TQAlgorithm
-=======
 Edge	algorithm/Edge.h	/^class Edge : public ContainerEntry<Edge>$/;"	c	namespace:TQMesh::TQAlgorithm
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 EdgeList	algorithm/EdgeList.h	/^  EdgeList( Orientation orient ) : orient_ { orient }$/;"	f	class:TQMesh::TQAlgorithm::EdgeList
 EdgeList	algorithm/EdgeList.h	/^  EdgeList(EdgeList&& el) $/;"	f	class:TQMesh::TQAlgorithm::EdgeList
 EdgeList	algorithm/EdgeList.h	/^  EdgeList(const EdgeList& el) : orient_ { el.orient_ }$/;"	f	class:TQMesh::TQAlgorithm::EdgeList
@@ -121,10 +107,7 @@ MeshTests	tests/tests_Mesh.cpp	/^namespace MeshTests $/;"	n	file:
 MeshingConstants	algorithm/utils.h	/^  MeshingConstants() {}$/;"	f	class:TQMesh::TQAlgorithm::MeshingConstants
 MeshingConstants	algorithm/utils.h	/^class MeshingConstants$/;"	c	namespace:TQMesh::TQAlgorithm
 NOMINMAX	extern_libs/exprtk.h	38735;"	d
-<<<<<<< HEAD
-=======
 NearestQuery	utils/QuadTree.h	/^  typedef bool (*NearestQuery)(T* item, $/;"	t	class:CppUtils::QuadTree
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 OStreamType	utils/Log.h	/^enum OStreamType$/;"	g	namespace:CppUtils
 Orientation	utils/Geometry.h	/^enum class Orientation$/;"	c	namespace:CppUtils
 PURPLE	utils/Log.h	/^  PURPLE   = 35,$/;"	e	enum:CppUtils::LogColor
@@ -146,19 +129,12 @@ Quad	algorithm/Quad.h	/^class Quad : public Facet, public ContainerEntry<Quad>$/
 QuadLayer	algorithm/QuadLayer.h	/^  QuadLayer(Edge* e_start, Edge* e_end, bool is_closed, double height)$/;"	f	class:TQMesh::TQAlgorithm::QuadLayer
 QuadLayer	algorithm/QuadLayer.h	/^class QuadLayer$/;"	c	namespace:TQMesh::TQAlgorithm
 QuadTests	tests/tests_Quad.cpp	/^namespace QuadTests $/;"	n	file:
-<<<<<<< HEAD
-QuadTree	utils/QuadTree.h	/^  QuadTree(double          scale, $/;"	f	class:CppUtils::QuadTree
-=======
 QuadTree	utils/QuadTree.h	/^  QuadTree(V               scale, $/;"	f	class:CppUtils::QuadTree
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 QuadTree	utils/QuadTree.h	/^class QuadTree$/;"	c	namespace:CppUtils
 QueryContainer	utils/ParaReader.h	/^  QueryContainer() {};$/;"	f	struct:CppUtils::QueryContainer
 QueryContainer	utils/ParaReader.h	/^struct QueryContainer$/;"	s	namespace:CppUtils
 RED	utils/Log.h	/^  RED      = 31,$/;"	e	enum:CppUtils::LogColor
-<<<<<<< HEAD
-=======
 RectQuery	utils/QuadTree.h	/^  typedef bool (*RectQuery)(T* item, $/;"	t	class:CppUtils::QuadTree
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 RefType	extern_libs/exprtk.h	/^         typedef       T& RefType;$/;"	t	struct:exprtk::details::functor_t
 RefType	extern_libs/exprtk.h	/^         typedef typename details::functor_t<T>::RefType RefType;$/;"	t	struct:exprtk::details::opr_base
 RefType	extern_libs/exprtk.h	/^         typedef typename opr_base<T>::RefType RefType;$/;"	t	struct:exprtk::details::add_op
@@ -416,12 +392,8 @@ TestData	utils/Testing.h	/^class TestData$/;"	c	namespace:CppUtils
 TestDataSingleton	utils/Testing.h	/^class TestDataSingleton$/;"	c	namespace:CppUtils
 Timer	utils/Timer.h	/^class Timer$/;"	c	namespace:CppUtils
 Triangle	algorithm/Triangle.h	/^  Triangle(Vertex& v1, Vertex& v2, Vertex& v3)$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-<<<<<<< HEAD
-Triangle	algorithm/Triangle.h	/^class Triangle : public Facet$/;"	c	namespace:TQMesh::TQAlgorithm
-=======
 Triangle	algorithm/Triangle.h	/^class Triangle : public Facet, public ContainerEntry<Triangle>$/;"	c	namespace:TQMesh::TQAlgorithm
 TriangleGeometry	algorithm/TriangleGeometry.h	/^class TriangleGeometry $/;"	c	namespace:TQMesh::TQAlgorithm
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 TriangleTests	tests/tests_Triangle.cpp	/^namespace TriangleTests $/;"	n	file:
 Type	extern_libs/exprtk.h	/^         typedef const T& Type;$/;"	t	struct:exprtk::details::functor_t
 Type	extern_libs/exprtk.h	/^         typedef typename details::functor_t<T>::Type    Type;$/;"	t	struct:exprtk::details::opr_base
@@ -458,17 +430,6 @@ Type	extern_libs/exprtk.h	/^         typedef typename opr_base<T>::Type Type;$/;
 Type	extern_libs/exprtk.h	/^         typedef typename opr_base<T>::Type Type;$/;"	t	struct:exprtk::details::xnor_op
 Type	extern_libs/exprtk.h	/^         typedef typename opr_base<T>::Type Type;$/;"	t	struct:exprtk::details::xor_op
 VAF	extern_libs/exprtk.h	/^      typedef ivararg_function<T>                         VAF;$/;"	t	class:exprtk::parser
-<<<<<<< HEAD
-Vec2	utils/Vec2.h	/^  Vec2() {}$/;"	f	class:CppUtils::Vec2
-Vec2	utils/Vec2.h	/^  Vec2(T e0, T e1) : e{e0,e1} {}$/;"	f	class:CppUtils::Vec2
-Vec2	utils/Vec2.h	/^  Vec2(Vec2<T>&& v) : e{v.x,v.y} {}$/;"	f	class:CppUtils::Vec2
-Vec2	utils/Vec2.h	/^  Vec2(const Vec2<T>& v) : e{ v.x,v.y } {}$/;"	f	class:CppUtils::Vec2
-Vec2	utils/Vec2.h	/^class Vec2$/;"	c	namespace:CppUtils
-Vec2Def	utils/Vec2.h	/^namespace Vec2Def$/;"	n	namespace:CppUtils
-Vertex	algorithm/Vertex.h	/^  Vertex(const Vec2d& c, double s=1.0, double r=1.0) $/;"	f	class:TQMesh::TQAlgorithm::Vertex
-Vertex	algorithm/Vertex.h	/^  Vertex(double x, double y, double s=1.0, double r=1.0) $/;"	f	class:TQMesh::TQAlgorithm::Vertex
-Vertex	algorithm/Vertex.h	/^class Vertex$/;"	c	namespace:TQMesh::TQAlgorithm
-=======
 VecND	utils/VecND.h	/^  VecND() {}$/;"	f	class:CppUtils::VecND
 VecND	utils/VecND.h	/^  VecND(TT... tt) : entries_ { tt... } {}$/;"	f	class:CppUtils::VecND
 VecND	utils/VecND.h	/^  VecND(const VecND<T,N>& v) : entries_ { v.entries_ } {}$/;"	f	class:CppUtils::VecND
@@ -479,7 +440,6 @@ VecND	utils/VecND.h	/^class VecND$/;"	c	namespace:CppUtils
 Vertex	algorithm/Vertex.h	/^  Vertex(const Vec2d& c, double s=1.0, double r=1.0) $/;"	f	class:TQMesh::TQAlgorithm::Vertex
 Vertex	algorithm/Vertex.h	/^  Vertex(double x, double y, double s=1.0, double r=1.0) $/;"	f	class:TQMesh::TQAlgorithm::Vertex
 Vertex	algorithm/Vertex.h	/^class Vertex : public ContainerEntry<Vertex>$/;"	c	namespace:TQMesh::TQAlgorithm
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 VertexTests	tests/tests_Vertex.cpp	/^namespace VertexTests $/;"	n	file:
 VtkIOData	utils/VtkIO.h	/^  VtkIOData(const std::vector<T>& data, $/;"	f	class:CppUtils::VtkIOData
 VtkIOData	utils/VtkIO.h	/^class VtkIOData : public VtkIODataInterface$/;"	c	namespace:CppUtils
@@ -565,10 +525,6 @@ add_vector	extern_libs/exprtk.h	/^      inline bool add_vector(const std::string
 add_vector	extern_libs/exprtk.h	/^      inline bool add_vector(const std::string& vector_name, std::vector<T,Allocator>& v)$/;"	f	class:exprtk::symbol_table
 add_vertex	algorithm/Domain.h	/^  Vertex& add_vertex( Args&&... args )$/;"	f	class:TQMesh::TQAlgorithm::Domain
 add_vertex	algorithm/Mesh.h	/^  Vertex& add_vertex(const Vec2d& xy)$/;"	f	class:TQMesh::TQAlgorithm::Mesh
-<<<<<<< HEAD
-adjacent_facet_intersection	algorithm/Vertex.h	/^  bool adjacent_facet_intersection(const std::list<T*>& facets) const$/;"	f	class:TQMesh::TQAlgorithm::Vertex
-=======
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 adjacent_vertex	algorithm/Vertex.h	/^  Vertex* adjacent_vertex(size_t i) { return verts_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
 adjacent_vertex	algorithm/Vertex.h	/^  const Vertex* adjacent_vertex(size_t i) const { return verts_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
 advance_front_quad	algorithm/Mesh.h	/^  bool advance_front_quad(Edge& base, bool wide_search=false,$/;"	f	class:TQMesh::TQAlgorithm::Mesh
@@ -625,11 +581,7 @@ and_op	extern_libs/exprtk.h	/^      struct and_op : public opr_base<T>$/;"	s	nam
 and_opr	extern_libs/exprtk.h	/^         inline T and_opr(const T v0, const T v1)$/;"	f	namespace:exprtk::details::numeric
 angle	algorithm/Quad.h	/^  double angle(unsigned int i) const { return angles_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
 angle	algorithm/Triangle.h	/^  double angle(unsigned int i) const { return angles_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-<<<<<<< HEAD
-angle	utils/Vec2.h	/^inline T angle(const Vec2<T> &u, const Vec2<T> &v)$/;"	f	namespace:CppUtils
-=======
 angle	utils/VecND.h	/^inline T angle(const VecND<T,N>& a, const VecND<T,N>& b)$/;"	f	namespace:CppUtils
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 any_false	extern_libs/exprtk.h	/^      any_false()$/;"	f	class:exprtk::rtl::vecops::any_false
 any_false	extern_libs/exprtk.h	/^   class any_false : public exprtk::igeneric_function<T>$/;"	c	namespace:exprtk::rtl::vecops
 any_true	extern_libs/exprtk.h	/^      any_true()$/;"	f	class:exprtk::rtl::vecops::any_true
@@ -767,11 +719,7 @@ base_ops_map_t	extern_libs/exprtk.h	/^      typedef std::multimap<std::string,de
 base_range_	extern_libs/exprtk.h	/^         mutable range_t     base_range_;$/;"	m	class:exprtk::details::exprtk_final
 base_vertex_factor	algorithm/utils.h	/^  double base_vertex_factor() const$/;"	f	class:TQMesh::TQAlgorithm::MeshingConstants
 base_vertex_factor	algorithm/utils.h	/^  void base_vertex_factor(double s) $/;"	f	class:TQMesh::TQAlgorithm::MeshingConstants
-<<<<<<< HEAD
-base_vertex_factor_	algorithm/utils.h	/^  double base_vertex_factor_      = 1.00;$/;"	m	class:TQMesh::TQAlgorithm::MeshingConstants
-=======
 base_vertex_factor_	algorithm/utils.h	/^  double base_vertex_factor_      = 2.00;$/;"	m	class:TQMesh::TQAlgorithm::MeshingConstants
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 bases	algorithm/QuadLayer.h	/^  const std::vector<Edge*>& bases() const { return bases_; }$/;"	f	class:TQMesh::TQAlgorithm::QuadLayer
 bases	algorithm/QuadLayer.h	/^  std::vector<Edge*>& bases() { return bases_; }$/;"	f	class:TQMesh::TQAlgorithm::QuadLayer
 basic_opr_switch_statements	extern_libs/exprtk.h	30066;"	d
@@ -790,11 +738,8 @@ begin	extern_libs/exprtk.h	/^         inline const value_t* begin() const { retu
 begin	extern_libs/exprtk.h	/^         inline void begin()$/;"	f	class:exprtk::lexer::generator
 begin	utils/Container.h	/^  const_iterator begin() const { return items_.begin(); }$/;"	f	class:CppUtils::Container
 begin	utils/Container.h	/^  iterator begin() { return items_.begin(); }$/;"	f	class:CppUtils::Container
-<<<<<<< HEAD
-=======
 begin	utils/VecND.h	/^  const_iterator begin() const { return entries_.begin(); }$/;"	f	class:CppUtils::VecND
 begin	utils/VecND.h	/^  iterator begin() { return entries_.begin(); }$/;"	f	class:CppUtils::VecND
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 bft_	extern_libs/exprtk.h	/^         BaseFuncType& bft_;$/;"	m	struct:exprtk::function_compositor::scoped_bft
 bfunc_t	extern_libs/exprtk.h	/^         typedef T (*bfunc_t)(Type t0, Type t1);$/;"	t	struct:exprtk::details::functor_t
 bfunc_t	extern_libs/exprtk.h	/^         typedef typename functor_t::bfunc_t    bfunc_t;$/;"	t	class:exprtk::details::exprtk_final
@@ -876,20 +821,6 @@ c_	extern_libs/exprtk.h	/^         const T  c_;$/;"	m	class:exprtk::details::exp
 cache	extern_libs/exprtk.h	/^         mutable cached_range_t             cache;$/;"	m	struct:exprtk::details::range_pack
 cache_size	extern_libs/exprtk.h	/^         inline std::size_t cache_size() const$/;"	f	struct:exprtk::details::range_pack
 cached_range_t	extern_libs/exprtk.h	/^         typedef std::pair<std::size_t,std::size_t> cached_range_t;$/;"	t	struct:exprtk::details::range_pack
-<<<<<<< HEAD
-calc_angles	algorithm/Quad.h	/^  void calc_angles()$/;"	f	class:TQMesh::TQAlgorithm::Quad
-calc_angles	algorithm/Triangle.h	/^  void calc_angles()$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-calc_area	algorithm/Quad.h	/^  void calc_area()$/;"	f	class:TQMesh::TQAlgorithm::Quad
-calc_area	algorithm/Triangle.h	/^  void calc_area()$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-calc_centroid	algorithm/Quad.h	/^  void calc_centroid()$/;"	f	class:TQMesh::TQAlgorithm::Quad
-calc_centroid	algorithm/Triangle.h	/^  void calc_centroid()$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-calc_circumcenter	algorithm/Quad.h	/^  void calc_circumcenter()$/;"	f	class:TQMesh::TQAlgorithm::Quad
-calc_circumcenter	algorithm/Triangle.h	/^  void calc_circumcenter()$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-calc_edgelengths	algorithm/Quad.h	/^  void calc_edgelengths()$/;"	f	class:TQMesh::TQAlgorithm::Quad
-calc_edgelengths	algorithm/Triangle.h	/^  void calc_edgelengths()$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-calc_shape_factor	algorithm/Quad.h	/^  void calc_shape_factor()$/;"	f	class:TQMesh::TQAlgorithm::Quad
-calc_shape_factor	algorithm/Triangle.h	/^  void calc_shape_factor()$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-=======
 calc_angles	algorithm/Quad.h	/^  calc_angles(const Vertex& v1, const Vertex& v2, $/;"	f	class:TQMesh::TQAlgorithm::Quad
 calc_angles	algorithm/Triangle.h	/^  calc_angles(const Vertex& v1, const Vertex& v2, const Vertex& v3,$/;"	f	class:TQMesh::TQAlgorithm::Triangle
 calc_area	algorithm/Quad.h	/^  calc_area(const Vertex& v1, const Vertex& v2, $/;"	f	class:TQMesh::TQAlgorithm::Quad
@@ -912,7 +843,6 @@ calc_minimum_edge_length	algorithm/Quad.h	/^  calc_minimum_edge_length(const Dou
 calc_minimum_edge_length	algorithm/Triangle.h	/^  calc_minimum_edge_length(const DoubleArray& edge_lengths)$/;"	f	class:TQMesh::TQAlgorithm::Triangle
 calc_shape_factor	algorithm/Quad.h	/^  static inline double calc_shape_factor(DoubleArray& edge_lengths,$/;"	f	class:TQMesh::TQAlgorithm::Quad
 calc_shape_factor	algorithm/Triangle.h	/^  static inline double calc_shape_factor(DoubleArray& edge_lengths,$/;"	f	class:TQMesh::TQAlgorithm::Triangle
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 cardinal_pow_optimisable	extern_libs/exprtk.h	/^         inline bool cardinal_pow_optimisable(const details::operator_type& operation, const T& c) const$/;"	f	class:exprtk::parser::expression_generator
 cardinal_pow_optimisable	extern_libs/exprtk.h	/^         inline bool cardinal_pow_optimisable(const details::operator_type&, const T&)$/;"	f	class:exprtk::parser::expression_generator
 cardinal_pow_optimisation	extern_libs/exprtk.h	/^         inline expression_node_ptr cardinal_pow_optimisation(T&, const T&)$/;"	f	class:exprtk::parser::expression_generator
@@ -1036,17 +966,11 @@ case_stmt0	extern_libs/exprtk.h	31288;"	d
 case_stmt0	extern_libs/exprtk.h	31323;"	d
 case_stmt1	extern_libs/exprtk.h	31292;"	d
 case_stmt1	extern_libs/exprtk.h	31324;"	d
-<<<<<<< HEAD
-ceil_impl	extern_libs/exprtk.h	/^            template <typename T> inline T  ceil_impl(const T v, int_type_tag) { return v;             }$/;"	f	namespace:exprtk::details::numeric::details
-ceil_impl	extern_libs/exprtk.h	/^            template <typename T> inline T  ceil_impl(const T v, real_type_tag) { return std::ceil (v); }$/;"	f	namespace:exprtk::details::numeric::details
-cell_data_	utils/VtkIO.h	/^  std::vector<std::unique_ptr<VtkIODataInterface>> cell_data_;$/;"	m	class:CppUtils::VtuWriter
-=======
 cbegin	utils/VecND.h	/^  const_iterator cbegin() const { return entries_.cbegin(); }$/;"	f	class:CppUtils::VecND
 ceil_impl	extern_libs/exprtk.h	/^            template <typename T> inline T  ceil_impl(const T v, int_type_tag) { return v;             }$/;"	f	namespace:exprtk::details::numeric::details
 ceil_impl	extern_libs/exprtk.h	/^            template <typename T> inline T  ceil_impl(const T v, real_type_tag) { return std::ceil (v); }$/;"	f	namespace:exprtk::details::numeric::details
 cell_data_	utils/VtkIO.h	/^  std::vector<std::unique_ptr<VtkIODataInterface>> cell_data_;$/;"	m	class:CppUtils::VtuWriter
 cend	utils/VecND.h	/^  const_iterator cend() const { return entries_.cend(); }$/;"	f	class:CppUtils::VecND
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 center	utils/QuadTree.h	/^  const Vec2<V>& center() const { return center_; }$/;"	f	class:CppUtils::QuadTree
 char_cptr	extern_libs/exprtk.h	/^      typedef char_t const*          char_cptr;$/;"	t	namespace:exprtk::details
 char_ptr	extern_libs/exprtk.h	/^      typedef char_t*                char_ptr;$/;"	t	namespace:exprtk::details
@@ -1057,17 +981,10 @@ check_orientation	algorithm/EdgeList.h	/^  bool check_orientation()$/;"	f	class:
 check_vertex_candidates	algorithm/Mesh.h	/^  void check_vertex_candidates(const VertexVector& vertex_candidates,$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 children	utils/QuadTree.h	/^  const Array& children() const { return children_; }$/;"	f	class:CppUtils::QuadTree
 choose_best_triangle	algorithm/Mesh.h	/^  Triangle* choose_best_triangle(TriVector& new_triangles,$/;"	f	class:TQMesh::TQAlgorithm::Mesh
-<<<<<<< HEAD
-circumcenter	algorithm/Quad.h	/^  const Vec2d& circumcenter() const { return circ_centr_; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
-circumcenter	algorithm/Triangle.h	/^  const Vec2d& circumcenter() const { return circ_centr_; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-circumradius	algorithm/Quad.h	/^  double circumradius() const { return circ_radius_; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
-circumradius	algorithm/Triangle.h	/^  double circumradius() const { return circ_radius_; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-=======
 circumcenter	algorithm/Quad.h	/^  const Vec2d& circumcenter() const { return circumcenter_; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
 circumcenter	algorithm/Triangle.h	/^  const Vec2d& circumcenter() const { return circumcenter_; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
 circumradius	algorithm/Quad.h	/^  double circumradius() const { return circumradius_; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
 circumradius	algorithm/Triangle.h	/^  double circumradius() const { return circumradius_; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 cis_match	extern_libs/exprtk.h	/^      struct cis_match$/;"	s	namespace:exprtk::details
 clean_double_quad_edges	algorithm/Mesh.h	/^  void clean_double_quad_edges()$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 clean_double_triangle_edges	algorithm/Mesh.h	/^  void clean_double_triangle_edges()$/;"	f	class:TQMesh::TQAlgorithm::Mesh
@@ -1106,10 +1023,7 @@ close	extern_libs/exprtk.h	/^      close()$/;"	f	struct:exprtk::rtl::io::file::c
 close	extern_libs/exprtk.h	/^   struct close : public exprtk::ifunction<T>$/;"	s	namespace:exprtk::rtl::io::file
 cmp	extern_libs/exprtk.h	/^         static inline bool cmp(const char_t c0, const char_t c1)$/;"	f	struct:exprtk::details::cis_match
 cmp	extern_libs/exprtk.h	/^         static inline bool cmp(const char_t c0, const char_t c1)$/;"	f	struct:exprtk::details::cs_match
-<<<<<<< HEAD
-=======
 cmp_ulp	utils/VecND.h	/^  static inline std::size_t cmp_ulp = 2;$/;"	m	class:CppUtils::VecND
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 cntrl_blck_ptr_t	extern_libs/exprtk.h	/^         typedef control_block*         cntrl_blck_ptr_t;$/;"	t	struct:exprtk::expression::control_block
 cntrl_struct_list	extern_libs/exprtk.h	/^      static const std::string cntrl_struct_list[] =$/;"	m	namespace:exprtk::details
 cntrl_struct_list_size	extern_libs/exprtk.h	/^      static const std::size_t cntrl_struct_list_size = sizeof(cntrl_struct_list) \/ sizeof(std::string);$/;"	m	namespace:exprtk::details
@@ -1220,14 +1134,7 @@ constant	extern_libs/exprtk.h	/^         namespace constant$/;"	n	namespace:expr
 construct_branch_pair	extern_libs/exprtk.h	/^      inline void construct_branch_pair(std::pair<expression_node<T>*,bool>& branch, expression_node<T>* b)$/;"	f	namespace:exprtk::details
 construct_subexpr	extern_libs/exprtk.h	/^      std::string construct_subexpr(lexer::token& begin_token, lexer::token& end_token)$/;"	f	class:exprtk::parser
 constructor	tests/tests_Vertex.cpp	/^void constructor()$/;"	f	namespace:VertexTests
-<<<<<<< HEAD
-container_destructor	algorithm/Edge.h	/^  void container_destructor() $/;"	f	class:TQMesh::TQAlgorithm::Edge
-container_destructor	algorithm/Quad.h	/^  void container_destructor() $/;"	f	class:TQMesh::TQAlgorithm::Quad
-container_destructor	algorithm/Triangle.h	/^  void container_destructor() $/;"	f	class:TQMesh::TQAlgorithm::Triangle
-container_destructor	algorithm/Vertex.h	/^  void container_destructor() {}$/;"	f	class:TQMesh::TQAlgorithm::Vertex
-=======
 container_destructor	utils/Container.h	/^  virtual void container_destructor() {}$/;"	f	class:CppUtils::ContainerEntry
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 content_	utils/ParaReader.h	/^  strVec_ptr      content_;$/;"	m	class:CppUtils::ParaBlock
 continue_exception	extern_libs/exprtk.h	/^      class continue_exception$/;"	c	namespace:exprtk::details
 control_block	extern_libs/exprtk.h	/^            control_block()$/;"	f	struct:exprtk::details::vec_data_store::control_block
@@ -1263,11 +1170,6 @@ count	extern_libs/exprtk.h	/^      inline std::size_t count() const$/;"	f	class:
 count	extern_libs/exprtk.h	/^   class count : public exprtk::igeneric_function<T>$/;"	c	namespace:exprtk::rtl::vecops
 count	utils/Timer.h	/^  void count(const std::string& msg="") $/;"	f	class:CppUtils::Timer
 cout	algorithm/utils.h	/^enum class ExportType { cout, txt, vtu };$/;"	m	class:TQMesh::TQAlgorithm::ExportType
-<<<<<<< HEAD
-coutprec	utils/Vec2.h	/^constexpr int coutprec  = 3;$/;"	m	namespace:CppUtils::Vec2Def
-coutwidth	utils/Vec2.h	/^constexpr int coutwidth = 6;$/;"	m	namespace:CppUtils::Vec2Def
-=======
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 cov_base_node	extern_libs/exprtk.h	/^      class cov_base_node : public expression_node<T>$/;"	c	namespace:exprtk::details
 cov_node	extern_libs/exprtk.h	/^         explicit cov_node(const T& const_var, const T& var)$/;"	f	class:exprtk::details::exprtk_final
 cov_optimisable	extern_libs/exprtk.h	/^         inline bool cov_optimisable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const$/;"	f	class:exprtk::parser::expression_generator
@@ -1293,12 +1195,8 @@ create_sub_edges	algorithm/Front.h	/^  void create_sub_edges(Edge& e, $/;"	f	cla
 create_sub_vertex_coords	algorithm/Front.h	/^  std::vector<Vec2d> create_sub_vertex_coords(const Edge& e, $/;"	f	class:TQMesh::TQAlgorithm::Front
 create_variable	extern_libs/exprtk.h	/^      inline bool create_variable(const std::string& variable_name, const T& value = T(0))$/;"	f	class:exprtk::symbol_table
 cref_t	extern_libs/exprtk.h	/^      typedef const T&                                    cref_t;$/;"	t	class:exprtk::parser
-<<<<<<< HEAD
-cross	utils/Vec2.h	/^inline T cross(const Vec2<T> &u, const Vec2<T> &v)$/;"	f	namespace:CppUtils
-=======
 cross	utils/VecND.h	/^  cross(const VecND<T,N>& v) const$/;"	f	class:CppUtils::VecND
 cross	utils/VecND.h	/^cross(const VecND<T,N>& a, const VecND<T,N>& b)$/;"	f	namespace:CppUtils
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 cs_match	extern_libs/exprtk.h	/^      struct cs_match$/;"	s	namespace:exprtk::details
 csc_impl	extern_libs/exprtk.h	/^            template <typename T> inline T   csc_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }$/;"	f	namespace:exprtk::details::numeric::details
 csc_impl	extern_libs/exprtk.h	/^            template <typename T> inline T   csc_impl(const T v, real_type_tag) { return T(1) \/ std::sin(v); }$/;"	f	namespace:exprtk::details::numeric::details
@@ -1407,10 +1305,7 @@ disabled_func_set_	extern_libs/exprtk.h	/^         disabled_entity_set_t disable
 disabled_func_set_t	extern_libs/exprtk.h	/^      typedef std::set<std::string,details::ilesscompare> disabled_func_set_t;$/;"	t	class:exprtk::parser
 disabled_inequality_set_	extern_libs/exprtk.h	/^         disabled_entity_set_t disabled_inequality_set_;$/;"	m	class:exprtk::parser::settings_store
 disabled_logic_set_	extern_libs/exprtk.h	/^         disabled_entity_set_t disabled_logic_set_;$/;"	m	class:exprtk::parser::settings_store
-<<<<<<< HEAD
-=======
 distance_point_edge_sqr	utils/Geometry.h	/^inline double distance_point_edge_sqr(const VecND<CoordType,Dim>& p,$/;"	f	namespace:CppUtils
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 distribute_items	utils/QuadTree.h	/^  void distribute_items()$/;"	f	class:CppUtils::QuadTree
 div_op	extern_libs/exprtk.h	/^      struct div_op : public opr_base<T>$/;"	s	namespace:exprtk::details
 domain	algorithm/Mesh.h	/^  Domain& domain() $/;"	f	class:TQMesh::TQAlgorithm::Mesh
@@ -1419,12 +1314,8 @@ domain_	app/TQMeshApp.h	/^  std::unique_ptr<Domain>                   domain_;$/
 domain_extent_	app/TQMeshApp.h	/^  double                                    domain_extent_;$/;"	m	class:TQMesh::MeshGenerator
 dot	extern_libs/exprtk.h	/^      dot()$/;"	f	class:exprtk::rtl::vecops::dot
 dot	extern_libs/exprtk.h	/^   class dot : public exprtk::igeneric_function<T>$/;"	c	namespace:exprtk::rtl::vecops
-<<<<<<< HEAD
-dot	utils/Vec2.h	/^inline T dot(const Vec2<T> &u, const Vec2<T> &v)$/;"	f	namespace:CppUtils
-=======
 dot	utils/VecND.h	/^  T dot(const VecND<T,N>& v) const $/;"	f	class:CppUtils::VecND
 dot	utils/VecND.h	/^inline T dot(const VecND<T,N>& a, const VecND<T,N>& b)$/;"	f	namespace:CppUtils
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 dotk	extern_libs/exprtk.h	/^      dotk()$/;"	f	class:exprtk::rtl::vecops::dotk
 dotk	extern_libs/exprtk.h	/^   class dotk : public exprtk::igeneric_function<T>$/;"	c	namespace:exprtk::rtl::vecops
 dt	extern_libs/exprtk.h	/^      dot        <T> dt;$/;"	m	struct:exprtk::rtl::vecops::package
@@ -2069,13 +1960,8 @@ edge_search_factor	algorithm/utils.h	/^  double edge_search_factor() const$/;"	f
 edge_search_factor	algorithm/utils.h	/^  void edge_search_factor(double s) $/;"	f	class:TQMesh::TQAlgorithm::MeshingConstants
 edge_search_factor_	algorithm/utils.h	/^  double edge_search_factor_      = 1.5;$/;"	m	class:TQMesh::TQAlgorithm::MeshingConstants
 edge_size	tests/tests_Front.cpp	/^void edge_size()$/;"	f	namespace:FrontTests
-<<<<<<< HEAD
-edgelength	algorithm/Quad.h	/^  double edgelength(unsigned int i) const { return edge_len_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
-edgelength	algorithm/Triangle.h	/^  double edgelength(unsigned int i) const { return edge_len_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-=======
 edgelength	algorithm/Quad.h	/^  double edgelength(unsigned int i) const { return edge_lengths_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
 edgelength	algorithm/Triangle.h	/^  double edgelength(unsigned int i) const { return edge_lengths_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 edgelist	algorithm/Edge.h	/^  EdgeList& edgelist() { return *edgelist_; }$/;"	f	class:TQMesh::TQAlgorithm::Edge
 edgelist	algorithm/Edge.h	/^  const EdgeList& edgelist() const { return *edgelist_; }$/;"	f	class:TQMesh::TQAlgorithm::Edge
 edges	algorithm/EdgeList.h	/^  auto& edges() { return edges_; }$/;"	f	class:TQMesh::TQAlgorithm::EdgeList
@@ -2131,11 +2017,8 @@ end	extern_libs/exprtk.h	/^         inline const value_t* end() const$/;"	f	stru
 end	extern_libs/exprtk.h	/^         inline value_t* end()$/;"	f	struct:exprtk::type_store::type_view
 end	utils/Container.h	/^  const_iterator end() const { return items_.end(); }$/;"	f	class:CppUtils::Container
 end	utils/Container.h	/^  iterator end() { return items_.end(); }$/;"	f	class:CppUtils::Container
-<<<<<<< HEAD
-=======
 end	utils/VecND.h	/^  const_iterator end() const { return entries_.end(); }$/;"	f	class:CppUtils::VecND
 end	utils/VecND.h	/^  iterator end() { return entries_.end(); }$/;"	f	class:CppUtils::VecND
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 end_key	utils/ParaReader.h	/^  const string& end_key() const { return end_key_; }$/;"	f	class:CppUtils::ParameterBase
 end_key	utils/ParaReader.h	/^  string& end_key() { return end_key_; }$/;"	f	class:CppUtils::ParameterBase
 end_key_	utils/ParaReader.h	/^  string   end_key_;$/;"	m	class:CppUtils::ParameterBase
@@ -2711,17 +2594,11 @@ get_items	utils/Container.h	/^  Vector get_items(const Vec2d& center, $/;"	f	cla
 get_items	utils/Container.h	/^  Vector get_items(const Vec2d& lowleft, $/;"	f	class:CppUtils::Container
 get_items	utils/QuadTree.h	/^  size_t get_items(const Vec2<V>& center, $/;"	f	class:CppUtils::QuadTree
 get_items	utils/QuadTree.h	/^  size_t get_items(const Vec2<V>& lowleft, $/;"	f	class:CppUtils::QuadTree
-<<<<<<< HEAD
-get_list	extern_libs/exprtk.h	/^         inline std::size_t get_list(Sequence<std::pair<std::string,RawType>,Allocator>& list) const$/;"	f	struct:exprtk::symbol_table::type_store
-get_list	extern_libs/exprtk.h	/^         inline std::size_t get_list(Sequence<std::string,Allocator>& vlist) const$/;"	f	struct:exprtk::symbol_table::type_store
-get_loop_runtime_check	extern_libs/exprtk.h	/^         inline loop_runtime_check_ptr get_loop_runtime_check(const loop_runtime_check::loop_types loop_type) const$/;"	f	class:exprtk::parser::expression_generator
-=======
 get_leaf	utils/QuadTree.h	/^  const QuadTree* get_leaf(const Vec2<V>& query) const$/;"	f	class:CppUtils::QuadTree
 get_list	extern_libs/exprtk.h	/^         inline std::size_t get_list(Sequence<std::pair<std::string,RawType>,Allocator>& list) const$/;"	f	struct:exprtk::symbol_table::type_store
 get_list	extern_libs/exprtk.h	/^         inline std::size_t get_list(Sequence<std::string,Allocator>& vlist) const$/;"	f	struct:exprtk::symbol_table::type_store
 get_loop_runtime_check	extern_libs/exprtk.h	/^         inline loop_runtime_check_ptr get_loop_runtime_check(const loop_runtime_check::loop_types loop_type) const$/;"	f	class:exprtk::parser::expression_generator
 get_nearest	utils/QuadTree.h	/^  T* get_nearest(const Vec2<V>& query,$/;"	f	class:CppUtils::QuadTree
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 get_neighbor_mesh_edges	algorithm/Mesh.h	/^  EdgeVector get_neighbor_mesh_edges(const Edge& e)$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 get_next_edge	algorithm/Edge.h	/^  Edge* get_next_edge() const$/;"	f	class:TQMesh::TQAlgorithm::Edge
 get_operator	extern_libs/exprtk.h	/^         inline details::operator_type get_operator(const binary_functor_t& bop) const$/;"	f	class:exprtk::parser::expression_generator
@@ -2904,18 +2781,7 @@ ilesscompare	extern_libs/exprtk.h	/^      struct ilesscompare$/;"	s	namespace:ex
 ilike_op	extern_libs/exprtk.h	/^      struct ilike_op : public opr_base<T>$/;"	s	namespace:exprtk::details
 imatch	extern_libs/exprtk.h	/^      inline bool imatch(const char_t c1, const char_t c2)$/;"	f	namespace:exprtk::details
 imatch	extern_libs/exprtk.h	/^      inline bool imatch(const std::string& s1, const std::string& s2)$/;"	f	namespace:exprtk::details
-<<<<<<< HEAD
-in_container	algorithm/Edge.h	/^  bool in_container() const { return in_container_; }$/;"	f	class:TQMesh::TQAlgorithm::Edge
-in_container	algorithm/Quad.h	/^  bool in_container() const { return in_container_; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
-in_container	algorithm/Triangle.h	/^  bool in_container() const { return in_container_; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-in_container	algorithm/Vertex.h	/^  bool in_container() const { return in_container_; }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
-in_container_	algorithm/Edge.h	/^  bool                in_container_;$/;"	m	class:TQMesh::TQAlgorithm::Edge
-in_container_	algorithm/Quad.h	/^  bool                 in_container_;$/;"	m	class:TQMesh::TQAlgorithm::Quad
-in_container_	algorithm/Triangle.h	/^  bool                 in_container_;$/;"	m	class:TQMesh::TQAlgorithm::Triangle
-in_container_	algorithm/Vertex.h	/^  bool                in_container_;$/;"	m	class:TQMesh::TQAlgorithm::Vertex
-=======
 in_container	utils/Container.h	/^  bool in_container() const { return in_container_; }$/;"	f	class:CppUtils::ContainerEntry
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 in_on_quad	utils/Geometry.h	/^inline bool in_on_quad(const Vec2<T>& v, $/;"	f	namespace:CppUtils
 in_on_rect	utils/Geometry.h	/^inline bool in_on_rect(const Vec2<T>& v,$/;"	f	namespace:CppUtils
 in_on_segment	utils/Geometry.h	/^static inline bool in_on_segment(const Vec2<T>& p,$/;"	f	namespace:CppUtils
@@ -3201,10 +3067,7 @@ is_vector_node	extern_libs/exprtk.h	/^      inline bool is_vector_node(const exp
 is_voc_node	extern_libs/exprtk.h	/^      inline bool is_voc_node(const expression_node<T>* node)$/;"	f	namespace:exprtk::details
 is_vov_node	extern_libs/exprtk.h	/^      inline bool is_vov_node(const expression_node<T>* node)$/;"	f	namespace:exprtk::details
 is_whitespace	extern_libs/exprtk.h	/^      inline bool is_whitespace(const char_t c)$/;"	f	namespace:exprtk::details
-<<<<<<< HEAD
-=======
 is_zero	utils/VecND.h	/^  bool is_zero(std::size_t ulp = VecND<T,N>::cmp_ulp) const$/;"	f	class:CppUtils::VecND
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 items	utils/QuadTree.h	/^  const List& items() const { return items_; }$/;"	f	class:CppUtils::QuadTree
 items_	utils/Container.h	/^  List               items_;$/;"	m	class:CppUtils::Container
 items_	utils/QuadTree.h	/^  List           items_;$/;"	m	class:CppUtils::QuadTree
@@ -3233,11 +3096,6 @@ left	extern_libs/exprtk.h	/^         precedence_level left;$/;"	m	struct:exprtk:
 length	algorithm/Edge.h	/^  double length() const { return length_; }$/;"	f	class:TQMesh::TQAlgorithm::Edge
 length	extern_libs/exprtk.h	/^         struct numeric_info { enum { length = 0, size = 32, bound_length = 0, min_exp = 0, max_exp = 0 }; };$/;"	e	enum:exprtk::details::numeric::numeric_info::__anon1
 length	extern_libs/exprtk.h	/^         template <> struct numeric_info<int        > { enum { length = 10, size = 16, bound_length = 9 }; };$/;"	e	enum:exprtk::details::numeric::numeric_info::__anon2
-<<<<<<< HEAD
-length	utils/Vec2.h	/^  double length() const $/;"	f	class:CppUtils::Vec2
-length_squared	utils/Vec2.h	/^  double length_squared() const $/;"	f	class:CppUtils::Vec2
-=======
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 level	utils/Log.h	/^  const LogLevel& level() const { return level_; }$/;"	f	class:CppUtils::LogProperties
 level_	utils/Log.h	/^  LogLevel    level_         = INFO;$/;"	m	class:CppUtils::LogProperties
 level_	utils/Log.h	/^  LogLevel level_  = DEBUG;$/;"	m	class:CppUtils::LOG
@@ -3349,13 +3207,8 @@ max_cell_angle	algorithm/utils.h	/^  double max_cell_angle() const$/;"	f	class:T
 max_cell_angle	algorithm/utils.h	/^  void max_cell_angle(double s) $/;"	f	class:TQMesh::TQAlgorithm::MeshingConstants
 max_cell_angle_	algorithm/utils.h	/^  double max_cell_angle_          = M_PI;$/;"	m	class:TQMesh::TQAlgorithm::MeshingConstants
 max_depth	utils/QuadTree.h	/^  size_t max_depth() const { return max_depth_; }$/;"	f	class:CppUtils::QuadTree
-<<<<<<< HEAD
-max_edge_length	algorithm/Quad.h	/^  double max_edge_length() const { return max_edge_len_; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
-max_edge_length	algorithm/Triangle.h	/^  double max_edge_length() const { return max_edge_len_; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-=======
 max_edge_length	algorithm/Quad.h	/^  double max_edge_length() const { return max_edge_length_; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
 max_edge_length	algorithm/Triangle.h	/^  double max_edge_length() const { return max_edge_length_; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 max_exp	extern_libs/exprtk.h	/^         struct numeric_info { enum { length = 0, size = 32, bound_length = 0, min_exp = 0, max_exp = 0 }; };$/;"	e	enum:exprtk::details::numeric::numeric_info::__anon1
 max_exp	extern_libs/exprtk.h	/^         template <> struct numeric_info<double     > { enum { min_exp = -308, max_exp = +308 }; };$/;"	e	enum:exprtk::details::numeric::numeric_info::__anon4
 max_exp	extern_libs/exprtk.h	/^         template <> struct numeric_info<float      > { enum { min_exp =  -38, max_exp =  +38 }; };$/;"	e	enum:exprtk::details::numeric::numeric_info::__anon3
@@ -3369,11 +3222,7 @@ max_num_args	extern_libs/exprtk.h	/^      std::size_t& max_num_args()$/;"	f	clas
 max_num_args_	extern_libs/exprtk.h	/^      std::size_t max_num_args_;$/;"	m	class:exprtk::function_traits
 max_stack_depth_	extern_libs/exprtk.h	/^         std::size_t max_stack_depth_;$/;"	m	class:exprtk::parser::settings_store
 merge	utils/QuadTree.h	/^  bool merge()$/;"	f	class:CppUtils::QuadTree
-<<<<<<< HEAD
-merge_degenerate_triangles	algorithm/Mesh.h	/^  void merge_degenerate_triangles(double max_angle)$/;"	f	class:TQMesh::TQAlgorithm::Mesh
-=======
 merge_degenerate_triangles	algorithm/Mesh.h	/^  void merge_degenerate_triangles()$/;"	f	class:TQMesh::TQAlgorithm::Mesh
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 merge_neighbor_mesh	algorithm/Mesh.h	/^  void merge_neighbor_mesh(Mesh& neighbor)$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 merge_triangles_to_quads	algorithm/Mesh.h	/^  void merge_triangles_to_quads()$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 mesh	algorithm/Quad.h	/^  Mesh* mesh() const { return mesh_; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
@@ -3394,13 +3243,8 @@ min_angle	algorithm/Triangle.h	/^  double min_angle() const { return min_angle_;
 min_cell_quality	algorithm/utils.h	/^  double min_cell_quality() const$/;"	f	class:TQMesh::TQAlgorithm::MeshingConstants
 min_cell_quality	algorithm/utils.h	/^  void min_cell_quality(double s) $/;"	f	class:TQMesh::TQAlgorithm::MeshingConstants
 min_cell_quality_	algorithm/utils.h	/^  double min_cell_quality_        = 0.0;$/;"	m	class:TQMesh::TQAlgorithm::MeshingConstants
-<<<<<<< HEAD
-min_edge_length	algorithm/Quad.h	/^  double min_edge_length() const { return min_edge_len_; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
-min_edge_length	algorithm/Triangle.h	/^  double min_edge_length() const { return min_edge_len_; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-=======
 min_edge_length	algorithm/Quad.h	/^  double min_edge_length() const { return min_edge_length_; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
 min_edge_length	algorithm/Triangle.h	/^  double min_edge_length() const { return min_edge_length_; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 min_exp	extern_libs/exprtk.h	/^         struct numeric_info { enum { length = 0, size = 32, bound_length = 0, min_exp = 0, max_exp = 0 }; };$/;"	e	enum:exprtk::details::numeric::numeric_info::__anon1
 min_exp	extern_libs/exprtk.h	/^         template <> struct numeric_info<double     > { enum { min_exp = -308, max_exp = +308 }; };$/;"	e	enum:exprtk::details::numeric::numeric_info::__anon4
 min_exp	extern_libs/exprtk.h	/^         template <> struct numeric_info<float      > { enum { min_exp =  -38, max_exp =  +38 }; };$/;"	e	enum:exprtk::details::numeric::numeric_info::__anon3
@@ -3497,11 +3341,6 @@ ncol_	utils/ParaReader.h	/^  size_t ncol_;$/;"	m	class:CppUtils::Parameter
 ndb_t	extern_libs/exprtk.h	/^         typedef node_depth_base<expression_node<T> > ndb_t;$/;"	t	class:exprtk::details::expression_node
 ne	extern_libs/exprtk.h	/^      nthelement <T> ne;$/;"	m	struct:exprtk::rtl::vecops::package
 ne_op	extern_libs/exprtk.h	/^      struct ne_op : public opr_base<T>$/;"	s	namespace:exprtk::details
-<<<<<<< HEAD
-near_zero_length	utils/Vec2.h	/^  bool near_zero_length(const T s=DBL_EPSILON) const$/;"	f	class:CppUtils::Vec2
-near_zero_values	utils/Vec2.h	/^  bool near_zero_values(const T s=DBL_EPSILON) const$/;"	f	class:CppUtils::Vec2
-=======
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 neg_impl	extern_libs/exprtk.h	/^            template <typename T> inline T   neg_impl(const T v, int_type_tag) { return -v;            }$/;"	f	namespace:exprtk::details::numeric::details
 neg_impl	extern_libs/exprtk.h	/^            template <typename T> inline T   neg_impl(const T v, real_type_tag) { return -v;            }$/;"	f	namespace:exprtk::details::numeric::details
 neighbor	algorithm/Quad.h	/^  Facet* neighbor(size_t i) { return f_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
@@ -3614,11 +3453,8 @@ nor_impl	extern_libs/exprtk.h	/^            inline T nor_impl(const T v0, const 
 nor_impl	extern_libs/exprtk.h	/^            inline T nor_impl(const T v0, const T v1, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 nor_op	extern_libs/exprtk.h	/^      struct nor_op : public opr_base<T>$/;"	s	namespace:exprtk::details
 nor_opr	extern_libs/exprtk.h	/^         inline T nor_opr(const T v0, const T v1)$/;"	f	namespace:exprtk::details::numeric
-<<<<<<< HEAD
-=======
 norm	utils/VecND.h	/^  T norm() const$/;"	f	class:CppUtils::VecND
 norm_sqr	utils/VecND.h	/^  T norm_sqr() const$/;"	f	class:CppUtils::VecND
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 normal	algorithm/Edge.h	/^  const Vec2d& normal() const { return norm_;}$/;"	f	class:TQMesh::TQAlgorithm::Edge
 notl_impl	extern_libs/exprtk.h	/^            template <typename T> inline T  notl_impl(const T v, int_type_tag) { return !v;            }$/;"	f	namespace:exprtk::details::numeric::details
 notl_impl	extern_libs/exprtk.h	/^            template <typename T> inline T  notl_impl(const T v, real_type_tag) { return (std::not_equal_to<T>()(T(0),v) ? T(0) : T(1)); }$/;"	f	namespace:exprtk::details::numeric::details
@@ -3708,11 +3544,7 @@ operator !=	algorithm/Edge.h	/^static bool operator!=(const Edge& e1, const Edge
 operator !=	algorithm/Quad.h	/^static bool operator!=(const Quad& q1, const Quad& q2)$/;"	f	namespace:TQMesh::TQAlgorithm
 operator !=	algorithm/Triangle.h	/^static bool operator!=(const Triangle& t1, const Triangle& t2)$/;"	f	namespace:TQMesh::TQAlgorithm
 operator !=	algorithm/Vertex.h	/^static bool operator!=(const Vertex& v1, const Vertex& v2)$/;"	f	namespace:TQMesh::TQAlgorithm
-<<<<<<< HEAD
-operator !=	utils/Vec2.h	/^inline bool operator!=(const Vec2<T>& a, const Vec2<T>& b)$/;"	f	namespace:CppUtils
-=======
 operator !=	utils/VecND.h	/^inline bool operator!=(const VecND<T,N>& a, const VecND<T,N>& b)$/;"	f	namespace:CppUtils
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 operator ()	extern_libs/exprtk.h	/^            bool operator() (const lexer::token& t)$/;"	f	class:exprtk::lexer::helper::bracket_checker
 operator ()	extern_libs/exprtk.h	/^            bool operator() (const lexer::token& t)$/;"	f	class:exprtk::lexer::helper::numeric_checker
 operator ()	extern_libs/exprtk.h	/^            bool operator() (const lexer::token& t0, const lexer::token& t1)$/;"	f	class:exprtk::lexer::helper::sequence_validator
@@ -3807,29 +3639,6 @@ operator ()	extern_libs/exprtk.h	/^      inline virtual T operator() (const T&)$
 operator ()	extern_libs/exprtk.h	/^      inline virtual T operator() (const T&, const T&)$/;"	f	class:exprtk::polynomial
 operator ()	extern_libs/exprtk.h	/^      inline virtual T operator() (const std::vector<T>&)$/;"	f	class:exprtk::ivararg_function
 operator ()	utils/Log.h	/^    void operator()(std::ostream* os) const $/;"	f	struct:CppUtils::ConditionalDeleter
-<<<<<<< HEAD
-operator *	utils/Vec2.h	/^inline Vec2<T> operator*(const T v, const Vec2<T> &u)$/;"	f	namespace:CppUtils
-operator *	utils/Vec2.h	/^inline Vec2<T> operator*(const Vec2<T> &u, const T v)$/;"	f	namespace:CppUtils
-operator *	utils/Vec2.h	/^inline Vec2<T> operator*(const Vec2<T> &u,const Vec2<T> &v)$/;"	f	namespace:CppUtils
-operator *=	utils/Vec2.h	/^  Vec2<T>& operator*=(const T t)$/;"	f	class:CppUtils::Vec2
-operator *=	utils/Vec2.h	/^  Vec2<T>& operator*=(const Vec2<T> &v)$/;"	f	class:CppUtils::Vec2
-operator +	utils/Vec2.h	/^inline Vec2<T> operator+(const T v, const Vec2<T> &u)$/;"	f	namespace:CppUtils
-operator +	utils/Vec2.h	/^inline Vec2<T> operator+(const Vec2<T> &u, const T v)$/;"	f	namespace:CppUtils
-operator +	utils/Vec2.h	/^inline Vec2<T> operator+(const Vec2<T> &u,const Vec2<T> &v)$/;"	f	namespace:CppUtils
-operator +=	utils/Vec2.h	/^  Vec2<T>& operator+=(const T t)$/;"	f	class:CppUtils::Vec2
-operator +=	utils/Vec2.h	/^  Vec2<T>& operator+=(const Vec2<T> &v)$/;"	f	class:CppUtils::Vec2
-operator -	utils/Vec2.h	/^  Vec2<T> operator-() const { return Vec2(-x,-y); }$/;"	f	class:CppUtils::Vec2
-operator -	utils/Vec2.h	/^inline Vec2<T> operator-(const T v, const Vec2<T> &u)$/;"	f	namespace:CppUtils
-operator -	utils/Vec2.h	/^inline Vec2<T> operator-(const Vec2<T> &u, const T v)$/;"	f	namespace:CppUtils
-operator -	utils/Vec2.h	/^inline Vec2<T> operator-(const Vec2<T> &u,const Vec2<T> &v)$/;"	f	namespace:CppUtils
-operator -=	utils/Vec2.h	/^  Vec2<T>& operator-=(const T t)$/;"	f	class:CppUtils::Vec2
-operator -=	utils/Vec2.h	/^  Vec2<T>& operator-=(const Vec2<T> &v)$/;"	f	class:CppUtils::Vec2
-operator /	utils/Vec2.h	/^inline Vec2<T> operator\/(const T v, const Vec2<T> &u)$/;"	f	namespace:CppUtils
-operator /	utils/Vec2.h	/^inline Vec2<T> operator\/(const Vec2<T> &u, const T v)$/;"	f	namespace:CppUtils
-operator /	utils/Vec2.h	/^inline Vec2<T> operator\/(const Vec2<T> &u,const Vec2<T> &v)$/;"	f	namespace:CppUtils
-operator /=	utils/Vec2.h	/^  Vec2<T>& operator\/=(const T t)$/;"	f	class:CppUtils::Vec2
-operator /=	utils/Vec2.h	/^  Vec2<T>& operator\/=(const Vec2<T> &v)$/;"	f	class:CppUtils::Vec2
-=======
 operator *	utils/VecND.h	/^inline VecND<T,N> operator*(const T& b, const VecND<T,N>& a)$/;"	f	namespace:CppUtils
 operator *	utils/VecND.h	/^inline VecND<T,N> operator*(const VecND<T,N>& a, const T& b)$/;"	f	namespace:CppUtils
 operator *	utils/VecND.h	/^inline VecND<T,N> operator*(const VecND<T,N>& a, const VecND<T,N>& b)$/;"	f	namespace:CppUtils
@@ -3851,7 +3660,6 @@ operator /	utils/VecND.h	/^inline VecND<T,N> operator\/(const VecND<T,N>& a, con
 operator /	utils/VecND.h	/^inline VecND<T,N> operator\/(const VecND<T,N>& a, const VecND<T,N>& b)$/;"	f	namespace:CppUtils
 operator /=	utils/VecND.h	/^  VecND<T,N> operator\/=(const T &v) $/;"	f	class:CppUtils::VecND
 operator /=	utils/VecND.h	/^  VecND<T,N> operator\/=(const VecND<T,N> &v)  $/;"	f	class:CppUtils::VecND
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 operator <	extern_libs/exprtk.h	/^         bool operator < (const scope_element& se) const$/;"	f	struct:exprtk::parser::scope_element
 operator <	extern_libs/exprtk.h	/^         inline bool operator <(const function_N_node<T,IFunction,0>& fn) const$/;"	f	class:exprtk::details::exprtk_final
 operator <	extern_libs/exprtk.h	/^         inline bool operator <(const function_N_node<T,IFunction,N>& fn) const$/;"	f	class:exprtk::details::exprtk_final
@@ -3873,11 +3681,7 @@ operator <<	utils/Log.h	/^  LOG& operator<<(const T& msg)$/;"	f	class:CppUtils::
 operator <<	utils/ProgressBar.h	/^static inline std::ostream& operator<<(std::ostream& os, $/;"	f	namespace:CppUtils
 operator <<	utils/QuadTree.h	/^std::ostream& operator<<(std::ostream& os, $/;"	f	namespace:CppUtils
 operator <<	utils/Testing.h	/^static std::ostream& operator<<(std::ostream& os, $/;"	f	namespace:CppUtils
-<<<<<<< HEAD
-operator <<	utils/Vec2.h	/^inline std::ostream& operator<<(std::ostream &out, $/;"	f	namespace:CppUtils
-=======
 operator <<	utils/VecND.h	/^inline std::ostream& operator<<(std::ostream &os, const VecND<T,N> &v)$/;"	f	namespace:CppUtils
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 operator =	algorithm/Front.h	/^  FrontInitData& operator=(FrontInitData&& f)$/;"	f	struct:TQMesh::TQAlgorithm::FrontInitData
 operator =	extern_libs/exprtk.h	/^         T0oT1<T,T0,T1>& operator=(T0oT1<T,T0,T1>&) { return (*this); }$/;"	f	class:exprtk::details::exprtk_final
 operator =	extern_libs/exprtk.h	/^         literal_node<T>& operator=(literal_node<T>&) { return (*this); }$/;"	f	class:exprtk::details::exprtk_final
@@ -3886,24 +3690,15 @@ operator =	extern_libs/exprtk.h	/^         type& operator=(const type& vds)$/;"	
 operator =	extern_libs/exprtk.h	/^      inline expression<T>& operator=(const expression<T>& e)$/;"	f	class:exprtk::expression
 operator =	extern_libs/exprtk.h	/^      inline symbol_table<T>& operator=(const symbol_table<T>& st)$/;"	f	class:exprtk::symbol_table
 operator =	utils/Matrix.h	/^  inline Matrix& operator = (const Matrix& m)$/;"	f	class:CppUtils::Matrix
-<<<<<<< HEAD
-operator =	utils/Vec2.h	/^  Vec2<T>& operator=(Vec2<T>&& v) $/;"	f	class:CppUtils::Vec2
-operator =	utils/Vec2.h	/^  Vec2<T>& operator=(const Vec2<T>& v) $/;"	f	class:CppUtils::Vec2
-=======
 operator =	utils/VecND.h	/^  VecND<T,N>& operator=(VecND<T,N>&& v)$/;"	f	class:CppUtils::VecND
 operator =	utils/VecND.h	/^  VecND<T,N>& operator=(const VecND<T,N>& v)$/;"	f	class:CppUtils::VecND
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 operator ==	algorithm/Edge.h	/^static bool operator==(const Edge& e1, const Edge& e2)$/;"	f	namespace:TQMesh::TQAlgorithm
 operator ==	algorithm/Quad.h	/^static bool operator==(const Quad& q1, const Quad& q2)$/;"	f	namespace:TQMesh::TQAlgorithm
 operator ==	algorithm/Triangle.h	/^static bool operator==(const Triangle& t1, const Triangle& t2)$/;"	f	namespace:TQMesh::TQAlgorithm
 operator ==	algorithm/Vertex.h	/^static bool operator==(const Vertex& v1, const Vertex& v2)$/;"	f	namespace:TQMesh::TQAlgorithm
 operator ==	extern_libs/exprtk.h	/^      inline bool operator==(const expression<T>& e) const$/;"	f	class:exprtk::expression
 operator ==	extern_libs/exprtk.h	/^      inline bool operator==(const symbol_table<T>& st) const$/;"	f	class:exprtk::symbol_table
-<<<<<<< HEAD
-operator ==	utils/Vec2.h	/^inline bool operator==(const Vec2<T>& a, const Vec2<T>& b)$/;"	f	namespace:CppUtils
-=======
 operator ==	utils/VecND.h	/^inline bool operator==(const VecND<T,N>& a, const VecND<T,N>& b)$/;"	f	namespace:CppUtils
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 operator T	extern_libs/exprtk.h	/^      inline operator T() const$/;"	f	class:exprtk::expression
 operator T	utils/StringOps.h	/^  template <typename T> operator T() { return 0; }$/;"	f	struct:CppUtils::converter
 operator []	algorithm/Domain.h	/^  Boundary& operator[](size_t i) const $/;"	f	class:TQMesh::TQAlgorithm::Domain
@@ -3925,13 +3720,8 @@ operator []	utils/Container.h	/^  T& operator[](size_t i)$/;"	f	class:CppUtils::
 operator []	utils/Container.h	/^  const T& operator[](size_t i) const$/;"	f	class:CppUtils::Container
 operator []	utils/Matrix.h	/^  inline T* operator[](const int i)$/;"	f	class:CppUtils::Matrix
 operator []	utils/Matrix.h	/^  inline const T* operator [](const int i) const$/;"	f	class:CppUtils::Matrix
-<<<<<<< HEAD
-operator []	utils/Vec2.h	/^  T operator[](int i) const $/;"	f	class:CppUtils::Vec2
-operator []	utils/Vec2.h	/^  T& operator[](int i) $/;"	f	class:CppUtils::Vec2
-=======
 operator []	utils/VecND.h	/^  T operator[](std::size_t i) const$/;"	f	class:CppUtils::VecND
 operator []	utils/VecND.h	/^  T& operator[](std::size_t i)$/;"	f	class:CppUtils::VecND
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 operator bool	extern_libs/exprtk.h	/^      inline operator bool() const$/;"	f	class:exprtk::expression
 operator double	utils/StringOps.h	/^template <> converter::operator double() { return std::stod(x); }$/;"	f	class:CppUtils::converter
 operator float	utils/StringOps.h	/^template <> converter::operator float() { return std::stof(x); }$/;"	f	class:CppUtils::converter
@@ -3953,11 +3743,8 @@ orient	algorithm/EdgeList.h	/^  Orientation orient() const { return orient_; }$/
 orient_	algorithm/EdgeList.h	/^  Orientation         orient_;$/;"	m	class:TQMesh::TQAlgorithm::EdgeList
 orientation	utils/Geometry.h	/^static inline Orientation orientation(const Vec2<T>& p,$/;"	f	namespace:CppUtils
 original_value_	extern_libs/exprtk.h	/^         bool original_value_;$/;"	m	struct:exprtk::parser::scoped_bool_or_restorer
-<<<<<<< HEAD
-=======
 os_precision	utils/VecND.h	/^  static inline std::size_t os_precision = 3;$/;"	m	class:CppUtils::VecND
 os_width	utils/VecND.h	/^  static inline std::size_t os_width = 0; $/;"	m	class:CppUtils::VecND
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 output_format_	app/TQMeshApp.h	/^  std::string                               output_format_;$/;"	m	class:TQMesh::MeshGenerator
 output_prefix_	app/TQMeshApp.h	/^  std::string                               output_prefix_;$/;"	m	class:TQMesh::MeshGenerator
 overload_function_store	extern_libs/exprtk.h	/^            type_store<generic_function_t, generic_function_t> overload_function_store;$/;"	m	struct:exprtk::symbol_table::control_block::st_data
@@ -4128,18 +3915,7 @@ polynomial	extern_libs/exprtk.h	/^      polynomial()$/;"	f	class:exprtk::polynom
 polynomial	extern_libs/exprtk.h	/^   class polynomial : public ifunction<T>$/;"	c	namespace:exprtk
 populate_value_list	extern_libs/exprtk.h	/^         inline virtual bool populate_value_list() const$/;"	f	class:exprtk::details::generic_function_node
 populate_value_list	extern_libs/exprtk.h	/^         inline void populate_value_list() const$/;"	f	class:exprtk::details::exprtk_final
-<<<<<<< HEAD
-pos	algorithm/Edge.h	/^  const ContainerIterator& pos() const { return pos_; }$/;"	f	class:TQMesh::TQAlgorithm::Edge
-pos	algorithm/Quad.h	/^  const ContainerIterator& pos() const { return pos_; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
-pos	algorithm/Triangle.h	/^  const ContainerIterator& pos() const { return pos_; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-pos	algorithm/Vertex.h	/^  const ContainerIterator& pos() const { return pos_; }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
-pos_	algorithm/Edge.h	/^  ContainerIterator   pos_;$/;"	m	class:TQMesh::TQAlgorithm::Edge
-pos_	algorithm/Quad.h	/^  ContainerIterator    pos_;$/;"	m	class:TQMesh::TQAlgorithm::Quad
-pos_	algorithm/Triangle.h	/^  ContainerIterator    pos_;$/;"	m	class:TQMesh::TQAlgorithm::Triangle
-pos_	algorithm/Vertex.h	/^  ContainerIterator   pos_;$/;"	m	class:TQMesh::TQAlgorithm::Vertex
-=======
 pos	utils/Container.h	/^  const Iterator& pos() const { return pos_; }$/;"	f	class:CppUtils::ContainerEntry
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 pos_impl	extern_libs/exprtk.h	/^            template <typename T> inline T   pos_impl(const T v, int_type_tag) { return +v;            }$/;"	f	namespace:exprtk::details::numeric::details
 pos_impl	extern_libs/exprtk.h	/^            template <typename T> inline T   pos_impl(const T v, real_type_tag) { return +v;            }$/;"	f	namespace:exprtk::details::numeric::details
 position	extern_libs/exprtk.h	/^         std::size_t position;$/;"	m	struct:exprtk::lexer::token
@@ -4363,10 +4139,7 @@ process_lexer_errors	extern_libs/exprtk.h	/^      void process_lexer_errors()$/;
 process_mode_t	extern_libs/exprtk.h	/^         typedef ProcessMode process_mode_t;$/;"	t	class:exprtk::details::exprtk_final
 process_stride_2	extern_libs/exprtk.h	/^         inline std::size_t process_stride_2(generator& g)$/;"	f	class:exprtk::lexer::token_joiner
 process_stride_3	extern_libs/exprtk.h	/^         inline std::size_t process_stride_3(generator& g)$/;"	f	class:exprtk::lexer::token_joiner
-<<<<<<< HEAD
-=======
 product	utils/VecND.h	/^  T product() const $/;"	f	class:CppUtils::VecND
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 project_base_vertices	algorithm/QuadLayer.h	/^  void project_base_vertices(int i, int j)$/;"	f	class:TQMesh::TQAlgorithm::QuadLayer
 prsrhlpr_t	extern_libs/exprtk.h	/^      typedef parser_helper prsrhlpr_t;$/;"	t	class:exprtk::parser
 ptr_match	extern_libs/exprtk.h	/^         struct ptr_match$/;"	s	struct:exprtk::symbol_table::type_store
@@ -4396,12 +4169,9 @@ quad_tree	utils/Container.h	/^  const QuadTree<T,double>& quad_tree() const { re
 quads	algorithm/Mesh.h	/^  Quads& quads() { return quads_; }$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 quads	algorithm/Mesh.h	/^  const Quads& quads() const { return quads_; }$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 quads_	algorithm/Mesh.h	/^  Quads      quads_;$/;"	m	class:TQMesh::TQAlgorithm::Mesh
-<<<<<<< HEAD
-=======
 quadtree_circ_query_fun	utils/QuadTree.h	/^static inline bool quadtree_circ_query_fun(T* item, $/;"	f	namespace:CppUtils
 quadtree_nearest_query_fun	utils/QuadTree.h	/^static inline bool quadtree_nearest_query_fun(T* item, $/;"	f	namespace:CppUtils
 quadtree_rect_query_fun	utils/QuadTree.h	/^static inline bool quadtree_rect_query_fun(T* item, $/;"	f	namespace:CppUtils
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 quality	algorithm/Quad.h	/^  double quality(const double h) const $/;"	f	class:TQMesh::TQAlgorithm::Quad
 quality	algorithm/Triangle.h	/^  double quality(const double h) const $/;"	f	class:TQMesh::TQAlgorithm::Triangle
 quaternary_functor_t	extern_libs/exprtk.h	/^         typedef typename functor_t::qfunc_t    quaternary_functor_t;$/;"	t	struct:exprtk::details::opr_base
@@ -4686,10 +4456,6 @@ run_example_6	examples/example_6.cpp	/^void run_example_6()$/;"	f
 run_example_7	examples/example_7.cpp	/^void run_example_7()$/;"	f
 run_example_8	examples/example_8.cpp	/^void run_example_8()$/;"	f
 run_example_9	examples/example_9.cpp	/^void run_example_9()$/;"	f
-<<<<<<< HEAD
-run_example_9	examples/example_9_20k.cpp	/^void run_example_9()$/;"	f
-=======
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 run_examples	examples/run_examples.cpp	/^int run_examples(const std::string& example)$/;"	f
 run_inserters	extern_libs/exprtk.h	/^            inline bool run_inserters(lexer::generator& g)$/;"	f	struct:exprtk::lexer::helper::helper_assembly
 run_joiners	extern_libs/exprtk.h	/^            inline bool run_joiners(lexer::generator& g)$/;"	f	struct:exprtk::lexer::helper::helper_assembly
@@ -4740,11 +4506,7 @@ scalar_t	extern_libs/exprtk.h	/^      typedef typename generic_type::scalar_view
 scalar_view	extern_libs/exprtk.h	/^         explicit scalar_view(const type_store_t& ts)$/;"	f	struct:exprtk::type_store::scalar_view
 scalar_view	extern_libs/exprtk.h	/^         explicit scalar_view(type_store_t& ts)$/;"	f	struct:exprtk::type_store::scalar_view
 scalar_view	extern_libs/exprtk.h	/^      struct scalar_view$/;"	s	struct:exprtk::type_store
-<<<<<<< HEAD
-scale	utils/QuadTree.h	/^  double scale() const { return scale_; }$/;"	f	class:CppUtils::QuadTree
-=======
 scale	utils/QuadTree.h	/^  V scale() const { return scale_; }$/;"	f	class:CppUtils::QuadTree
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 scan_number	extern_libs/exprtk.h	/^         inline void scan_number()$/;"	f	class:exprtk::lexer::generator
 scan_operator	extern_libs/exprtk.h	/^         inline void scan_operator()$/;"	f	class:exprtk::lexer::generator
 scan_special_function	extern_libs/exprtk.h	/^         inline void scan_special_function()$/;"	f	class:exprtk::lexer::generator
@@ -5147,10 +4909,7 @@ sub_op	extern_libs/exprtk.h	/^      struct sub_op : public opr_base<T>$/;"	s	nam
 sub_vertex	algorithm/Edge.h	/^  Vertex* sub_vertex() const { return sub_vertex_; }$/;"	f	class:TQMesh::TQAlgorithm::Edge
 sub_vertex	algorithm/Edge.h	/^  void sub_vertex(Vertex* v) { sub_vertex_ = v; }$/;"	f	class:TQMesh::TQAlgorithm::Edge
 substr	extern_libs/exprtk.h	/^         inline std::string substr(const std::size_t& begin, const std::size_t& end)$/;"	f	class:exprtk::lexer::generator
-<<<<<<< HEAD
-=======
 sum	utils/VecND.h	/^  T sum() const$/;"	f	class:CppUtils::VecND
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 sumk	extern_libs/exprtk.h	/^      sumk()$/;"	f	class:exprtk::rtl::vecops::sumk
 sumk	extern_libs/exprtk.h	/^   class sumk : public exprtk::igeneric_function<T>$/;"	c	namespace:exprtk::rtl::vecops
 swap	utils/Matrix.h	/^  inline Matrix& swap(Matrix& m)$/;"	f	class:CppUtils::Matrix
@@ -5514,10 +5273,6 @@ unary_optimisable	extern_libs/exprtk.h	/^         inline bool unary_optimisable(
 unary_variable_node	extern_libs/exprtk.h	/^         explicit unary_variable_node(const T& var)$/;"	f	class:exprtk::details::exprtk_final
 unary_vector_node	extern_libs/exprtk.h	/^         unary_vector_node(const operator_type& opr, expression_ptr branch0)$/;"	f	class:exprtk::details::exprtk_final
 unfix_vertices	algorithm/Smoother.h	/^  void unfix_vertices(Mesh& mesh) $/;"	f	class:TQMesh::TQAlgorithm::Smoother
-<<<<<<< HEAD
-unit_vector	utils/Vec2.h	/^inline Vec2<T> unit_vector(const Vec2<T>& u)$/;"	f	namespace:CppUtils
-=======
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 unknown_symbol_resolver	extern_libs/exprtk.h	/^         unknown_symbol_resolver(const usr_mode m = e_usrmode_default)$/;"	f	struct:exprtk::parser::unknown_symbol_resolver
 unknown_symbol_resolver	extern_libs/exprtk.h	/^      struct unknown_symbol_resolver$/;"	s	class:exprtk::parser
 unknown_symbol_resolver_	extern_libs/exprtk.h	/^      unknown_symbol_resolver* unknown_symbol_resolver_;$/;"	m	class:exprtk::parser
@@ -5789,10 +5544,6 @@ vertex	algorithm/Quad.h	/^  Vertex& vertex(size_t i) { return *v_[i]; }$/;"	f	cl
 vertex	algorithm/Quad.h	/^  const Vertex& vertex(size_t i) const { return *v_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
 vertex	algorithm/Triangle.h	/^  Vertex& vertex(size_t i) { return *v_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
 vertex	algorithm/Triangle.h	/^  const Vertex& vertex(size_t i) const { return *v_[i]; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-<<<<<<< HEAD
-vertex_edge_dist_sqr	utils/Geometry.h	/^inline double vertex_edge_dist_sqr(const Vec2<T>& p,$/;"	f	namespace:CppUtils
-=======
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 vertex_is_valid	algorithm/Mesh.h	/^  bool vertex_is_valid(const Vertex& v)$/;"	f	class:TQMesh::TQAlgorithm::Mesh
 vertex_pos_	app/TQMeshApp.h	/^  std::vector<Vec2d>                        vertex_pos_;$/;"	m	class:TQMesh::MeshGenerator
 vertex_props_	app/TQMeshApp.h	/^  std::vector<Vec2d>                        vertex_props_;$/;"	m	class:TQMesh::MeshGenerator
@@ -5871,11 +5622,7 @@ write_to_vtu_file	algorithm/Mesh.h	/^  void write_to_vtu_file(const std::string&
 write_types	utils/VtkIO.h	/^  void write_types(std::ofstream& outfile)$/;"	f	class:CppUtils::VtuWriter
 write_whitespaces	utils/VtkIO.h	/^static inline void write_whitespaces(std::ofstream& of, size_t ns)$/;"	f	namespace:CppUtils
 x	utils/StringOps.h	/^  const std::string& x;$/;"	m	struct:CppUtils::converter
-<<<<<<< HEAD
-x	utils/Vec2.h	/^  T& x = e[0];$/;"	m	class:CppUtils::Vec2
-=======
 x	utils/VecND.h	/^  T& x = entries_[0];$/;"	m	class:CppUtils::VecND
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 x_size_function	app/size_function.cpp	/^static double x_size_function, y_size_function;$/;"	v	file:
 xnor_impl	extern_libs/exprtk.h	/^            inline T xnor_impl(const T v0, const T v1, int_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 xnor_impl	extern_libs/exprtk.h	/^            inline T xnor_impl(const T v0, const T v1, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
@@ -5885,22 +5632,11 @@ xor_impl	extern_libs/exprtk.h	/^            inline T xor_impl(const T v0, const 
 xor_impl	extern_libs/exprtk.h	/^            inline T xor_impl(const T v0, const T v1, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 xor_op	extern_libs/exprtk.h	/^      struct xor_op : public opr_base<T>$/;"	s	namespace:exprtk::details
 xor_opr	extern_libs/exprtk.h	/^         inline T xor_opr(const T v0, const T v1)$/;"	f	namespace:exprtk::details::numeric
-<<<<<<< HEAD
-xy	algorithm/Edge.h	/^  const Vec2d& xy() const { return xy_; }$/;"	f	class:TQMesh::TQAlgorithm::Edge
-xy	algorithm/Quad.h	/^  const Vec2d& xy() const { return xy_; }$/;"	f	class:TQMesh::TQAlgorithm::Quad
-xy	algorithm/Triangle.h	/^  const Vec2d& xy() const { return xy_; }$/;"	f	class:TQMesh::TQAlgorithm::Triangle
-xy	algorithm/Vertex.h	/^  const Vec2d xy() const { return xy_; }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
-xy	algorithm/Vertex.h	/^  void xy(const Vec2d& c) { xy_ = c; }$/;"	f	class:TQMesh::TQAlgorithm::Vertex
-xy_	algorithm/Vertex.h	/^  Vec2d               xy_;$/;"	m	class:TQMesh::TQAlgorithm::Vertex
-y	utils/Vec2.h	/^  T& y = e[1];$/;"	m	class:CppUtils::Vec2
-y_size_function	app/size_function.cpp	/^static double x_size_function, y_size_function;$/;"	v	file:
-=======
 xy	utils/Container.h	/^  const Vec2d xy() const { return xy_; }$/;"	f	class:CppUtils::ContainerEntry
 xy	utils/Container.h	/^  void xy(const Vec2d& c) { xy_ = c; }$/;"	f	class:CppUtils::ContainerEntry
 y	utils/VecND.h	/^  T& y = entries_[1];$/;"	m	class:CppUtils::VecND
 y_size_function	app/size_function.cpp	/^static double x_size_function, y_size_function;$/;"	v	file:
 z	utils/VecND.h	/^  T& z = entries_[2];$/;"	m	class:CppUtils::VecND
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 zero_return_disabled	extern_libs/exprtk.h	/^         bool zero_return_disabled       () const { return disable_zero_return_;       }$/;"	f	class:exprtk::parser::settings_store
 ~LOG	utils/Log.h	/^  ~LOG() $/;"	f	class:CppUtils::LOG
 ~Matrix	utils/Matrix.h	/^  virtual ~Matrix() {}$/;"	f	class:CppUtils::Matrix

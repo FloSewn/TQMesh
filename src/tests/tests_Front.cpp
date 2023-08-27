@@ -309,43 +309,7 @@ void initialization()
   
   CHECK( EQ(front.area(), domain.area()) );
 
-<<<<<<< HEAD
-
-  // Export the advancing front data 
-  std::string source_dir { TQMESH_SOURCE_DIR };
-  std::string file_name 
-  { source_dir + "/auxiliary/test_data/FrontTests.initialization.txt" };
-
-  std::ofstream outfile;
-  outfile.open( file_name );
-
-  unsigned int v_index = 0;
-  outfile << "VERTICES " << vertices.size() << std::endl;
-  for ( const auto& v_ptr : vertices )
-  {
-    outfile << std::setprecision(5) << std::fixed 
-              << (*v_ptr).xy().x << "," 
-              << (*v_ptr).xy().y << std::endl;
-    (*v_ptr).index( v_index++ );
-  }
-
-  outfile << "EDGES " << front.size() << "\n";
-  for ( const auto& e : front )
-    outfile 
-      << std::setprecision(0) << std::fixed 
-      << std::setw(4) << e->v1().index() << "," 
-      << std::setw(4) << e->v2().index() << ","
-      << std::setw(4) << e->marker() << "\n";
-
-  domain.export_size_function( outfile, {0.0,0.0}, {5.0,5.0}, 100, 100);
-
-  outfile << "QTREE-LEAFS " << vertices.quad_tree().n_leafs() << std::endl;
-  outfile << vertices.quad_tree();
-
-  outfile.close();
-=======
   export_mesh_file(vertices, front, domain);
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
 } // initialization()
 
@@ -450,28 +414,15 @@ void edge_size()
 
 
   // Collect data for the initialization of the advancing front
-<<<<<<< HEAD
-  FrontInitData front_data = collect_front_data( domain );
-=======
   std::vector<Mesh*> dummy {};
   FrontInitData front_init_data { domain, dummy };
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
   // Advancing front requires initialized vertex container
   Vertices vertices {};
 
-<<<<<<< HEAD
-  for ( const auto& v_ptr : domain.vertices() )
-    vertices.push_back( v_ptr->xy(), v_ptr->sizing(), v_ptr->range() );
-
-  // Create advancing front
-  Front front { };
-  front.init_front_edges( domain, front_data, vertices );
-=======
   // Create advancing front
   Front front { };
   front.init_front( domain, front_init_data, vertices );
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
   // Check if all edge lengths are more or less in accordance to
   // the global size parameter
@@ -515,7 +466,6 @@ void run_tests_Front()
 
   adjust_logging_output_stream("FrontTests.sort_edges.log");
   FrontTests::sort_edges();
-  FrontTests::edge_size();
 
   adjust_logging_output_stream("FrontTests.edge_size.log");
   FrontTests::edge_size();

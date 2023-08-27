@@ -811,14 +811,7 @@ private:
       domain_extent_  = TQ_MAX;
     }
 
-<<<<<<< HEAD
-    mesh.merge_degenerate_triangles();
-
-    if ( base_mesh )
-      mesh.merge_neighbor_mesh( *base_mesh );
-=======
   } // MeshConstruction::init_mesh_vertices()
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
 
   /*------------------------------------------------------------------

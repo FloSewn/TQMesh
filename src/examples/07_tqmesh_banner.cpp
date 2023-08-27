@@ -226,12 +226,8 @@ void tqmesh_banner()
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-<<<<<<< HEAD:src/examples/example_6.cpp
-  { source_dir + "/auxiliary/example_data/Example_6" };
-=======
   { source_dir + "/auxiliary/example_data/tqmesh_banner" };
 
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940:src/examples/07_tqmesh_banner.cpp
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
   generator.write_mesh(mesh, file_name, MeshExportType::TXT);
 

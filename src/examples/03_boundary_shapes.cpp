@@ -121,12 +121,7 @@ void boundary_shapes()
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-<<<<<<< HEAD:src/examples/example_3.cpp
-  { source_dir + "/auxiliary/example_data/Example_3" };
-  LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
-=======
   { source_dir + "/auxiliary/example_data/boundary_shapes" };
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940:src/examples/03_boundary_shapes.cpp
 
   LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
   generator.write_mesh(mesh, file_name, MeshExportType::VTU);

@@ -35,11 +35,7 @@ void tri_mesh()
   // Log debug messages to specified output-file
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-<<<<<<< HEAD:src/tests/tests_Smoother.cpp
-  { source_dir + "/auxiliary/test_data/SmootherTests.tri_mesh.log" };
-=======
   { source_dir + "/auxiliary/test_data/MeshSmootherTests.tri_mesh.log" };
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940:src/tests/tests_SmoothingStrategy.cpp
   LOG_PROPERTIES.set_info_ostream( TO_FILE, file_name );
   LOG_PROPERTIES.set_debug_ostream( TO_FILE, file_name );
 
@@ -74,11 +70,7 @@ void tri_mesh()
   smoother.smooth(domain, mesh, 6, 0.5, 0.75, 0.95);
 
   // Export mesh
-<<<<<<< HEAD:src/tests/tests_Smoother.cpp
-  file_name = source_dir + "/auxiliary/test_data/SmootherTests.tri_mesh.txt";
-=======
   file_name = source_dir + "/auxiliary/test_data/MeshSmootherTests.tri_mesh.txt";
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940:src/tests/tests_SmoothingStrategy.cpp
 
   mesh.write_to_file( file_name, ExportType::txt );
 

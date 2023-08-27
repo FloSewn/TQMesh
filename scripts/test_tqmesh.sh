@@ -2,10 +2,6 @@
 
 set -e
 
-<<<<<<< HEAD
-cd build
-ctest
-=======
 #cd build
 #ctest
 
@@ -33,7 +29,6 @@ ctest
 #./../bin/run_examples 4
 #./../bin/run_examples 5
 
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 cd ..
 
 if [ $? -eq 0 ]; then

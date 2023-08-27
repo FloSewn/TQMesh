@@ -81,42 +81,7 @@ public:
   : ContainerEntry<Triangle> { TriangleGeometry::calc_centroid(v1, v2, v3) }
   , vertices_ {&v1, &v2, &v3}
   {
-<<<<<<< HEAD
-    calc_centroid();
-    calc_area();
-    calc_circumcenter();
-    calc_edgelengths();
-    calc_angles();
-    calc_shape_factor();
-
-    v_[0]->add_facet( *this );
-    v_[1]->add_facet( *this );
-    v_[2]->add_facet( *this );
-  }
-
-  /*------------------------------------------------------------------
-  | Getters 
-  ------------------------------------------------------------------*/
-  const ContainerIterator& pos() const { return pos_; }
-
-  const Vertex& vertex(size_t i) const { return *v_[i]; }
-  const Vertex& v1() const { return *v_[0]; }
-  const Vertex& v2() const { return *v_[1]; }
-  const Vertex& v3() const { return *v_[2]; }
-  size_t n_vertices() const { return 3; }
-
-  Vertex& vertex(size_t i) { return *v_[i]; }
-  Vertex& v1() { return *v_[0]; }
-  Vertex& v2() { return *v_[1]; }
-  Vertex& v3() { return *v_[2]; }
-
-  const Facet* neighbor(size_t i) const { return f_[i]; }
-  const Facet* nbr1() const { return f_[0]; }
-  const Facet* nbr2() const { return f_[1]; }
-  const Facet* nbr3() const { return f_[2]; }
-=======
     std::fill(facets_.begin(), facets_.end(), &NullFacet::get_instance()); 
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
     update_metrics(false);
 
@@ -142,9 +107,6 @@ public:
     vertices_[1] = nullptr;
     vertices_[2] = nullptr;
   }
-
-  double min_edge_length() const { return min_edge_len_; }
-  double max_edge_length() const { return max_edge_len_; }
 
   /*------------------------------------------------------------------
   | Getters 

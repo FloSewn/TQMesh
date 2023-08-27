@@ -103,11 +103,7 @@ int run_examples(const std::string& example)
     LOG(INFO) << "Running example 9...";
     LOG(INFO) << "";
     run_example_9();
-<<<<<<< HEAD
-  }
-=======
   }*/
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
   else
   {
     LOG(INFO) << "";

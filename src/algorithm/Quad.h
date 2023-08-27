@@ -87,19 +87,6 @@ public:
   : ContainerEntry<Quad> { QuadGeometry::calc_centroid(v1, v2, v3, v4) }
   , vertices_ {&v1, &v2, &v3, &v4}
   {
-<<<<<<< HEAD
-    calc_centroid();
-    calc_area();
-    calc_circumcenter();
-    calc_edgelengths();
-    calc_angles();
-    calc_shape_factor();
-
-    v_[0]->add_facet( *this );
-    v_[1]->add_facet( *this );
-    v_[2]->add_facet( *this );
-    v_[3]->add_facet( *this );
-=======
     std::fill(facets_.begin(), facets_.end(), &NullFacet::get_instance()); 
 
     update_metrics(false);
@@ -113,7 +100,6 @@ public:
     ASSERT( (edge_lengths_[1] > 0.0), "Invalid quad: Vertices collapse.");
     ASSERT( (edge_lengths_[2] > 0.0), "Invalid quad: Vertices collapse.");
     ASSERT( (edge_lengths_[3] > 0.0), "Invalid quad: Vertices collapse.");
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
   }
 
   /*------------------------------------------------------------------
@@ -131,32 +117,6 @@ public:
     vertices_[2] = nullptr;
     vertices_[3] = nullptr;
   }
-
-  double quality(const double h) const 
-  { 
-    const double e1 = edge_len_[0];
-    const double e2 = edge_len_[1];
-    const double e3 = edge_len_[2];
-    const double e4 = edge_len_[3];
-
-    const double f1_1 = e1 / h;
-    const double f1_2 = e2 / h;
-    const double f1_3 = e3 / h;
-    const double f1_4 = e4 / h;
-
-    const double f2_1 = h / e1;
-    const double f2_2 = h / e2;
-    const double f2_3 = h / e3;
-    const double f2_4 = h / e4;
-
-    const double q1 = MIN(f1_1, f2_1);
-    const double q2 = MIN(f1_2, f2_2);
-    const double q3 = MIN(f1_3, f2_3);
-    const double q4 = MIN(f1_4, f2_4);
-    
-    return shape_fac_ * q1 * q2 * q3 * q4; 
-  }
-
 
   /*------------------------------------------------------------------
   | Getters 
@@ -375,46 +335,6 @@ public:
     shape_factor_    = QuadGeometry::calc_shape_factor(edge_lengths_, area_);
   }
 
-<<<<<<< HEAD
-  /*------------------------------------------------------------------
-  | Compute quad shape factor
-  ------------------------------------------------------------------*/
-  void calc_shape_factor()
-  {
-    // --> WARNING: Use same formulation as for triangles
-    //--------------------------------------------------
-    // The norm_factor is used, in order to get:
-    // Shape factor -> 1 for equilateral triangles
-    // Shape factor -> 0 for bad triangles
-    const double norm_factor  = 3.4641016151377544;
-    const double edge_sum_sqr = edge_len_[0] * edge_len_[0]
-                              + edge_len_[1] * edge_len_[1]
-                              + edge_len_[2] * edge_len_[2]
-                              + edge_len_[3] * edge_len_[3];
-
-    if ( edge_sum_sqr > 0.0 )
-      shape_fac_ = norm_factor * area_ / edge_sum_sqr;
-    else
-      shape_fac_ = 0.0;
-  } 
-
-  /*------------------------------------------------------------------
-  | Mandatory container functions 
-  ------------------------------------------------------------------*/
-  void container_destructor() 
-  {
-    if (v_[0]) v_[0]->remove_facet( *this );
-    if (v_[1]) v_[1]->remove_facet( *this );
-    if (v_[2]) v_[2]->remove_facet( *this );
-    if (v_[3]) v_[3]->remove_facet( *this );
-
-    v_[0] = nullptr;
-    v_[1] = nullptr;
-    v_[2] = nullptr;
-    v_[3] = nullptr;
-  }
-=======
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
 private:
 

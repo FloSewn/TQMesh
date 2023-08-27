@@ -28,15 +28,10 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -bigobj")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
   else()
-<<<<<<< HEAD
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-variable")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
-=======
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wreturn-type")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-variable")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsign-compare")
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
   endif()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTQMESH_USE_EXPRTK")
@@ -51,13 +46,9 @@ if (CMAKE_BUILD_TYPE MATCHES "Debug")
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Od")
   else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
-<<<<<<< HEAD
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-variable")
-=======
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wreturn-type")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-variable")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsign-compare")
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
   endif()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTQMESH_USE_EXPRTK")

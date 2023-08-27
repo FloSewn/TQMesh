@@ -230,53 +230,31 @@ public:
   /*------------------------------------------------------------------
   | Set the boundary to square shape
   ------------------------------------------------------------------*/
-<<<<<<< HEAD
-  void set_shape_square(Vertices& vertices, int marker, 
-                        const Vec2d& xy, double w,
-                        double sizing=1.0, double range=1.0)
-  {
-    set_shape_rectangle(vertices, marker, xy, w, w, sizing, range);
-=======
   void set_shape_square(int marker, 
                         const Vec2d& xy, double w,
                         double mesh_size=0.0, double mesh_range=0.0)
   {
     set_shape_rectangle(marker, xy, w, w, mesh_size, mesh_range);
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
   } // Boundary::set_shape_square()
 
   /*------------------------------------------------------------------
   | Set the boundary to equilateral triangle
   ------------------------------------------------------------------*/
-<<<<<<< HEAD
-  void set_shape_triangle(Vertices& vertices, int marker,
-                          const Vec2d& xy, double a,
-                          double sizing=1.0, double range=1.0)
-  {
-    set_shape_circle(vertices, marker, xy, a/sqrt(3), 3, sizing, range);
-=======
   void set_shape_triangle(int marker,
                           const Vec2d& xy, double a,
                           double mesh_size=0.0, double mesh_range=0.0)
   {
     set_shape_circle(marker, xy, a/sqrt(3), 3, mesh_size, mesh_range);
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
   } // Boundary::set_shape_square()
 
   /*------------------------------------------------------------------
   | Set the boundary to rectangular shape
   ------------------------------------------------------------------*/
-<<<<<<< HEAD
-  void set_shape_rectangle(Vertices& vertices, int marker,
-                           const Vec2d& xy, double w, double h,
-                           double sizing=1.0, double range=1.0)
-=======
   void set_shape_rectangle(int marker,
                            const Vec2d& xy, double w, double h,
                            double mesh_size=0.0, double mesh_range=0.0)
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
   {
     const double half_w = 0.5 * w;
     const double half_h = 0.5 * h;
@@ -288,9 +266,6 @@ public:
       {xy[0] - half_w, xy[1] + half_h},
     };
 
-<<<<<<< HEAD
-    create_boundary_shape(vertices, v_shape, marker, sizing, range);
-=======
     std::vector<Vec2d> v_properties { 
       {mesh_size, mesh_range},
       {mesh_size, mesh_range},
@@ -301,22 +276,15 @@ public:
     std::vector<int> e_markers(4, marker);
 
     create_boundary_shape(v_shape, v_properties, e_markers);
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
   } // Boundary::set_shape_rectangle()
 
   /*------------------------------------------------------------------
   | Set the boundary to circular shape
   ------------------------------------------------------------------*/
-<<<<<<< HEAD
-  void set_shape_circle(Vertices& vertices, int marker,
-                        const Vec2d& xy, double r, size_t n=30,
-                        double sizing=1.0, double range=1.0)
-=======
   void set_shape_circle(int marker,
                         const Vec2d& xy, double r, size_t n=30,
                         double mesh_size=0.0, double mesh_range=0.0)
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
   {
     if ( n < 3 ) 
       return;
@@ -337,11 +305,7 @@ public:
       e_markers.push_back( marker );
     }
 
-<<<<<<< HEAD
-    create_boundary_shape(vertices, v_shape, marker, sizing, range);
-=======
     create_boundary_shape(v_shape, v_properties, e_markers);
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
   } // Boundary::set_shape_Circle()
 
@@ -351,17 +315,9 @@ private:
   /*------------------------------------------------------------------
   | Create the boundary from a given shape
   ------------------------------------------------------------------*/
-<<<<<<< HEAD
-  void create_boundary_shape(Vertices&           vertices, 
-                             std::vector<Vec2d>& v_shape,
-                             int                 marker,
-                             double              sizing,
-                             double              range) 
-=======
   void create_boundary_shape(const std::vector<Vec2d>& v_shape,
                              const std::vector<Vec2d>& v_properties,
                              const std::vector<int>& e_markers)
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
   {
     // Do nothinng if the boundary contains no edges
     if ( edges_.size() > 0 )
@@ -377,9 +333,6 @@ private:
 
     for (int i = 0; i < N; ++i)
     {
-<<<<<<< HEAD
-      Vertex& v_new = vertices.push_back( v_shape[i], sizing, range );
-=======
       const Vec2d& xy = v_shape[i];
       const Vec2d& props = v_properties[i];
 
@@ -394,7 +347,6 @@ private:
 
       // No nearest vertex found -> Generate new one
       Vertex& v_new = domain_vertices_->push_back(xy, props.x, props.y);
->>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
       new_verts.push_back( &v_new );
     }
 
