@@ -1,8 +1,8 @@
-# Introducing TQMesh: Simplifying Two-Dimensional Mesh Generation
+# TQMesh: Simplifying Two-Dimensional Mesh Generation
 -----------------------
 <img src="doc/Example_6.png" alt="TQMesh-Example-6" width="750"/>
 
-**TQMesh** is a user-friendly C++ library/application designed to streamline the process 
+**TQMesh** is a simple C++ library/application designed to streamline the process 
 of generating two-dimensional meshes comprising triangles and quadrilaterals. 
 Whether you're involved in Computational Fluid Dynamics (CFD), Finite Element Methods (FEM), 
 or other fields, this tool simplifies the creation of grids for various applications.
@@ -19,56 +19,6 @@ size function. Achieve precise control over element sizing, allowing you to adap
 elements along the near boundary region. This is particularly advantageous for enhancing mesh accuracy in various scenarios 
 (e.g. to resolve boundary layers in fluid dynamics problems).
 
-<details>
-<summary>Simple local mesh refinement</summary>
-
-This example shows a triangular mesh which features local element refinement. 
-The element size is determined either by the domain's edge segments, 
-through sizing factors that are attributed to boundary vertices or through a size function which is defined by the user.
-
-<img src="doc/simple_triangular_mesh.png" alt="TQMesh-simple-triangular-mesh" width="300"/>
-</details>
-
-<details>
-<summary>Quad layers and subdivision</summary>
-
-**TQMesh** also features the generation of quadrilateral elements, as well as layers of quad elements in the vicinity of boundaries.
-This example mesh was created by using the paving algorithm (which generates mixed-element meshes that are dominated by quads) and a subsequent quad-refinement of all elements.
-In this way, it is possile to generate elements that consist only of quadrilaterals.
-
-<img src="doc/square_in_channel.png" alt="TQMesh-square-in-channel" width="650"/>
-
-<img src="doc/MeshRefinement_1.png" alt="TQMesh-Refinement-1" width="250"/>
-</details>
-
-<details>
-<summary>Boundary shapes</summary>
-
-It is possible to create meshes through predefined boundary shapes, such as rectangles, circles or triangles.
-
-<img src="doc/boundary_shapes.png" alt="TQMesh-boundary-shapes" width="250"/>
-<img src="doc/MeshRefinement_2.png" alt="TQMesh-Refinement-2" width="250"/>
-<img src="doc/MeshRefinement_3.png" alt="TQMesh-Refinement-3" width="250"/>
-</details>
-
-<details>
-<summary>Local mesh refinement and element coloring</summary>
-
-During the meshing process, each element gets an associated color value. 
-These colors can be adjusted during the meshing process, as indicated in this example.
-It also possible to define interior mesh vertices, in order to influence the local element refinement, as shown below.
-
-<img src="doc/fixed_vertices.png" alt="TQMesh-fixed-vertices" width="250"/>
-</details>
-
-<details>
-<summary>Merge meshes</summary>
-
-**TQMesh** gives also the possibility to create and merge several meshes, preserving the conformity of their boundary edges.
-This makes it even easier to assign different color values to different element areas in the domain.
-
-<img src="doc/merge_meshes.png" alt="TQMesh-merge-meshes" width="250"/>
-</details>
 
 
 ## Installation
@@ -145,6 +95,68 @@ each with assigned color values for its elements.
 Explore the examples below to get an overview of **TQMesh**'s capabilities.
 You can find both the example input files and their corresponding 
 results in the *input/* and *src/examples* directories.
+
+
+<details>
+<summary>Example 1: Local mesh refinement</summary>
+
+This example shows a triangular mesh which features local element refinement. 
+The element size is determined either by the domain's edge segments, 
+through sizing factors that are attributed to boundary vertices or through a size function which is defined by the user.
+
+<img src="doc/simple_triangular_mesh.png" alt="TQMesh-simple-triangular-mesh" width="300"/>
+</details>
+
+<details>
+<summary>Example 2: Quad layers and subdivision</summary>
+
+**TQMesh** also features the generation of quadrilateral elements, as well as layers of quad elements in the vicinity of boundaries.
+This example mesh was created by using the paving algorithm (which generates mixed-element meshes that are dominated by quads) and a subsequent quad-refinement of all elements.
+In this way, it is possile to generate elements that consist only of quadrilaterals.
+
+<img src="doc/square_in_channel.png" alt="TQMesh-square-in-channel" width="650"/>
+
+<img src="doc/MeshRefinement_1.png" alt="TQMesh-Refinement-1" width="250"/>
+</details>
+
+<details>
+<summary>Example 3: Boundary shapes</summary>
+
+It is possible to create meshes through predefined boundary shapes, such as rectangles, circles or triangles.
+
+<img src="doc/boundary_shapes.png" alt="TQMesh-boundary-shapes" width="250"/>
+<img src="doc/MeshRefinement_2.png" alt="TQMesh-Refinement-2" width="250"/>
+<img src="doc/MeshRefinement_3.png" alt="TQMesh-Refinement-3" width="250"/>
+</details>
+
+<details>
+<summary>Example 4: Local mesh refinement and element coloring</summary>
+
+During the meshing process, each element gets an associated color value. 
+These colors can be adjusted during the meshing process, as indicated in this example.
+It also possible to define interior mesh vertices, in order to influence the local element refinement, as shown below.
+
+<img src="doc/fixed_vertices.png" alt="TQMesh-fixed-vertices" width="250"/>
+</details>
+
+<details>
+<summary>Example 5: Merge meshes</summary>
+
+**TQMesh** gives the possibility to create and merge several meshes, preserving the conformity of their boundary edges.
+This makes it even easier to assign different color values to different element areas in the domain.
+This example shows the output from a successive mesh generation.
+
+<img src="doc/merge_meshes.png" alt="TQMesh-merge-meshes" width="250"/>
+</details>
+
+<details>
+<summary>Example 6: Import boundaries from CSV files</summary>
+
+In case you want to automate the meshing process, **TQMesh** offers the possibility to import boundary definitions
+via CSV files. This example shows an airfoil that has been meshed in this way.
+
+<img src="doc/airfoil.png" alt="TQMesh-airfoil" width="350"/>
+</details>
 
 
 
@@ -246,8 +258,8 @@ The following plots show some performance statistics.
 <img src="doc/BenchmarkPlot_QTree.png" alt="TQMesh-QTree-Benchmark" width="400"/> <img src="doc/BenchmarkPlot_Mesh.png" alt="TQMesh-Mesh-Benchmark" width="400"/>
 
 ## To Do's
-* Delaunay refinement for bad / highly skewed elements
-* Export to different mesh output formats
+* Boundary definition via splines
+* Enhanced quad triangle-to-quad morphing
 * Improved documentation / testing
 
 Feel free to contribute!
