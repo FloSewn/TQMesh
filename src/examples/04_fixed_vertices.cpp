@@ -13,14 +13,10 @@
 
 #include "run_examples.h"
 
-#include "Vec2.h"
+#include "VecND.h"
 #include "Log.h"
 
-#include "Vertex.h"
-#include "Edge.h"
-#include "Domain.h"
-#include "Mesh.h"
-#include "Smoother.h"
+#include "MeshGenerator.h"
 
 using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
@@ -29,15 +25,12 @@ using namespace TQMesh::TQAlgorithm;
 * This example covers the mesh generation with fixed interior 
 * vertices, as well as the usage of different mesh element colors
 *********************************************************************/
-void run_example_4()
+void fixed_vertices()
 {
   /*------------------------------------------------------------------
-  | Define the size function
+  | Define the size function and the domain structure
   ------------------------------------------------------------------*/
-  UserSizeFunction f = [](const Vec2d& p) 
-  { 
-    return 0.4;
-  };
+  UserSizeFunction f = [](const Vec2d& p) { return 0.2; };
 
   Domain domain   { f };
 
@@ -61,25 +54,21 @@ void run_example_4()
   |  x-------x              
   |  v0       v1
   ------------------------------------------------------------------*/
-  Boundary& b_ext = domain.add_exterior_boundary();
+  std::vector<Vec2d> vertex_coordinates { 
+    { 0.0,  0.0 },
+    { 1.0,  0.0 },
+    { 1.0,  2.0 },
+    { 2.0,  2.0 },
+    { 2.0,  1.0 },
+    { 3.0,  1.0 },
+    { 3.0,  3.0 },
+    { 0.0,  3.0 },
+  };
 
-  Vertex& v0 = domain.add_vertex(  0.0,  0.0,  1.0,  1.0 );
-  Vertex& v1 = domain.add_vertex(  1.0,  0.0,  1.0,  1.0 );
-  Vertex& v2 = domain.add_vertex(  1.0,  2.0,  0.5,  1.5 );
-  Vertex& v3 = domain.add_vertex(  2.0,  2.0,  0.5,  1.5 );
-  Vertex& v4 = domain.add_vertex(  2.0,  1.0,  0.5,  1.2 );
-  Vertex& v5 = domain.add_vertex(  3.0,  1.0,  0.5,  1.2 );
-  Vertex& v6 = domain.add_vertex(  3.0,  3.0,  1.0,  1.0 );
-  Vertex& v7 = domain.add_vertex(  0.0,  3.0,  1.0,  1.0 );
+  std::vector<int> edge_markers ( vertex_coordinates.size(), 1 );
 
-  b_ext.add_edge( v0, v1, 1 );
-  b_ext.add_edge( v1, v2, 1 );
-  b_ext.add_edge( v2, v3, 1 );
-  b_ext.add_edge( v3, v4, 1 );
-  b_ext.add_edge( v4, v5, 1 );
-  b_ext.add_edge( v5, v6, 1 );
-  b_ext.add_edge( v6, v7, 1 );
-  b_ext.add_edge( v7, v0, 1 );
+  Boundary& boundary = domain.add_exterior_boundary();
+  boundary.set_shape_from_coordinates(vertex_coordinates, edge_markers);
 
   /*------------------------------------------------------------------
   | Here, we add two vertices in the interior of the domain,
@@ -87,17 +76,17 @@ void run_example_4()
   | We reduce their scaling-factors, in order to refine the mesh
   | locally.
   ------------------------------------------------------------------*/
-  domain.add_fixed_vertex(0.5, 1.0, 0.1, 0.5);
-  domain.add_fixed_vertex(0.5, 2.0, 0.1, 0.5);
+  domain.add_fixed_vertex(0.5, 1.0, 0.005, 0.5);
+  domain.add_fixed_vertex(0.5, 2.0, 0.005, 0.5);
 
   /*------------------------------------------------------------------
   | Initialize the mesh. We also provide the index of the mesh,
   | as well as a color index that will be passed to all mesh elements
   ------------------------------------------------------------------*/
   int mesh_index = 0;
-  int element_color = 0;
-  Mesh mesh { domain, mesh_index, element_color };
-  mesh.init_advancing_front();
+  int mesh_color = 0;
+  MeshGenerator generator {};
+  Mesh& mesh = generator.new_mesh( domain, mesh_index, mesh_color );
 
   /*------------------------------------------------------------------
   | Next, we add three quad layers. This will create several quad-
@@ -105,7 +94,13 @@ void run_example_4()
   | All these quad elements will be given the current mesh color 
   | index, which is set to zero.
   ------------------------------------------------------------------*/
-  mesh.create_quad_layers(v0, v7, 3, 0.02, 1.5);
+  generator.quad_layer_generation(mesh)
+    .n_layers(3)
+    .first_height(0.02)
+    .growth_rate(1.5)
+    .starting_position({0.0,0.0})
+    .ending_position({0.0,3.0})
+    .generate_elements();
 
   /*------------------------------------------------------------------
   | Now generate the remaining mesh elements. But before this,
@@ -113,22 +108,29 @@ void run_example_4()
   | remaining elements will be given this color index
   ------------------------------------------------------------------*/
   mesh.element_color(1);
-  mesh.triangulate();
+  generator.triangulation(mesh).generate_elements();
 
   /*------------------------------------------------------------------
   | Smooth the mesh for four iterations
   ------------------------------------------------------------------*/
-  Smoother smoother {};
-  smoother.smooth(domain, mesh, 4);
+  generator.mixed_smoothing(mesh).smooth(2); 
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in TXT format.
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
+<<<<<<< HEAD:src/examples/example_4.cpp
   { source_dir + "/auxiliary/example_data/Example_4" };
+=======
+  { source_dir + "/auxiliary/example_data/fixed_vertices" };
+
+  LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
+  generator.write_mesh(mesh, file_name, MeshExportType::VTU);
+
+>>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940:src/examples/04_fixed_vertices.cpp
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
+  generator.write_mesh(mesh, file_name, MeshExportType::TXT);
 
-  mesh.write_to_file( file_name, ExportType::txt );
 
-} // run_example_4()
+} // fixed_vertices()

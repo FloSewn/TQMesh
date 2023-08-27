@@ -1,103 +1,163 @@
-# TQMesh
+# TQMesh: Simplifying Two-Dimensional Mesh Generation
 -----------------------
 <img src="doc/Example_6.png" alt="TQMesh-Example-6" width="750"/>
 
-**TQMesh** is a simple C++ library/application for the generation of two-dimensional meshes, that consist of triangles and quadrilaterals.
-The application is intended for learning purposes, e.g. to easily create two-dimensional grids for Computational Fluid Dynamics or Finite Element Methods.
-The elements are generated with an advancing-front method, where the user must define edge segments that define the boundary of the domain to tesselate. 
-A user-defined size function makes it easy to adjust the element size locally.
-**TQMesh** also offers the possibility to treat the near boundary region explicitly with quadrilateral elements. 
-This might especially be helpful for the discretization of Computational Fluid Dynamics problems.
+**TQMesh** is a simple C++ library/application designed to streamline the process 
+of generating two-dimensional meshes comprising triangles and quadrilaterals. 
+Whether you're involved in Computational Fluid Dynamics (CFD), Finite Element Methods (FEM), 
+or other fields, this tool simplifies the creation of grids for various applications.
+
+## Key Features
+
+- **Effortless Element Generation:** TQMesh employs an advancing-front method, 
+requiring users to define edge segments that outline the domain. This automated approach ensures smooth and accurate mesh generation.
+
+- **Localized Element Sizing:** Customize mesh properties effortlessly using the user-defined 
+size function. Achieve precise control over element sizing, allowing you to adapt the mesh to your specific needs.
+
+- **Boundary Flexibility:** Beyond triangles, TQMesh introduces the option of including quadrilateral 
+elements along the near boundary region. This is particularly advantageous for enhancing mesh accuracy in various scenarios 
+(e.g. to resolve boundary layers in fluid dynamics problems).
+
+
 
 ## Installation
-**TQMesh** is a header-only library, which requires the files in the directories *src/algorithm* and *src/utils*.
-The directory *src/app* contains the code for the application, that is described below.
-For installation, simply create a build directory and run 
-```sh
-cmake ..
-make install
-```
-To use other compilers (e.g. clang), specify during the CMake configuration:
-```sh
-cmake -DCMAKE_CXX_COMPILER=<your-compiler> ..
-make install
-```
-To run in debug mode, use the additional flag `-DCMAKE_BUILD_TYPE=Debug`.
+
+**TQMesh** is a header-only library, which requires the files in the directories *src/algorithm* and *src/utils*. 
+Simply include these files in your projects and start meshing!
+
+The directory *src/app* contains the code for the application. 
+To install it, follow these steps:
+
+1. Clone the repository to your local machine:
+
+   ```sh
+   git clone https://github.com/FloSewn/TQMesh
+   cd TQMesh  # Enter the project directory
+   ```
+2. Create a build directory:
+   ```sh
+   mkdir build
+   cd build
+   ```
+3. Configure the build using CMake
+   ```sh
+   cmake ..
+   ```
+   If you want to use a specific compiler (e.g. clang), specify it during CMake configuration:
+   ```
+   cmake -DCMAKE_CXX_COMPILER=<your-compiler> ..
+   ```
+   If you'd like to run in debug mode, use the additional flag `-DCMAKE_BUILD_TYPE=Debug` during the CMake configuration.
+
+4. Build and install TQMesh:
+   ```
+   make install 
+   ```
+   
+And that's it! TQMesh is now installed and ready to be used. 
 
 ## Usage of the TQMesh library
-Several examples on how to use the **TQMesh**-library functions are given in the *src/examples* directory.
-After installation, you can run them simply with 
-```sh
-./bin/run_examples <Example-ID>
-```
+The **TQMesh** library comes with a set of examples showcasing how to utilize its functions. 
+These examples can be found in the *src/examples* directory of the project.
+
+After successfully installing TQMesh, you can run these examples using the provided tool:
+
+1. Navigate to the main project directory in your terminal:
+   ```sh
+   cd TQMesh  # Enter the project directory
+   ```
+
+2. Run the examples tool along with the desired example identifier:
+   ```sh
+   ./bin/run_examples <Example-ID>
+   ```
+   Replace `<Example-ID>` with the specific example identifier you want to run.
+
 
 ## Usage of the TQMesh application
 The **TQMesh** application uses simple parameter files as input for the mesh generation.
 There are some sample files given in the *input/* directory.
 
-To start the application, run 
+To use the application, navigate to your main project directory in your terminal and run: 
 ```sh
 ./bin/TQMesh <Input-file> 
 ```
-from your command line.
+Replace `<Input-file>` with the name of your chosen input parameter file.
 
 ## Examples
-For the mesh generation, you simply need to define a few global parameters and the mesh boundaries in terms of boundary nodes and edges. 
-There is the possibility to assign markers to each defined boundary-edge. 
-These markers are then assigned to the final mesh boundary edges.
-It is also possible to create several meshes successively and assign color values to their elements.
-For a better overview on the capabilities of **TQMesh**, check out the examples below. 
-These are also the results of the examples given in the *input/* and the *src/examples* directories.
+Generating a mesh with **TQMesh** is a straightforward process that involves defining a few key global parameters 
+along with mesh boundaries represented by boundary nodes and edges. You have the option to assign markers 
+to each boundary edge, which are then applied to the final mesh's boundary edges. 
+Furthermore, the application supports creating multiple meshes consecutively, 
+each with assigned color values for its elements.
+
+Explore the examples below to get an overview of **TQMesh**'s capabilities.
+You can find both the example input files and their corresponding 
+results in the *input/* and *src/examples* directories.
+
 
 <details>
-<summary>Example 1</summary>
+<summary>Example 1: Local mesh refinement</summary>
 
 This example shows a triangular mesh which features local element refinement. 
-The element size is determined either by the domain's edge segments, through sizing factors that are attributed to boundary vertices or through a size function which is defined by the user.
+The element size is determined either by the domain's edge segments, 
+through sizing factors that are attributed to boundary vertices or through a size function which is defined by the user.
 
-<img src="doc/Example_1.png" alt="TQMesh-Example-1" width="300"/>
+<img src="doc/simple_triangular_mesh.png" alt="TQMesh-simple-triangular-mesh" width="300"/>
 </details>
 
 <details>
-<summary>Example 2</summary>
+<summary>Example 2: Quad layers and subdivision</summary>
 
 **TQMesh** also features the generation of quadrilateral elements, as well as layers of quad elements in the vicinity of boundaries.
 This example mesh was created by using the paving algorithm (which generates mixed-element meshes that are dominated by quads) and a subsequent quad-refinement of all elements.
 In this way, it is possile to generate elements that consist only of quadrilaterals.
 
-<img src="doc/Example_2.png" alt="TQMesh-Example-2" width="650"/>
+<img src="doc/square_in_channel.png" alt="TQMesh-square-in-channel" width="650"/>
 
 <img src="doc/MeshRefinement_1.png" alt="TQMesh-Refinement-1" width="250"/>
 </details>
 
 <details>
-<summary>Example 3</summary>
+<summary>Example 3: Boundary shapes</summary>
 
 It is possible to create meshes through predefined boundary shapes, such as rectangles, circles or triangles.
 
-<img src="doc/Example_3.png" alt="TQMesh-Example-3" width="250"/>
+<img src="doc/boundary_shapes.png" alt="TQMesh-boundary-shapes" width="250"/>
 <img src="doc/MeshRefinement_2.png" alt="TQMesh-Refinement-2" width="250"/>
 <img src="doc/MeshRefinement_3.png" alt="TQMesh-Refinement-3" width="250"/>
 </details>
 
 <details>
-<summary>Example 4</summary>
+<summary>Example 4: Local mesh refinement and element coloring</summary>
 
 During the meshing process, each element gets an associated color value. 
 These colors can be adjusted during the meshing process, as indicated in this example.
 It also possible to define interior mesh vertices, in order to influence the local element refinement, as shown below.
 
-<img src="doc/Example_4.png" alt="TQMesh-Example-4" width="250"/>
+<img src="doc/fixed_vertices.png" alt="TQMesh-fixed-vertices" width="250"/>
 </details>
 
 <details>
-<summary>Example 5</summary>
+<summary>Example 5: Merge meshes</summary>
 
-**TQMesh** gives also the possibility to create and merge several meshes, preserving the conformity of their boundary edges.
+**TQMesh** gives the possibility to create and merge several meshes, preserving the conformity of their boundary edges.
 This makes it even easier to assign different color values to different element areas in the domain.
+This example shows the output from a successive mesh generation.
 
-<img src="doc/Example_5.png" alt="TQMesh-Example-5" width="250"/>
+<img src="doc/merge_meshes.png" alt="TQMesh-merge-meshes" width="250"/>
 </details>
+
+<details>
+<summary>Example 6: Import boundaries from CSV files</summary>
+
+In case you want to automate the meshing process, **TQMesh** offers the possibility to import boundary definitions
+via CSV files. This example shows an airfoil that has been meshed in this way.
+
+<img src="doc/airfoil.png" alt="TQMesh-airfoil" width="350"/>
+</details>
+
 
 
 ## Output format
@@ -198,8 +258,8 @@ The following plots show some performance statistics.
 <img src="doc/BenchmarkPlot_QTree.png" alt="TQMesh-QTree-Benchmark" width="400"/> <img src="doc/BenchmarkPlot_Mesh.png" alt="TQMesh-Mesh-Benchmark" width="400"/>
 
 ## To Do's
-* Delaunay refinement for bad / highly skewed elements
-* Export to different mesh output formats
+* Boundary definition via splines
+* Enhanced quad triangle-to-quad morphing
 * Improved documentation / testing
 
 Feel free to contribute!

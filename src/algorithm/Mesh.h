@@ -10,27 +10,14 @@
 #include <algorithm>
 #include <limits.h>
 
-#include "Vec2.h"
-#include "utils.h"
-#include "VtkIO.h"
-#include "ProgressBar.h"
+#include "VecND.h"
+//#include "VtkIO.h"
 
+#include "utils.h"
 #include "Vertex.h"
 #include "Triangle.h"
 #include "Quad.h"
-#include "Front.h"
-#include "Boundary.h"
-#include "Domain.h"
-#include "QuadLayer.h"
-
-/*********************************************************************
-* ToDo:
-* - Add boolean to indicate if mesh elements have been generated yet
-* - Allow addition of neighbor meshes only when no mesh elements
-*   are generated yet
-* - Make ASSERT similar to CHECK
-* - User may only provide positive mesh color values
-*********************************************************************/
+#include "Facet.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -42,35 +29,25 @@ using namespace CppUtils;
 *********************************************************************/
 class Mesh
 {
-  using EdgePair       = std::pair<const Edge*,const Edge*>;
-  using EdgePairVector = std::vector<EdgePair>;
+public:
+
   using EdgeVector     = std::vector<Edge*>;
   using VertexVector   = std::vector<Vertex*>;
   using TriVector      = std::vector<Triangle*>;
   using QuadVector     = std::vector<Quad*>;
-  using DoubleVector   = std::vector<double>;
-  using BoolVector     = std::vector<bool>;
-  using IntVector      = std::vector<int>;
-  using Vec2dVector    = std::vector<Vec2d>;
-  using MeshVector     = std::vector<Mesh*>;
-  using BdryEdgeConn   = std::vector<std::vector<EdgeVector>>;
-  using NbrMeshConn    = std::vector<std::vector<EdgeVector>>;
-  using FrontData      = std::pair<EdgeVector,BoolVector>;
 
-public:
   /*------------------------------------------------------------------
-  | Constructor
+  | Constructor 
   ------------------------------------------------------------------*/
-  Mesh(Domain&   domain,
-       int       mesh_id=CONSTANTS.default_mesh_id(),
-       int       element_color=CONSTANTS.default_element_color(),
+  Mesh(int       mesh_id=DEFAULT_MESH_ID,
+       int       element_color=DEFAULT_ELEMENT_COLOR,
        double    qtree_scale=ContainerQuadTreeScale,
        size_t    qtree_items=ContainerQuadTreeItems, 
        size_t    qtree_depth=ContainerQuadTreeDepth)
-  : domain_     { &domain }
-  , mesh_id_    { ABS(mesh_id) }
+  : mesh_id_    { ABS(mesh_id) }
   , elem_color_ { ABS(element_color) }
   , verts_      { qtree_scale, qtree_items, qtree_depth }
+<<<<<<< HEAD
   , tris_       { qtree_scale, qtree_items, qtree_depth }
   , quads_      { qtree_scale, qtree_items, qtree_depth }
   , front_      { }
@@ -1767,10 +1744,16 @@ private:
     }
     return false;
   }
+=======
+  , quads_      { qtree_scale, qtree_items, qtree_depth }
+  , tris_       { qtree_scale, qtree_items, qtree_depth }
+  { }
+>>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
   /*------------------------------------------------------------------
-  | 
+  | Move constructor
   ------------------------------------------------------------------*/
+<<<<<<< HEAD
   Vertex& get_base_vertex(const Edge& base)
   {
     // Half of the factor h for height of equlateral triangle
@@ -1789,1157 +1772,307 @@ private:
     return add_vertex( xy );
 
   } // get_base_vertex() 
+=======
+  Mesh(Mesh&& mesh)
+  : mesh_id_    { mesh.mesh_id_ }
+  , elem_color_ { mesh.elem_color_ }
+  , mesh_area_  { mesh.mesh_area_ }
+  , verts_      { std::move( mesh.verts_      )}
+  , quads_      { std::move( mesh.quads_      )}
+  , tris_       { std::move( mesh.tris_       )}
+  , intr_edges_ { std::move( mesh.intr_edges_ )}
+  , bdry_edges_ { std::move( mesh.bdry_edges_ )}
+  {}
+>>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  void update_front( Edge& base, Vertex& v_new, Triangle& t_new )
-  {
-    // Get advancing front edges adjacent to vertex
-    // -> First two vertices of new triangle tri are always
-    //    the base edge vertices
-    Edge* e1 = front_.get_edge(v_new, base.v1());
-    Edge* e2 = front_.get_edge(v_new, base.v2());
-
-    // *** Both edges are connected to vertex ***
-    //     -> No new edge must be created
-    //     -> Base vertex v1 no longer on the advancing front
-    //     -> Base vertex v2 no longer on the advancing front
-    //     -> vertex no longer on the advancing front
-    if ( e1 && e2 )
-    {
-      ASSERT( v_new.on_front(), "Grid structure corrupted." );
-
-      base.v1().on_front( false );
-      base.v2().on_front( false );
-      v_new.on_front( false );
-
-      if ( e1->is_interior() )
-        intr_edges_.add_edge(e1->v1(), e1->v2());
-      if ( e2->is_interior() )
-        intr_edges_.add_edge(e2->v1(), e2->v2());
-
-      front_.remove( *e1 );
-      front_.remove( *e2 );
-    }
-    // *** First edge is connected to vertex ***
-    //     -> New edge between second base vertex and vertex
-    //     -> Base vertex v1 no longer on the advancing front
-    //     -> vertex is part of the advancing front
-    else if ( e1 && !e2 )
-    {
-      ASSERT( v_new.on_front(), "Grid structure corrupted." );
-
-      base.v1().on_front( false );
-
-      if ( e1->is_interior() )
-        intr_edges_.add_edge(e1->v1(), e1->v2());
-
-      front_.remove( *e1 );
-      front_.add_edge(v_new, base.v2());
-    }
-    // *** Second edge is connected to vertex ***
-    //     -> New edge between first base vertex and vertex
-    //     -> Base vertex v2 no longer on the advancing front
-    //     -> vertex is part of the advancing front
-    else if ( !e1 && e2 )
-    {
-      ASSERT( v_new.on_front(), "Grid structure corrupted." );
-
-      base.v2().on_front( false );
-
-      if ( e2->is_interior() )
-        intr_edges_.add_edge(e2->v1(), e2->v2());
-
-      front_.remove( *e2 );
-      front_.add_edge(base.v1(), v_new);
-    }
-    // *** Both edges are not connected to vertex ***
-    //     -> Create two new edges
-    //     -> Vertex now part of the advancing front
-    else
-    {
-      v_new.on_front( true );
-      front_.add_edge(base.v1(), v_new);
-      front_.add_edge(v_new, base.v2());
-    }
-
-    // If current base is not at the boundary, add it to the 
-    // interior edge list
-    if ( base.is_interior() )
-      intr_edges_.add_edge(base.v1(), base.v2());
-
-    // Remove base edge
-    front_.remove( base );
-
-    // Mark new triangle as active
-    t_new.is_active( true );
-
-    // Add element area to the total mesh area
-    mesh_area_ += t_new.area();
-
-  } // update_front() 
+  friend std::ostream& operator<<(std::ostream& os, const Mesh& mesh);
 
   /*------------------------------------------------------------------
-  | Every vertex gets assigned its neighboring vertices and these 
-  | are then sorted by means of ascending angles
-  | This function requires, that all the interior edges and 
-  | boundary edges of the mesh have been generated 
-  | -> element adjacency of the edges is not required here
-  ------------------------------------------------------------------*/
-  void setup_vertex_connectivity()
-  {
-    // Remove all current vertex-to-vertex connectivities
-    for ( auto& v_ptr : verts_ )
-      v_ptr->vertices().clear();
-
-    // Get vertex-to-vertex connectivity from interior edges
-    for ( const auto& e : intr_edges_ )
-    {
-      Vertex* v1 = &(e->v1());
-      Vertex* v2 = &(e->v2());
-
-      v1->vertices().push_back( v2 );
-      v2->vertices().push_back( v1 );
-    }
-
-    // Get vertex-to-vertex connectivity from boundary edges
-    for ( const auto& e : bdry_edges_ )
-    {
-      Vertex* v1 = &(e->v1());
-      Vertex* v2 = &(e->v2());
-
-      v1->vertices().push_back( v2 );
-      v2->vertices().push_back( v1 );
-    }
-
-    // Sort local vertex connectivities by ascending angle
-    for ( auto& v_ptr : verts_ )
-    {
-      const Vec2d xy = v_ptr->xy();
-
-      std::sort( v_ptr->vertices().begin(), v_ptr->vertices().end(),
-      [xy] ( Vertex* v1, Vertex* v2 )
-      {
-        const Vec2d dxy1 = v1->xy() - xy;
-        const Vec2d dxy2 = v2->xy() - xy;
-        const double a1 = std::atan2(dxy1.y, dxy1.x);
-        const double a2 = std::atan2(dxy2.y, dxy2.x);
-
-        return ( a1 < a2 );
-      });
-    }
-
-  } // Mesh::setup_vertex_connectivity()
-
-  /*------------------------------------------------------------------
-  | Initialize the connectivity between facets and facets, as well  
-  | as between edges and facets
-  ------------------------------------------------------------------*/
-  void setup_facet_connectivity()
-  {
-    Facet* f1 = nullptr;
-    Facet* f2 = nullptr;
-    
-    // Setup connectivity for interor edges
-    for ( const auto& e_ptr : intr_edges_ )
-    {
-      const Vertex& v1 = e_ptr->v1();
-      const Vertex& v2 = e_ptr->v2();
-
-      int idx1 {-1};
-      int idx2 {-1};
-
-      for ( auto f : v1.facets() )
-      {
-        int idx = f->get_edge_index(v1, v2);
-
-        if ( idx < 0 ) continue;
-
-        if ( idx1 < 0 )
-        {
-          idx1 = idx;
-          f1 = f;
-        }
-        else if ( idx2 < 0 )
-        {
-          idx2 = idx;
-          f2 = f;
-          break;
-        }
-      }
-
-      // Setup connectivity between facets
-      f1->neighbor( idx1, f2 );
-      f2->neighbor( idx2, f1 );
-
-      // Setup connectivity between internal edge and facets
-      if ( is_left( v1.xy(), v2.xy(), f1->xy() ) )
-      {
-        e_ptr->facet_l( f1 );
-        e_ptr->facet_r( f2 );
-      }
-      else
-      {
-        e_ptr->facet_l( f2 );
-        e_ptr->facet_r( f1 );
-      }
-    }
-
-    // Setup connectivity for boundary edges
-    for ( const auto& e_ptr : bdry_edges_ )
-    {
-      const Vertex& v1 = e_ptr->v1();
-      const Vertex& v2 = e_ptr->v2();
-
-      for ( auto f : v1.facets() )
-      {
-        int idx = f->get_edge_index(v1, v2);
-
-        if ( idx < 0 ) continue;
-
-        f1 = f;
-        break;
-      }
-
-      // Setup connectivity between internal edge and facets
-      if ( is_left( v1.xy(), v2.xy(), f1->xy() ) )
-        e_ptr->facet_l( f1 );
-
-    }
-    
-  } // Mesh::setup_facet_connectivity
-
-  /*------------------------------------------------------------------
-  | Clean up quad elements:
-  | It may be, that some adjacent quads share two internal edges
-  | These elements will be merged in the next step.
-  |
-  | -> This function requires a finalized mesh and that the functions
-  |    setup_vertex_connectivity() and setup_facet_connectivity()
-  |    have been called before.
-  | 
-  |     v3                       vp   
-  |       x---------------------x
-  |       | \                   |
-  |       |   \ e2     q_nbr    |
-  |       |     \               |
-  |       |       \  v2         |
-  |       |         x           |
-  |       |           \         |
-  |       |   q_cur     \  e1   |
-  |       |               \     |
-  |       |                 \   |
-  |       |                   \ |
-  |       x---------------------x
-  |     v4                       v1
-  ------------------------------------------------------------------*/
-  void clean_double_quad_edges()
-  {
-    // Initialize all quad markers
-    for ( auto& q_cur : quads_ )
-      q_cur->marker( false );
-
-    std::vector<std::pair<Quad*,Quad*>>     quads_to_remove;
-    std::vector<std::pair<Edge*,Edge*>>     edges_to_remove;
-    std::vector<Vertex*>                    verts_to_remove;
-    std::vector<std::pair<Vertex*,Vertex*>> opposing_vertices;
-
-    for ( auto& q_cur : quads_ )
-    {
-      if ( q_cur->marker() )
-        continue;
-
-      // Loop over all edges of the current quad
-      for ( int i_vert = 0; i_vert < 4; ++i_vert )
-      {
-        // Vertices of the current quad
-        Vertex& v1 = q_cur->vertex( i_vert );
-        Vertex& v2 = q_cur->vertex( MOD(i_vert + 1, 4) );
-        Vertex& v3 = q_cur->vertex( MOD(i_vert + 2, 4) );
-        Vertex& v4 = q_cur->vertex( MOD(i_vert + 3, 4) );
-
-        // Get the neighboring facets of the current successive
-        // quad edges (v1,v2) and (v2,v3)
-        int idx_1 = q_cur->get_edge_index(v1, v2);
-        int idx_2 = q_cur->get_edge_index(v2, v3);
-
-        Facet* nbr_1 = q_cur->neighbor(idx_1);
-        Facet* nbr_2 = q_cur->neighbor(idx_2);
-
-        // Proceed, if no neighbors are found (nullptr) or if 
-        // neighbors of the adjacent edges differ, or if the neighbor
-        // has already been added
-        if ( !nbr_1 || !nbr_2 || nbr_1 != nbr_2 || nbr_1->marker() )
-          continue;
-
-        // In this stage, we address only quad / quad connections
-        if ( nbr_1->n_vertices() < 4 )
-          continue;
-
-        // Now we can cast the facet to a quad
-        Quad* q_nbr = static_cast<Quad*>(nbr_1);
-
-        // Get the internal edges adjacent to both current quads
-        Edge* e1 = intr_edges_.get_edge(v1, v2);
-        Edge* e2 = intr_edges_.get_edge(v2, v3);
-
-        ASSERT( (e1 != e2), "INVALID DATA STRUCTURE");
-        ASSERT( ( e1->v1() == e2->v1() || e1->v1() == e2->v2() 
-               || e1->v2() == e2->v1() || e1->v2() == e2->v2() ),
-            "WRONG EDGES FOUND.");
-
-        // Mark the current quads, such that these won't get chosen
-        // in upcoming loops
-        q_cur->marker( true );
-        q_nbr->marker( true );
-
-        // Add elements to the removal vectors
-        quads_to_remove.push_back( {q_cur.get(), q_nbr} ); 
-        edges_to_remove.push_back( {e1, e2} );
-        verts_to_remove.push_back( &v2 );
-
-        
-        // We still need the vertex of the neighboring quad, that 
-        // is located on the opposite of the current edge segments
-        // --> Use internal edge definition of quads
-        int idx_op = q_nbr->get_edge_index(v2,v3);
-        Vertex& v_op = q_nbr->vertex( idx_op );
-
-        opposing_vertices.push_back( {&v4, &v_op} );
-
-        ASSERT( (v_op != v1), "BAD DATA STRUCTURE");
-        ASSERT( (v_op != v2), "BAD DATA STRUCTURE");
-        ASSERT( (v_op != v3), "BAD DATA STRUCTURE");
-
-        // At this point we can break the inner loop over 
-        // the quad edges
-        break;
-      }
-    }
-
-    // Merge the marked edges and created triangles from the 
-    // adjacent marked quads
-    for (size_t i = 0; i < quads_to_remove.size(); ++i)
-    {
-      Edge* e1 = edges_to_remove[i].first;
-      Edge* e2 = edges_to_remove[i].second;
-
-      Vertex* v2 = verts_to_remove[i];
-
-      // Get correct vertex order of edge segments
-      Vertex& v1 = (e1->v2() == *v2) 
-                 ? e1->v1() : e1->v2();
-      Vertex& v3 = (e2->v1() == *v2) 
-                 ? e2->v2() : e2->v1();
-
-      Vertex* o1 = opposing_vertices[i].first;
-      Vertex* o2 = opposing_vertices[i].second;
-
-      // Create new quad 
-      Quad& q_new = add_quad( *o1, v1, *o2, v3 );
-      q_new.is_active(true);
-
-    }
-
-    // Removal of old quads
-    for (size_t i = 0; i < quads_to_remove.size(); ++i)
-    {
-      Quad* q1 = quads_to_remove[i].first;
-      Quad* q2 = quads_to_remove[i].second;
-
-      remove_quad( *q1 );
-      remove_quad( *q2 );
-    }
-
-    // Removal of old interior edges
-    for (size_t i = 0; i < edges_to_remove.size(); ++i)
-    {
-      Edge* e1 = edges_to_remove[i].first;
-      Edge* e2 = edges_to_remove[i].second;
-
-      remove_interior_edge( *e1 );
-      remove_interior_edge( *e2 );
-    }
-
-    // Removal of old vertices
-    for (size_t i = 0; i < verts_to_remove.size(); ++i)
-    {
-      Vertex* v = verts_to_remove[i];
-      remove_vertex( *v );
-    }
-
-    // Re-initialize facet-to-facet connectivity
-    setup_facet_connectivity();
-
-  } // Mesh::clean_double_quad_edges()
-
-  /*------------------------------------------------------------------
-  | Clean up triangle elements:
-  | It may be, that some triangles share two internal edges with a 
-  | single quad element. 
-  | These triangles and quads will be removed in this step and then
-  | replaced by a single triangle.
-  |
-  | -> This function requires a finalized mesh and that the functions
-  |    setup_vertex_connectivity() and setup_facet_connectivity()
-  |    have been called before.
-  | -> This function should be called after the function 
-  |    clean_double_quad_edges(), because such triangles might be 
-  |    genereated during the latter function.
-  |
-  |        v3
-  |       x
-  |       | \
-  |       |\  \
-  |       | \   \
-  |       |  \    \
-  |       |   \     \
-  |       |    \      \
-  |       |     \ t_nbr \
-  |       |      \        \
-  |       |       x--.      \
-  |       |      v2   --.     \
-  |       |              --.    \
-  |       |   q_cur         --.   \
-  |       |                    ---  \
-  |       x--------------------------x
-  |     v4                          v1
-  |
-  ------------------------------------------------------------------*/
-  void clean_double_triangle_edges()
-  {
-    // Initialize all quad markers to false
-    for ( auto& q_cur : quads_ )
-      q_cur->marker(false);
-
-    std::vector<std::pair<Quad*,Triangle*>> elements_to_remove;
-    std::vector<std::pair<Edge*,Edge*>>     edges_to_remove;
-    std::vector<Vertex*>                    verts_to_remove;
-
-    for ( auto& q_cur : quads_ )
-    {
-      if ( q_cur->marker() )
-        continue;
-
-      // Loop over all edges of the current quad
-      for ( int i_vert = 0; i_vert < 4; ++i_vert )
-      {
-        // Vertices of the current quad
-        Vertex& v1 = q_cur->vertex( i_vert );
-        Vertex& v2 = q_cur->vertex( MOD(i_vert + 1, 4) );
-        Vertex& v3 = q_cur->vertex( MOD(i_vert + 2, 4) );
-
-        // Get the neighboring facets of the current successive
-        // quad edges (v1,v2) and (v2,v3)
-        int idx_1 = q_cur->get_edge_index(v1, v2);
-        int idx_2 = q_cur->get_edge_index(v2, v3);
-
-        Facet* nbr_1 = q_cur->neighbor(idx_1);
-        Facet* nbr_2 = q_cur->neighbor(idx_2);
-
-        // Proceed, if no neighbors are found (nullptr) or if 
-        // neighbors of the adjacent edges differ, or if the neighbor
-        // has already been added
-        if ( !nbr_1 || !nbr_2 || nbr_1 != nbr_2 || nbr_1->marker() )
-          continue;
-
-        // In this stage, we address only quad / triangle connections
-        if ( nbr_1->n_vertices() > 3 )
-          continue;
-
-        // Now we can cast the facet to a triangle
-        Triangle* t_nbr = static_cast<Triangle*>(nbr_1);
-
-        // Get the internal edges adjacent to both current elements
-        Edge* e1 = intr_edges_.get_edge(v1, v2);
-        Edge* e2 = intr_edges_.get_edge(v2, v3);
-
-        ASSERT( (e1 != e2), "INVALID DATA STRUCTURE");
-        ASSERT( ( e1->v1() == e2->v1() || e1->v1() == e2->v2() 
-               || e1->v2() == e2->v1() || e1->v2() == e2->v2() ),
-            "WRONG EDGES FOUND.");
-
-        // Mark the current quads, such that the won't get chosen
-        // in upcoming loops
-        q_cur->marker( true );
-        t_nbr->marker( true );
-
-        // Add elements to the removal vectors
-        elements_to_remove.push_back( {q_cur.get(), t_nbr} ); 
-        edges_to_remove.push_back( {e1, e2} );
-        verts_to_remove.push_back( &v2 );
-
-        // At this point we can break the inner loop over 
-        // the quad edges
-        break;
-      }
-    }
-
-    // Create a new triangle from the remaining vertices
-    for ( size_t i = 0; i < elements_to_remove.size(); ++i )
-    {
-      Quad*   q = elements_to_remove[i].first;
-      Vertex* v = verts_to_remove[i];
-
-      int id_v = q->get_vertex_index( *v );
-
-      ASSERT( (id_v > -1), "BAD DATA STRUCTURE" );
-
-      // Get the remaining three vertices of the quad 
-      Vertex& v1 = q->vertex( MOD(id_v+1, 4) );
-      Vertex& v2 = q->vertex( MOD(id_v+2, 4) );
-      Vertex& v3 = q->vertex( MOD(id_v+3, 4) );
-
-      // Create new triangle 
-      Triangle& t_new = add_triangle( v1, v2, v3 );
-      t_new.is_active(true);
-    }
-
-    // Removal of old elements
-    for ( size_t i = 0; i < elements_to_remove.size(); ++i )
-    {
-      Quad*     q = elements_to_remove[i].first;
-      Triangle* t = elements_to_remove[i].second;
-      
-      remove_quad( *q );
-      remove_triangle( *t );
-    }
-
-    // Removal of old interiord edges
-    for (size_t i = 0; i < edges_to_remove.size(); ++i)
-    {
-      Edge* e1 = edges_to_remove[i].first;
-      Edge* e2 = edges_to_remove[i].second;
-
-      remove_interior_edge( *e1 );
-      remove_interior_edge( *e2 );
-    }
-
-    // Removal of old vertices
-    for (size_t i = 0; i < verts_to_remove.size(); ++i)
-    {
-      Vertex* v = verts_to_remove[i];
-      remove_vertex( *v );
-    }
-
-    // Re-initialize facet-to-facet connectivity
-    setup_facet_connectivity();
-
-  } // Mesh::clean_double_triangle_edges()
-
-  /*------------------------------------------------------------------
-  | Algorithm to create a single quad layer for a connected list of
-  | advancing front edges that start with v_start and end with v_end
-  ------------------------------------------------------------------*/
-  bool add_quad_layer(Vertex*& v_start_in, Vertex*& v_end_in, 
-                      double height)
-  {
-    // Find closest vertices to given input vertices
-    Vertex* v_start     = nullptr;
-    Vertex* v_end       = nullptr;
-    double d2_start_min = 1.0E+10;
-    double d2_end_min   = 1.0E+10;
-
-    for ( const auto& v : verts_ )
-    {
-      double d2_start = (v_start_in->xy() - v->xy()).length_squared();
-      double d2_end   = (v_end_in->xy() - v->xy()).length_squared();
-
-      if (d2_start < d2_start_min)
-      {
-        v_start = v.get();
-        d2_start_min = d2_start;
-      }
-
-      if (d2_end < d2_end_min)
-      {
-        v_end = v.get();
-        d2_end_min = d2_end;
-      }
-    }
-
-    if (!v_start || !v_end)
-    {
-      LOG(ERROR) << 
-      "Failed to create quad layer for mesh " << mesh_id_ << ", "
-      "due to invalid provided starting or ending vertices.";
-      return false;
-    }
-
-    // Get advancing front edges adjacent to input vertices
-    Edge* e_start = front_.get_edge(*v_start, 1); 
-    Edge* e_end   = front_.get_edge(*v_end, 2); 
-
-    if ( !e_start || !e_end )
-    {
-      LOG(ERROR) << 
-      "During the generation of a quad layer for mesh " << mesh_id_ << 
-      " it was not possible to locate an advancing front edge that " <<
-      "is adjacent to the given input vertex, that was provided for " <<
-      "the layer generation. Thus, the process is aborted.";
-      return false;
-    }
-
-    // Check if given front segments can be traversed and if closed
-    bool is_closed = (v_start == v_end);
-
-    if ( !front_.is_traversable(*e_start, *e_end) )
-    {
-      LOG(ERROR) << 
-      "During the generation of a quad layer for mesh " << mesh_id_ << 
-      " it was not possible to traverse the advancing front with "
-      "the given input vertex. Thus, the process is aborted.";
-      return false;
-    }
-
-    // For closed quad layers, try not to start at sharp angle edges
-    if ( is_closed )
-    {
-      const Vec2d& v1 = e_end->v1().xy();
-      const Vec2d& v2 = e_end->v2().xy();
-      const Vec2d& v3 = e_start->v2().xy();
-
-      const double ang = angle(v1-v2, v3-v2);
-
-      Edge *e_next = e_start->get_next_edge();
-
-      if ( e_next && ang <= CONSTANTS.quad_layer_angle() )
-      {
-        e_end = e_start;
-        e_start = e_next; 
-      }
-    }
-
-    // Triangulate front edges with critical angles
-    //prepare_quad_layer_front(e_start, e_end, height);
-
-    // Create the quad layer structure, which keeps track of the target
-    // vertex coordinates, that are projected from the base vertex 
-    // coordinates
-    QuadLayer quad_layer { e_start, e_end, is_closed, height };
-    quad_layer.smooth_heights( *domain_ );
-    quad_layer.setup_vertex_projection( verts_, front_, bdry_edges_ );
-
-    // For each base edge in the quad layer, try to create a quad
-    // element with its given projected coordinates
-    create_quad_layer_elements( quad_layer );
-
-    // Triangulate the quad layer based edges, where the generation
-    // of quads did not succeed
-    finish_quad_layer( quad_layer );
-
-    // Remove deleted entities
-    clear_waste();
-
-    // Set pointers to new start and ending vertices
-    int i = 0;
-    int n = quad_layer.n_bases();
-
-    do 
-    {
-      v_start_in = quad_layer.p1()[i];
-
-      if ( is_closed )
-        v_end_in = v_start_in;
-      else
-        v_end_in = quad_layer.p2()[MOD(i-1,n)]; 
-
-      ++i;
-
-    } while ( !(v_start_in->on_front()) && !(v_end_in->on_front()) );
-
-    return true;
-
-  } // add_quad_layer()
-
-  /*------------------------------------------------------------------
-  | For each QuadProjection, create a triangle with its base 
-  | vertices (b1,b2) and a vertex p1, which is either located in 
-  | the vicinity of the base edge or which is otherwise generated at 
-  | the projected coordinate of the base vertex b1
-  |   
-  |           p1            p2
-  |          x-------------x-------------
-  |          | \           | \          |
-  |          |   \         |   \        |
-  |          |     \       |     \      |
-  |          |       \     |       \    |
-  |          |         \   |         \  |
-  |          |    base   \ |           \|
-  | ---------x-------------x------------x-------
-  |           b1            b2
-  |   
-  ------------------------------------------------------------------*/
-  void create_quad_layer_elements(QuadLayer& quad_layer)
-  {
-    auto& b1        = quad_layer.b1();
-    auto& b2        = quad_layer.b2();
-
-    auto& p1        = quad_layer.p1();
-    auto& p2        = quad_layer.p2();
-
-    auto& p1_xy     = quad_layer.p1_xy();
-    auto& p2_xy     = quad_layer.p2_xy();
-
-    auto& heights   = quad_layer.heights();
-    auto& bases     = quad_layer.bases();
-
-    int  n_bases   = quad_layer.n_bases();
-
-    for ( int i = 0; i < n_bases; ++i )
-    {
-      // Search radius for vertices in the vicinity of the 
-      // projected coordinates
-      const double r = CONSTANTS.quad_layer_range() * heights[i];
-
-      // Create first triangle (b1,b2,p1)
-      Edge* base = bases[i];
-
-      if (!base->in_container())
-        continue;
-
-      Triangle* t1 = add_quad_layer_triangle(base, p1_xy[i], r);
-
-      if ( t1 ) 
-        p1[i] = &(t1->v3());
-      else
-        continue;
-
-      // Create second triangle (p1,b2,p2)
-      base = front_.get_edge( *p1[i], *b2[i] );
-
-      if ( !base ) 
-        continue;
-
-      Triangle* t2 = add_quad_layer_triangle(base, p2_xy[i], r);
-
-      if ( t2 )
-        p2[i] = &(t2->v3());
-      else
-        continue;
-
-      // Merge both triangles t1 & t2 to a quad
-      // --> First remove the interior edge between these triangles
-      Edge* e_rem = intr_edges_.get_edge( *b2[i], *p1[i] );
-
-      if ( e_rem ) 
-        remove_interior_edge( *e_rem );
-      else
-        continue;
-
-      // Remove old triangular elements
-      remove_triangle( *t1 );
-      remove_triangle( *t2 );
-      t1 = nullptr;
-      t2 = nullptr;
-
-      // Create new quadrilateral element
-      Quad& q_new = add_quad( *b1[i], *b2[i], *p2[i], *p1[i] );
-      q_new.is_active( true );
-
-    }
-
-  } // Mesh::create_quad_layer_elements() 
-  
-  /*------------------------------------------------------------------
-  | This is a helper function for the generation of a triangle 
-  | during the quad layer generation
-  ------------------------------------------------------------------*/
-  Triangle* add_quad_layer_triangle(Edge* base, 
-                                    const Vec2d& xy, double r)
-  {
-    TriVector new_tris {};
-
-    Triangle* tri = nullptr;
-
-    Vertex& v1 = base->v1();
-    Vertex& v2 = base->v2();
-
-    // Look for vertices in the vicinity of the projected coordinate 
-    // xy, which could be used to construct a new triangle
-    VertexVector vertex_candidates = find_local_vertices(xy, r);
-
-    // Create potential triangles with all found vertices
-    check_vertex_candidates(vertex_candidates, *base, new_tris);
-
-    // If potential triangles have been found, use the best one
-    tri = choose_best_triangle(new_tris, *base);
-
-    // If no proper triangle has been found, create a new vertex
-    // at the projected position xy and create a new triangle 
-    // with this new vertex
-    if ( !tri )
-    {
-      Vertex& v_new = add_vertex( xy );
-      tri = &( add_triangle(v1, v2, v_new) );
-
-      // If the created entities are invalid, clean up
-      if ( remove_if_invalid(v_new, *tri) )
-      {
-        tri = nullptr;
-      }
-      // Otherwise, update the advancing front with the new triangle
-      else
-      {
-        update_front( *base, v_new, *tri );
-        v_new.is_fixed( true );
-      }
-    }
-
-    return tri;
-
-  } // Mesh::add_quad_layer_triangle()
-
-  /*------------------------------------------------------------------
-  | In some cases, gaps might be formed during the previous quad layer
-  | generation steps. In this function, these gaps are closed with 
-  | triangular elements.
-  |
-  |              p1[i]
-  |      v      x 
-  |     x       :
-  |             :
-  |  p2[i-1]    :  
-  |   x.........x-------------x
-  |             | b1[i]        b2[i]
-  |             |           
-  |             |
-  |             |
-  |             x
-  |               
-  ------------------------------------------------------------------*/
-  void finish_quad_layer(QuadLayer& quad_layer)
-  {
-    auto& b1        = quad_layer.b1();
-
-    auto& p1        = quad_layer.p1();
-    auto& p2        = quad_layer.p2();
-
-    int  n_bases   = quad_layer.n_bases();
-
-    for ( int i = 1; i < n_bases; ++i )
-    {
-      if ( !p1[i] || !p2[i-1] || p1[i] == p2[i-1] )
-        continue;
-
-      Vertex& a = *p2[i-1];
-      Vertex& b = *b1[i];
-      Vertex& c = *p1[i];
-
-      const Vec2d l1 = a.xy()-b.xy();
-      const Vec2d l2 = c.xy()-b.xy();
-      const double alpha = angle(l1,l2);
-
-      // Don't add a new vertex and instead only connect (a,b,c)
-      if ( alpha <= CONSTANTS.quad_layer_angle() )
-      {
-        Triangle* t_new = &( add_triangle(a, b, c) );
-
-        if ( !remove_if_invalid(*t_new) )
-        {
-          Edge* base = front_.get_edge( b, c );
-          update_front( *base, a, *t_new );
-        }
-      }
-      // Create new vertex and then generate two triangles
-      else
-      {
-        const Vec2d v_xy = b.xy() + l1 + l2;
-
-        Vertex& v_new = add_vertex( v_xy );
-
-        Triangle* t1_new = &( add_triangle(a, b, v_new) );
-        Triangle* t2_new = &( add_triangle(b, c, v_new) );
-
-        if ( !remove_if_invalid(v_new, *t1_new, *t2_new) )
-        {
-          Edge* base = nullptr;
-
-          base = front_.get_edge( a, b );
-          update_front( *base, v_new, *t1_new );
-
-          base = front_.get_edge( b, c );
-          update_front( *base, v_new, *t2_new );
-
-          v_new.is_fixed( true );
-        }
-      }
-    }
-
-  } // Mesh::finish_quad_layer()
-
-  /*------------------------------------------------------------------
-  | Triangulate front edges with critical angles
-  | 
-  |                      p2
-  |                      x
-  |              v       |
-  |             o        |
-  |               .      | e_next 
-  |                 .    |
-  |                   .  |
-  |      p1             .|
-  |     x----------------x
-  |           e_cur       c
   | 
   ------------------------------------------------------------------*/
-  void prepare_quad_layer_front(Edge*& e_start, Edge*& e_end, 
-                                const double height)
-  {
-    Edge* e_cur  = e_start;
-
-    Edge* e_last = e_end->get_next_edge();
-    Edge* e_prev = e_start->get_prev_edge();
-
-    int edge_count = 0;
-    int n_edges = static_cast<int>(front_.size());
-
-    do 
-    {
-      Edge* e_next = e_cur->get_next_edge();
-
-      ASSERT( e_next, "INVALID DATA STRUCTURE" );
-      if ( !e_next )
-        break;
-
-      Vertex& p1 = e_cur->v1();
-      Vertex&  c = e_cur->v2();
-      Vertex& p2 = e_next->v2();
-
-      const Vec2d d1 = p1.xy() - c.xy();
-      const Vec2d d2 = p2.xy() - c.xy();
-
-      const double alpha = angle(d1,d2);
-      const double delta = ( p2.xy() - p1.xy() ).length();
-
-      const double l = 0.5 * ( e_cur->length() + e_next->length() );
-      const double h = MIN( l, height );
-
-      if (   !( is_lefton(p1.xy(), p2.xy(), c.xy()) ) 
-          && delta <= h * CONSTANTS.quad_layer_factor() 
-          && alpha <= CONSTANTS.quad_layer_angle() )
-      {
-        Edge* e_buf = e_next->get_next_edge();
-
-        if ( e_next == e_last )
-          e_last = e_buf;
-
-        if ( delta <= h )
-        {
-          const Vec2d v_xy = 0.5 * (p1.xy() + p2.xy());
-          Vertex& v_new = add_vertex( v_xy );
-
-          Triangle& t1_new = add_triangle(p1, c, v_new);
-          Triangle& t2_new = add_triangle(c, p2, v_new);
-
-          if ( !remove_if_invalid(v_new, t1_new, t2_new) )
-          {
-            update_front( *e_cur, v_new, t1_new );
-            update_front( *e_next, v_new, t2_new );
-
-            v_new.is_fixed( true );
-          }
-
-        }
-        else
-        {
-          Triangle& t_new = add_triangle(p1, c, p2);
-
-          if ( !remove_if_invalid(t_new) )
-            update_front( *e_cur, p2, t_new );
-        }
-
-        e_cur = e_buf;
-        ++edge_count;
-      }
-      else
-      {
-        e_cur = e_next;
-        ++edge_count;
-      }
-
-    } while(  ( e_cur )
-           && ( edge_count < n_edges )
-           && ( e_cur != e_last ) );
-
-    e_start = e_prev->get_next_edge();
-    e_end   = e_last->get_prev_edge();
-
-  } // Mesh::prepare_quad_layer_front()
+  void add_area(double a) { mesh_area_ += a; }
 
   /*------------------------------------------------------------------
-  | Collect all boundary / neighbor-mesh edges that will be used 
-  | for the creation of the advancing front
-  | Additionally, return also an array of booleans, which indicate
-  | the orientation of the given edges.
-  | Edges which result from neighbor mesh are oriented in the 
-  | opposite direction. This can be used to identify these edges
-  | from normal boundary edges (e.g. for the advancing front 
-  | refinement).
+  | Getters
   ------------------------------------------------------------------*/
-  FrontInitData collect_front_edges()
-  {
-    FrontInitData front_data {};
+  double area()             const { return mesh_area_; }
+  int    id()               const { return mesh_id_; }
+  int    element_color()    const { return elem_color_; }
+  size_t n_vertices()       const { return verts_.size(); }
+  size_t n_quads()          const { return quads_.size(); }
+  size_t n_triangles()      const { return tris_.size(); }
+  size_t n_elements()       const { return quads_.size() + tris_.size(); }
+  size_t n_interior_edges() const { return intr_edges_.size(); }
+  size_t n_boundary_edges() const { return bdry_edges_.size(); }
+  size_t n_edges()          const { return intr_edges_.size() + bdry_edges_.size(); }
 
-    for ( const auto& boundary : *domain_ )
-    {
-      EdgeVector edges {};
-      IntVector  markers {};
-      BoolVector is_oriented {};
+  const Vertices& vertices() const { return verts_; }
+  Vertices& vertices() { return verts_; }
 
-      for ( const auto& e : boundary->edges() )
-      {
-        EdgeVector nbr_edges = get_neighbor_mesh_edges(*e);
+  const Quads& quads() const { return quads_; }
+  Quads& quads() { return quads_; }
 
-        if ( nbr_edges.size() > 0 )
-        {
-          for ( Edge* nbr_e : nbr_edges )
-          {
-            edges.push_back( nbr_e );
-            is_oriented.push_back( false );
-            markers.push_back( nbr_e->marker() );
-          }
-        }
-        else
-        {
-          edges.push_back( e.get() ) ;
-          is_oriented.push_back( true );
-          markers.push_back( e->marker() );
-        }
-      }
+  const Triangles& triangles() const { return tris_; }
+  Triangles& triangles() { return tris_; }
 
-      front_data.edges.push_back( edges );
-      front_data.is_oriented.push_back( is_oriented );
-      front_data.markers.push_back( markers );
+  const EdgeList& interior_edges() const { return intr_edges_; }
+  EdgeList& interior_edges() { return intr_edges_; }
 
-    }
-
-    return std::move(front_data); 
-
-  } // Mesh::collect_front_edges()
+  const EdgeList& boundary_edges() const { return bdry_edges_; }
+  EdgeList& boundary_edges() { return bdry_edges_; }
 
   /*------------------------------------------------------------------
-  | For a given edge <e>, search all boundary edges of a 
-  | neighboring mesh, that are contained within <e>.
-  | This function is used upon the initialization of the advancing
-  | front.
+  | Setters
   ------------------------------------------------------------------*/
-  EdgeVector get_neighbor_mesh_edges(const Edge& e)
+  void element_color(int c) { elem_color_ = c; }
+
+  /*------------------------------------------------------------------
+  | This function takes care of the garbage collection 
+  ------------------------------------------------------------------*/
+  void clear_waste()
   {
-    EdgeVector   nbr_edges {};
-
-    const Vec2d& c = e.xy();
-    double       r = CONSTANTS.edge_search_factor() * e.length();
-
-    const Vec2d& v = e.v1().xy();
-    const Vec2d& w = e.v2().xy();
-
-    for ( Mesh* m : neighbor_meshes_ )
-    {
-      ASSERT( m, "Neighbor mesh data structure is invalid." );
-
-      // Get edges in the vicinity of the given edge
-      EdgeVector edges_in_vicinity = m->get_bdry_edges(c, r);
-
-      // Get all edges, that are actually located on the segment
-      // of the current domain boundary edge 
-      for ( Edge* e_vicinity : edges_in_vicinity )
-      {
-        const Vec2d& p = e_vicinity->v1().xy();
-        const Vec2d& q = e_vicinity->v2().xy();
-
-        if ( in_on_segment(v,w,p) && in_on_segment(v,w,q) )
-          nbr_edges.push_back( e_vicinity );
-      }
-
-      // In case edges have been found, sort them in 
-      // ascending direction to the stating vertex
-      std::sort(nbr_edges.begin(), nbr_edges.end(), 
-      [v](Edge* e1, Edge* e2)
-      {
-        double delta_1 = (e1->xy() - v).length_squared();
-        double delta_2 = (e2->xy() - v).length_squared();
-        return (delta_1 < delta_2);
-      });
-
-      // If edges have been located, terminate the search
-      // --> First come, first serve
-      if ( nbr_edges.size() > 0 )
-        break;
-    }
-
-    return std::move(nbr_edges);
+    verts_.clear_waste();
+    quads_.clear_waste();
+    tris_.clear_waste();
+    intr_edges_.clear_waste();
+    bdry_edges_.clear_waste();
   }
 
-
+  /*------------------------------------------------------------------
+  | Check if the mesh is empty
+  ------------------------------------------------------------------*/
+  bool is_empty() const 
+  { return ( n_vertices()==0 && n_elements()==0 && n_edges()==0 ); }
 
   /*------------------------------------------------------------------
-  | Get edge 
+  | Return mesh entities within a given position and radius
+  ------------------------------------------------------------------*/
+  VertexVector 
+  get_vertices(const Vec2d& center, double radius) const
+  { return std::move( verts_.get_items(center, radius ) ); }
+
+  QuadVector
+  get_quads(const Vec2d& center, double radius) const
+  { return std::move( quads_.get_items(center, radius ) ); }
+
+  TriVector
+  get_triangles(const Vec2d& center, double radius) const
+  { return std::move( tris_.get_items(center, radius ) ); }
+
+  EdgeVector
+  get_intr_edges(const Vec2d& center, double radius) const
+  { return std::move( intr_edges_.get_edges(center, radius ) ); }
+
+  EdgeVector
+  get_bdry_edges(const Vec2d& center, double radius) const
+  { return std::move( bdry_edges_.get_edges(center, radius ) ); }
+
+  /*------------------------------------------------------------------
+  | Return all valid interior mesh edges.
+  | An interior edge is valid, if it is connected to its left and 
+  | its right facet.
+  | -> Assumes initialized facet connectivity
+  ------------------------------------------------------------------*/
+  EdgeVector get_valid_interior_edges() const
+  {
+    EdgeVector valid_edges {};
+
+    for ( const auto& e_ptr : intr_edges_ )
+      if ( NullFacet::is_not_null( e_ptr->facet_l() ) && 
+           NullFacet::is_not_null( e_ptr->facet_r() )  )
+        valid_edges.push_back( e_ptr.get() );
+
+    return std::move(valid_edges);
+  }
+
+  /*------------------------------------------------------------------
+  | Return all valid boundary mesh edges.
+  | A boundary edge is valid, if it is connected to its left facet.
+  | -> Assumes initialized facet connectivity
+  ------------------------------------------------------------------*/
+  EdgeVector get_valid_boundary_edges() const 
+  {
+    EdgeVector valid_edges {};
+
+    for ( const auto& e_ptr : bdry_edges_ )
+      if ( NullFacet::is_not_null( e_ptr->facet_l() ) )
+        valid_edges.push_back( e_ptr.get() );
+
+    return std::move(valid_edges);
+  }
+
+  /*------------------------------------------------------------------
+  | Return boundary edges that act as interfaces to neighboring 
+  | meshes (= twin edges)
+  | -> Assumes initialized facet connectivity
+  ------------------------------------------------------------------*/
+  EdgeVector get_interface_edges() const
+  {
+    EdgeVector interface_edges {};
+
+    for ( const auto& e_ptr : bdry_edges_ )
+      if (e_ptr->twin_edge())
+        interface_edges.push_back( e_ptr.get() );
+
+    return std::move( interface_edges );
+  }
+
+  /*------------------------------------------------------------------
+  | Return all mesh edges that are part of the advancing front:
+  | -> Either interior edges that are not connected to two facets 
+  |    or boundary edges that are not connected to their left facet.
+  | -> These edges are used for the advancing front generation 
+  |    of the mesh
+  | -> This function assumes an initialized facet connectivity
+  ------------------------------------------------------------------*/
+  EdgeVector get_front_edges() const
+  {
+    EdgeVector front_edges {};
+
+    for ( const auto& e_ptr : intr_edges_ )
+      if ( NullFacet::is_null( e_ptr->facet_l() ) || 
+           NullFacet::is_null( e_ptr->facet_r() )  )
+        front_edges.push_back( e_ptr.get() );
+
+    for ( const auto& e_ptr : bdry_edges_ )
+      if ( NullFacet::is_null( e_ptr->facet_l() ) )
+        front_edges.push_back( e_ptr.get() );
+
+    return std::move(front_edges);
+  }
+
+  /*------------------------------------------------------------------
+  | For a given pair of vertices (v1,v2) return a corresponding
+  | interior edge from the mesh that connects them
+  ------------------------------------------------------------------*/
+  Edge* 
+  get_interior_edge(const Vertex& v1, const Vertex& v2, bool dir=false) 
+  const 
+  { return intr_edges_.get_edge(v1, v2, dir); }
+
+  Edge* 
+  get_boundary_edge(const Vertex& v1, const Vertex& v2, bool dir=false) 
+  const 
+  { return bdry_edges_.get_edge(v1, v2, dir); }
+
+  /*------------------------------------------------------------------
+  | For a given pair of vertices (v1,v2) return a corresponding
+  | edge from the mesh that connects them
   ------------------------------------------------------------------*/
   Edge* get_edge(const Vertex& v1, const Vertex& v2, bool dir=false)
   const 
   {
-    Edge* found = nullptr;
-
-    found = intr_edges_.get_edge(v1, v2, dir);
+    Edge* found = get_interior_edge(v1, v2, dir);
 
     if ( found != nullptr )
       return found;
 
-    found = bdry_edges_.get_edge(v1, v2, dir);
-
-    if ( found != nullptr )
-      return found;
-
-    found = front_.get_edge(v1, v2, dir);
-
-    if ( found != nullptr )
-      return found;
+    found = get_boundary_edge(v1, v2, dir);
 
     return found;
 
   } // Mesh::get_edge()
 
+
   /*------------------------------------------------------------------
-  | This function removes an entity and makes sure, that the 
+  | Add new mesh vertices  
+  ------------------------------------------------------------------*/
+  Vertex& add_vertex(const Vec2d& xy)
+  {
+    Vertex& v_new = verts_.push_back( xy );
+    return v_new;
+  } 
+
+  /*------------------------------------------------------------------
+  | Add new mesh quads  
+  ------------------------------------------------------------------*/
+  Quad& add_quad(Vertex& v1, Vertex& v2, Vertex& v3, Vertex& v4,
+                 int color=-1)
+  {
+    Quad& q_new = quads_.push_back(v1, v2, v3, v4);
+
+    if ( color < 0 )
+      q_new.color( elem_color_ );
+    else
+      q_new.color( color );
+
+    q_new.mesh( this );
+    return q_new;
+  } 
+
+  /*------------------------------------------------------------------
+  | Add new mesh triangles  
+  ------------------------------------------------------------------*/
+  Triangle& add_triangle(Vertex& v1, Vertex& v2, Vertex& v3, 
+                         int color=-1)
+  {
+    Triangle& t_new = tris_.push_back(v1, v2, v3);
+
+    if ( color < 0 )
+      t_new.color( elem_color_ );
+    else 
+      t_new.color( color );
+
+    t_new.mesh( this );
+    return t_new;
+  } 
+
+  /*------------------------------------------------------------------
+  | Add new interior mesh edge   
+  ------------------------------------------------------------------*/
+  Edge& add_interior_edge(Vertex& v1, Vertex& v2)
+  { return intr_edges_.add_edge(v1, v2, INTERIOR_EDGE_MARKER); }
+
+  /*------------------------------------------------------------------
+  | Add new boundary mesh edge   
+  ------------------------------------------------------------------*/
+  Edge& add_boundary_edge(Vertex& v1, Vertex& v2, int marker)
+  { return bdry_edges_.add_edge(v1, v2, marker); }
+
+  /*------------------------------------------------------------------
+  | These functions remove mesh entities and makes sure, that the 
   | removal succeeded
   ------------------------------------------------------------------*/
-  inline void remove_vertex(Vertex& v)
+  void remove_vertex(Vertex& v)
   {
     bool removed = verts_.remove( v );
-    ASSERT( removed, "Failed to remove vertex.");
-    (void) removed;
+    ASSERT( removed, "Failed to remove vertex."); (void) removed;
   }
 
-  inline void remove_triangle(Triangle& t)
-  {
-    bool removed = tris_.remove( t );
-    ASSERT( removed, "Failed to remove triangle.");
-    (void) removed;
-  }
-
-  inline void remove_quad(Quad& q)
+  void remove_quad(Quad& q)
   {
     bool removed = quads_.remove( q );
-    ASSERT( removed, "Failed to remove quad.");
-    (void) removed;
+    ASSERT( removed, "Failed to remove quad."); (void) removed;
   }
 
-  inline void remove_interior_edge(Edge& e)
+  void remove_triangle(Triangle& t)
   {
+    bool removed = tris_.remove( t );
+    ASSERT( removed, "Failed to remove triangle."); (void) removed;
+  }
+
+  void remove_interior_edge(Edge& e)
+  {
+    if ( &e.edgelist() != &intr_edges_ )
+      return;
+
     bool removed = intr_edges_.remove( e );
-    ASSERT( removed, "Failed to remove interior edge.");
-    (void) removed;
+    ASSERT( removed, "Failed to remove interior edge."); (void) removed;
   }
 
-  inline void remove_boundary_edge(Edge& e)
+  void remove_boundary_edge(Edge& e)
   {
+    if ( &e.edgelist() != &bdry_edges_ )
+      return;
+
     bool removed = bdry_edges_.remove( e );
-    ASSERT( removed, "Failed to remove interior edge.");
-    (void) removed;
+    ASSERT( removed, "Failed to remove interior edge."); (void) removed;
   }
 
+<<<<<<< HEAD
   /*------------------------------------------------------------------
   | Export the mesh to a text file
   ------------------------------------------------------------------*/
@@ -3048,31 +2181,22 @@ private:
 
   } // Mesh::write_to_vtu_file()
 
+=======
+>>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 
+private:
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
-  Domain*    domain_      {nullptr};
-  int        mesh_id_     { 0 };
-  int        elem_color_  { CONSTANTS.default_element_color() };
-
-  bool       mesh_initialized_  { false };
-  bool       mesh_completed_    { false };
+  int        mesh_id_        { 0 };
+  int        elem_color_     { DEFAULT_ELEMENT_COLOR };
+  double     mesh_area_      { 0.0 };
 
   Vertices   verts_;
-  Triangles  tris_;
   Quads      quads_;
-  Front      front_;
-
+  Triangles  tris_;
   EdgeList   intr_edges_ { Orientation::NONE };
   EdgeList   bdry_edges_ { Orientation::NONE };
-
-  double     mesh_area_ { 0.0 };
-
-protected:
-  MeshVector neighbor_meshes_ {};
-  MeshVector merged_meshes_   {};
-
 
 }; // Mesh
 
@@ -3082,137 +2206,77 @@ protected:
 *********************************************************************/
 inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
 {
+  auto interior_edges  = mesh.get_valid_interior_edges();
+  auto boundary_edges  = mesh.get_valid_boundary_edges();
+  auto interface_edges = mesh.get_interface_edges();
+  auto front_edges     = mesh.get_front_edges();
+
+
   os << "MESH " << mesh.id() << "\n";
 
+  // Print out vertex coordinates
   os << "VERTICES " << mesh.vertices().size() << "\n";
   for ( const auto& v_ptr : mesh.vertices() )
-  {
     os << std::setprecision(5) << std::fixed 
-              << v_ptr->xy().x << "," 
-              << v_ptr->xy().y << "\n";
-  }
+       << v_ptr->xy().x << "," 
+       << v_ptr->xy().y << "\n";
 
-  os << "INTERIOREDGES " << mesh.interior_edges().size() << "\n";
-  for ( const auto& e_ptr : mesh.interior_edges() )
-  {
-    auto v1_index = e_ptr->v1().index();
-    auto v2_index = e_ptr->v2().index();
-
-    auto fl_index = ( e_ptr->facet_l() != nullptr ) 
-                  ?   e_ptr->facet_l()->index()
-                  :   -1;
-    auto fr_index = ( e_ptr->facet_r() != nullptr ) 
-                  ?   e_ptr->facet_r()->index()
-                  :   -1;
-
+  // Print out all valid interior edges
+  os << "INTERIOREDGES " << interior_edges.size() << "\n";
+  for ( auto& e_ptr : interior_edges )
     os << std::setprecision(0) << std::fixed 
-      << std::setw(4) << v1_index << "," 
-      << std::setw(4) << v2_index << ","
-      << std::setw(4) << fl_index << ","
-      << std::setw(4) << fr_index << "\n";
-  }
+      << std::setw(4) << e_ptr->v1().index() << "," 
+      << std::setw(4) << e_ptr->v2().index() << ","
+      << std::setw(4) << e_ptr->facet_l()->index() << ","
+      << std::setw(4) << e_ptr->facet_r()->index() << "\n";
 
-
-  // During the output of all boundary edges, we track the 
-  // occurence of interface edges to other meshes
-  size_t n_interface_edges = 0;
-
-  os << "BOUNDARYEDGES " << mesh.boundary_edges().size() << "\n";
-  for ( const auto& e_ptr : mesh.boundary_edges() )
-  {
-    if (e_ptr->twin_edge() != nullptr)
-      ++n_interface_edges;
-
-    auto v1_index = e_ptr->v1().index();
-    auto v2_index = e_ptr->v2().index();
-
-    auto fl_index = ( e_ptr->facet_l() != nullptr ) 
-                  ?   e_ptr->facet_l()->index()
-                  :   -1;
-    auto marker   = e_ptr->marker();
-
+  // Print out all valid boundary edges
+  os << "BOUNDARYEDGES " << boundary_edges.size() << "\n";
+  for ( auto& e_ptr : boundary_edges )
     os << std::setprecision(0) << std::fixed 
-      << std::setw(4) << v1_index << "," 
-      << std::setw(4) << v2_index << ","
-      << std::setw(4) << fl_index << ","
-      << std::setw(4) << marker << "\n";
-  }
+      << std::setw(4) << e_ptr->v1().index() << "," 
+      << std::setw(4) << e_ptr->v2().index() << ","
+      << std::setw(4) << e_ptr->facet_l()->index() << ","
+      << std::setw(4) << e_ptr->marker() << "\n";
 
-  os << "INTERFACEEDGES " << n_interface_edges << "\n";
-  for ( const auto& e_ptr : mesh.boundary_edges() )
-  {
-    if (e_ptr->twin_edge() == nullptr)
-      continue;
-
-    auto v1_index = e_ptr->v1().index();
-    auto v2_index = e_ptr->v2().index();
-
-    auto fl_index = ( e_ptr->facet_l() != nullptr ) 
-                  ?   e_ptr->facet_l()->index()
-                  :   -1;
-
-    auto e_twin = e_ptr->twin_edge();
-    auto f_twin = e_twin->facet_l();
-    auto fl_twin_index = ( f_twin != nullptr )
-                       ?   f_twin->index()
-                       :   -1;
-    auto fl_twin_color = ( f_twin != nullptr )
-                         ?   f_twin->color()
-                         :   -1;
-
+  // Print out all interface edges to other meshes
+  os << "INTERFACEEDGES " << interface_edges.size() << "\n";
+  for ( auto& e_ptr : interface_edges )
     os << std::setprecision(0) << std::fixed 
-      << std::setw(4) << v1_index << "," 
-      << std::setw(4) << v2_index << ","
-      << std::setw(4) << fl_index << ","
-      << std::setw(4) << fl_twin_index << ","
-      << std::setw(4) << fl_twin_color << "\n";
-  }
+      << std::setw(4) << e_ptr->v1().index() << "," 
+      << std::setw(4) << e_ptr->v2().index() << ","
+      << std::setw(4) << e_ptr->facet_l()->index() << ","
+      << std::setw(4) << e_ptr->twin_edge()->facet_l()->index() << ","
+      << std::setw(4) << e_ptr->twin_edge()->facet_l()->color() << "\n";
 
-  os << "FRONT " << mesh.front().size() << "\n";
-  for ( const auto& e_ptr : mesh.front() )
-  {
-    auto v1_index = e_ptr->v1().index();
-    auto v2_index = e_ptr->v2().index();
-    auto marker   = e_ptr->marker();
-
+  // Print out all advancing front edges
+  os << "FRONT " << front_edges.size() << "\n";
+  for ( auto& e_ptr : front_edges )
     os << std::setprecision(0) << std::fixed 
-      << std::setw(4) << v1_index << "," 
-      << std::setw(4) << v2_index << ","
-      << std::setw(4) << marker << "\n";
-  }
+      << std::setw(4) << e_ptr->v1().index() << "," 
+      << std::setw(4) << e_ptr->v2().index() << ","
+      << std::setw(4) << -1 << "\n";
 
+  // Print out all quads
   os << "QUADS " << mesh.quads().size() << "\n";
   for ( const auto& q_ptr : mesh.quads() )
-  {
-    auto v1_index = q_ptr->v1().index();
-    auto v2_index = q_ptr->v2().index();
-    auto v3_index = q_ptr->v3().index();
-    auto v4_index = q_ptr->v4().index();
-    auto color    = q_ptr->color();
-
     os << std::setprecision(0) << std::fixed
-      << std::setw(4) << v1_index << ","
-      << std::setw(4) << v2_index << ","
-      << std::setw(4) << v3_index << ","
-      << std::setw(4) << v4_index << ","
-      << std::setw(4) << color << "\n";
-  }
+      << std::setw(4) << q_ptr->v1().index() << ","
+      << std::setw(4) << q_ptr->v2().index() << ","
+      << std::setw(4) << q_ptr->v3().index() << ","
+      << std::setw(4) << q_ptr->v4().index() << ","
+      << std::setw(4) << q_ptr->color() << "\n";
 
+  // Print out all triangles
   os << "TRIANGLES " << mesh.triangles().size() << "\n";
   for ( const auto& t_ptr : mesh.triangles() )
-  {
-    auto v1_index = t_ptr->v1().index();
-    auto v2_index = t_ptr->v2().index();
-    auto v3_index = t_ptr->v3().index();
-    auto color    = t_ptr->color();
-
     os << std::setprecision(0) << std::fixed
-      << std::setw(4) << v1_index << ","
-      << std::setw(4) << v2_index << ","
-      << std::setw(4) << v3_index << ","
-      << std::setw(4) << color << "\n";
-  }
+      << std::setw(4) << t_ptr->v1().index() << ","
+      << std::setw(4) << t_ptr->v2().index() << ","
+      << std::setw(4) << t_ptr->v3().index() << ","
+      << std::setw(4) << t_ptr->color() << "\n";
 
+  // Print out all quad neighbors
   os << "QUADNEIGHBORS " << mesh.quads().size() << "\n";
   for ( const auto& q_ptr : mesh.quads() )
   {
@@ -3228,6 +2292,7 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
       << nbr4_index << "\n";
   }
 
+  // Print out all triangle neighbors
   os << "TRIANGLENEIGHBORS " << mesh.triangles().size() << "\n";
   for ( const auto& t_ptr : mesh.triangles() )
   {
@@ -3245,11 +2310,13 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
   for ( const auto& v_ptr : mesh.vertices() )
   {
     os << std::setprecision(5) << std::fixed 
-       << mesh.domain().size_function( v_ptr->xy() ) << "\n";
+       << v_ptr->mesh_size() << "\n";
   }
 
   return os;
 } 
+
+
 
 } // namespace TQAlgorithm
 } // namespace TQMesh

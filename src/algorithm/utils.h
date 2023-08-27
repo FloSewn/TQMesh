@@ -24,6 +24,7 @@ namespace TQMesh {
 namespace TQAlgorithm {
 
 /*********************************************************************
+<<<<<<< HEAD
 * This class is a container for all constants that are used 
 * in the code for the mesh generation 
 *********************************************************************/
@@ -176,16 +177,16 @@ private:
 inline MeshingConstants CONSTANTS;
 
 /*********************************************************************
+=======
+>>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
 * CONSTANTS
 *********************************************************************/
-constexpr double TQ_SMALL  = 1.0E-13; //DBL_EPSILON;
-constexpr double TQ_MAX    = DBL_MAX;
-constexpr double TQ_MIN    = DBL_MIN;
-
-/*********************************************************************
-* 
-*********************************************************************/
-enum class ExportType { cout, txt, vtu };
+constexpr int    INTERIOR_EDGE_MARKER  = -1;
+constexpr int    DEFAULT_ELEMENT_COLOR =  0;
+constexpr int    DEFAULT_MESH_ID       =  0;
+constexpr double TQ_SMALL              = 1.0E-13;
+constexpr double TQ_MAX                = DBL_MAX;
+constexpr double TQ_MIN                = DBL_MIN;
 
 } // namespace TQAlgorithm
 } // namespace TQMesh 

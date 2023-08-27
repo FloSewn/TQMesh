@@ -12,7 +12,7 @@
 #include <algorithm>   
 
 #include "Geometry.h"
-#include "Vec2.h"
+#include "VecND.h"
 #include "Container.h"
 
 namespace TQMesh {
@@ -27,14 +27,53 @@ class Edge;
 class Facet;
 
 /*********************************************************************
+* Different properties for mesh vertices 
+*********************************************************************/
+enum class VertexProperty : uint8_t {
+  no_property   = 0b00000000,
+  on_front      = 0b00000001,
+  in_quad_layer = 0b00000010,
+  is_fixed      = 0b00000100,
+  on_boundary   = 0b00001000,
+};
+
+// Overloaded bitwise NOT operator
+static inline VertexProperty operator~(VertexProperty prop) 
+{ return static_cast<VertexProperty>(~static_cast<uint8_t>(prop)); }
+
+// Overloaded compound bitwise OR operator for adding properties
+static inline VertexProperty&
+operator|=(VertexProperty& lhs, VertexProperty rhs) 
+{ 
+  lhs = static_cast<VertexProperty>(
+    static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs)
+  );
+  return lhs;
+}
+
+// Overloaded compound bitwise AND operator for removing properties
+static inline VertexProperty& 
+operator&=(VertexProperty& lhs, VertexProperty rhs) 
+{
+  lhs = static_cast<VertexProperty>(
+    static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs)
+  );
+  return lhs;
+}
+
+// Overloaded bitwise AND operator for checking vertex properties
+static inline bool 
+operator&(VertexProperty lhs, VertexProperty rhs) 
+{ return (static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs)) != 0; }
+
+
+
+/*********************************************************************
 * This class describes a Vertex in a 2 dimensional domain
 *********************************************************************/
-class Vertex
+class Vertex : public ContainerEntry<Vertex>
 {
 public:
-
-  friend Container<Vertex>;
-  using ContainerIterator = Container<Vertex>::List::iterator;
   using EdgeList = std::list<Edge*>;
   using FacetList = std::list<Facet*>;
   using VertexVector = std::vector<Vertex*>;
@@ -42,37 +81,64 @@ public:
   /*------------------------------------------------------------------
   | Constructor 
   ------------------------------------------------------------------*/
-  Vertex(double x, double y, double s=1.0, double r=1.0) 
-  : xy_ {x, y}, sizing_ {s}, range_ {r}
+  Vertex(double x, double y, double s=0.0, double r=0.0) 
+  : ContainerEntry(x,y), mesh_size_ {s}, size_range_ {r}
   {}
-  Vertex(const Vec2d& c, double s=1.0, double r=1.0) 
-  : xy_ {c}, sizing_ {s}, range_ {r}
+
+  Vertex(const Vec2d& c, double s=0.0, double r=0.0) 
+  : ContainerEntry(c), mesh_size_ {s}, size_range_ {r}
   {}
 
   /*------------------------------------------------------------------
   | Setters 
   ------------------------------------------------------------------*/
+  void mesh_size(double s) { mesh_size_ = s; }
+  void size_range(double r) { size_range_ = r; }
   void index (unsigned int i) { index_ = i; }
-  void on_front( bool f ) { on_front_ = f; }
-  void on_boundary( bool b ) { on_bdry_ = b; }
-  void xy(const Vec2d& c) { xy_ = c; }
-  void is_fixed( bool f ) { is_fixed_ = f; }
 
   /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
-  const Vec2d xy() const { return xy_; }
-  double sizing() const { return sizing_; }
-  double range() const { return range_; }
-  const ContainerIterator& pos() const { return pos_; }
+  double       mesh_size() const { return mesh_size_; }
+  double       size_range() const { return size_range_; }
   unsigned int index() const { return index_; }
-  bool on_front() const { return on_front_; }
-  bool on_boundary() const { return on_bdry_; }
-  bool is_fixed() const { return is_fixed_; }
 
+
+  /*------------------------------------------------------------------
+  | Handle vertex properties 
+  ------------------------------------------------------------------*/
+  const VertexProperty& properties() const { return properties_; }
+  void add_property(VertexProperty p) { properties_ |= p; }
+  void set_property(VertexProperty p) { properties_ = p; }
+  void remove_property(VertexProperty p) { properties_ &= ~p; }
+  bool has_property(VertexProperty p) const { return (properties_ & p); }
+  bool has_no_property() const 
+  { return (properties_ == VertexProperty::no_property); }
+
+  bool on_front() const { return has_property(VertexProperty::on_front); }
+  bool on_boundary() const { return has_property(VertexProperty::on_boundary); }
+  bool is_fixed() const { return has_property(VertexProperty::is_fixed); }
+  bool in_quad_layer() const { return has_property(VertexProperty::in_quad_layer); }
+
+  /*------------------------------------------------------------------
+  | Change vertex coordinate 
+  | ATTENTION: This function does not update the edges / facets that
+  | are attached to this vertex!
+  | -> Use MeshCleanup::set_vertex_coordinates() instead!!!
+  ------------------------------------------------------------------*/
+  void adjust_xy(const Vec2d& xy)
+  {
+    bool success = container_->update( *this, xy );
+    ASSERT( success, "Vertex::adjust_xy(): "
+        "Failed to update vertex coordinate.");
+    (void) success;
+  }
+
+  /*------------------------------------------------------------------
+  | Access edges that are adjacent to this vertex 
+  ------------------------------------------------------------------*/
   EdgeList& edges() { return edges_;}
   const EdgeList& edges() const { return edges_;}
-
   const Edge& edges(size_t i) const 
   { 
     ASSERT(!( i < 0 || i >= edges_.size() ),
@@ -83,6 +149,9 @@ public:
     return *(*iter);
   }
 
+  /*------------------------------------------------------------------
+  | Access facets that are adjacent to this vertex 
+  ------------------------------------------------------------------*/
   const FacetList& facets() const { return facets_;}
   const Facet& facets(size_t i) const
   {
@@ -94,23 +163,12 @@ public:
     return *(*iter);
   }
 
-  const VertexVector& vertices() const { return verts_; }
-  VertexVector& vertices() { return verts_; }
-  const Vertex* adjacent_vertex(size_t i) const { return verts_[i]; }
-  Vertex* adjacent_vertex(size_t i) { return verts_[i]; }
-
-  /*------------------------------------------------------------------
-  | Add / remove adjacent simplices 
-  ------------------------------------------------------------------*/
   void add_edge(Edge& e) { edges_.push_back(&e); }
   void remove_edge(Edge& e) { edges_.remove(&e); }
 
   void add_facet(Facet& t) { facets_.push_back(&t); }
   void remove_facet(Facet& t) { facets_.remove(&t); }
 
-  /*------------------------------------------------------------------
-  | Functions for adjacency checks
-  ------------------------------------------------------------------*/
   bool is_adjacent(const Edge& q) 
   {
     for ( auto e : edges_ )
@@ -132,7 +190,7 @@ public:
   bool intersects_facet(const Container<T>& facets,
                         const double range) const
   {
-    for ( const auto& f : facets.get_items(xy_, range) )
+    for ( const auto& f : facets.get_items(this->xy_, range) )
       if ( f->intersects_vertex( *this ) )
         return true;
 
@@ -140,57 +198,53 @@ public:
 
   } // intersects_facet()
 
+
   /*------------------------------------------------------------------
-  | Check if the facets that are adjacent to the vertex do interesect
-  | with each other 
+  | Check if the vertex is located within a minimum distance to 
+  | a mesh's edges
   ------------------------------------------------------------------*/
-  template <typename T>
-  bool adjacent_facet_intersection(const std::list<T*>& facets) const
+  template <typename Mesh>
+  bool intersects_mesh_edges(const Mesh& mesh, 
+                             const double search_range,
+                             const double limit_range) const
   {
-    for ( const auto& f : facets )
+    const double limit_sqr = limit_range * limit_range;
+
+    for ( const auto& e_ptr : mesh.get_intr_edges(this->xy_, search_range) )
     {
-      for ( const auto& n : facets )
-      {
-        if ( f == n ) 
-          continue;
+      const Vec2d& xy1 = e_ptr->v1().xy();
+      const Vec2d& xy2 = e_ptr->v2().xy();
+      const double dist_sqr = distance_point_edge_sqr(this->xy_, xy1, xy2);
 
-        for (size_t i = 0; i < f->n_vertices(); ++i)
-          if ( n->intersects_vertex( f->vertex(i) ) )
-            return true;
-      }
+      if (dist_sqr <= limit_sqr)
+        return true;
     }
-    return false;
-  }
 
-  /*------------------------------------------------------------------
-  | Mandatory container functions 
-  ------------------------------------------------------------------*/
-  bool in_container() const { return in_container_; }
+    for ( const auto& e_ptr : mesh.get_bdry_edges(this->xy_, search_range) )
+    {
+      const Vec2d& xy1 = e_ptr->v1().xy();
+      const Vec2d& xy2 = e_ptr->v2().xy();
+      const double dist_sqr = distance_point_edge_sqr(this->xy_, xy1, xy2);
+
+      if (dist_sqr <= limit_sqr)
+        return true;
+    }
+
+    return false;
+
+  } // intersects_mesh_edges()
 
 private:
   /*------------------------------------------------------------------
-  | Mandatory container functions 
-  ------------------------------------------------------------------*/
-  void container_destructor() {}
-
-  /*------------------------------------------------------------------
   | Vertex attributes 
   ------------------------------------------------------------------*/
-  Vec2d               xy_;
   EdgeList            edges_    { };
   FacetList           facets_   { };
-  VertexVector        verts_    { };
 
-  double              sizing_   { 1.0 };
-  double              range_    { 1.0 };
-  unsigned int        index_    {  0  };
-  bool                on_front_ { false };
-  bool                on_bdry_  { false };
-  bool                is_fixed_ { false };
-
-  // Mandatory container attributes
-  ContainerIterator   pos_;
-  bool                in_container_;
+  double              mesh_size_  { 0.0 };
+  double              size_range_ { 0.0 };
+  unsigned int        index_      { 0   };
+  VertexProperty      properties_ { VertexProperty::no_property};
 
 }; // Vertex 
 
@@ -206,9 +260,9 @@ static std::ostream& operator<<(std::ostream& os,
                                 const Vertex& v)
 { return os << v.xy(); }
 
-/***********************************************************
+/*********************************************************************
 * Vertex equality operator 
-***********************************************************/
+*********************************************************************/
 static bool operator==(const Vertex& v1, const Vertex& v2)
 { return &v1 == &v2; }
 static bool operator!=(const Vertex& v1, const Vertex& v2)

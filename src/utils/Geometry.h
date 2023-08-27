@@ -8,7 +8,7 @@
 #pragma once
 
 #include "MathUtility.h"
-#include "Vec2.h"
+#include "VecND.h"
 
 namespace CppUtils {
 
@@ -95,7 +95,7 @@ static inline bool in_segment(const Vec2<T>& p,
   const Vec2<T> d_qp  = q-p;
   const Vec2<T> d_rp  = r-p;
   const T t = dot(d_rp, d_qp); 
-  const T l2 = d_qp.length_squared();
+  const T l2 = d_qp.norm_sqr();
 
   if ( t > 0 && t < l2)
     return true;
@@ -118,11 +118,42 @@ static inline bool in_on_segment(const Vec2<T>& p,
   const Vec2<T> d_qp  = q-p;
   const Vec2<T> d_rp  = r-p;
   const T t = dot(d_rp, d_qp); 
-  const T l2 = d_qp.length_squared();
+  const T l2 = d_qp.norm_sqr();
 
   if ( t >= 0 && t <= l2)
     return true;
   
+  return false;
+}
+
+/*--------------------------------------------------------------------
+| Check if two lines (p1,q1) and (p2,q2) cross
+| 
+| * Returns true, if segments intersect at any point but
+|   their edges
+| * Returns false, if one line contains a part of the other
+| * Returns false, if both lines share both end points
+| * Returns false in all other cases
+--------------------------------------------------------------------*/
+template <typename T>
+static inline bool line_line_crossing(const Vec2<T>& p1,
+                                      const Vec2<T>& q1,
+                                      const Vec2<T>& p2,
+                                      const Vec2<T>& q2)
+{
+  Orientation o1 = orientation(p1, q1, p2);
+  Orientation o2 = orientation(p1, q1, q2);
+  Orientation o3 = orientation(p2, q2, p1);
+  Orientation o4 = orientation(p2, q2, q1);
+
+  if (  ( (o1 == Orientation::CCW && o2 == Orientation::CW ) ||
+          (o1 == Orientation::CW  && o2 == Orientation::CCW) ) 
+     && ( (o3 == Orientation::CCW && o4 == Orientation::CW ) ||
+          (o3 == Orientation::CW  && o4 == Orientation::CCW) ) )
+  {
+    return true;
+  }
+
   return false;
 }
 
@@ -173,6 +204,8 @@ static inline bool line_line_intersection(const Vec2<T>& p1,
   return false;
 }
 
+
+
 /*--------------------------------------------------------------------
 | Check if a line segment (a,b) intersects with a 
 | triangle (p,q,r) 
@@ -196,6 +229,31 @@ static inline bool line_tri_intersection(const Vec2<T>& a,
   return ( line_line_intersection(a,b, p,q) || 
            line_line_intersection(a,b, q,r) || 
            line_line_intersection(a,b, r,p)  );
+}
+
+/*--------------------------------------------------------------------
+| Check if a line segment (a,b) crosses a 
+| triangle (p,q,r)  
+| 
+| * Returns true, if segment intersects at any 
+|   point but the triangle edges
+| * Returns false, if one segment edge contains a part of 
+|   the triangle (since only crossing of edges is checked)
+| * Returns false, if both the edge segment and the triangle
+|   share both end points
+|   -> proper adjacent triangles (share edge points)
+| * Returns false in all other cases
+--------------------------------------------------------------------*/
+template <typename T>
+static inline bool line_tri_crossing(const Vec2<T>& a,
+                                     const Vec2<T>& b,
+                                     const Vec2<T>& p,
+                                     const Vec2<T>& q,
+                                     const Vec2<T>& r)
+{
+  return ( line_line_crossing(a,b, p,q) || 
+           line_line_crossing(a,b, q,r) || 
+           line_line_crossing(a,b, r,p)  );
 }
 
 /*--------------------------------------------------------------------
@@ -411,34 +469,35 @@ inline bool in_quad(const Vec2<T>& v,
 }
 
 /*--------------------------------------------------------------------
-| Function returns the squared normal distance between an
-| edge and a node.
-| The edge is defined through its vertices (v,w)
-| The node is defined through its coordinates p
+| This function returns the squared normal distance between a point p
+| and a line segment defined by its vertices (e1,e2).
 | 
 | Reference:
 | https://stackoverflow.com/questions/849211/shortest-\
 | distance-between-a-point-and-a-line-segment
 --------------------------------------------------------------------*/
-template <typename T>
-inline double vertex_edge_dist_sqr(const Vec2<T>& p,
-                                   const Vec2<T>& v,
-                                   const Vec2<T>& w)
+template <typename CoordType, std::size_t Dim>
+inline double distance_point_edge_sqr(const VecND<CoordType,Dim>& p,
+                                      const VecND<CoordType,Dim>& e1,
+                                      const VecND<CoordType,Dim>& e2)
 {
-  const Vec2<T> d_wv = w - v;
-  const Vec2<T> d_pv = p - v;
+  const VecND<CoordType,Dim> delta_edge = e2 - e1;
+  const VecND<CoordType,Dim> delta_p = p - e1;
 
-  // Project p onto segment v->w
-  const T dot_p = dot(d_pv, d_wv) / d_wv.length_squared();
+  const CoordType zero {};
+  const CoordType one {static_cast<CoordType>(1)};
+
+  // Project p onto segment e1->e2
+  const CoordType dot_p = dot(delta_p, delta_edge) / delta_edge.norm_sqr();
 
   // Clip projection onto the segment 
-  const T t = MAX(0.0, MIN(1.0, dot_p) );
+  const CoordType t = std::clamp(dot_p, zero, one); 
 
   // Projected p 
-  const Vec2<T> proj_p = v + t * d_wv;
+  const VecND<CoordType,Dim> proj_p = e1 + t * delta_edge;
 
   // Squared distance between projected and actual vertex
-  return (p - proj_p).length_squared();
+  return (p - proj_p).norm_sqr();
 }
 
 /*--------------------------------------------------------------------
@@ -456,6 +515,29 @@ inline bool segment_overlap(const Vec2<T>& v1, const Vec2<T> w1,
     return true;
 
   return false;
+}
+
+/*--------------------------------------------------------------------
+| Use Shoelace formula to compute the area of a 2D polygon. The 
+| latter is defined as a oriented list of edge segments, that are 
+| passed in terms of a vector of 2D vertex coordinates.
+| Returns a positive area if the polygon is defined in a 
+| counter-clockwise direction and a negative area vice versa.
+--------------------------------------------------------------------*/
+template <typename T>
+inline T polygon_area(const std::vector<Vec2<T>>& vertices)
+{
+  T area {};
+  std::size_t n = vertices.size();
+
+  for ( std::size_t i = 0; i < n; ++i )
+  {
+    std::size_t j = MOD(i + 1, n);
+    area += (vertices[i].y + vertices[j].y) 
+          * (vertices[i].x - vertices[j].x);
+  }
+
+  return area / 2;
 }
 
 } // namespace CppUtils

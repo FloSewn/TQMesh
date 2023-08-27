@@ -14,7 +14,7 @@
 
 #include "tests.h"
 
-#include "Vec2.h"
+#include "VecND.h"
 #include "Testing.h"
 #include "Timer.h"
 #include "Container.h"

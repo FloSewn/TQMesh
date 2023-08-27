@@ -13,7 +13,6 @@
 #include <array>          // std::array
 #include <functional>     // std::function
 
-#include "utils.h"
 #include "Boundary.h"
 
 namespace TQMesh {
@@ -25,6 +24,162 @@ using namespace CppUtils;
 * A size function definition by the user
 *********************************************************************/
 using UserSizeFunction = std::function<double(const Vec2d& xy)>;
+
+
+/*********************************************************************
+* This class defines the local mesh size
+*********************************************************************/
+class SizeFunction
+{
+public:
+  /*------------------------------------------------------------------
+  | Constructor
+  ------------------------------------------------------------------*/
+  SizeFunction(UserSizeFunction f) : f_ { f } {}
+
+  /*------------------------------------------------------------------
+  | Getter
+  ------------------------------------------------------------------*/
+  const UserSizeFunction& user_size_function() const { return f_; }
+  UserSizeFunction& user_size_function() { return f_; }
+
+  /*------------------------------------------------------------------
+  | Evaluate the domain's size function at a given point
+  ------------------------------------------------------------------*/
+  template <typename Domain>
+  inline double evaluate(const Vec2d& xy, 
+                         const Domain& domain) const
+  {
+    // The underlying size function
+    const double h_fun = f_(xy);
+
+    if ( h_fun <= 0.0 )
+      TERMINATE("SizeFunction::evaluate(): Encountered invalid value (<=0).");
+
+    double h = h_fun;
+
+    // Gather distance contribution of each boundary vertices
+    for ( const auto& boundary : domain )
+      for ( const auto& edge : boundary.get()->edges() )
+      {
+        const Vec2d&  v1_xy = edge->v1().xy();
+        const Vec2d&  v2_xy = edge->v2().xy();
+
+        const double el = edge->length();
+        const double r = MAX(h_fun/el, el/h_fun);
+
+        const double d1_sqr = (xy - v1_xy).norm_sqr();
+        const double d2_sqr = (xy - v2_xy).norm_sqr();
+
+        const double s1 = (edge->v1().size_range() <= 0.0) 
+                        ? el : edge->v1().size_range();
+        const double s2 = (edge->v2().size_range() <= 0.0) 
+                        ? el : edge->v2().size_range();
+
+        const double s1_inv = 1.0 / (r* s1);
+        const double s2_inv = 1.0 / (r* s2);
+
+        const double z1 = exp(-d1_sqr * s1_inv * s1_inv);
+        const double z2 = exp(-d2_sqr * s2_inv * s2_inv);
+
+        const double h1 = (edge->v1().mesh_size() <= 0.0)
+                        ? h_fun : edge->v1().mesh_size();
+
+        const double h2 = (edge->v2().mesh_size() <= 0.0)
+                        ? h_fun : edge->v2().mesh_size();
+
+        const double hv1 = z1*MIN(h1,el) + (1.0-z1)*h_fun;
+        const double hv2 = z2*MIN(h2,el) + (1.0-z2)*h_fun;
+
+        h = MIN(h, hv1);
+        h = MIN(h, hv2);
+      }
+
+    // Gather distance contribution of fixed vertices
+    for ( auto& vertex : domain.fixed_vertices() )
+    {
+      if (vertex->mesh_size() <= 0.0) 
+        continue;
+
+      const double d_sqr = (xy - vertex->xy()).norm_sqr();
+      const double s_inv = (vertex->size_range() <= 0.0) 
+                         ? 1.0/h_fun : 1.0/vertex->size_range();
+
+      const double z = exp(-d_sqr * s_inv * s_inv);
+      h = MIN(h, z*vertex->mesh_size() + (1.0-z)*h_fun);
+    }
+
+    return h;
+
+  } // evaluate()
+
+  /*------------------------------------------------------------------
+  | Export the size function to a cartesian grid
+  ------------------------------------------------------------------*/
+  template<typename Domain>
+  void export_size_function(std::ostream& os,
+                            const Domain& domain,
+                            const Vec2d& xy_min, const Vec2d& xy_max,
+                            unsigned int Nx, unsigned int Ny) const
+  {
+    const Vec2d len = xy_max - xy_min;
+    const Vec2d dxy = { len.x / static_cast<double>(Nx),
+                        len.y / static_cast<double>(Ny) };
+
+    std::vector<double> values {};
+    values.reserve( Nx * Ny );
+
+    // Compute size function values at various positions
+    for (unsigned int j = 0; j < Ny; ++j)
+    {
+      for (unsigned int i = 0; i < Nx; ++i)
+      {
+        const Vec2d xy = { xy_min.x + static_cast<double>(i)*dxy.x,
+                           xy_min.y + static_cast<double>(j)*dxy.y };
+        const double h = this->evaluate( xy, domain );
+
+        values.push_back( h );
+      }
+    }
+
+    os << "SIZE-FUNCTION " 
+       << std::setprecision(5) << std::fixed 
+       << xy_min.x << " " << xy_min.y << " "
+       << xy_max.x << " " << xy_max.y << " "
+       << Nx << " " << Ny << "\n";
+
+    // Print data to the output stream
+    unsigned int nx = 10;
+    unsigned int ny = (Nx*Ny) / nx;
+    unsigned int index = 0;
+
+    for ( unsigned int j = 0; j < ny; ++j )
+    {
+      for ( unsigned int i = 0; i < nx; ++i )
+      {
+        os << std::setprecision(5) << std::fixed 
+           << values[index]  << ( (i==nx-1) ? "" : "," );
+        ++index;
+      }
+      os << "\n";
+    }
+
+    for ( ; index < Nx * Ny; ++index )
+      os << std::setprecision(5) << std::fixed 
+                << values[index]  << ( (index==Nx*Ny-1) ? "" : "," );
+    os << "\n";
+
+  } // export_size_function()
+
+private:
+
+  /*------------------------------------------------------------------
+  | Attributes
+  ------------------------------------------------------------------*/
+  UserSizeFunction f_;
+
+}; // SizeFunction
+
 
 /*********************************************************************
 * This class is a simple container for boundaries
@@ -52,13 +207,9 @@ public:
   Domain( UserSizeFunction f = [](const Vec2d& p){return 1.0;},
           double qtree_scale = ContainerQuadTreeScale,
           size_t qtree_items = ContainerQuadTreeItems, 
-          size_t qtree_depth = ContainerQuadTreeDepth,
-          double min_size    = CONSTANTS.minimum_element_size(),
-          double min_scaling = CONSTANTS.minimum_element_scaling() )
-  : f_ { f }
+          size_t qtree_depth = ContainerQuadTreeDepth )
+  : size_fun_ { f }
   , verts_ { qtree_scale, qtree_items, qtree_depth }
-  , min_size_ { min_size }
-  , min_scaling_ { min_scaling }
   { }
 
   /*------------------------------------------------------------------
@@ -89,12 +240,27 @@ public:
   const Vertices& vertices() const { return verts_; }
   Vertices& vertices() { return verts_; }
 
-  const UserSizeFunction& size_function() const { return f_; }
-  UserSizeFunction& size_function() { return f_; }
+  const UserSizeFunction& user_size_function() const 
+  { return size_fun_.user_size_function(); }
+  UserSizeFunction& user_size_function() 
+  { return size_fun_.user_size_function(); }
 
-  double min_size() const { return min_size_; }
-  double min_scaling() const { return min_scaling_; }
+  const VertexVector& fixed_vertices() const { return fixed_verts_; }
+  VertexVector& fixed_vertices() { return fixed_verts_; }
 
+  /*------------------------------------------------------------------
+  | Setter 
+  ------------------------------------------------------------------*/
+  void quad_tree_scale(double v) { verts_.quad_tree().scale(v); }
+  void quad_tree_max_item(size_t v) { verts_.quad_tree().max_item(v); }
+  void quad_tree_max_depth(size_t v) { verts_.quad_tree().max_depth(v); }
+  void quad_tree_center(const Vec2d& v) { verts_.quad_tree().center(v); }
+
+  /*------------------------------------------------------------------
+  | Evaluate the domain's size function at a given point
+  ------------------------------------------------------------------*/
+  inline double size_function(const Vec2d& xy) const
+  { return size_fun_.evaluate(xy, *this); }
 
   /*------------------------------------------------------------------
   | Insert any boundary through constructor behind 
@@ -104,7 +270,7 @@ public:
   Boundary& insert_boundary( const_iterator pos, Args&&... args )
   {
     std::unique_ptr<Boundary> b_ptr 
-      = std::make_unique<Boundary>(args...);
+      = std::make_unique<Boundary>(this->verts_, args...);
 
     Boundary* ptr = b_ptr.get();
 
@@ -170,7 +336,7 @@ public:
   /*------------------------------------------------------------------
   | Count the number of edge overlaps between this and another domain
   ------------------------------------------------------------------*/
-  size_t get_overlaps(const Domain& nbr_domain)
+  size_t count_edge_overlaps(const Domain& nbr_domain)
   {
     size_t n_overlaps = 0;
 
@@ -184,7 +350,7 @@ public:
         // search in vicinity of current edge for edges of the 
         // neighboring domain. 
         const Vec2d c  = e->xy();
-        double radius  = CONSTANTS.edge_search_factor() * e->length();
+        double radius  = edge_overlap_range_ * e->length();
 
         std::vector<Edge*> nbr_edges = nbr_domain.get_edges(c, radius);
 
@@ -201,58 +367,7 @@ public:
 
     return n_overlaps;
 
-  } // Domain::overlaps()
-
-  /*------------------------------------------------------------------
-  | Evaluate the domain's size function at a given point
-  ------------------------------------------------------------------*/
-  inline double size_function(const Vec2d& xy) const
-  {
-    double scaling = 1.0;
-
-    const double h = f_(xy);
-
-    // Reduces value by contribution of boundary vertices
-    for ( const auto& boundary : (*this) )
-    {
-      for ( const auto& e : boundary.get()->edges() )
-      {
-        const Vertex& v1 = e->v1();
-
-        // User defined vertex sizing
-        const double s_v = v1.sizing();
-
-        // At small boundary segments, reduce size function locally
-        // in order to obtain smooth element distribution
-        const double fxy   = scaling * f_( v1.xy() );
-        const double ratio = sqrt( e->length() / fxy );
-        const double s_e   = std::min(1.0, ratio );
-
-        const double range = v1.range();
-        const double l2 = range * range; 
-        const double r2 = ( xy - v1.xy() ).length_squared();
-        const double fac  = exp( -r2 / l2);
-        scaling *= 1.0 + fac * (s_e*s_v - 1.0);
-      }
-    }
-
-    // Reduces value by contribution of fixed vertices
-    for ( auto& v : fixed_verts_ )
-    {
-      const double s_v = v->sizing();
-      const double range = v->range();
-
-      const double l2 = range * range; 
-      const double r2 = ( xy - v->xy() ).length_squared();
-      const double fac  = exp( -r2 / l2);
-      scaling *= 1.0 + fac * (s_v - 1.0);
-    }
-
-    // Apply lower threshold for scale factor 
-    scaling = std::max(scaling, min_scaling_);
-
-    return ( std::max( h * scaling, min_size_ ) );
-  }
+  } // Domain::count_edge_overlaps()
 
   /*------------------------------------------------------------------
   | Add a vertex to the domain
@@ -261,22 +376,16 @@ public:
   Vertex& add_vertex( Args&&... args )
   {
     Vertex& v_new = verts_.push_back( args... );
-    v_new.is_fixed( false );
-    v_new.on_front( true );
-    v_new.on_boundary( false );
 
     return v_new;
+
   } // Domain::add_vertex() 
 
   /*------------------------------------------------------------------
   | Remove a vertex from the domain
   ------------------------------------------------------------------*/
   void remove_vertex(Vertex& v) 
-  { 
-    verts_.remove( v );
-
-  } // Domain::remove_vertex()
-
+  { verts_.remove( v ); } 
 
   /*------------------------------------------------------------------
   | Add a fixed vertex, which will be incorporated in the meshing
@@ -286,9 +395,7 @@ public:
   Vertex& add_fixed_vertex( Args&&... args )
   {
     Vertex& v_new = verts_.push_back( args... );
-    v_new.is_fixed( true );
-    v_new.on_front( true );
-    v_new.on_boundary( false );
+    v_new.add_property(VertexProperty::is_fixed);
 
     fixed_verts_.push_back( &v_new );
 
@@ -319,56 +426,7 @@ public:
   void export_size_function(std::ostream& os,
                             const Vec2d& xy_min, const Vec2d& xy_max,
                             unsigned int Nx, unsigned int Ny)
-  {
-    const Vec2d len = xy_max - xy_min;
-    const Vec2d dxy = { len.x / static_cast<double>(Nx),
-                        len.y / static_cast<double>(Ny) };
-
-    std::vector<double> values {};
-    values.reserve( Nx * Ny );
-
-    // Compute size function values at various positions
-    for (unsigned int j = 0; j < Ny; ++j)
-    {
-      for (unsigned int i = 0; i < Nx; ++i)
-      {
-        const Vec2d xy = { xy_min.x + static_cast<double>(i)*dxy.x,
-                           xy_min.y + static_cast<double>(j)*dxy.y };
-        const double h = this->size_function( xy );
-
-        values.push_back( h );
-      }
-    }
-
-    os << "SIZE-FUNCTION " 
-       << std::setprecision(5) << std::fixed 
-       << xy_min.x << " " << xy_min.y << " "
-       << xy_max.x << " " << xy_max.y << " "
-       << Nx << " " << Ny << "\n";
-
-    // Print data to the user
-    unsigned int nx = 10;
-    unsigned int ny = (Nx*Ny) / nx;
-    unsigned int index = 0;
-
-    for ( unsigned int j = 0; j < ny; ++j )
-    {
-      for ( unsigned int i = 0; i < nx; ++i )
-      {
-        os << std::setprecision(5) << std::fixed 
-           << values[index]  << ( (i==nx-1) ? "" : "," );
-        ++index;
-      }
-      os << "\n";
-    }
-
-    for ( ; index < Nx * Ny; ++index )
-      os << std::setprecision(5) << std::fixed 
-                << values[index]  << ( (index==Nx*Ny-1) ? "" : "," );
-    os << "\n";
-
-  } // Domain::export_size_function()
-
+  { size_fun_.export_size_function(os, *this, xy_min, xy_max, Nx, Ny); }
 
   /*------------------------------------------------------------------
   | This function calculates the area enclosed by all boundaries
@@ -376,24 +434,20 @@ public:
   double area() const
   {
     double area = 0.0;
-    
     for ( const auto& boundary : (*this) )
       area += boundary.get()->area();
-
     return area;
-
-  } // Domain::area()
+  } 
 
 
 private:
   Vector           boundaries_;
 
-  UserSizeFunction f_;
+  SizeFunction     size_fun_;
   Vertices         verts_;
-  double           min_size_    { 0.0 };
-  double           min_scaling_ { 0.0 };
-
   VertexVector     fixed_verts_ {};
+
+  double           edge_overlap_range_ { 1.5 };
 
 }; // Domain
 

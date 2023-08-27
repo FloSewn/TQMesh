@@ -7,16 +7,16 @@
 */
 #pragma once
 
-#include <list>
 #include <iomanip>   
 #include <algorithm>   
 
-#include "utils.h"
 #include "Geometry.h"
-#include "Vec2.h"
+#include "VecND.h"
 #include "Container.h"
 
+#include "utils.h"
 #include "Vertex.h"
+#include "Facet.h"
 
 namespace TQMesh {
 namespace TQAlgorithm {
@@ -26,7 +26,6 @@ using namespace CppUtils;
 /*********************************************************************
 * Forward declarations
 *********************************************************************/
-class Facet;
 class EdgeList;
 
 
@@ -43,59 +42,38 @@ class EdgeList;
 *
 *
 *********************************************************************/
-class Edge
+class Edge : public ContainerEntry<Edge>
 {
 public:
-
-  friend Container<Edge>;
-  using List = typename Container<Edge>::List;
-  using ContainerIterator = typename Container<Edge>::List::iterator;
-  using EdgeArray = std::array<Edge*,2>;
-
   /*------------------------------------------------------------------
   | Constructor 
   ------------------------------------------------------------------*/
   Edge(Vertex& v1, Vertex& v2, EdgeList& edgelist, int m) 
-  : v1_       {&v1}
+  : ContainerEntry<Edge>( 0.5 * ( v1.xy()+v2.xy() ) )
+  , v1_       {&v1}
   , v2_       {&v2}
   , edgelist_ {&edgelist} 
   , marker_   {m}
   {
     ASSERT((v1_ && v2_),
         "Failed to create edge structure due to given nullptr." );
-      
-    const Vec2d d_xy = v2_->xy() - v1_->xy();
 
-    xy_     = 0.5 * ( v1_->xy() + v2_->xy() );
-    length_ = d_xy.length();
-    tang_   = d_xy / length_;
+    update_metrics(false);
 
-    norm_.x = -tang_.y;
-    norm_.y =  tang_.x;
+    ASSERT( length_ > 0.0, 
+        "Edge: Invalid edge definition - edge length is zero.");
 
     v1_->add_edge( *this );
     v2_->add_edge( *this );
   }
 
   /*------------------------------------------------------------------
-  | Initialize the boundary data structure 
-  ------------------------------------------------------------------*
-  BdryEdgeData* init_bdry_data() 
-  {
-    bdry_data_ = std::make_unique<BdryEdgeData>();
-    return bdry_data_.get();
-  } */
-
-  /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
-  const Vec2d& xy() const { return xy_; }
   int marker() const { return marker_; }
 
   EdgeList& edgelist() { return *edgelist_; }
   const EdgeList& edgelist() const { return *edgelist_; }
-
-  const ContainerIterator& pos() const { return pos_; }
 
   const Vertex& v1() const { return *v1_; };
   const Vertex& v2() const { return *v2_; };
@@ -128,7 +106,7 @@ public:
   | or if it is in the interior of the domain
   ------------------------------------------------------------------*/
   bool on_boundary() const 
-  { return ( marker_ != CONSTANTS.interior_edge_marker() ); }
+  { return ( marker_ != INTERIOR_EDGE_MARKER ); }
   bool is_interior() const
   { return !on_boundary(); }
 
@@ -189,15 +167,33 @@ public:
   } // get_prev_edge()
 
   /*------------------------------------------------------------------
-  | Mandatory container functions 
+  | Update the edge if its vertices changed
   ------------------------------------------------------------------*/
-  bool in_container() const { return in_container_; }
+  void update_metrics(bool update_centroid=true) 
+  {
 
-private:
+    if ( update_centroid )
+    {
+      Vec2d xy_new = 0.5 * ( v1_->xy() + v2_->xy() );
+      bool success = container_->update( *this, xy_new );
+      ASSERT( success, "Edge::update_metrics(): "
+          "Failed to update edge centroid.");
+      (void) success;
+    }
+
+    const Vec2d d_xy = v2_->xy() - v1_->xy();
+
+    length_ = d_xy.norm();
+    tang_   = d_xy / length_;
+
+    norm_.x = -tang_.y;
+    norm_.y =  tang_.x;
+  }
+
   /*------------------------------------------------------------------
-  | Mandatory container functions 
+  | Destructor function for container garbage collection
   ------------------------------------------------------------------*/
-  void container_destructor() 
+  void container_destructor() override
   { 
     if (v1_) v1_->remove_edge( *this );
     if (v2_) v2_->remove_edge( *this );
@@ -206,6 +202,8 @@ private:
     v2_ = nullptr;
   }
 
+
+private:
   /*------------------------------------------------------------------
   | Edge attributes 
   ------------------------------------------------------------------*/
@@ -215,24 +213,19 @@ private:
   int                 marker_   { -1 };
 
   // Edge properties
-  Vec2d               xy_          { 0.0, 0.0 };
   double              length_      { 0.0 };
   Vec2d               tang_        { 0.0, 0.0 };
   Vec2d               norm_        { 0.0, 0.0 };
 
   // Pointer to adjacent facets
-  Facet*              face_l_ {nullptr};
-  Facet*              face_r_ {nullptr};
+  Facet*              face_l_ { &NullFacet::get_instance() };
+  Facet*              face_r_ { &NullFacet::get_instance() };
 
   // Sub vertex for quad refinement of the mesh
-  Vertex*             sub_vertex_    {nullptr};
+  Vertex*             sub_vertex_ {nullptr};
 
   // Twin edge of a neighbor mesh
   Edge*               twin_edge_ {nullptr};
-
-  // Mandatory container attributes
-  ContainerIterator   pos_;
-  bool                in_container_;
 
 }; // Edge 
 

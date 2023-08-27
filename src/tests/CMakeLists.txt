@@ -8,8 +8,10 @@ add_executable( ${TESTS}
   tests_EdgeList.cpp
   tests_Boundary.cpp
   tests_SizeFunction.cpp
-  tests_Smoother.cpp
   tests_Mesh.cpp
+  tests_MeshGenerator.cpp
+  tests_MeshCleanup.cpp
+  tests_SmoothingStrategy.cpp
   tests.cpp
   main.cpp
 )

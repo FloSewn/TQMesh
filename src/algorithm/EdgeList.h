@@ -11,7 +11,7 @@
 
 #include "Container.h"
 #include "utils.h"
-#include "Vec2.h"
+#include "VecND.h"
 #include "Geometry.h"
 
 #include "Edge.h"
@@ -23,12 +23,12 @@ using namespace CppUtils;
 
 /*********************************************************************
 * This class represents a directed list of edges
-*
-*
 *********************************************************************/
 class EdgeList
 {
 public:
+
+  using EdgeVector = std::vector<Edge*>;
 
   using iterator       = Container<Edge>::iterator;
   using const_iterator = Container<Edge>::const_iterator;
@@ -47,6 +47,11 @@ public:
     ASSERT( ( orient != Orientation::CL ),
         "Invalid edge list orientation.");
   }
+
+  /*------------------------------------------------------------------
+  | Destructor
+  ------------------------------------------------------------------*/
+  ~EdgeList() {}
 
   /*------------------------------------------------------------------
   | Copy Constructor
@@ -77,9 +82,14 @@ public:
   /*------------------------------------------------------------------
   | Return all edges that within a given position and radius
   ------------------------------------------------------------------*/
-  std::vector<Edge*>
-  get_edges(const Vec2d& center, const double radius) const
+  EdgeVector get_edges(const Vec2d& center, const double radius) const
   { return std::move( edges_.get_items(center, radius) ); }
+
+  /*------------------------------------------------------------------
+  | Return the nearest edge to a given location
+  ------------------------------------------------------------------*/
+  Edge* get_nearest_edge(const Vec2d& location) const
+  { return edges_.get_nearest(location); }
   
 
   /*------------------------------------------------------------------
@@ -106,7 +116,7 @@ public:
   | Boundary edges are assumed to be defined with a marker > 0
   ------------------------------------------------------------------*/
   virtual Edge& insert_edge(const_iterator pos, Vertex& v1, Vertex& v2, 
-                            int marker=CONSTANTS.interior_edge_marker())
+                            int marker=INTERIOR_EDGE_MARKER)
   {
     Edge& e = edges_.insert(pos, v1, v2, *this, marker);
     if ( orient_ != Orientation::NONE )
@@ -131,7 +141,7 @@ public:
   |   connected to more than two edges of this list type
   ------------------------------------------------------------------*/
   virtual Edge& add_edge(Vertex& v1, Vertex& v2, 
-                         int marker=CONSTANTS.interior_edge_marker())
+                         int marker=INTERIOR_EDGE_MARKER)
   { 
     if ( orient_ == Orientation::NONE || edges_.size() < 1 )
       return insert_edge( edges_.end(), v1, v2, marker ); 
@@ -175,8 +185,7 @@ public:
   | The old edge is removed from the edgelist.
   ------------------------------------------------------------------*/
   std::pair<Edge*, Edge*>
-  split_edge(Edge& edge, Vertices& vertices, const double s,
-             bool fix_new_vertex=false) 
+  split_edge(Edge& edge, Vertices& vertices, const double s) 
   {
     if ( &edge.edgelist() != this )
       return std::move( std::pair<Edge*,Edge*>(nullptr,nullptr) );
@@ -190,24 +199,24 @@ public:
     Vertex& v2 = edge.v2();
 
     const Vec2d xy_new  = s * v1.xy()     + q * v2.xy();
-    const double sizing = s * v1.sizing() + q * v2.sizing();
-    const double range  = s * v1.range()  + q * v2.range();
+    const double sizing = s * v1.mesh_size() + q * v2.mesh_size();
+    const double range  = s * v1.size_range()  + q * v2.size_range();
 
     // Place new vertex between v1 and v2
     Vertex& v_new = vertices.insert(v2.pos(), xy_new, sizing, range);
 
-    if ( fix_new_vertex )
-      v_new.is_fixed( true );
+    // Set vertex properties
+    v_new.add_property( v1.properties() );
+    v_new.add_property( v2.properties() );
 
-    int marker = edge.marker();
-    bool on_boundary = edge.on_boundary();
+    if ( !edge.on_boundary() )
+      v_new.remove_property( VertexProperty::on_boundary );
+
+    int marker       = edge.marker();
 
     Edge& e1_new = this->insert_edge(edge.pos(), v1, v_new, marker);
     Edge& e2_new = this->insert_edge(edge.pos(), v_new, v2, marker);
 
-    v1.on_boundary( on_boundary );
-    v_new.on_boundary( on_boundary );
-    v2.on_boundary( on_boundary );
 
     // Remove old edge
     this->remove(edge);
@@ -218,18 +227,15 @@ public:
   } // EdgeList::split_edge()
 
   /*------------------------------------------------------------------
-  | Check if a simplex is inside the area that is surrounded by the 
-  | edges. If the object is located on the edge semgents, it is 
+  | Check if a coordinate is inside the area that is surrounded by the 
+  | edges. If the coordinate is located on the edge semgents, it is 
   | treated as lying inside.
   | Source: http://alienryderflex.com/polygon/
   ------------------------------------------------------------------*/
-  template <typename T>
-  bool is_inside(const T& s) const 
+  bool is_inside(const Vec2d& obj) const 
   {
     if (edges_.size() < 3)
       return false;
-
-    const Vec2d obj = s.xy();
     
     int count = 0;
 
@@ -261,6 +267,15 @@ public:
     return ( (count&1) == 1 ); // := (count%2 == 1)
 
   } // EdgeList::is_inside()
+
+  /*------------------------------------------------------------------
+  | Check if a simplex is inside the area that is surrounded by the 
+  | edges. If the object is located on the edge semgents, it is 
+  | treated as lying inside.
+  ------------------------------------------------------------------*/
+  template <typename T>
+  bool is_inside(const T& s) const 
+  { return is_inside(s.xy()); }
 
   /*------------------------------------------------------------------
   | Check if the edgelist is traversable for given start and ending
@@ -298,35 +313,11 @@ public:
   Edge* 
   get_edge(const Vertex& v1, const Vertex& v2, bool dir=false) const
   {
-    // Consider edge direction
-    if (dir)
-    {
-      for ( const auto& e : v1.edges() )
-      {
-        if ( &e->edgelist() != this )
-          continue;
+    if ( dir ) 
+      return get_edge_dir(v1, v2);
 
-        if ( (e->v1() == v1 && e->v2() == v2) )
-          return e;
-      }
-    }
-    // Do not consider edge direction
-    else
-    {
-      for ( const auto& e : v1.edges() )
-      {
-        if ( &e->edgelist() != this )
-          continue;
-
-        if ( (e->v1() == v1 && e->v2() == v2) ||
-             (e->v2() == v1 && e->v1() == v2)  )
-          return e;
-      }
-    }
-
-    return nullptr;
-
-  } // get_edge()
+    return get_edge_nodir(v1, v2);
+  } 
 
   /*------------------------------------------------------------------
   | Search for an edge that is part of this edgelist and which 
@@ -378,7 +369,138 @@ public:
   } // get_edge()
 
 
+  /*------------------------------------------------------------------
+  | Returns the closest vertex of the edge to a given coordinate
+  ------------------------------------------------------------------*/
+  Vertex& get_closest_vertex(const Vec2d& xy)
+  {
+    ASSERT( edges_.size() > 0, 
+      "EdgeList::get_closest_vertex(): EdgeList is empty.");
+
+    Vertex* v_nearest   = nullptr;
+    double min_dist_sqr = 1.0E+10;
+
+    for ( const auto& e_ptr : edges_ )
+    {
+      const Vec2d& xy_v = e_ptr->v1().xy();
+
+      const double dist_sqr = (xy - xy_v).norm_sqr();
+
+      if ( dist_sqr >= min_dist_sqr) 
+        continue;
+
+      min_dist_sqr = dist_sqr;
+      v_nearest = &( e_ptr->v1() );
+    }
+
+    return *v_nearest;
+
+  } // get_closest_vertex()
+
+
+  /*------------------------------------------------------------------
+  | Check if two edges of this edgelist intersect
+  ------------------------------------------------------------------*/
+  bool intersects_self(void) const
+  {
+    for ( const auto& e_ptr : edges_ )
+    {
+      Edge* e_prev = e_ptr->get_prev_edge();
+      Edge* e_next = e_ptr->get_next_edge();
+
+      const Vec2d& xy_1 = e_ptr->v1().xy();
+      const Vec2d& xy_2 = e_ptr->v2().xy();
+
+      const Vec2d ll = { MIN(xy_1.x, xy_2.x), MIN(xy_1.y, xy_2.y) };
+      const Vec2d ur = { MAX(xy_1.x, xy_2.x), MAX(xy_1.y, xy_2.y) };
+
+      auto found_edges = edges_.get_items(ll, ur);
+
+      for ( const auto& e_found : found_edges )
+      {
+        if ( e_found == e_ptr.get()) continue;
+        if ( e_found == e_prev) continue;
+        if ( e_found == e_next) continue;
+
+        const Vec2d& xy_1_e = e_found->v1().xy();
+        const Vec2d& xy_2_e = e_found->v2().xy();
+
+        if ( line_line_intersection(xy_1, xy_2, xy_1_e, xy_2_e) ) 
+          return true;
+      }
+    }
+
+    return false;
+
+  } // intersects_itself()
+
+  /*------------------------------------------------------------------
+  | Check if an edge this edgelist intersects with an edge of another
+  | edgelist
+  ------------------------------------------------------------------*/
+  bool intersects_edgelist(const EdgeList& edge_list) const
+  {
+    for ( const auto& e_ptr : edges_ )
+    {
+      const Vec2d& xy_1 = e_ptr->v1().xy();
+      const Vec2d& xy_2 = e_ptr->v2().xy();
+
+      const Vec2d ll = { MIN(xy_1.x, xy_2.x), MIN(xy_1.y, xy_2.y) };
+      const Vec2d ur = { MAX(xy_1.x, xy_2.x), MAX(xy_1.y, xy_2.y) };
+
+      auto found_edges = edge_list.edges().get_items(ll, ur);
+
+      for ( const auto& e_found : found_edges )
+      {
+        const Vec2d& xy_1_e = e_found->v1().xy();
+        const Vec2d& xy_2_e = e_found->v2().xy();
+
+        if ( line_line_intersection(xy_1, xy_2, xy_1_e, xy_2_e) ) 
+          return true;
+      }
+    }
+
+    return false;
+
+  } // intersects_edgelist()
+
+
 protected:
+  /*------------------------------------------------------------------
+  | Search for an edge that is part of this edgelist and which 
+  | connects the given vertices v1 and v2.
+  | Consider the direction of the edge (v1->v2)
+  ------------------------------------------------------------------*/
+  Edge* get_edge_dir(const Vertex& v1, const Vertex& v2) const
+  {
+    for ( const auto& e : v1.edges() )
+    {
+      if ( &e->edgelist() != this )
+        continue;
+      if ( (e->v1() == v1 && e->v2() == v2) )
+        return e;
+    }
+    return nullptr;
+  }
+
+  /*------------------------------------------------------------------
+  | Search for an edge that is part of this edgelist and which 
+  | connects the given vertices v1 and v2.
+  | Do not consider the direction of the edge
+  ------------------------------------------------------------------*/
+  Edge* get_edge_nodir(const Vertex& v1, const Vertex& v2) const
+  {
+    for ( const auto& e : v1.edges() )
+    {
+      if ( &e->edgelist() != this )
+        continue;
+      if ( (e->v1() == v1 && e->v2() == v2) ||
+           (e->v2() == v1 && e->v1() == v2)  )
+        return e;
+    }
+    return nullptr;
+  }
+
   /*------------------------------------------------------------------
   | Compute the area enclosed by all edges. 
   | Splits the edge list into triangles and sums up

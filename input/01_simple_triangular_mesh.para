@@ -1,0 +1,87 @@
+#===========================================================
+#                         TQMESH     
+#===========================================================
+ 
+#-----------------------------------------------------------
+#                     MESH DEFINITION
+#
+# First, we provide some general meshing properties,
+# such as the overall element size, element color and 
+# the applied meshing algorithm:
+#-----------------------------------------------------------
+Define mesh:
+  Element size: 0.35 
+  Element color: 1
+  Meshing algorithm: Triangulation
+  Number of quad refinements: 0
+
+  # Output formats: COUT, TXT, VTU
+  Output file format: VTU
+  Output file prefix: ./simple_triangular_mesh
+
+  #---------------------------------------------------------
+  #                    EXTERIOR BOUNDARY
+  # 
+  # Boundaries are generally defined in terms of squeces of 
+  # vertex coordinates that define a closed polygonal chain.
+  # Additionally, each boundary edge is associated to an 
+  # integer which we refer to as "marker".
+  # We will define the exterior boundary of our mesh, that 
+  # has the following shape:
+  #     
+  #         (0.0, 5.0)                 (5.0, 5.0)
+  #                   o---------------o
+  #                   |      [2]      |             
+  #                   |               |
+  #                   |               |
+  #                   | [2]       [1] | 
+  #                   |               |
+  #                   |               |
+  #                   |      [1]      |
+  #                   o---------------o
+  #         (0.0, 0.0)                 (5.0, 0.0)
+  #
+  # The tuples denote boundary vertex coordinates and the 
+  # numbers in brackets denote corresponding edge markers.
+  #---------------------------------------------------------
+  Define exterior boundary:
+   0.0, 0.0, 1
+   5.0, 0.0, 1
+   5.0, 5.0, 2
+   0.0, 5.0, 2
+  End exterior boundary
+
+  #---------------------------------------------------------
+  #                    INTERIOR BOUNDARY
+  #
+  # In the next step, we will define an interior boundary of  
+  # triangular shape: 
+  #                    o---------------o
+  #                    |               |
+  #                    |          o    |
+  #                    |         /|    |
+  #                    |       /  |    |
+  #                    |     /    |    |
+  #                    |    o-----o    |
+  #                    |               |
+  #                    o---------------o
+  #
+  # This boundary is made up from the vertex sequence: 
+  #        [(1.5,1.5), (1.5,3.5), (3.5,3.5)] 
+  # All edges will obtain the marker number "3". 
+  #
+  # At vertex (1.5,1.5), we will refine the mesh locally by 
+  # providing additional refinement properties to it.
+  # The first value (0.1) corresponds to the a local mesh 
+  # size around that vertex and the second value (0.2)
+  # defines a local range scale within this mesh size is 
+  # applied.
+  #---------------------------------------------------------
+  Define interior boundary:
+   1.5, 1.5, 3, 0.05, 0.2  
+   1.5, 3.5, 3  
+   3.5, 3.5, 3  
+  End interior boundary
+
+End mesh
+

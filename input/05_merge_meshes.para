@@ -1,0 +1,85 @@
+#===========================================================
+#                         TQMESH     
+#===========================================================
+ 
+#-----------------------------------------------------------
+#                          MESH #1 
+#-----------------------------------------------------------
+Define mesh:
+  Element size: 0.35
+  Element color: 1
+  Meshing algorithm: Triangulation
+  Number of quad refinements: 0
+  Smooth quad layers: 0
+  Number of smoothing iterations: 2
+
+  # Output formats: COUT, TXT, VTU
+  Output file format: VTU
+  Output file prefix: ./merge_meshes
+
+  #---------------------------------------------------------
+  #                       BOUNDARIES
+  # Arguments:
+  #   1) X-coordinate
+  #   2) Y-coordinate
+  #   3) Edge marker
+  #---------------------------------------------------------
+  Define exterior boundary:
+    0.0, 0.0, 1
+    5.0, 0.0, 1
+    5.0, 5.0, 1
+    0.0, 5.0, 1
+  End exterior boundary:
+
+  Define interior boundary:
+    1.5, 1.5, 2
+    3.5, 1.5, 2
+    3.5, 3.5, 2
+    1.5, 3.5, 2
+  End interior boundary:
+
+  #-----------------------------------------------------------
+  #                       QUAD-LAYERS     
+  # Arguments: 
+  #   1) Starting vertex
+  #   2) Ending vertex
+  #   3) Number of layers
+  #   4) First layer height
+  #   5) Growth ratio
+  #
+  # > A closed layer of quadrilateral elements will be
+  #   generated if the same start and ending vertex is 
+  #   provided
+  #-----------------------------------------------------------
+  Add quad layers: 0.0, 0.0,  0.0, 0.0,   2, 0.05, 1.5,
+  Add quad layers: 1.5, 1.5,  1.5, 1.5,   2, 0.05, 1.5,
+
+End mesh
+
+
+#-----------------------------------------------------------
+#                          MESH #2 
+#-----------------------------------------------------------
+Define mesh:
+  Element size: 0.02 + 0.2 * ( pow(x-2.5, 2) + pow(y-2.5, 2) )
+  Element color: 2
+  Meshing algorithm: Triangulation
+  Number of quad refinements: 0
+  Smooth quad layers: 0
+  Number of smoothing iterations: 2
+
+  # Output formats: COUT, TXT, VTU
+  Output file format: VTU
+  Output file prefix: ./merge_meshes
+
+  #---------------------------------------------------------
+  #                       BOUNDARIES
+  #---------------------------------------------------------
+  Define exterior boundary:
+    1.5, 1.5, 2
+    3.5, 1.5, 2
+    3.5, 3.5, 2
+    1.5, 3.5, 2
+  End exterior boundary:
+
+End mesh

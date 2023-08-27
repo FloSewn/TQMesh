@@ -37,42 +37,55 @@ int run_examples(const std::string& example)
   /*------------------------------------------------------------------
   | Run all examples
   ------------------------------------------------------------------*/
-  if ( !example.compare("1") )
+  if ( !example.compare("1") || !example.compare("01") || 
+       !example.compare("simple_triangular_mesh") )
   {
-    LOG(INFO) << "Running example 1...";
+    LOG(INFO) << "Running example \"simple_triangular_mesh\"...";
     LOG(INFO) << "";
-    run_example_1();
-  }
-  else if ( !example.compare("2") )
+    simple_triangular_mesh();
+  } 
+  else if ( !example.compare("2") || !example.compare("02") ||
+            !example.compare("square_in_channel") )
   {
-    LOG(INFO) << "Running example 2...";
+    LOG(INFO) << "Running example \"square_in_channel\"...";
     LOG(INFO) << "";
-    run_example_2();
-  }
-  else if ( !example.compare("3") )
+    square_in_channel();
+  } 
+  else if ( !example.compare("3") || !example.compare("03") ||
+            !example.compare("boundary_shapes") )
   {
-    LOG(INFO) << "Running example 3...";
+    LOG(INFO) << "Running example \"boundary_shapes\"...";
     LOG(INFO) << "";
-    run_example_3();
-  }
-  else if ( !example.compare("4") )
+    boundary_shapes();
+  }  
+  else if ( !example.compare("4") || !example.compare("04") ||
+            !example.compare("fixed_vertices") )
   {
-    LOG(INFO) << "Running example 4...";
+    LOG(INFO) << "Running example \"fixed_vertices\"...";
     LOG(INFO) << "";
-    run_example_4();
-  }
-  else if ( !example.compare("5") )
+    fixed_vertices();
+  } 
+  else if ( !example.compare("5") || !example.compare("05") ||
+            !example.compare("merge_meshes") )
   {
-    LOG(INFO) << "Running example 5...";
+    LOG(INFO) << "Running example \"merge_meshes\"...";
     LOG(INFO) << "";
-    run_example_5();
-  }
-  else if ( !example.compare("6") )
+    merge_meshes();
+  } 
+  else if ( !example.compare("6") || !example.compare("06") ||
+            !example.compare("airfoil_from_csv") )
   {
-    LOG(INFO) << "Running example 6...";
+    LOG(INFO) << "Running example \"airfoil_from_csv\"...";
     LOG(INFO) << "";
-    run_example_6();
-  }
+    airfoil_from_csv();
+  } 
+  else if ( !example.compare("7") || !example.compare("07") ||
+            !example.compare("tqmesh_banner") )
+  {
+    LOG(INFO) << "Running example \"tqmesh_banner\"...";
+    LOG(INFO) << "";
+    tqmesh_banner();
+  } /*
   else if ( !example.compare("7") )
   {
     LOG(INFO) << "Running example 7...";
@@ -90,7 +103,11 @@ int run_examples(const std::string& example)
     LOG(INFO) << "Running example 9...";
     LOG(INFO) << "";
     run_example_9();
+<<<<<<< HEAD
   }
+=======
+  }*/
+>>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940
   else
   {
     LOG(INFO) << "";

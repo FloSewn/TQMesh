@@ -13,21 +13,17 @@
 
 #include "run_examples.h"
 
-#include "Vec2.h"
+#include "VecND.h"
 #include "Log.h"
 
-#include "Vertex.h"
-#include "Edge.h"
-#include "Domain.h"
-#include "Mesh.h"
-#include "Smoother.h"
+#include "MeshGenerator.h"
 
 using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
 * This example shows how to generate and merge several meshes with
-* different colors and size function.
+* different colors and size functions.
 * 
 *   x-----------------------x
 *   |  Outer                |
@@ -42,147 +38,140 @@ using namespace TQMesh::TQAlgorithm;
 *   x-----------------------x
 *
 *********************************************************************/
-void run_example_5()
+void merge_meshes()
 {
   /*------------------------------------------------------------------
-  | Define the size function of the outer mesh
+  | Define the size function and domain of the outer mesh
   ------------------------------------------------------------------*/
-  UserSizeFunction f_outer = [](const Vec2d& p) 
-  { 
-    return 0.5;
-  };
+  UserSizeFunction f_outer = [](const Vec2d& p) { return 0.35; };
 
-  Domain outer_domain   { f_outer };
+  Domain outer_domain { f_outer };
 
   /*------------------------------------------------------------------
   | Exterior boundary of the outer mesh
   ------------------------------------------------------------------*/
-  Boundary&  b_outer_ext = outer_domain.add_exterior_boundary();
+  std::vector<Vec2d> outer_coords {
+    { 0.0, 0.0 }, { 5.0, 0.0 }, { 5.0, 5.0 }, { 0.0, 5.0 },
+  };
 
-  Vertex& v0_out = outer_domain.add_vertex(  0.0,  0.0, 1.0, 1.0 );
-  Vertex& v1_out = outer_domain.add_vertex(  5.0,  0.0, 1.0, 1.0 );
-  Vertex& v2_out = outer_domain.add_vertex(  5.0,  5.0, 1.0, 1.0 );
-  Vertex& v3_out = outer_domain.add_vertex(  0.0,  5.0, 1.0, 1.0 );
+  std::vector<int> outer_markers ( outer_coords.size(), 1 );
 
-  b_outer_ext.add_edge( v0_out, v1_out, 1 );
-  b_outer_ext.add_edge( v1_out, v2_out, 1 );
-  b_outer_ext.add_edge( v2_out, v3_out, 1 );
-  b_outer_ext.add_edge( v3_out, v0_out, 1 );
+  Boundary& bdry_outer_ext = outer_domain.add_exterior_boundary();
+  bdry_outer_ext.set_shape_from_coordinates(outer_coords, outer_markers);
 
   /*------------------------------------------------------------------
   | Interior boundary of the outer mesh
   ------------------------------------------------------------------*/
-  Boundary&  b_outer_int = outer_domain.add_interior_boundary();
+  std::vector<Vec2d> inner_coords {
+    { 1.5, 1.5 }, { 3.5, 1.5 }, { 3.5, 3.5 }, { 1.5, 3.5 },
+  };
 
-  Vertex& v4_out = outer_domain.add_vertex(  1.5,  1.5, 1.0, 1.0 );
-  Vertex& v5_out = outer_domain.add_vertex(  3.5,  1.5, 1.0, 1.0 );
-  Vertex& v6_out = outer_domain.add_vertex(  3.5,  3.5, 1.0, 1.0 );
-  Vertex& v7_out = outer_domain.add_vertex(  1.5,  3.5, 1.0, 1.0 );
+  std::vector<int> inner_markers ( inner_coords.size(), 2 );
 
-  b_outer_int.add_edge( v4_out, v7_out, 2 );
-  b_outer_int.add_edge( v7_out, v6_out, 2 );
-  b_outer_int.add_edge( v6_out, v5_out, 2 );
-  b_outer_int.add_edge( v5_out, v4_out, 2 );
+  Boundary& bdry_outer_int = outer_domain.add_interior_boundary();
+  bdry_outer_int.set_shape_from_coordinates(inner_coords, inner_markers);
 
   /*------------------------------------------------------------------
   | Initialize the outer mesh
   ------------------------------------------------------------------*/
+  MeshGenerator generator {};
+
   int outer_mesh_id = 1;
   int outer_mesh_color = 1;
-  Mesh outer_mesh { outer_domain, outer_mesh_id, outer_mesh_color };
-  outer_mesh.init_advancing_front();
+  Mesh& outer_mesh = generator.new_mesh(outer_domain, outer_mesh_id, 
+                                        outer_mesh_color);
 
   /*------------------------------------------------------------------
   | Create two quad layers for the outer mesh
   ------------------------------------------------------------------*/
-  outer_mesh.create_quad_layers(v0_out, v0_out, 2, 0.05, 1.5);
+  generator.quad_layer_generation(outer_mesh)
+    .n_layers(2)
+    .first_height(0.05)
+    .growth_rate(1.5)
+    .starting_position({0.0,0.0})
+    .ending_position({0.0,0.0})
+    .generate_elements();
+
+  generator.quad_layer_generation(outer_mesh)
+    .n_layers(2)
+    .first_height(0.05)
+    .growth_rate(1.5)
+    .starting_position({1.5,3.5})
+    .ending_position({1.5,3.5})
+    .generate_elements(); 
 
   /*------------------------------------------------------------------
   | Generate the remaining elements of the outer mesh
   ------------------------------------------------------------------*/
-  outer_mesh.triangulate();
+  generator.triangulation(outer_mesh).generate_elements();
 
   /*------------------------------------------------------------------
   | Smooth the elements of the outer mesh
   ------------------------------------------------------------------*/
-  Smoother smoother {};
-  smoother.smooth(outer_domain, outer_mesh, 4);
-
-
+  generator.mixed_smoothing(outer_mesh).smooth(2);   
 
   /*------------------------------------------------------------------
   | Define the size function of the inner mesh
   ------------------------------------------------------------------*/
   UserSizeFunction f_inner = [](const Vec2d& p) 
   { 
-    return 0.02 + 0.5 * ( pow(p.x-2.5, 2) + pow(p.y-2.5, 2) );
+    return 0.02 + 0.2 * ( pow(p.x-2.5, 2) + pow(p.y-2.5, 2) );
   };
 
   Domain inner_domain   { f_inner };
-
 
   /*------------------------------------------------------------------
   | Exterior boundary of the inner mesh
   | This boundary overlaps with the interior boundary of the outer 
   | mesh. It is thus important, that it features the same number of 
-  | edges and vertex coordinates - but it must be defined in 
-  | the opposite direction.
+  | edges and vertex coordinates.
   ------------------------------------------------------------------*/
-  Boundary&  b_inner = inner_domain.add_exterior_boundary();
-
-  Vertex& v4_in = inner_domain.add_vertex(  1.5,  1.5, 1.0, 1.0 );
-  Vertex& v5_in = inner_domain.add_vertex(  3.5,  1.5, 1.0, 1.0 );
-  Vertex& v6_in = inner_domain.add_vertex(  3.5,  3.5, 1.0, 1.0 );
-  Vertex& v7_in = inner_domain.add_vertex(  1.5,  3.5, 1.0, 1.0 );
-
-  b_inner.add_edge( v4_in, v5_in, 3 );
-  b_inner.add_edge( v5_in, v6_in, 3 );
-  b_inner.add_edge( v6_in, v7_in, 3 );
-  b_inner.add_edge( v7_in, v4_in, 3 );
-
+  Boundary& bdry_inner = inner_domain.add_exterior_boundary();
+  bdry_inner.set_shape_from_coordinates(inner_coords, inner_markers);
 
   /*------------------------------------------------------------------
   | Initialize the inner mesh
   ------------------------------------------------------------------*/
   int inner_mesh_id = 2;
   int inner_mesh_color = 2;
-  Mesh inner_mesh { inner_domain, inner_mesh_id, inner_mesh_color };
-
-  /*------------------------------------------------------------------
-  | Before the initialization of the advancing front, we pass 
-  | the outer mesh as a "neighbor" to the inner mesh  
-  | In this way, the inner mesh's exterior boundary edges will be 
-  | conforming to the outer mesh's interior boundary edges
-  ------------------------------------------------------------------*/
-  inner_mesh.add_neighbor_mesh( outer_mesh );
-
-  inner_mesh.init_advancing_front();
+  Mesh& inner_mesh = generator.new_mesh(inner_domain, inner_mesh_id, 
+                                        inner_mesh_color);
 
   /*------------------------------------------------------------------
   | Generate the inner mesh
   ------------------------------------------------------------------*/
-  inner_mesh.triangulate();
+  generator.triangulation(inner_mesh).generate_elements();
 
   /*------------------------------------------------------------------
   | Finally, merge both meshes. In this way, the outer mesh's 
-  | elements will be added to the inner mesh, whereas the outer 
-  | mesh won't change.
+  | elements will be added to the inner mesh. Be aware that the 
+  | second argument of "merge_meshes()" (in this case the outer 
+  | mesh) will be destroyed upon this function call - so you 
+  | can not use it anymore.
   ------------------------------------------------------------------*/
-  inner_mesh.merge_neighbor_mesh( outer_mesh );
+  generator.merge_meshes(inner_mesh, outer_mesh);
 
   /*------------------------------------------------------------------
   | Smooth the final mesh for four iterations
   ------------------------------------------------------------------*/
-  smoother.smooth(inner_domain, inner_mesh, 4);
+  generator.mixed_smoothing(inner_mesh).smooth(2);   
 
   /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in TXT format.
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
+<<<<<<< HEAD:src/examples/example_5.cpp
   { source_dir + "/auxiliary/example_data/Example_5" };
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
+=======
+  { source_dir + "/auxiliary/example_data/merge_meshes" };
+>>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940:src/examples/05_merge_meshes.cpp
 
-  inner_mesh.write_to_file( file_name, ExportType::txt );
+  LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
+  generator.write_mesh(inner_mesh, file_name, MeshExportType::VTU);
 
-} // run_example_5()
+  LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
+  generator.write_mesh(inner_mesh, file_name, MeshExportType::TXT);
+
+} // merge_meshes()

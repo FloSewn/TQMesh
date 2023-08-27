@@ -11,7 +11,7 @@
 
 #include "tests.h"
 
-#include "Vec2.h"
+#include "VecND.h"
 #include "Timer.h"
 #include "Container.h"
 #include "Testing.h"
@@ -110,7 +110,7 @@ void interior_exterior()
   Vertex& v6 = vertices.push_back( 1.0, 2.0 );
 
   // Exterior boundaries are defined CCW
-  Boundary extr_bdry { BdryType::EXTERIOR };
+  Boundary extr_bdry { vertices, BdryType::EXTERIOR };
 
   extr_bdry.add_edge(v1,v2,1);
   extr_bdry.add_edge(v2,v3,1);
@@ -123,7 +123,7 @@ void interior_exterior()
   CHECK( EQ(extr_bdry.area(),2.0) );
 
   // interior boundaries are defined CW
-  Boundary intr_bdry { BdryType::INTERIOR };
+  Boundary intr_bdry { vertices, BdryType::INTERIOR };
 
   intr_bdry.add_edge(v1,v6,1);
   intr_bdry.add_edge(v6,v5,1);
@@ -157,7 +157,7 @@ void clear_edges()
   Vertex& v6 = vertices.push_back( 1.0, 2.0 );
 
   // Exterior boundaries are defined CCW
-  Boundary extr_bdry { BdryType::EXTERIOR };
+  Boundary extr_bdry { vertices, BdryType::EXTERIOR };
 
   extr_bdry.add_edge(v1,v2,1);
   extr_bdry.add_edge(v2,v3,1);
@@ -194,10 +194,10 @@ void shapes()
   Container<Vertex> vertices { };
 
   // Define exterior boundary with rectangular shape 
-  Boundary extr_bdry { BdryType::EXTERIOR };
+  Boundary extr_bdry { vertices, BdryType::EXTERIOR };
 
   // Define interior boundary with rectangular shape 
-  Boundary intr_bdry { BdryType::INTERIOR };
+  Boundary intr_bdry { vertices, BdryType::INTERIOR };
 
 } // shapes()
 

@@ -12,4 +12,8 @@ if (NOT WIN32)
 target_link_libraries( ${MODULE_MESH}
   INTERFACE m
   INTERFACE util )
+<<<<<<< HEAD
 endif()
+=======
+endif()
+>>>>>>> fa0899f5faedbc3de2d30dba4c8c9fc7b7288940

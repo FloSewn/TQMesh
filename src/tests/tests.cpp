@@ -9,6 +9,8 @@
 #include <vector>
 #include <string>
 
+#include <TQMeshConfig.h>
+
 #include "tests.h"
 #include "Log.h"
 #include "Testing.h"
@@ -73,15 +75,25 @@ int run_tests(const std::string& test_case)
     LOG(INFO) << "  Running tests for \"SizeFunction\" class...";
     run_tests_SizeFunction();
   } 
-  else if ( !test_case.compare("Smoother") )
+  else if ( !test_case.compare("SmoothingStrategy") )
   {
-    LOG(INFO) << "  Running tests for \"Smoother\" class...";
-    run_tests_Smoother();
+    LOG(INFO) << "  Running tests for \"SmoothingStrategy\" class...";
+    run_tests_SmoothingStrategy();
   }
   else if ( !test_case.compare("Mesh") )
   {
     LOG(INFO) << "  Running tests for \"Mesh\" class...";
     run_tests_Mesh();
+  }
+  else if ( !test_case.compare("MeshGenerator") )
+  {
+    LOG(INFO) << "  Running tests for \"MeshGenerator\" class...";
+    run_tests_MeshGenerator();
+  }
+  else if ( !test_case.compare("MeshCleanup") )
+  {
+    LOG(INFO) << "  Running tests for \"MeshCleanup\" class...";
+    run_tests_MeshCleanup();
   }
   else
   {
@@ -136,4 +148,24 @@ int run_tests(const std::string& test_case)
   return EXIT_SUCCESS;
 
 } // run_tests()
+
+/*********************************************************************
+* Adjust logging output stream
+* -> Log debug messages to specified output-file
+*********************************************************************/
+void adjust_logging_output_stream(const std::string& file)
+{
+  if (file == "COUT")
+  {
+    CppUtils::LOG_PROPERTIES.set_info_ostream( CppUtils::TO_COUT );
+    CppUtils::LOG_PROPERTIES.set_debug_ostream( CppUtils::TO_COUT );
+    return;
+  }
+
+  std::string source_directory { TQMESH_SOURCE_DIR };
+  std::string filepath { source_directory + "/auxiliary/test_data/" + file };
+  CppUtils::LOG_PROPERTIES.set_info_ostream( CppUtils::TO_FILE, filepath );
+  CppUtils::LOG_PROPERTIES.set_debug_ostream( CppUtils::TO_FILE, filepath );
+
+} // adjust_logging_output_stream()
 

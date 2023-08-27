@@ -13,7 +13,7 @@
 #include <utility>        // std::move
 
 #include "QuadTree.h"
-#include "Vec2.h"
+#include "VecND.h"
 #include "Helpers.h"
 #include "Log.h"
 
@@ -59,15 +59,15 @@ public:
   | Copy constructor
   ------------------------------------------------------------------*/
   Container(const Container<T>& c) 
-  : qtree_ { c.qtree().scale(),
-             c.qtree().max_items(),
-             c.qtree().max_depth() }  
+  : qtree_ { c.quad_tree().scale(),
+             c.quad_tree().max_items(),
+             c.quad_tree().max_depth() }  
   {
     // Copy the list items
     for (auto& obj : c)
     {
-      const Vec2d& xy = obj->xy();
-      push_back( xy.x, xy.y, obj->sizing() );
+      //const Vec2d& xy = obj->xy();
+      //push_back( xy.x, xy.y, obj->sizing() );
     }
 
     // Copy the waste items
@@ -102,6 +102,7 @@ public:
   /*------------------------------------------------------------------
   | Get reference to the  container qtreee
   ------------------------------------------------------------------*/
+  QuadTree<T,double>& quad_tree() { return qtree_; }
   const QuadTree<T,double>& quad_tree() const { return qtree_; }
 
   /*------------------------------------------------------------------
@@ -127,6 +128,12 @@ public:
   }
 
   /*------------------------------------------------------------------
+  | Get the nearest element to a given location
+  ------------------------------------------------------------------*/
+  T* get_nearest(const Vec2d& location) const
+  { return qtree_.get_nearest(location); }
+
+  /*------------------------------------------------------------------
   | Insert any simplex through constructor before 
   | a specified position
   ------------------------------------------------------------------*/
@@ -138,13 +145,15 @@ public:
     iterator iter = items_.insert( pos, std::move(u_ptr) );
     ptr->pos_          = iter;
     ptr->in_container_ = true;
+    ptr->container_    = this;
     bool in_qtree = qtree_.add( ptr );
 
     // Failed to add element to qtree -> cleanup
     if (!in_qtree)
     {
       LOG(ERROR) << 
-        "Failed to add element to the quad tree. "
+        "Failed to add element at location " << ptr->xy() << 
+        " to the quad tree. "
         "Maybe the element is outside of the defined domain.";
     }
     
@@ -177,6 +186,27 @@ public:
     }
     return false;
   }
+
+  /*------------------------------------------------------------------
+  | Update the coordinate of an item
+  ------------------------------------------------------------------*/
+  bool update(T& item, const Vec2d& xy_new)
+  {
+    auto quad = qtree_.get_leaf( item.xy() );
+
+    if ( in_on_rect(xy_new, quad->lowleft(), quad->upright()) )
+    {
+      item.xy_ = xy_new;
+      return true;
+    }
+
+    if ( !qtree_.remove( &item ) )
+      return false;
+
+    item.xy_ = xy_new;
+
+    return ( qtree_.add( &item ) );
+  } 
 
   /*------------------------------------------------------------------
   | Function to finally remove all items in the container garbage 
@@ -262,6 +292,38 @@ private:
 
 
 }; // Container
+
+
+/*********************************************************************
+* 
+*********************************************************************/
+template<typename Derived>
+class ContainerEntry
+{
+public:
+  friend Container<Derived>;
+  using List = typename Container<Derived>::List;
+  using Iterator = typename List::iterator;
+
+  // Constructors
+  ContainerEntry(double x, double y) : xy_ {x, y} {}
+  ContainerEntry(const Vec2d& xy) : xy_ {xy} {}
+
+  // Getters
+  const Vec2d& xy() const { return xy_; }
+  const Iterator& pos() const { return pos_; }
+  bool in_container() const { return in_container_; }
+
+  // Destructor for container garbage collector
+  virtual void container_destructor() {}
+
+protected:
+  Vec2d                xy_            {};
+  Iterator             pos_           {};
+  bool                 in_container_  {false};
+  Container<Derived>*  container_     {nullptr};
+
+}; 
 
 
 } // namespace CppUtils
