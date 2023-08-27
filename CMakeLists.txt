@@ -34,6 +34,8 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsign-compare")
   endif()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTQMESH_USE_EXPRTK")
+
   # --- For performance measuring only ---
   #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 endif()
@@ -49,6 +51,7 @@ if (CMAKE_BUILD_TYPE MATCHES "Debug")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsign-compare")
   endif()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTQMESH_USE_EXPRTK")
 endif()
 
 # Add config file
@@ -60,8 +63,8 @@ add_subdirectory( src/extern_libs )
 add_subdirectory( src/utils )
 add_subdirectory( src/algorithm )
 add_subdirectory( src/tests )
-#add_subdirectory( src/examples )
-#add_subdirectory( src/app )
+add_subdirectory( src/examples )
+add_subdirectory( src/app )
 
 # Info
 message(STATUS "CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}")
