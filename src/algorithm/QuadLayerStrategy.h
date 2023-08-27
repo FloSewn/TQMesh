@@ -547,6 +547,8 @@ public:
   /*------------------------------------------------------------------
   | Setters 
   ------------------------------------------------------------------*/
+  QuadLayerStrategy& show_progress(bool s)
+  { show_progress_ = s; return *this; }
   QuadLayerStrategy& n_layers(size_t n) 
   { n_layers_ = n; return *this; }
   QuadLayerStrategy& first_height(double h) 

@@ -45,6 +45,7 @@ public:
   | Getters
   ------------------------------------------------------------------*/
   Mesh& mesh() { return mesh_; }
+  bool show_progress() const { return show_progress_; }
 
   /*------------------------------------------------------------------
   | Triangulate a given initialized mesh structure
@@ -111,9 +112,11 @@ protected:
   ------------------------------------------------------------------*/
   void update_progress_bar()
   {
+    if ( !show_progress_ )
+      return;
     double state = std::ceil(100.0 * mesh_.area() / domain_.area());
     progress_bar_.update( static_cast<int>(state) );
-    //progress_bar_.show( LOG_PROPERTIES.get_ostream(INFO) );
+    progress_bar_.show( LOG_PROPERTIES.get_ostream(INFO) );
   }
 
   /*------------------------------------------------------------------
@@ -125,6 +128,7 @@ protected:
 
   Front         front_ {};
   ProgressBar   progress_bar_ {};
+  bool          show_progress_ { false };
 
 }; // MeshingStrategy
 

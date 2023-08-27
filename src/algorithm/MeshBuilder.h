@@ -75,8 +75,21 @@ public:
                     int mesh_id=DEFAULT_MESH_ID,
                     int element_color=DEFAULT_ELEMENT_COLOR)
   { 
-    return { mesh_id, element_color, 
-             domain.vertices().quad_tree().scale(),
+    // Obtain domain extents 
+    Vec2d extrema { DBL_MAX, -DBL_MAX };
+    double domain_extent = 0.0;
+
+    for ( const auto& v_ptr : domain.vertices() )
+    {
+      const Vec2d& v_xy = v_ptr->xy();
+      domain_extent = MAX(domain_extent, ABS(v_xy.x));
+      domain_extent = MAX(domain_extent, ABS(v_xy.y));
+    }
+
+    // Double extent and enlarge slightly
+    domain_extent *= 2.1;
+
+    return { mesh_id, element_color, domain_extent,
              domain.vertices().quad_tree().max_items(),
              domain.vertices().quad_tree().max_depth() }; 
 

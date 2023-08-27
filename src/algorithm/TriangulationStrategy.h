@@ -52,6 +52,8 @@ public:
   /*------------------------------------------------------------------
   | Setters 
   ------------------------------------------------------------------*/
+  TriangulationStrategy& show_progress(bool s) 
+  { show_progress_ = s; return *this; }
   TriangulationStrategy& n_elements(size_t n) 
   { n_elements_ = n; return *this; }
   TriangulationStrategy& mesh_range_factor(double v) 

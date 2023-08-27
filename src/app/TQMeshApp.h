@@ -167,6 +167,7 @@ private:
       double   g = quad_layer_growth_[i];
 
       mesh_generator_.quad_layer_generation(mesh)
+        .show_progress(true)
         .n_layers(n)
         .first_height(h)
         .growth_rate(g)
@@ -178,12 +179,17 @@ private:
     // Start meshing 
     if ( algorithm_ == "Tri-to-Quad")
     {
-      mesh_generator_.triangulation(mesh).generate_elements();
+      mesh_generator_.triangulation(mesh)
+        .show_progress(true)
+        .generate_elements();
+
       mesh_generator_.tri2quad_modification(mesh).modify();
     }
     else if ( algorithm_ == "Triangulation")
     {
-      mesh_generator_.triangulation(mesh).generate_elements();
+      mesh_generator_.triangulation(mesh)
+        .show_progress(true)
+        .generate_elements();
     }
     else
     {
@@ -210,6 +216,9 @@ private:
     mesh_generator_.mixed_smoothing(mesh)
       .quad_layer_smoothing(smooth_quad_layers_)
       .smooth(smoothing_iterations_);
+
+    // Finished progress bar requires newline
+    LOG(INFO) << "\n";
 
     // Export the mesh
     if ( output_format_ == "VTU" || output_format_ == "vtu" )
@@ -786,16 +795,12 @@ private:
         vertex_props_.push_back( {s, r} );
 
         // Estimate domain extents
-        xy_min.x = MIN(xy_min.x, x);
-        xy_min.y = MIN(xy_min.y, y);
-
-        xy_max.x = MAX(xy_max.x, x);
-        xy_max.y = MAX(xy_max.y, y);
+        domain_extent_ = MAX(domain_extent_, ABS(x));
+        domain_extent_ = MAX(domain_extent_, ABS(y));
       }
 
-      const double dx = xy_max.x - xy_min.x;
-      const double dy = xy_max.y - xy_min.y;
-      domain_extent_  = ABS(10.0 * MAX(dx, dy));
+      // Double extent and enlarge slightly
+      domain_extent_ *= 2.1;
 
       print_parameter<double>(mesh_reader, "vertices");
     }
