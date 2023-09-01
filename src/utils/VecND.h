@@ -100,9 +100,9 @@ public:
   T& operator[](std::size_t i)
   { return entries_[i]; }
 
-  T& x = entries_[0];
-  T& y = entries_[1];
-  T& z = entries_[2];
+  T& x = entries_[0%N];
+  T& y = entries_[1%N];
+  T& z = entries_[2%N];
 
   /*------------------------------------------------------------------
   | Negation
