@@ -330,6 +330,49 @@ void multiple_neighbors()
 
 } // multiple_neighbors()
 
+/*********************************************************************
+* Test quad layer generation near global mesh size
+*********************************************************************/
+void quad_layer_near_mesh_size()
+{
+  UserSizeFunction f = [](const Vec2d& p) { return 0.1; };
+
+  std::vector<Vec2d> exterior_vertex_coordinates { 
+    { 0.0, 0.0 },
+    { 1.0, 0.0 },
+    { 1.0, 2.0 },
+    { 0.0, 2.0 } 
+  };
+
+  std::vector<int> exterior_edge_markers ( 4, 1 );
+
+  Domain domain { f, 8.0 };
+  Boundary& b_ext = domain.add_exterior_boundary();
+  b_ext.set_shape_from_coordinates( exterior_vertex_coordinates, 
+                                    exterior_edge_markers );
+
+  MeshGenerator generator {};
+  Mesh& mesh = generator.new_mesh( domain );
+
+  generator.quad_layer_generation(mesh)
+    .n_layers(40)
+    .first_height(0.005)
+    .growth_rate(1.1)
+    .starting_position( {0.0,0.0})
+    .ending_position( {1.0,0.0})
+    .generate_elements();
+
+  generator.triangulation(mesh).generate_elements();
+  generator.mixed_smoothing(mesh).smooth(2);
+
+  std::string source_dir { TQMESH_SOURCE_DIR };
+  std::string filename 
+  { source_dir + "/auxiliary/test_data/MeshGeneratorTests.quad_layer_near_mesh_size" };
+
+  generator.write_mesh(mesh, filename, MeshExportType::VTU);
+
+} // quad_layer_near_mesh_size()
+
 } // namespace MeshGeneratorTests
 
 /*********************************************************************
@@ -337,14 +380,17 @@ void multiple_neighbors()
 *********************************************************************/
 void run_tests_MeshGenerator()
 {
-  //adjust_logging_output_stream("MeshGeneratorTests.initialization.log");
-  //MeshGeneratorTests::initialization();
+  adjust_logging_output_stream("MeshGeneratorTests.initialization.log");
+  MeshGeneratorTests::initialization();
 
   adjust_logging_output_stream("MeshGeneratorTests.mesh_initializer.log");
   MeshGeneratorTests::mesh_initializer();
 
-  //adjust_logging_output_stream("MeshGeneratorTests.multiple_neighbors.log");
-  //MeshGeneratorTests::multiple_neighbors();
+  adjust_logging_output_stream("MeshGeneratorTests.multiple_neighbors.log");
+  MeshGeneratorTests::multiple_neighbors();
+
+  adjust_logging_output_stream("MeshGeneratorTests.quad_layer_near_mesh_size.log");
+  MeshGeneratorTests::quad_layer_near_mesh_size();
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");
