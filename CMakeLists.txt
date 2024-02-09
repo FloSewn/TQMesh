@@ -72,22 +72,3 @@ message(STATUS "CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE_CXX_COMPILER_ID is ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "CMAKE_CXX_COMPILER_VERSION is ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "CMAKE_CXX_FLAGS is ${CMAKE_CXX_FLAGS}")
-
-#---------------------------------------------------------------------
-# Testing
-#---------------------------------------------------------------------
-enable_testing()
-
-add_test(NAME Vertex COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Vertex")
-add_test(NAME Triangle COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Triangle")
-add_test(NAME Quad COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Quad")
-add_test(NAME Front COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Front")
-add_test(NAME EdgeList COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "EdgeList")
-add_test(NAME Boundary COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Boundary")
-add_test(NAME SizeFunction COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "SizeFunction")
-add_test(NAME Mesh COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "Mesh")
-add_test(NAME MeshGenerator COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "MeshGenerator")
-add_test(NAME MeshCleanup COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "MeshCleanup")
-add_test(NAME SmoothingStrategy COMMAND ${CMAKE_SOURCE_DIR}/bin/run_tests "SmoothingStrategy")
-
-

@@ -22,3 +22,22 @@ target_link_libraries( ${TESTS} PRIVATE
 )
 
 install( TARGETS ${TESTS} RUNTIME DESTINATION ${BIN} )
+
+#---------------------------------------------------------------------
+# Testing
+#---------------------------------------------------------------------
+enable_testing()
+
+add_test(NAME Vertex COMMAND ${TESTS} "Vertex")
+add_test(NAME Triangle COMMAND ${TESTS} "Triangle")
+add_test(NAME Quad COMMAND ${TESTS} "Quad")
+add_test(NAME Front COMMAND ${TESTS} "Front")
+add_test(NAME EdgeList COMMAND ${TESTS} "EdgeList")
+add_test(NAME Boundary COMMAND ${TESTS} "Boundary")
+add_test(NAME SizeFunction COMMAND ${TESTS} "SizeFunction")
+add_test(NAME Mesh COMMAND ${TESTS} "Mesh")
+add_test(NAME MeshGenerator COMMAND ${TESTS} "MeshGenerator")
+add_test(NAME MeshCleanup COMMAND ${TESTS} "MeshCleanup")
+add_test(NAME SmoothingStrategy COMMAND ${TESTS} "SmoothingStrategy")
+
+
