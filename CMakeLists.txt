@@ -25,6 +25,7 @@ endif()
 # --- Compiler flags ---
 if (CMAKE_BUILD_TYPE MATCHES "Release")
   if (WIN32)
+    add_compile_definitions("_USE_MATH_DEFINES")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -bigobj")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
   else()
