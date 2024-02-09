@@ -16,7 +16,7 @@ add_executable( ${TESTS}
   main.cpp
 )
 
-target_link_libraries( ${TESTS}
+target_link_libraries( ${TESTS} PRIVATE
   util
   algorithm
 )
