@@ -43,10 +43,10 @@ jobs:
 
     - name: Compile a release build of TQMesh
       run: |
-        cmake -S . -B bin ${{ matrix.platform.flags }}
+        cmake -S . -B bin ${{ matrix.platform.flags }} -DCMAKE_BUILD_TYPE=$BUILD_TYPE
         cmake --build bin -j2
         cmake --install bin
 
-    - name: Run all of tqmeshs tests
+    - name: Run all of TQMesh tests
       run: ./scripts/test_tqmesh.sh
 
