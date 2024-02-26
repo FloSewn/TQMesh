@@ -67,6 +67,9 @@ endif()
 configure_file(auxiliary/TQMeshConfig.h.in ${CMAKE_BINARY_DIR}/TQMeshConfig.h)
 include_directories(${CMAKE_BINARY_DIR})
 
+# Enable testing
+enable_testing()
+
 # Directories
 add_subdirectory( src/extern_libs )
 add_subdirectory( src/utils )

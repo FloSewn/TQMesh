@@ -227,7 +227,7 @@ public:
   typename std::enable_if_t<NN==3, VecND<T,N>>
   cross(const VecND<T,N>& v) const
   { return {
-      y * v[2] - entries_ * v.y,
+      y * v[2] - entries_[2] * v.y,
       entries_[2] * v.x - x * v[2],
       x * v.y - y * v.x,
   };}
