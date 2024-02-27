@@ -85,6 +85,13 @@ int run_examples(const std::string& example)
     LOG(INFO) << "Running example \"tqmesh_banner\"...";
     LOG(INFO) << "";
     tqmesh_banner();
+  } 
+  else if ( !example.compare("8") || !example.compare("08") ||
+            !example.compare("nested_meshes") )
+  {
+    LOG(INFO) << "Running example \"nested_meshes\"...";
+    LOG(INFO) << "";
+    nested_meshes();
   } /*
   else if ( !example.compare("7") )
   {
