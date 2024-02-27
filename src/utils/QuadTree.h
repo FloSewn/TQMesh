@@ -402,6 +402,8 @@ protected:
       TERMINATE( "QuadTree::update_attributes(): "
         "Failed to update splitted quadtree.");
 
+    ASSERT( scale > 0.0, "Invalid quad tree scale" );
+
     scale_       = scale;
     max_item_    = max_item;
     max_depth_   = max_depth;
