@@ -100,9 +100,42 @@ public:
   T& operator[](std::size_t i)
   { return entries_[i]; }
 
-  T& x = entries_[0%N];
-  T& y = entries_[1%N];
-  T& z = entries_[2%N];
+  T& get_x() { return entries_[0]; }
+  const T& get_x() const { return entries_[0]; }
+
+  T& get_y() 
+  { 
+    if constexpr (N < 2)
+      return entries_[0];
+    else
+      return entries_[1]; 
+  }
+  const T& get_y() const 
+  { 
+    if constexpr (N < 2)
+      return entries_[0];
+    else
+      return entries_[1]; 
+  }
+
+  T& get_z() 
+  { 
+    if constexpr (N < 3)
+      return entries_[0];
+    else
+      return entries_[2]; 
+  }
+  const T& get_z() const 
+  { 
+    if constexpr (N < 3)
+      return entries_[0];
+    else
+      return entries_[2]; 
+  }
+
+  T& x = get_x(); 
+  T& y = get_y(); 
+  T& z = get_z(); 
 
   /*------------------------------------------------------------------
   | Negation
