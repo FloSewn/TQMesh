@@ -22,30 +22,29 @@ using namespace CppUtils;
 using namespace TQMesh::TQAlgorithm;
 
 /*********************************************************************
-* This example shows how to generate and merge several nested meshes 
+* This example shows how to generate and merge multiple meshes 
 * with varying colors and size functions.
 *
 *     x--------------------------------x
 *     |             Mesh 1             |
-*     |   x------------------------x   |
-*     |   |         Mesh 2         |   |
-*     |   |   x----------------x   |   |
-*     |   |   |     Mesh 3     |   |   |
-*     |   |   |                |   |   |
-*     |   |   |     x----x     |   |   |
-*     |   |   |     |Mesh|     |   |   |
-*     |   |   |     | 4  |     |   |   |
-*     |   |   |     x----x     |   |   |
-*     |   |   |                |   |   |
-*     |   |   |                |   |   |
-*     |   |   x----------------x   |   |
+*     |   x-----x------------x-----x   |
+*     |   |      \          /      |   |
+*     |   |       \ Mesh 4 /       |   |
+*     |   |        \      /        |   |
+*     |   |         x----x         |   |
 *     |   |                        |   |
-*     |   x------------------------x   |
+*     |   |         Mesh 2         |   |
+*     |   |                        |   |
+*     |   |         x----x         |   |
+*     |   |        /      \        |   |
+*     |   |       / Mesh 3 \       |   |
+*     |   |      /          \      |   |
+*     |   x-----x------------x-----x   |
 *     |                                |
 *     x--------------------------------x
 *
 *********************************************************************/
-void nested_meshes()
+void multiple_meshes()
 {
   MeshGenerator generator {};
 
@@ -53,8 +52,8 @@ void nested_meshes()
   | Define the size function and domain of mesh 1
   ------------------------------------------------------------------*/
   UserSizeFunction f_1 = [](const Vec2d& p) { return 5.0; };
-  UserSizeFunction f_2 = [](const Vec2d& p) { return 2.0; };
-  UserSizeFunction f_3 = [](const Vec2d& p) { return 2.0; };
+  UserSizeFunction f_2 = [](const Vec2d& p) { return 3.0; };
+  UserSizeFunction f_3 = [](const Vec2d& p) { return 1.0; };
   UserSizeFunction f_4 = [](const Vec2d& p) { return 1.0; };
 
   Domain domain_1 { f_1 };
@@ -69,19 +68,21 @@ void nested_meshes()
     { 0.0, 0.0 }, { 100.0, 0.0 }, { 100.0, 100.0 }, { 0.0, 100.0 },
   };
   std::vector<Vec2d> ext_coords_2 {
-    { 10.0, 10.0 }, { 90.0, 10.0 }, { 90.0, 90.0 }, { 10.0, 90.0 },
+    { 10.0, 10.0 }, { 30.0, 10.0 }, { 40.0, 40.0 }, { 60.0, 40.0 },
+    { 70.0, 10.0 }, { 90.0, 10.0 }, { 90.0, 90.0 }, { 70.0, 90.0 },
+    { 60.0, 60.0 }, { 40.0, 60.0 }, { 30.0, 90.0 }, { 10.0, 90.0 },
   };
   std::vector<Vec2d> ext_coords_3 {
-    { 20.0, 20.0 }, { 80.0, 20.0 }, { 80.0, 80.0 }, { 20.0, 80.0 },
+    { 30.0, 10.0 }, { 40.0, 40.0 }, { 60.0, 40.0 }, { 70.0, 10.0 },
   };
   std::vector<Vec2d> ext_coords_4 {
-    { 40.0, 40.0 }, { 60.0, 40.0 }, { 60.0, 60.0 }, { 40.0, 60.0 },
+    { 70.0, 90.0 }, { 60.0, 60.0 }, { 40.0, 60.0 }, { 30.0, 90.0 },
   };
 
   std::vector<int> ext_markers_1 ( ext_coords_1.size(), 1 );
-  std::vector<int> ext_markers_2 ( ext_coords_1.size(), 2 );
-  std::vector<int> ext_markers_3 ( ext_coords_1.size(), 3 );
-  std::vector<int> ext_markers_4 ( ext_coords_1.size(), 4 );
+  std::vector<int> ext_markers_2 ( ext_coords_2.size(), 2 );
+  std::vector<int> ext_markers_3 ( ext_coords_3.size(), 3 );
+  std::vector<int> ext_markers_4 ( ext_coords_4.size(), 4 );
 
   Boundary& bdry_ext_1 = domain_1.add_exterior_boundary();
   Boundary& bdry_ext_2 = domain_2.add_exterior_boundary();
@@ -97,26 +98,15 @@ void nested_meshes()
   | Interior boundary of mesh 1
   ------------------------------------------------------------------*/
   std::vector<Vec2d> int_coords_1 {
-    { 10.0, 10.0 }, { 90.0, 10.0 }, { 90.0, 90.0 }, { 10.0, 90.0 },
-  };
-  std::vector<Vec2d> int_coords_2 {
-    { 20.0, 20.0 }, { 80.0, 20.0 }, { 80.0, 80.0 }, { 20.0, 80.0 },
-  };
-  std::vector<Vec2d> int_coords_3 {
-    { 40.0, 40.0 }, { 60.0, 40.0 }, { 60.0, 60.0 }, { 40.0, 60.0 },
+    { 10.0, 10.0 }, { 30.0, 10.0 }, { 70.0, 10.0 }, { 90.0, 10.0 },
+    { 90.0, 90.0 }, { 70.0, 90.0 }, { 30.0, 90.0 }, { 10.0, 90.0 },
   };
 
   std::vector<int> int_markers_1 ( int_coords_1.size(), 2 );
-  std::vector<int> int_markers_2 ( int_coords_1.size(), 3 );
-  std::vector<int> int_markers_3 ( int_coords_1.size(), 4 );
 
   Boundary& bdry_int_1 = domain_1.add_interior_boundary();
-  Boundary& bdry_int_2 = domain_2.add_interior_boundary();
-  Boundary& bdry_int_3 = domain_3.add_interior_boundary();
 
   bdry_int_1.set_shape_from_coordinates(int_coords_1, int_markers_1);
-  bdry_int_2.set_shape_from_coordinates(int_coords_2, int_markers_2);
-  bdry_int_3.set_shape_from_coordinates(int_coords_3, int_markers_3);
 
   /*------------------------------------------------------------------
   | Create meshes
@@ -127,9 +117,9 @@ void nested_meshes()
   int mesh_id_4    = 3;
 
   int mesh_color_1 = 1;
-  int mesh_color_2 = 1;
-  int mesh_color_3 = 0;
-  int mesh_color_4 = 0;
+  int mesh_color_2 = 2;
+  int mesh_color_3 = 3;
+  int mesh_color_4 = 4;
 
   Mesh& mesh_1 = generator.new_mesh(domain_1, mesh_id_1,  mesh_color_1);
   generator.triangulation(mesh_1).generate_elements();
@@ -145,7 +135,7 @@ void nested_meshes()
 
   Mesh& mesh_4 = generator.new_mesh(domain_4, mesh_id_4,  mesh_color_4);
   generator.triangulation(mesh_4).generate_elements();
-  generator.mixed_smoothing(mesh_4).smooth(2);   
+  generator.mixed_smoothing(mesh_4).smooth(5);   
 
   /*------------------------------------------------------------------
   | Merge meshes
@@ -159,7 +149,7 @@ void nested_meshes()
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
   std::string file_name 
-  { source_dir + "/auxiliary/example_data/nested_meshes" };
+  { source_dir + "/auxiliary/example_data/multiple_meshes" };
 
   LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
   generator.write_mesh(mesh_1, file_name, MeshExportType::VTU);
@@ -167,4 +157,4 @@ void nested_meshes()
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
   generator.write_mesh(mesh_1, file_name, MeshExportType::TXT);
 
-} /* nested_meshes() */
+} /* multiple_meshes() */

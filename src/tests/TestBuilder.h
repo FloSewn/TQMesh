@@ -11,6 +11,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <TQMeshConfig.h>
  
 #include "Helpers.h"
 #include "MathUtility.h"
