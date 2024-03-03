@@ -70,6 +70,7 @@ private:
   ------------------------------------------------------------------*/
   void init_UnitSquare()
   {
+    /*
     domain_.quad_tree_scale( 1.5 );
 
     Boundary& b_ext = domain_.add_exterior_boundary();
@@ -83,6 +84,7 @@ private:
     b_ext.add_edge( v2, v3, 2 );
     b_ext.add_edge( v3, v4, 3 );
     b_ext.add_edge( v4, v1, 4 );
+    */
 
   } // TestBuilder::init_UnitSquare()
 
