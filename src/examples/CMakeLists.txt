@@ -15,7 +15,7 @@ add_executable( ${EXAMPLES}
   main.cpp
 )
 
-target_link_libraries( ${EXAMPLES}
+target_link_libraries( ${EXAMPLES} PRIVATE
   util
   algorithm
 )
