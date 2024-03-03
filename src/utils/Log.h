@@ -89,10 +89,10 @@ public:
   , warn_header_   { "[WARNING] " }
   , info_header_   { "[INFO] " }
   , debug_header_  { "[DEBUG] " }
-  , error_os_      { nullptr }
-  , warn_os_       { nullptr }
-  , info_os_       { nullptr }
-  , debug_os_      { nullptr }
+  , error_os_      { create_stream( TO_COUT ) }
+  , warn_os_       { create_stream( TO_COUT ) }
+  , info_os_       { create_stream( TO_COUT ) }
+  , debug_os_      { create_stream( TO_COUT ) }
   , error_os_type_ { TO_COUT }
   , warn_os_type_  { TO_COUT }
   , info_os_type_  { TO_COUT }
@@ -102,10 +102,10 @@ public:
   , info_col_      { DEFAULT }
   , debug_col_     { DEFAULT }
   {
-    error_os_ = create_stream( TO_COUT );
-    warn_os_  = create_stream( TO_COUT );
-    info_os_  = create_stream( TO_COUT );
-    debug_os_ = create_stream( TO_COUT );
+    // error_os_ = create_stream( TO_COUT );
+    // warn_os_  = create_stream( TO_COUT );
+    // info_os_  = create_stream( TO_COUT );
+    // debug_os_ = create_stream( TO_COUT );
   }
 
   /*------------------------------------------------------------------
