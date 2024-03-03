@@ -149,7 +149,7 @@ public:
 
     // Search for query in file buffer line by line
     for (size_t cur_line = block_start() + block_index(); 
-         cur_line < content.size(); 
+         cur_line < block_end(); 
          ++cur_line)
     {
       const string& line = content[cur_line];

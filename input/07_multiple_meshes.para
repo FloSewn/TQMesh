@@ -1,0 +1,115 @@
+# =====================================================
+#
+# =====================================================
+Define mesh: 
+  Element size:   5
+  Element color:  2
+  Meshing algorithm: Triangulation
+  Number of quad refinements: 0
+  Smooth quad layers: 0
+  Number of smoothing iterations: 2
+
+  # Output formats: COUT, TXT, VTU
+  Output file format: VTU
+  Output file prefix: ./multiple_meshes
+
+  Define exterior boundary:
+      0.0,   0.0, 1
+    100.0,   0.0, 1
+    100.0, 100.0, 1
+      0.0, 100.0, 1
+  End exterior boundary
+
+  Define interior boundary:
+     10.0,  10.0, 2
+     30.0,  10.0, 2
+     70.0,  10.0, 2
+     90.0,  10.0, 2
+     90.0,  90.0, 2
+     70.0,  90.0, 2
+     30.0,  90.0, 2
+     10.0,  90.0, 2
+  End interior boundary
+
+End mesh
+
+# =====================================================
+#
+# =====================================================
+Define mesh:
+  Element size:   3
+  Element color:  1
+  Meshing algorithm: Triangulation
+  Number of quad refinements: 0
+  Smooth quad layers: 0
+  Number of smoothing iterations: 2
+
+  # Output formats: COUT, TXT, VTU
+  Output file format: VTU
+  Output file prefix: ./multiple_meshes
+
+  Define exterior boundary:
+     10.0,  10.0, 2
+     30.0,  10.0, 3
+     40.0,  40.0, 3
+     60.0,  40.0, 3
+     70.0,  10.0, 2
+     90.0,  10.0, 2
+     90.0,  90.0, 2
+     70.0,  90.0, 3
+     60.0,  60.0, 3
+     40.0,  60.0, 3
+     30.0,  90.0, 2
+     10.0,  90.0, 2
+  End exterior boundary
+
+End mesh
+
+
+# =====================================================
+#
+# =====================================================
+Define mesh: 
+  Element size:   1
+  Element color:  3
+  Meshing algorithm: Triangulation
+  Number of quad refinements: 0
+  Smooth quad layers: 0
+  Number of smoothing iterations: 2
+
+  # Output formats: COUT, TXT, VTU
+  Output file format: VTU
+  Output file prefix: ./multiple_meshes
+
+  Define exterior boundary:
+     30.0,  10.0, 3
+     40.0,  40.0, 3
+     60.0,  40.0, 3
+     70.0,  10.0, 2
+  End exterior boundary
+
+End mesh
+
+# =====================================================
+#
+# =====================================================
+Define mesh: 
+  Element size:   1
+  Element color:  4
+  Meshing algorithm: Triangulation
+  Number of quad refinements: 0
+  Smooth quad layers: 0
+  Number of smoothing iterations: 5
+
+  # Output formats: COUT, TXT, VTU
+  Output file format: VTU
+  Output file prefix: ./multiple_meshes
+
+  Define exterior boundary:
+     70.0,  90.0, 3
+     60.0,  60.0, 3
+     40.0,  60.0, 3
+     30.0,  90.0, 2
+  End exterior boundary
+
+End mesh

@@ -80,12 +80,20 @@ int run_examples(const std::string& example)
     airfoil_from_csv();
   } 
   else if ( !example.compare("7") || !example.compare("07") ||
+            !example.compare("multiple_meshes") )
+  {
+    LOG(INFO) << "Running example \"multiple_meshes\"...";
+    LOG(INFO) << "";
+    multiple_meshes();
+  } 
+  else if ( !example.compare("8") || !example.compare("08") ||
             !example.compare("tqmesh_banner") )
   {
     LOG(INFO) << "Running example \"tqmesh_banner\"...";
     LOG(INFO) << "";
     tqmesh_banner();
-  } /*
+  } 
+  /*
   else if ( !example.compare("7") )
   {
     LOG(INFO) << "Running example 7...";

@@ -44,7 +44,7 @@ void initialization()
   UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
   Domain domain { f, 5.0 };
   MeshBuilder mesh_builder {};
-  Mesh mesh = mesh_builder.create_empty_mesh(domain, 0, 0);
+  Mesh mesh = mesh_builder.create_empty_mesh(domain, 0, 0, 5.0);
 
   Vertex& v1 = mesh.add_vertex({0.0, 0.0});
   Vertex& v2 = mesh.add_vertex({1.0, 0.0});
