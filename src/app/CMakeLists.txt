@@ -5,7 +5,7 @@ add_executable( ${TQMESH_APP}
   main.cpp
 )
 
-target_link_libraries( ${TQMESH_APP}
+target_link_libraries( ${TQMESH_APP} PRIVATE
   util
   algorithm
   extern_libs

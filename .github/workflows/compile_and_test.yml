@@ -16,28 +16,37 @@ defaults:
 
 jobs:
   build_and_test:
-    name: Build & test TQMesh on ${{ matrix.os }} with ${{ matrix.compiler }}.
-    runs-on: ${{ matrix.os }}
+    name: Build & test TQMesh on ${{ matrix.platform.name }}
+    runs-on: ${{ matrix.platform.os }}
     strategy:
       matrix: 
-        os: [ubuntu-latest, macos-latest]
-        compiler: [ g++, clang++ ]
-        #include:
-        #  - os: windows-latest
-        #    compiler: cl
-        #    target: windows
+        platform:
+          - {name: ubuntu - gcc,    os: ubuntu-latest,    flags: -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc}
+          - {name: ubuntu - clang,  os: ubuntu-latest,    flags: -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang}
+          - {name: macos - gcc,     os: macos-latest,     flags: -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc}
+          - {name: macos - clang,   os: macos-latest,     flags: -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang}
+          - {name: windows - msvc,  os: windows-latest,   flags: -DCMAKE_CXX_COMPILER=cl -DCMAKE_C_COMPILER=cl}
+          - {name: windows - gcc,   os: windows-latest,    flags: -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -GNinja}
+          - {name: windows - clang, os: windows-latest,    flags: -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -GNinja}
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
     - name: Add msbuild to PATH
-      if: ${{ matrix.os == 'windows-latest' }}
+      if: contains(matrix.platform.name, 'msvc')
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Compile a release build of TQMesh
-      run: ./scripts/compile_tqmesh.sh ${{ matrix.compiler }} ${{env.BUILD_TYPE}} 2
+    - name: Add ninja to PATH
+      if: contains(matrix.platform.name, 'windows') && !contains(matrix.platform.name, 'msvc')
+      uses: seanmiddleditch/gha-setup-ninja@master
 
-    - name: Run all of tqmeshs tests.
+    - name: Compile a release build of TQMesh
+      run: |
+        cmake -S . -B bin ${{ matrix.platform.flags }} -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        cmake --build bin -j2
+        cmake --install bin
+
+    - name: Run all of TQMesh tests
       run: ./scripts/test_tqmesh.sh
 
