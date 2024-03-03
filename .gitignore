@@ -6,3 +6,4 @@ scripts/__pycache__
 scripts/*.png
 NotForGit
 .vs
+.vscode/*
