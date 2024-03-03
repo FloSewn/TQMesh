@@ -443,43 +443,43 @@ void edge_size()
 *********************************************************************/
 void run_tests_Front()
 {
-  //adjust_logging_output_stream("FrontTests.test_UnitSquare.log");
+  adjust_logging_output_stream("FrontTests.test_UnitSquare.log");
   FrontTests::test_UnitSquare();
   std::cout << "FrontTests::test_UnitSquare() succeeded\n";
 
-  //adjust_logging_output_stream("FrontTests.test_UnitCirlce.log");
+  adjust_logging_output_stream("FrontTests.test_UnitCirlce.log");
   FrontTests::test_UnitCircle();
   std::cout << "FrontTests::test_UnitCircle() succeeded\n";
 
-  //adjust_logging_output_stream("FrontTests.test_RefinedTriangle.log");
+  adjust_logging_output_stream("FrontTests.test_RefinedTriangle.log");
   FrontTests::test_RefinedTriangle();
   std::cout << "FrontTests::test_RefinedTriangle() succeeded\n";
 
-  //adjust_logging_output_stream("FrontTests.test_TriangleSquareCircle.log");
+  adjust_logging_output_stream("FrontTests.test_TriangleSquareCircle.log");
   FrontTests::test_TriangleSquareCircle();
   std::cout << "FrontTests::test_TriangleSquareCircle() succeeded\n";
 
-  //adjust_logging_output_stream("FrontTests.test_FixedVertices.log");
+  adjust_logging_output_stream("FrontTests.test_FixedVertices.log");
   FrontTests::test_FixedVertices();
   std::cout << "FrontTests::test_FixedVertices() succeeded\n";
 
-  //adjust_logging_output_stream("FrontTests.test_LakeSuperior.log");
+  adjust_logging_output_stream("FrontTests.test_LakeSuperior.log");
   FrontTests::test_LakeSuperior();
   std::cout << "FrontTests::test_LakeSuperior() succeeded\n";
 
-  //adjust_logging_output_stream("FrontTests.initialization.log");
+  adjust_logging_output_stream("FrontTests.initialization.log");
   FrontTests::initialization();
   std::cout << "FrontTests::initialization() succeeded\n";
 
-  //adjust_logging_output_stream("FrontTests.sort_edges.log");
+  adjust_logging_output_stream("FrontTests.sort_edges.log");
   FrontTests::sort_edges();
   std::cout << "FrontTests::sort_edge() succeeded\n";
 
-  //adjust_logging_output_stream("FrontTests.edge_size.log");
+  adjust_logging_output_stream("FrontTests.edge_size.log");
   FrontTests::edge_size();
   std::cout << "FrontTests::edge_size() succeeded\n";
 
   // Reset debug logging ostream
-  //adjust_logging_output_stream("COUT");
+  adjust_logging_output_stream("COUT");
 
 } // run_tests_Front()
