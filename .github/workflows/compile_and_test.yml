@@ -21,7 +21,12 @@ jobs:
     strategy:
       matrix: 
         platform:
-          - {name: windows - gcc,   os: windows-latest,    flags: -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -GNinja}
+          - {name: ubuntu - gcc,    os: ubuntu-latest,    flags: -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc}
+          - {name: ubuntu - clang,  os: ubuntu-latest,    flags: -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang}
+          - {name: macos - gcc,     os: macos-latest,     flags: -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc}
+          - {name: macos - clang,   os: macos-latest,     flags: -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang}
+          - {name: windows - msvc,  os: windows-latest,   flags: -DCMAKE_CXX_COMPILER=cl -DCMAKE_C_COMPILER=cl}
+          - {name: windows - clang, os: windows-latest,    flags: -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -GNinja}
 
     steps:
     - name: Checkout Repository

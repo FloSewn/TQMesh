@@ -81,31 +81,11 @@ public:
   | Default constructor
   ------------------------------------------------------------------*/
   LogProperties() 
-  : level_         { INFO }
-  , show_header_   { true }
-  , use_newline_   { true }
-  , use_color_     { true }
-  , error_header_  { "[ERROR] " }
-  , warn_header_   { "[WARNING] " }
-  , info_header_   { "[INFO] " }
-  , debug_header_  { "[DEBUG] " }
-  , error_os_      { create_stream( TO_COUT ) }
-  , warn_os_       { create_stream( TO_COUT ) }
-  , info_os_       { create_stream( TO_COUT ) }
-  , debug_os_      { create_stream( TO_COUT ) }
-  , error_os_type_ { TO_COUT }
-  , warn_os_type_  { TO_COUT }
-  , info_os_type_  { TO_COUT }
-  , debug_os_type_ { TO_COUT }
-  , error_col_     { RED     }
-  , warn_col_      { YELLOW  }
-  , info_col_      { DEFAULT }
-  , debug_col_     { DEFAULT }
   {
-    // error_os_ = create_stream( TO_COUT );
-    // warn_os_  = create_stream( TO_COUT );
-    // info_os_  = create_stream( TO_COUT );
-    // debug_os_ = create_stream( TO_COUT );
+    error_os_ = create_stream( TO_COUT );
+    warn_os_  = create_stream( TO_COUT );
+    info_os_  = create_stream( TO_COUT );
+    debug_os_ = create_stream( TO_COUT );
   }
 
   /*------------------------------------------------------------------
@@ -209,30 +189,30 @@ public:
 
 private:
 
-  LogLevel    level_;       
-  bool        show_header_; 
-  bool        use_newline_; 
-  bool        use_color_;   
+  LogLevel    level_         = INFO;
+  bool        show_header_   = true;
+  bool        use_newline_   = true;
+  bool        use_color_     = true;
 
-  std::string error_header_; 
-  std::string warn_header_;  
-  std::string info_header_;  
-  std::string debug_header_; 
+  std::string error_header_  = "[ERROR] ";
+  std::string warn_header_   = "[WARNING] ";
+  std::string info_header_   = "[INFO] ";
+  std::string debug_header_  = "[DEBUG] ";
 
-  OStreamPtr error_os_; 
-  OStreamPtr warn_os_;  
-  OStreamPtr info_os_;  
-  OStreamPtr debug_os_; 
+  OStreamPtr error_os_ { nullptr };
+  OStreamPtr warn_os_  { nullptr };
+  OStreamPtr info_os_  { nullptr };
+  OStreamPtr debug_os_ { nullptr };
 
-  OStreamType error_os_type_; 
-  OStreamType warn_os_type_;  
-  OStreamType info_os_type_;  
-  OStreamType debug_os_type_; 
+  OStreamType error_os_type_ { TO_COUT };
+  OStreamType warn_os_type_  { TO_COUT };
+  OStreamType info_os_type_  { TO_COUT };
+  OStreamType debug_os_type_ { TO_COUT };
 
-  LogColor error_col_;  
-  LogColor warn_col_;   
-  LogColor info_col_;   
-  LogColor debug_col_;  
+  LogColor error_col_  { RED     };
+  LogColor warn_col_   { YELLOW  };
+  LogColor info_col_   { DEFAULT };
+  LogColor debug_col_  { DEFAULT };
 
 };
 
