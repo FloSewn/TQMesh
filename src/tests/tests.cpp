@@ -162,10 +162,10 @@ void adjust_logging_output_stream(const std::string& file)
     return;
   }
 
-  std::string source_directory { TQMESH_SOURCE_DIR };
-  std::string filepath { source_directory + "/auxiliary/test_data/" + file };
-  CppUtils::LOG_PROPERTIES.set_info_ostream( CppUtils::TO_FILE, filepath );
-  CppUtils::LOG_PROPERTIES.set_debug_ostream( CppUtils::TO_FILE, filepath );
+  // std::string source_directory { TQMESH_SOURCE_DIR };
+  // std::string filepath { source_directory + "/auxiliary/test_data/" + file };
+  // CppUtils::LOG_PROPERTIES.set_info_ostream( CppUtils::TO_FILE, filepath );
+  // CppUtils::LOG_PROPERTIES.set_debug_ostream( CppUtils::TO_FILE, filepath );
 
 } // adjust_logging_output_stream()
 

@@ -8,7 +8,7 @@ set -e
 # ./bin/run_tests Vertex
 # ./bin/run_tests Triangle
 # ./bin/run_tests Quad
-./bin/run_tests Front
+valgrind -v ./bin/run_tests Front
 # ./bin/run_tests EdgeList
 # ./bin/run_tests Boundary
 # ./bin/run_tests SizeFunction
