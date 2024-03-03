@@ -137,6 +137,7 @@ public:
   T& y = get_y(); 
   T& z = get_z(); 
 
+
   /*------------------------------------------------------------------
   | Negation
   ------------------------------------------------------------------*/
@@ -261,8 +262,8 @@ public:
   typename std::enable_if_t<NN==3, VecND<T,N>>
   cross(const VecND<T,N>& v) const
   { return {
-      y * v.z - z * v.y,
-      z * v.x - x * v.z,
+      y * v[2] - entries_[2] * v.y,
+      entries_[2] * v.x - x * v[2],
       x * v.y - y * v.x,
   };}
 
@@ -495,8 +496,8 @@ template <typename T, std::size_t N, std::size_t NN=N>
 typename std::enable_if_t<NN==3, VecND<T,N>>
 cross(const VecND<T,N>& a, const VecND<T,N>& b)
 { return {
-    a.y * b.z - a.z * b.y,
-    a.z * b.x - a.x * b.z,
+    a.y * b[2] - a[2] * b.y,
+    a[2] * b.x - a.x * b[2],
     a.x * b.y - a.y * b.x,
 };}
 
