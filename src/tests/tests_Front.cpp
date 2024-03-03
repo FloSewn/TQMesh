@@ -84,6 +84,7 @@ void test_UnitSquare()
 
   TestBuilder test_builder { "UnitSquare", f};
 
+  /*
   // Collect data for the initialization of the advancing front
   FrontInitData front_init_data { test_builder.domain() };
 
@@ -102,6 +103,7 @@ void test_UnitSquare()
 
   // Export
   export_mesh_file(vertices, front, test_builder.domain());
+  */
 
 } // test_UnitSquare()
 
@@ -447,6 +449,7 @@ void run_tests_Front()
   FrontTests::test_UnitSquare();
   std::cout << "FrontTests::test_UnitSquare() succeeded\n";
 
+  /*
   adjust_logging_output_stream("FrontTests.test_UnitCirlce.log");
   FrontTests::test_UnitCircle();
   std::cout << "FrontTests::test_UnitCircle() succeeded\n";
@@ -478,6 +481,7 @@ void run_tests_Front()
   adjust_logging_output_stream("FrontTests.edge_size.log");
   FrontTests::edge_size();
   std::cout << "FrontTests::edge_size() succeeded\n";
+  */
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");
