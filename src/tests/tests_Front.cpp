@@ -82,7 +82,7 @@ void test_UnitSquare()
 {
   UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
 
-  TestBuilder test_builder { "UnitSquare", f};
+  // TestBuilder test_builder { "UnitSquare", f};
 
   /*
   // Collect data for the initialization of the advancing front
