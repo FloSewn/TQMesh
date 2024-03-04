@@ -137,7 +137,6 @@ public:
   T& y = get_y(); 
   T& z = get_z(); 
 
-
   /*------------------------------------------------------------------
   | Negation
   ------------------------------------------------------------------*/
@@ -262,8 +261,8 @@ public:
   typename std::enable_if_t<NN==3, VecND<T,N>>
   cross(const VecND<T,N>& v) const
   { return {
-      y * v[2] - entries_[2] * v.y,
-      entries_[2] * v.x - x * v[2],
+      y * v.z - z * v.y,
+      z * v.x - x * v.z,
       x * v.y - y * v.x,
   };}
 
