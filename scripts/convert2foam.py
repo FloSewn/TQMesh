@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, argparse
 import numpy as np
 
 def io_create_directories(export_dir):
@@ -386,17 +386,24 @@ class OpenFOAMMesh:
 
 def main(argv):
 
-    if len(argv) < 3:
-        print("{:} input-mesh.txt export-directory [-z offset]".format(argv[0]))
-        sys.exit(1)
+    parser = argparse.ArgumentParser(
+        prog='convert2foam',
+        description='Convert TQMesh.txt files to the openFOAM mesh format',
+    )
 
-    input_meshfile = sys.argv[1]
-    export_dir = sys.argv[2]
+    general = parser.add_argument_group('general arguments')
+    general.add_argument(dest='input-meshfile', help='The TQMesh grid file to convert')
+    general.add_argument(dest='export-prefix', help='The export prefix for the output openFOAM mesh')
 
-    if len(argv) > 4 and argv[3] == '-z':
-        z_offset = float(argv[4])
-    else:
-        z_offset = 1.0
+    additional = parser.add_argument_group('additional arguments')
+    additional.add_argument('-e', '--extrusion', dest='extrusion', default=1.0, type=float, required=False,
+                            help='The applied extrusion height in the z-direction')
+
+    args = vars(parser.parse_args())
+
+    input_meshfile = args['input-meshfile']
+    export_dir = args['export-prefix']
+    z_offset = args['extrusion']
 
     mesh_dir = io_create_directories(export_dir)
 
