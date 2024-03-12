@@ -10,6 +10,8 @@ def io_create_directories(export_dir):
         os.mkdir(constant_dir)
     if not os.path.exists(mesh_dir):
         os.mkdir(mesh_dir)
+    open(os.path.join(export_dir, 'tqmesh.foam'), 'a').close()
+
     return mesh_dir
 
 def io_write_foamfile_header(foamfile, filetype, note=None):
@@ -210,7 +212,7 @@ class TQMesh:
 
 class OpenFOAMMesh:
 
-    def __init__(self, tqmesh):
+    def __init__(self, tqmesh, z_offset=1.0):
 
         points_2d = np.array(tqmesh.vertices)
         tris_2d = np.array(tqmesh.triangles)
@@ -229,21 +231,11 @@ class OpenFOAMMesh:
         n_intr_edges = intr_edges_2d.shape[0]
         n_tris, n_quads = tris_2d.shape[0], quads_2d.shape[0]
 
-        self.points = self._init_points(points_2d)
+        self.points = self._init_points(points_2d, z_offset)
         self.faces  = self._init_faces(tris_2d, quads_2d, intr_edges_2d, bdry_edges_2d)
         self.owner = self._init_owner(intr_elems_2d, bdry_elems_2d, n_tris, n_quads)
         self.neighbour = self._init_neighbour(intr_elems_2d)
         self.boundaries = self._init_boundaries(bdry_marker_2d, n_intr_edges, n_tris, n_quads)
-
-        for i in range(len(self.faces)):
-            f = self.faces[i]
-            o = self.owner[i]
-
-            if i < len(self.neighbour):
-                n = self.neighbour[i]
-                print(f, o, n)
-            else:
-                print(f, o)
 
 
     def export(self, mesh_dir):
@@ -395,14 +387,18 @@ class OpenFOAMMesh:
 def main(argv):
 
     if len(argv) < 3:
-        print("{:} input-mesh.txt export-directory".format(argv[0]))
+        print("{:} input-mesh.txt export-directory [-z offset]".format(argv[0]))
         sys.exit(1)
 
     input_meshfile = sys.argv[1]
     export_dir = sys.argv[2]
 
-    mesh_dir = io_create_directories(export_dir)
+    if len(argv) > 4 and argv[3] == '-z':
+        z_offset = float(argv[4])
+    else:
+        z_offset = 1.0
 
+    mesh_dir = io_create_directories(export_dir)
 
     with open(input_meshfile, 'r') as f:
         lines = f.readlines()
@@ -410,15 +406,9 @@ def main(argv):
     io_clear_comments( lines )
 
     tqmesh = TQMesh(0, lines)
-    foammesh = OpenFOAMMesh(tqmesh)
+    foammesh = OpenFOAMMesh(tqmesh, z_offset)
 
     foammesh.export(mesh_dir)
-
-
-
-    #with open(os.path.join(mesh_dir, 'owner'), 'w') as file:
-    #    io_write_foamfile_header(file, 'owner')
-
 
 
 if __name__ == '__main__': main(sys.argv)
