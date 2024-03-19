@@ -223,6 +223,8 @@ class OpenFOAMMesh:
         bdry_elems_2d = np.array(tqmesh.boundary_elements)
         bdry_marker_2d = np.array(tqmesh.boundary_markers)
 
+        self._swap_intr_edges(intr_edges_2d, intr_elems_2d)
+
         bdry_ids = np.argsort(bdry_marker_2d)
         bdry_marker_2d = bdry_marker_2d[bdry_ids]
         bdry_edges_2d = bdry_edges_2d[bdry_ids]
@@ -245,6 +247,21 @@ class OpenFOAMMesh:
         self._write_neighbour(mesh_dir)
         self._write_boundaries(mesh_dir)
 
+    def _swap_intr_edges(self, intr_edges, intr_elements):
+        ''' Swap direction of edges (and their neighbours),
+        where the left neighboring element index is larger than the
+        right neighboring element index '''
+        swap = np.argwhere(intr_elements[:,0] < intr_elements[:,1])
+
+        tmp = intr_elements[swap,0]
+        intr_elements[swap,0] = intr_elements[swap,1]
+        intr_elements[swap,1] = tmp
+
+        tmp = intr_edges[swap,0]
+        intr_edges[swap,0] = intr_edges[swap,1]
+        intr_edges[swap,1] = tmp
+
+
     def _init_points(self, points_2d, z_offset=1.0):
         n_points = points_2d.shape[0]
         z0, z1 = np.zeros((n_points,1)), z_offset*np.ones((n_points,1))
@@ -253,21 +270,24 @@ class OpenFOAMMesh:
         return np.vstack((base_points, top_points))
 
     def _init_faces(self, tris, quads, intr_edges, bdry_edges):
+        ''' All faces are oriented in CCW direction towards the cell owner,
+        such that the resulting normal vectors are pointing outwards from it
+        '''
         n_offset = self.points.shape[0] // 2
 
         intr_faces_base = intr_edges
         intr_faces_top = intr_edges + n_offset
-        intr_faces = np.hstack( (intr_faces_base, intr_faces_top[:,::-1]) )
+        intr_faces = np.hstack( (intr_faces_base[:,::-1], intr_faces_top) )
 
         bdry_faces_base = bdry_edges
         bdry_faces_top = bdry_edges + n_offset
-        bdry_faces = np.hstack( (bdry_faces_base, bdry_faces_top[:,::-1]) )
+        bdry_faces = np.hstack( (bdry_faces_base[:,::-1], bdry_faces_top) )
 
-        base_faces = [ quad.tolist() for quad in quads ] \
-                   + [ tri.tolist() for tri in tris ]
+        base_faces = [ quad[::-1].tolist() for quad in quads ] \
+                   + [ tri[::-1].tolist() for tri in tris ]
 
-        top_faces = [ quad[::-1].tolist() for quad in (quads + n_offset) ] \
-                  + [ tri[::-1].tolist() for tri in (tris + n_offset) ]
+        top_faces = [ quad.tolist() for quad in (quads + n_offset) ] \
+                  + [ tri.tolist() for tri in (tris + n_offset) ]
 
         faces = intr_faces.tolist() + bdry_faces.tolist() \
               + base_faces + top_faces
@@ -361,7 +381,14 @@ class OpenFOAMMesh:
 
     def _write_boundaries(self, mesh_dir):
         boundary_str = '\n{:}\n(\n'.format(len(self.boundaries))
+
+        # Ensure that boundaries are written in sorted order
+        boundary_data = []
         for name, (start_face, n_faces) in self.boundaries.items():
+            boundary_data.append([name, (start_face, n_faces)])
+        boundary_data.sort(key = lambda entry: entry[0])
+
+        for name, (start_face, n_faces) in boundary_data:
             boundary_str += '    {:}\n    {{\n'.format(name)
             boundary_str += '        type            patch;\n'
             boundary_str += '        nFaces          {:};\n'.format(n_faces)
