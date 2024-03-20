@@ -206,8 +206,8 @@ class TQMesh:
         self.vertices = np.array( io_read_vertices( mesh_id, lines ) )
         self.interior_edges, self.interior_elements = io_read_interior_edges( mesh_id, lines )
         self.boundary_edges, self.boundary_elements, self.boundary_markers = io_read_boundary_edges( mesh_id, lines )
-        self.triangles, self.tri_colors = io_read_triangles( mesh_id, lines )
         self.quads, self.quad_colors = io_read_quads( mesh_id, lines )
+        self.triangles, self.tri_colors = io_read_triangles( mesh_id, lines )
 
 
 class OpenFOAMMesh:
@@ -233,9 +233,9 @@ class OpenFOAMMesh:
         n_intr_edges = intr_edges_2d.shape[0]
         n_tris, n_quads = tris_2d.shape[0], quads_2d.shape[0]
 
-        self.points = self._init_points(points_2d, z_offset)
-        self.faces  = self._init_faces(tris_2d, quads_2d, intr_edges_2d, bdry_edges_2d)
-        self.owner = self._init_owner(intr_elems_2d, bdry_elems_2d, n_tris, n_quads)
+        self.points    = self._init_points(points_2d, z_offset)
+        self.faces     = self._init_faces(tris_2d, quads_2d, intr_edges_2d, bdry_edges_2d)
+        self.owner     = self._init_owner(intr_elems_2d, bdry_elems_2d, n_tris, n_quads)
         self.neighbour = self._init_neighbour(intr_elems_2d)
         self.boundaries = self._init_boundaries(bdry_marker_2d, n_intr_edges, n_tris, n_quads)
 
@@ -281,7 +281,7 @@ class OpenFOAMMesh:
 
         bdry_faces_base = bdry_edges
         bdry_faces_top = bdry_edges + n_offset
-        bdry_faces = np.hstack( (bdry_faces_base[:,::-1], bdry_faces_top) )
+        bdry_faces = np.hstack( (bdry_faces_base, bdry_faces_top[:,::-1]) )
 
         base_faces = [ quad[::-1].tolist() for quad in quads ] \
                    + [ tri[::-1].tolist() for tri in tris ]
@@ -295,14 +295,14 @@ class OpenFOAMMesh:
         return faces
 
     def _init_owner(self, intr_elements, bdry_elements, n_tris, n_quads):
-        intr_owner = intr_elements[:,0].tolist()
+        intr_owner = intr_elements[:,1].tolist()
         bdry_owner = bdry_elements.tolist()
         base_owner = np.arange(n_tris + n_quads).tolist()
         top_owner  = base_owner
         return intr_owner + bdry_owner + base_owner + top_owner
 
     def _init_neighbour(self, intr_elements):
-        neighbours = intr_elements[:,1].tolist()
+        neighbours = intr_elements[:,0].tolist()
         return neighbours
 
     def _init_boundaries(self, bdry_marker, n_intr_edges, n_tris, n_quads):
