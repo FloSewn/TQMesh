@@ -38,6 +38,16 @@ def io_write_foamfile_header(foamfile, filetype, note=None):
 
 
 
+def io_gather_mesh_ids(lines):
+    ''' Returns a list of mesh-IDs that are defined in the mesh file.
+        This is used to estimate the number of meshes in the file.
+    '''
+    mesh_ids = []
+    for i, line in enumerate(lines):
+        line = line.split(" ")
+        if line[0] == "MESH":
+            mesh_ids.append( int(line[1]) )
+    return mesh_ids
 
 def io_clear_comments(lines):
     ''' Clears all comments from the input string
@@ -72,7 +82,7 @@ def io_read_vertices(mesh_id, lines):
         (x,y) = ( float(s) for s in line.split(',') )
         vertices.append( (x,y) )
 
-    return vertices
+    return np.array(vertices)
 
 def io_read_interior_edges(mesh_id, lines):
     ''' Read interior edges from the input string
@@ -100,7 +110,7 @@ def io_read_interior_edges(mesh_id, lines):
         edges.append( (v1,v2) )
         nbr_elements.append( (e1,e2) )
 
-    return edges, nbr_elements
+    return np.array(edges), np.array(nbr_elements)
 
 
 def io_read_boundary_edges(mesh_id, lines):
@@ -132,7 +142,7 @@ def io_read_boundary_edges(mesh_id, lines):
         bdry_elements.append( e )
         markers.append( m )
 
-    return edges, bdry_elements, markers
+    return np.array(edges), np.array(bdry_elements), np.array(markers)
 
 
 def io_read_triangles(mesh_id, lines):
@@ -161,7 +171,7 @@ def io_read_triangles(mesh_id, lines):
         tris.append( (v1,v2,v3) )
         tri_colors.append( color )
 
-    return tris, tri_colors
+    return np.array(tris), np.array(tri_colors)
 
 def io_read_quads(mesh_id, lines):
     ''' Read quadrilaterals from the input string
@@ -189,7 +199,7 @@ def io_read_quads(mesh_id, lines):
         quads.append( (v1,v2,v3,v4) )
         quad_colors.append( color )
 
-    return quads, quad_colors
+    return np.array(quads), np.array(quad_colors)
 
 
 
@@ -203,41 +213,80 @@ class TQMesh:
             of the mesh in the file.
         '''
         self.mesh_id = mesh_id
-        self.vertices = np.array( io_read_vertices( mesh_id, lines ) )
-        self.interior_edges, self.interior_elements = io_read_interior_edges( mesh_id, lines )
-        self.boundary_edges, self.boundary_elements, self.boundary_markers = io_read_boundary_edges( mesh_id, lines )
-        self.quads, self.quad_colors = io_read_quads( mesh_id, lines )
-        self.triangles, self.tri_colors = io_read_triangles( mesh_id, lines )
+        self.vertices = io_read_vertices( mesh_id, lines )
+        self.intr_edges, self.intr_elems = io_read_interior_edges( mesh_id, lines )
+        self.bdry_edges, self.bdry_elems, self.bdry_marker = io_read_boundary_edges( mesh_id, lines )
+        self.quads, _ = io_read_quads( mesh_id, lines )
+        self.triangles, _ = io_read_triangles( mesh_id, lines )
+
+        self._swap_intr_edges()
+        self._sort_intr_edges()
+        self._sort_bdry_edges()
+
+        bdry_ids = np.argsort(self.bdry_marker)
+        self.bdry_marker = self.bdry_marker[bdry_ids]
+        self.bdry_edges = self.bdry_edges[bdry_ids]
+        self.bdry_elems = self.bdry_elems[bdry_ids]
+
+    def _sort_intr_edges(self):
+        ''' Sort interior edges by indices of their left
+        neighbouring elements.
+        '''
+        if self.intr_elems.shape[0] < 1:
+            return
+        ids = np.argsort(self.intr_elems[:,0])
+        self.intr_edges = self.intr_edges[ids]
+        self.intr_elems = self.intr_elems[ids]
+
+    def _sort_bdry_edges(self):
+        ''' Sort interior edges by indices of their
+        neighbouring elements.
+        '''
+        if self.bdry_elems.shape[0] < 1:
+            return
+        ids = np.argsort(self.bdry_elems)
+        self.bdry_edges = self.bdry_edges[ids]
+        self.bdry_elems = self.bdry_elems[ids]
+
+
+    def _swap_intr_edges(self):
+        ''' Swap direction of edges (and their neighbours),
+        where the left neighboring element index is larger than the
+        right neighboring element index '''
+        if self.intr_elems.shape[0] < 1:
+            return
+        swap = np.argwhere(self.intr_elems[:,0] < self.intr_elems[:,1])
+
+        tmp = self.intr_elems[swap,0]
+        self.intr_elems[swap,0] = self.intr_elems[swap,1]
+        self.intr_elems[swap,1] = tmp
+
+        tmp = self.intr_edges[swap,0]
+        self.intr_edges[swap,0] = self.intr_edges[swap,1]
+        self.intr_edges[swap,1] = tmp
+
+
+    @property
+    def n_tris(self):
+        return self.triangles.shape[0]
+
+    @property
+    def n_quads(self):
+        return self.quads.shape[0]
+
+    @property
+    def n_intr_edges(self):
+        return self.intr_edges.shape[0]
 
 
 class OpenFOAMMesh:
 
     def __init__(self, tqmesh, z_offset=1.0):
-
-        points_2d = np.array(tqmesh.vertices)
-        tris_2d = np.array(tqmesh.triangles)
-        quads_2d = np.array(tqmesh.quads)
-        intr_edges_2d = np.array(tqmesh.interior_edges)
-        intr_elems_2d = np.array(tqmesh.interior_elements)
-        bdry_edges_2d = np.array(tqmesh.boundary_edges)
-        bdry_elems_2d = np.array(tqmesh.boundary_elements)
-        bdry_marker_2d = np.array(tqmesh.boundary_markers)
-
-        self._swap_intr_edges(intr_edges_2d, intr_elems_2d)
-
-        bdry_ids = np.argsort(bdry_marker_2d)
-        bdry_marker_2d = bdry_marker_2d[bdry_ids]
-        bdry_edges_2d = bdry_edges_2d[bdry_ids]
-        bdry_elems_2d = bdry_elems_2d[bdry_ids]
-
-        n_intr_edges = intr_edges_2d.shape[0]
-        n_tris, n_quads = tris_2d.shape[0], quads_2d.shape[0]
-
-        self.points    = self._init_points(points_2d, z_offset)
-        self.faces     = self._init_faces(tris_2d, quads_2d, intr_edges_2d, bdry_edges_2d)
-        self.owner     = self._init_owner(intr_elems_2d, bdry_elems_2d, n_tris, n_quads)
-        self.neighbour = self._init_neighbour(intr_elems_2d)
-        self.boundaries = self._init_boundaries(bdry_marker_2d, n_intr_edges, n_tris, n_quads)
+        self.points = self._init_points(tqmesh, z_offset)
+        self.faces = self._init_faces(tqmesh)
+        self.owner = self._init_owner(tqmesh)
+        self.neighbour = self._init_neighbour(tqmesh)
+        self.boundaries = self._init_boundaries(tqmesh)
 
 
     def export(self, mesh_dir):
@@ -247,79 +296,77 @@ class OpenFOAMMesh:
         self._write_neighbour(mesh_dir)
         self._write_boundaries(mesh_dir)
 
-    def _swap_intr_edges(self, intr_edges, intr_elements):
-        ''' Swap direction of edges (and their neighbours),
-        where the left neighboring element index is larger than the
-        right neighboring element index '''
-        swap = np.argwhere(intr_elements[:,0] < intr_elements[:,1])
 
-        tmp = intr_elements[swap,0]
-        intr_elements[swap,0] = intr_elements[swap,1]
-        intr_elements[swap,1] = tmp
-
-        tmp = intr_edges[swap,0]
-        intr_edges[swap,0] = intr_edges[swap,1]
-        intr_edges[swap,1] = tmp
-
-
-    def _init_points(self, points_2d, z_offset=1.0):
-        n_points = points_2d.shape[0]
+    def _init_points(self, tqmesh, z_offset=1.0):
+        n_points = tqmesh.vertices.shape[0]
         z0, z1 = np.zeros((n_points,1)), z_offset*np.ones((n_points,1))
-        base_points = np.hstack((points_2d, z0))
-        top_points = np.hstack((points_2d, z1))
+        base_points = np.hstack((tqmesh.vertices, z0))
+        top_points = np.hstack((tqmesh.vertices, z1))
         return np.vstack((base_points, top_points))
 
-    def _init_faces(self, tris, quads, intr_edges, bdry_edges):
+
+    def _init_faces(self, tqmesh):
         ''' All faces are oriented in CCW direction towards the cell owner,
         such that the resulting normal vectors are pointing outwards from it
         '''
         n_offset = self.points.shape[0] // 2
 
-        intr_faces_base = intr_edges
-        intr_faces_top = intr_edges + n_offset
-        intr_faces = np.hstack( (intr_faces_base[:,::-1], intr_faces_top) )
+        if tqmesh.intr_edges.shape[0] > 0:
+            intr_faces_base = tqmesh.intr_edges
+            intr_faces_top = tqmesh.intr_edges + n_offset
+            intr_faces = np.hstack( (intr_faces_base[:,::-1], intr_faces_top) ).tolist()
+        else:
+            intr_faces = []
 
-        bdry_faces_base = bdry_edges
-        bdry_faces_top = bdry_edges + n_offset
-        bdry_faces = np.hstack( (bdry_faces_base, bdry_faces_top[:,::-1]) )
+        bdry_faces_base = tqmesh.bdry_edges
+        bdry_faces_top = tqmesh.bdry_edges + n_offset
+        bdry_faces = np.hstack( (bdry_faces_base, bdry_faces_top[:,::-1]) ).tolist()
 
-        base_faces = [ quad[::-1].tolist() for quad in quads ] \
-                   + [ tri[::-1].tolist() for tri in tris ]
+        base_faces = [ quad[::-1].tolist() for quad in tqmesh.quads ] \
+                   + [ tri[::-1].tolist() for tri in tqmesh.triangles ]
 
-        top_faces = [ quad.tolist() for quad in (quads + n_offset) ] \
-                  + [ tri.tolist() for tri in (tris + n_offset) ]
+        top_faces = [ quad.tolist() for quad in (tqmesh.quads + n_offset) ] \
+                  + [ tri.tolist() for tri in (tqmesh.triangles + n_offset) ]
 
-        faces = intr_faces.tolist() + bdry_faces.tolist() \
-              + base_faces + top_faces
+        faces = intr_faces + bdry_faces + base_faces + top_faces
 
         return faces
 
-    def _init_owner(self, intr_elements, bdry_elements, n_tris, n_quads):
-        intr_owner = intr_elements[:,1].tolist()
-        bdry_owner = bdry_elements.tolist()
-        base_owner = np.arange(n_tris + n_quads).tolist()
+
+    def _init_owner(self, tqmesh):
+        if tqmesh.intr_elems.shape[0] > 0:
+            intr_owner = tqmesh.intr_elems[:,1].tolist()
+        else:
+            intr_owner = []
+        bdry_owner = tqmesh.bdry_elems.tolist()
+        base_owner = np.arange(tqmesh.n_tris + tqmesh.n_quads).tolist()
         top_owner  = base_owner
         return intr_owner + bdry_owner + base_owner + top_owner
 
-    def _init_neighbour(self, intr_elements):
-        neighbours = intr_elements[:,0].tolist()
+
+    def _init_neighbour(self, tqmesh):
+        if tqmesh.intr_elems.shape[0] > 0:
+            neighbours = tqmesh.intr_elems[:,0].tolist()
+        else:
+            neighbours = []
         return neighbours
 
-    def _init_boundaries(self, bdry_marker, n_intr_edges, n_tris, n_quads):
+
+    def _init_boundaries(self, tqmesh):
         boundaries = {}
 
         # Add boundaries from 2D mesh
-        offset = n_intr_edges
+        offset = tqmesh.n_intr_edges
         count = 1
-        for marker in np.unique(bdry_marker):
+        for marker in np.unique(tqmesh.bdry_marker):
             name = 'boundary_{:}'.format(count)
-            n_faces = np.sum(bdry_marker == marker)
+            n_faces = np.sum(tqmesh.bdry_marker == marker)
             boundaries.update({name : (offset, n_faces)})
             offset += n_faces
             count += 1
 
         # Add additional base and top boundaries for 3D mesh
-        n_faces = n_tris + n_quads
+        n_faces = tqmesh.n_tris + tqmesh.n_quads
         boundaries.update({
             'boundary_{:}'.format(count) : (offset, n_faces)
         })
@@ -341,6 +388,7 @@ class OpenFOAMMesh:
         with open(os.path.join(mesh_dir, 'points'), 'w') as file:
             io_write_foamfile_header(file, 'points')
             file.write(point_str)
+
 
     def _write_faces(self, mesh_dir):
         face_str = '\n{:}\n(\n'.format(len(self.faces))
@@ -369,6 +417,7 @@ class OpenFOAMMesh:
             io_write_foamfile_header(file, 'owner')
             file.write(owner_str)
 
+
     def _write_neighbour(self, mesh_dir):
         neighbour_str = '\n{:}\n(\n'.format(len(self.neighbour))
         for e in self.neighbour:
@@ -378,6 +427,7 @@ class OpenFOAMMesh:
         with open(os.path.join(mesh_dir, 'neighbour'), 'w') as file:
             io_write_foamfile_header(file, 'neighbour')
             file.write(neighbour_str)
+
 
     def _write_boundaries(self, mesh_dir):
         boundary_str = '\n{:}\n(\n'.format(len(self.boundaries))
@@ -399,9 +449,6 @@ class OpenFOAMMesh:
         with open(os.path.join(mesh_dir, 'boundary'), 'w') as file:
             io_write_foamfile_header(file, 'boundary')
             file.write(boundary_str)
-
-
-
 
 
 
@@ -439,7 +486,9 @@ def main(argv):
 
     io_clear_comments( lines )
 
-    tqmesh = TQMesh(0, lines)
+    mesh_ids = io_gather_mesh_ids( lines )
+
+    tqmesh = TQMesh(mesh_ids[0], lines)
     foammesh = OpenFOAMMesh(tqmesh, z_offset)
 
     foammesh.export(mesh_dir)
