@@ -1,0 +1,53 @@
+#===========================================================
+#                         TQMESH
+#===========================================================
+
+#-----------------------------------------------------------
+#                     MESH DEFINITION
+#-----------------------------------------------------------
+Define mesh:
+  Element size: 4
+  Element color: 1
+  Meshing algorithm: Tri-to-Quad
+  Number of quad refinements: 1
+  Smooth quad layers: 0
+  Number of smoothing iterations: 3
+
+  # Output formats: COUT, TXT, VTU
+  Output file format: TXT
+  Output file prefix: ./frac2d-quad
+
+  #---------------------------------------------------------
+  #                        BOUNDARIES
+  #---------------------------------------------------------
+  Define boundary vertices:
+     55.00,   -140.0000
+     90.00,   -140.0000
+     90.00,   -110.0000
+     55.00,   -110.0000
+    77.03125, -134.0878, 0.1, 0.035 
+    77.04852, -134.0778, 0.1, 0.035 
+    68.49935, -119.4510, 0.1, 0.035 
+    68.48208, -119.4611, 0.1, 0.035 
+  End boundary vertices
+
+  Define exterior boundary edges:
+    0, 1,    1
+    1, 2,    2
+    2, 3,    3
+    3, 0,    4
+  End exterior boundary edges
+
+  Define interior boundary edges:
+    4, 7,    5
+    7, 6,    5
+    6, 5,    5
+    5, 4,    5
+  End interior boundary edges
+
+  #---------------------------------------------------------
+  #                       QUAD-LAYERS
+  #---------------------------------------------------------
+  Add quad layers: 77.03125, -134.0878, 77.03125, -134.0878, 4, 0.1, 1.3
+
+End mesh
