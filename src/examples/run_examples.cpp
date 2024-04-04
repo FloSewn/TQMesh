@@ -87,6 +87,13 @@ int run_examples(const std::string& example)
     multiple_meshes();
   } 
   else if ( !example.compare("8") || !example.compare("08") ||
+            !example.compare("thin_fracture") )
+  {
+    LOG(INFO) << "Running example \"thin_fracture\"...";
+    LOG(INFO) << "";
+    thin_fracture();
+  } 
+  else if ( !example.compare("9") || !example.compare("09") ||
             !example.compare("tqmesh_banner") )
   {
     LOG(INFO) << "Running example \"tqmesh_banner\"...";

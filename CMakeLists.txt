@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(TQMesh
         LANGUAGES CXX
-        VERSION   1.1)
+        VERSION   1.3.2)
 
 set( BIN ${CMAKE_SOURCE_DIR}/bin )
 if(WIN32)

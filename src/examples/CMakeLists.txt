@@ -4,7 +4,8 @@ add_executable( ${EXAMPLES}
   #example_9.cpp
   #example_8.cpp
   #example_7.cpp
-  08_tqmesh_banner.cpp
+  09_tqmesh_banner.cpp
+  08_thin_fracture.cpp
   07_multiple_meshes.cpp
   06_airfoil_from_csv.cpp
   05_merge_meshes.cpp
