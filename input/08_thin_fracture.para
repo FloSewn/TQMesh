@@ -14,8 +14,8 @@ Define mesh:
   Number of smoothing iterations: 3
 
   # Output formats: COUT, TXT, VTU
-  Output file format: TXT
-  Output file prefix: ./frac2d-quad
+  Output file format: VTU
+  Output file prefix: ./thin_fracture
 
   #---------------------------------------------------------
   #                        BOUNDARIES

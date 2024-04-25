@@ -32,11 +32,17 @@ void airfoil_from_csv()
   /*------------------------------------------------------------------
   | Define the size function
   ------------------------------------------------------------------*/
-  UserSizeFunction f_outer = [](const Vec2d& p) { return 0.003; };
+  UserSizeFunction f_outer = [](const Vec2d& p) { return 0.004; };
 
   Domain outer_domain { f_outer };
   outer_domain.add_exterior_boundary().set_shape_circle(1, {0.77, 0.09}, 0.14, 60);
   outer_domain.add_interior_boundary().set_shape_from_csv(csv_file);
+
+  /*------------------------------------------------------------------
+  | We use some additional fixed vertices to locally refine the mesh
+  ------------------------------------------------------------------*/
+  outer_domain.add_fixed_vertex(0.69095, 0.09625, 0.0020, 0.02);
+  outer_domain.add_fixed_vertex(0.85985, 0.07582, 0.0008, 0.005);
 
   /*------------------------------------------------------------------
   | Initialize the outer mesh
@@ -53,7 +59,7 @@ void airfoil_from_csv()
   ------------------------------------------------------------------*/
   generator.quad_layer_generation(outer_mesh)
     .n_layers(10)
-    .first_height(0.0003)
+    .first_height(0.0004)
     .growth_rate(1.10)
     .starting_position({0.69132,0.09754})
     .ending_position({0.69132,0.09754})

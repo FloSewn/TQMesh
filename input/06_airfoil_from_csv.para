@@ -3,10 +3,10 @@
 #===========================================================
  
 #-----------------------------------------------------------
-#                     MESH DEFINITION
+#                   OUTER MESH DEFINITION
 #-----------------------------------------------------------
 Define mesh:
-  Element size: 0.004 
+  Element size: 0.003 
   Element color: 1
   Meshing algorithm: Triangulation
   Number of quad refinements: 0
@@ -22,21 +22,21 @@ Define mesh:
 
   Define interior boundary from CSV file: ../auxiliary/test_data/Airfoil.csv
 
-  Add quad layers: 0.69132, 0.09754, 0.69132, 0.09754, 10, 0.0005, 1.10
+  Add quad layers: 0.69132, 0.09754, 0.69132, 0.09754, 10, 0.0004, 1.10
 
   #---------------------------------------------------------
   #                     LOCAL REFINEMENT     
   #---------------------------------------------------------
   Define fixed vertices:
-    0.69095,0.09625, 0.0020,0.02
-    0.85985,0.07582, 0.0008,0.005
+    0.69095, 0.09625, 0.0020, 0.02
+    0.85985, 0.07582, 0.0008, 0.005
   End fixed vertices
 
 End mesh
 
 
 #-----------------------------------------------------------
-#                          Mesh #3 
+#                   INNER MESH DEFINITION 
 #-----------------------------------------------------------
 Define mesh:
   Element size: 0.003 
