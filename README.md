@@ -158,8 +158,6 @@ via CSV files. This example shows an airfoil that has been meshed in this way.
 <img src="doc/airfoil.png" alt="TQMesh-airfoil" width="350"/>
 </details>
 
-
-
 ## Output format
 Currently, **TQMesh** features the VTU output format (which can be read for example by Paraview) or alternatively a simple text output format.
 
@@ -232,13 +230,22 @@ The last entry of the mesh output refers to the size function values at every ve
 
 </details>
 
+## OpenFOAM Support
+<img src="doc/banner_3d.jpeg" alt="TQMesh-OpenFOAM-support" width="250"/>
+To convert meshes from **TQMesh** to a format that is supported by OpenFOAM
+you can use a script that is provided in `scripts/convert2foam.py`.
+```sh
+python scripts/convert2foam.py [-e EXTRUSION] Mesh.txt export-prefix
+```
+Optional flags:
+* `-e EXTRUSION`: A floating point value by which the mesh gets extruded 
 
 ## Plot your meshes
 A simple python script to plot your mesh is provided under `scripts/plot_mesh.py`.
 It requires the mesh given in the format described above.
 Simply run it with
 ```sh
-python scipts/plot_mesh.py Mesh.txt (-s -v -e -b -f)
+python scripts/plot_mesh.py Mesh.txt (-s -v -e -b -f)
 ```
 Optional flags: 
 * `-s`: Add a contour plot of the underlying size-function
