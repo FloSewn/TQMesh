@@ -83,10 +83,10 @@ void square_in_channel()
 
   // Apply a refinement at the interior boundary vertices to a local
   // mesh size of 0.05 - within a range of 0.2:
-  Vertex& v4 = domain.add_vertex( 0.35, 0.35, 0.05, 0.2 );
-  Vertex& v5 = domain.add_vertex( 0.35, 0.65, 0.05, 0.2 );
-  Vertex& v6 = domain.add_vertex( 0.65, 0.65, 0.05, 0.2 );
-  Vertex& v7 = domain.add_vertex( 0.65, 0.35, 0.05, 0.2 );
+  Vertex& v4 = domain.add_vertex( 0.35, 0.35, 0.03, 0.25 );
+  Vertex& v5 = domain.add_vertex( 0.35, 0.65, 0.03, 0.25 );
+  Vertex& v6 = domain.add_vertex( 0.65, 0.65, 0.03, 0.25 );
+  Vertex& v7 = domain.add_vertex( 0.65, 0.35, 0.03, 0.25 );
 
   b_int.add_edge( v4, v5, 4 ); // Use marker 4 for all interior edges
   b_int.add_edge( v5, v6, 4 ); // ...
