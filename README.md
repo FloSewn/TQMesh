@@ -231,14 +231,15 @@ The last entry of the mesh output refers to the size function values at every ve
 </details>
 
 ## OpenFOAM Support
-<img src="doc/banner_3d.jpeg" alt="TQMesh-OpenFOAM-support" width="250"/>
+<img src="doc/banner_3d.jpeg" alt="TQMesh-OpenFOAM-support" width="500"/>
+
 To convert meshes from **TQMesh** to a format that is supported by OpenFOAM
 you can use a script that is provided in `scripts/convert2foam.py`.
 ```sh
 python scripts/convert2foam.py [-e EXTRUSION] Mesh.txt export-prefix
 ```
-Optional flags:
-* `-e EXTRUSION`: A floating point value by which the mesh gets extruded 
+This script simply extrudes the provided mesh into the z-direction and 
+generates the required files which can be used as input for OpenFOAM.
 
 ## Plot your meshes
 A simple python script to plot your mesh is provided under `scripts/plot_mesh.py`.
