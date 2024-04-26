@@ -373,6 +373,109 @@ void quad_layer_near_mesh_size()
 
 } // quad_layer_near_mesh_size()
 
+/*********************************************************************
+* This is the same domain as in the example of the square-in-channel.
+* However, we use some slightly different parameters, which (in the 
+* current state of the code) lead to a failed mesh attempt.
+* -> The meshing process did not fail but a missing call to 
+* "MeshCleanup::setup_facet_connectivity()" after the quad refinement
+* led to an invalid internal mesh structure that resulted in the 
+* occurence of advancing front edges in the final mesh.
+*********************************************************************/
+void quad_refinement()
+{
+  UserSizeFunction f = [](const Vec2d& p) { return 0.1; };
+
+  Domain domain { f };
+
+  Boundary&  b_ext = domain.add_exterior_boundary();
+
+  Vertex& v0 = domain.add_vertex(  0.0,  0.0 ); // Vertex coordinates
+  Vertex& v1 = domain.add_vertex(  4.0,  0.0 ); // ...
+  Vertex& v2 = domain.add_vertex(  4.0,  1.0 );
+  Vertex& v3 = domain.add_vertex(  0.0,  1.0 );
+
+  b_ext.add_edge( v0, v1, 2 ); // 2: Marker for bottom edge
+  b_ext.add_edge( v1, v2, 3 ); // 3: Marker for right edge
+  b_ext.add_edge( v2, v3, 2 ); // 2: Marker for top edge
+  b_ext.add_edge( v3, v0, 1 ); // 1: Marker for left edge
+
+
+  Boundary&  b_int = domain.add_interior_boundary();
+
+
+  // Apply a refinement at the interior boundary vertices to a local
+  // mesh size of 0.05 - within a range of 0.2:
+  Vertex& v4 = domain.add_vertex( 0.35, 0.35, 0.05, 0.2 );
+  Vertex& v5 = domain.add_vertex( 0.35, 0.65, 0.05, 0.2 );
+  Vertex& v6 = domain.add_vertex( 0.65, 0.65, 0.05, 0.2 );
+  Vertex& v7 = domain.add_vertex( 0.65, 0.35, 0.05, 0.2 );
+
+  b_int.add_edge( v4, v5, 4 ); // Use marker 4 for all interior edges
+  b_int.add_edge( v5, v6, 4 ); // ...
+  b_int.add_edge( v6, v7, 4 );
+  b_int.add_edge( v7, v4, 4 );
+
+
+  MeshGenerator generator {};
+  Mesh& mesh = generator.new_mesh( domain );
+
+
+  auto& quad_layer = generator.quad_layer_generation(mesh);
+
+  quad_layer.n_layers(3);                // Number of quad layers
+  quad_layer.first_height(0.01);         // First layer height
+  quad_layer.growth_rate(2.0);           // Growth rate between layers
+  quad_layer.starting_position(v0.xy()); // Start and ending
+  quad_layer.ending_position(v1.xy());   // coordinates of the layer
+  quad_layer.generate_elements();
+
+  // ... or apply everything directly
+  generator.quad_layer_generation(mesh)
+    .n_layers(3)
+    .first_height(0.01)
+    .growth_rate(2.0)
+    .starting_position(v2.xy())
+    .ending_position(v3.xy())
+    .generate_elements();
+
+  generator.quad_layer_generation(mesh)
+    .n_layers(3)
+    .first_height(0.01)
+    .growth_rate(1.3)
+    .starting_position(v4.xy())
+    .ending_position(v4.xy())
+    .generate_elements();
+
+  generator.triangulation(mesh).generate_elements();
+  CHECK(mesh.get_front_edges().size() == 0);
+
+  generator.tri2quad_modification(mesh).modify();
+  CHECK(mesh.get_front_edges().size() == 0);
+
+  generator.quad_refinement(mesh).refine();
+
+  // This call is required to update the facet connectivity, 
+  // otherwise the mesh will return some "nonexistent" advancing 
+  // front edges in "get_front_edges()"
+  MeshCleanup::setup_facet_connectivity(mesh);
+  CHECK(mesh.get_front_edges().size() == 0);
+
+  generator.mixed_smoothing(mesh)
+    .epsilon(0.7)               // Change the smoothing strength
+    .quad_layer_smoothing(true) // Enable smoothing to quad layers
+    .smooth(3);                 // Smooth for three iterations
+  CHECK(mesh.get_front_edges().size() == 0);
+
+
+  std::string source_dir { TQMESH_SOURCE_DIR };
+  std::string filename 
+  { source_dir + "/auxiliary/test_data/MeshGeneratorTests.quad_refinement" };
+
+  generator.write_mesh(mesh, filename, MeshExportType::TXT);
+
+} // quad_refinement()
+
 } // namespace MeshGeneratorTests
 
 /*********************************************************************
@@ -391,6 +494,9 @@ void run_tests_MeshGenerator()
 
   adjust_logging_output_stream("MeshGeneratorTests.quad_layer_near_mesh_size.log");
   MeshGeneratorTests::quad_layer_near_mesh_size();
+
+  adjust_logging_output_stream("MeshGeneratorTests.quad_refinement.log");
+  MeshGeneratorTests::quad_refinement();
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");
