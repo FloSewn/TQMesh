@@ -230,8 +230,8 @@ The last entry of the mesh output refers to the size function values at every ve
 
 </details>
 
-## OpenFOAM Support
-<img src="doc/banner_3d.jpeg" alt="TQMesh-OpenFOAM-support" width="500"/>
+## Convert meshes for OpenFOAM
+<img src="doc/banner_3d.jpeg" alt="TQMesh-OpenFOAM-support" width="600"/>
 
 To convert meshes from **TQMesh** to a format that is supported by OpenFOAM
 you can use a script that is provided in `scripts/convert2foam.py`.
