@@ -7,8 +7,7 @@
 */
 #pragma once
 
-#include <vector>
-#include <string>
+#include "TQMesh.h"
 
 /*********************************************************************
 * Adjust logging output stream

@@ -7,7 +7,7 @@
 */
 #pragma once
 
-#include <vector>
+#include "STLHeaders.h"
 
 #include "utils.h"
 #include "Vertex.h"

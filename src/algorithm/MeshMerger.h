@@ -7,8 +7,7 @@
 */
 #pragma once
 
-#include <vector>
-#include <utility>
+#include "STLHeaders.h"
 
 #include "Mesh.h"
 #include "MeshCleanup.h"

@@ -7,8 +7,7 @@
 */
 #pragma once
 
-#include <string>
-#include <exception>
+#include "STLHeaders.h"
 
 namespace TQMesh {
 

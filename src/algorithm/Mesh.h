@@ -7,11 +7,9 @@
 */
 #pragma once
 
-#include <algorithm>
-#include <limits.h>
+#include "STLHeaders.h"
 
 #include "VecND.h"
-//#include "VtkIO.h"
 
 #include "utils.h"
 #include "Vertex.h"

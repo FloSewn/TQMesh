@@ -7,12 +7,7 @@
 */
 #pragma once
 
-#include <vector>         // std::vector
-#include <memory>         // std::shared_ptr
-#include <utility>        // std::move
-#include <array>          // std::array
-#include <functional>     // std::function
-
+#include "STLHeaders.h"
 #include "Boundary.h"
 
 namespace TQMesh {

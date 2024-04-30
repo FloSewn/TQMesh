@@ -7,9 +7,7 @@
 */
 #pragma once
 
-#include <iostream>
-#include <list>
-#include <array>
+#include "STLHeaders.h"
 
 #include "VecND.h"
 #include "Geometry.h"

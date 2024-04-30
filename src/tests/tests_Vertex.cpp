@@ -6,18 +6,8 @@
 * on usage and license.
 */
 
-#include <iostream>
-#include <cassert>
-
 #include "tests.h"
-
-#include "VecND.h"
-#include "MathUtility.h"
-#include "Testing.h"
-
-#include "Vertex.h"
-#include "Triangle.h"
-#include "Quad.h"
+#include "TQMesh.h"
 
 namespace VertexTests 
 {

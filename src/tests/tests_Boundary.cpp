@@ -6,20 +6,8 @@
 * on usage and license.
 */
 
-#include <iostream>
-#include <cassert>
-
 #include "tests.h"
-
-#include "VecND.h"
-#include "Timer.h"
-#include "Container.h"
-#include "Testing.h"
-
-#include "Vertex.h"
-#include "Edge.h"
-#include "Boundary.h"
-#include "Domain.h"
+#include "TQMesh.h"
 
 namespace BoundaryTests 
 {

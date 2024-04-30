@@ -6,28 +6,9 @@
 * on usage and license.
 */
 
-#include <iostream>
-#include <cassert>
-
-#include <TQMeshConfig.h>
-
 #include "tests.h"
-
-#include "VecND.h"
-#include "Testing.h"
-#include "Timer.h"
-#include "Container.h"
-
-#include "Vertex.h"
-#include "Edge.h"
-#include "Domain.h"
-#include "Mesh.h"
-#include "MeshGenerator.h"
-#include "MeshMerger.h"
-#include "RefinementStrategy.h"
-#include "MeshCleanup.h"
-#include "SmoothingStrategy.h"
-#include "EntityChecks.h"
+#include "TestBuilder.h"
+#include "TQMesh.h"
 
 namespace MeshGeneratorTests 
 {

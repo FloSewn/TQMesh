@@ -6,23 +6,8 @@
 * on usage and license.
 */
 
-#include <iostream>
-#include <fstream>
-#include <cassert>
-
-#include <TQMeshConfig.h>
-
 #include "tests.h"
-
-#include "VecND.h"
-#include "Testing.h"
-#include "Timer.h"
-#include "Container.h"
-
-#include "utils.h"
-#include "Vertex.h"
-#include "Edge.h"
-#include "Domain.h"
+#include "TQMesh.h"
 
 namespace SizeFunctionTests 
 {

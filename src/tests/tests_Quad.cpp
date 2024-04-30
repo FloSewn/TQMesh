@@ -6,22 +6,8 @@
 * on usage and license.
 */
 
-#include <iostream>
-#include <cassert>
-
 #include "tests.h"
-
-#include "Testing.h"
-#include "VecND.h"
-#include "Timer.h"
-#include "Container.h"
-
-#include "utils.h"
-#include "Vertex.h"
-#include "Edge.h"
-#include "Domain.h"
-#include "Front.h"
-#include "Quad.h"
+#include "TQMesh.h"
 
 namespace QuadTests 
 {

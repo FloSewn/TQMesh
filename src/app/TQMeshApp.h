@@ -7,23 +7,8 @@
 */
 #pragma once
 
-#include <iostream>
-#include <cstdlib>
-#include <sstream>
-#include <vector>
-
-
-#include "MeshGenerator.h"
-
-#include "Error.h"
-#include "ParaReader.h"
-#include "VecND.h"
-#include "Helpers.h"
-#include "Log.h"
-#include "Container.h"
-
+#include "TQMesh.h"
 #include "size_function.h"
-
 
 namespace TQMesh {
 

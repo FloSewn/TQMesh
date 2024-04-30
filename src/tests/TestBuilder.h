@@ -7,19 +7,7 @@
 */
 #pragma once
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <TQMeshConfig.h>
- 
-#include "Helpers.h"
-#include "MathUtility.h"
-
-#include "Vertex.h"
-#include "Edge.h"
-#include "Domain.h"
-#include "Boundary.h"
+#include "TQMesh.h"
 
 namespace TQMesh {
 

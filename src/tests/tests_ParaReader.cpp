@@ -6,14 +6,8 @@
 * on usage and license.
 */
 
-#include <iostream>
-#include <cassert>
-#include <TQMeshConfig.h>
-
 #include "tests.h"
-
-#include "ParaReader.h"
-#include "Log.h"
+#include "TQMesh.h"
  
 namespace ParaReaderTests 
 {

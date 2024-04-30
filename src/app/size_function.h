@@ -7,9 +7,7 @@
 */
 #pragma once
 
-#include "utils.h"
-#include "VecND.h"
-#include "Domain.h"
+#include "TQMesh.h"
 
 using namespace CppUtils;
 using namespace TQMesh;

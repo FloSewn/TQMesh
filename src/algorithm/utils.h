@@ -7,11 +7,7 @@
 */
 #pragma once
 
-#include <functional>
-#include <cassert>
-#include <float.h>
-#include <limits.h>
-#include <cmath>
+#include "STLHeaders.h"
 
 #include "Helpers.h"
 

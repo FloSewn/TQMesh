@@ -7,9 +7,7 @@
 */
 #pragma once
 
-#include <list>
-#include <iomanip>   
-#include <algorithm>   
+#include "STLHeaders.h"
 
 #include "Geometry.h"
 #include "VecND.h"

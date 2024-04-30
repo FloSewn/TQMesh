@@ -7,9 +7,7 @@
 */
 #pragma once
 
-#include <algorithm>
-#include <memory>
-#include <limits.h>
+#include "STLHeaders.h"
 
 #include "VecND.h"
 

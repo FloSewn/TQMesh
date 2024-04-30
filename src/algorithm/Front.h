@@ -7,12 +7,7 @@
 */
 #pragma once
 
-#include <list>
-#include <stdexcept>
-#include <memory>
-#include <vector>
-#include <algorithm>
-#include <numeric>
+#include "STLHeaders.h"
 
 #include "VecND.h"
 #include "Geometry.h"

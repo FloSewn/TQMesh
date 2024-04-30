@@ -5,15 +5,8 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-#include <iostream>
-#include <vector>
-#include <string>
-
-#include <TQMeshConfig.h>
-
 #include "tests.h"
-#include "Log.h"
-#include "Testing.h"
+#include "TQMesh.h"
 
 /*********************************************************************
 * Log utils

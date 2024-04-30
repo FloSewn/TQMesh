@@ -6,26 +6,9 @@
 * on usage and license.
 */
 
-#include <iostream>
-#include <fstream>
-#include <cassert>
-
-#include <TQMeshConfig.h>
-
 #include "tests.h"
 #include "TestBuilder.h"
-
-#include "Testing.h"
-#include "VecND.h"
-#include "Timer.h"
-#include "Container.h"
-
-#include "utils.h"
-#include "Vertex.h"
-#include "Edge.h"
-#include "Domain.h"
-#include "Front.h"
-#include "Mesh.h"
+#include "TQMesh.h"
 
 namespace FrontTests 
 {

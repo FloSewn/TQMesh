@@ -6,25 +6,9 @@
 * on usage and license.
 */
 
-#include <iostream>
-#include <cassert>
-
-#include <TQMeshConfig.h>
-
 #include "tests.h"
 #include "TestBuilder.h"
-
-#include "VecND.h"
-#include "Testing.h"
-#include "Timer.h"
-#include "Container.h"
- 
-#include "Vertex.h"
-#include "Edge.h"
-#include "Domain.h"
-#include "Mesh.h"
-#include "MeshCleanup.h"
-#include "EntityChecks.h"
+#include "TQMesh.h"
 
 namespace CleanupTests 
 {
