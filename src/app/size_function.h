@@ -12,7 +12,7 @@
 #include "Domain.h"
 
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /********************************************************************
 * Initialize the user defined size from a given input string

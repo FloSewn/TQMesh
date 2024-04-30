@@ -22,7 +22,6 @@
 #include "Boundary.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -302,5 +301,4 @@ private:
 
 }; // TestBuilder
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

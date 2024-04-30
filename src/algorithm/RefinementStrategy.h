@@ -19,7 +19,6 @@
 #include "Domain.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -324,5 +323,4 @@ private:
 };
 
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

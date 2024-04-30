@@ -18,7 +18,6 @@
 #include "EntityChecks.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -326,5 +325,4 @@ private:
 
 }; // TriangulationStrategy
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

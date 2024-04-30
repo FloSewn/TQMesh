@@ -22,7 +22,6 @@
 #include "FacetGeometry.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -354,5 +353,4 @@ static bool operator==(const Triangle& t1, const Triangle& t2)
 static bool operator!=(const Triangle& t1, const Triangle& t2)
 { return !(t1 == t2); }
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

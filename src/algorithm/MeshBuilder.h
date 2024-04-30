@@ -17,7 +17,6 @@
 #include "EntityChecks.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -247,5 +246,4 @@ private:
 }; // MeshBuilder
  
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

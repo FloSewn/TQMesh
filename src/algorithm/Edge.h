@@ -19,7 +19,6 @@
 #include "Facet.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -249,5 +248,4 @@ static bool operator==(const Edge& e1, const Edge& e2)
 static bool operator!=(const Edge& e1, const Edge& e2)
 { return !(e1 == e2); }
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

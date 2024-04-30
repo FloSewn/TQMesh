@@ -15,7 +15,6 @@
 #include "Facet.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -193,5 +192,4 @@ private:
 
 }; // EntityChecks
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

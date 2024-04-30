@@ -11,7 +11,6 @@
 #include <exception>
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -29,5 +28,4 @@ private:
 
 static inline void throw_error(std::string msg) { throw Error { msg }; }
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

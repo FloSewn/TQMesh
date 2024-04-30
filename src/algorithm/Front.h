@@ -23,7 +23,6 @@
 #include "Mesh.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -677,5 +676,4 @@ private:
 
 }; // Front
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

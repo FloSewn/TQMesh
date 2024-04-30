@@ -33,7 +33,7 @@
 namespace MeshTests 
 {
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /*********************************************************************
 * Test mesh initialization

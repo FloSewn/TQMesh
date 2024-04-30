@@ -19,7 +19,6 @@
 #include "Facet.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -819,5 +818,4 @@ private:
 
 }; // MeshCleanup
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

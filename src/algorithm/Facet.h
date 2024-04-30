@@ -11,7 +11,6 @@
 #include "Vertex.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 class Vertex;
 class Mesh;
@@ -205,5 +204,4 @@ private:
 
 }; // NullFacet
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

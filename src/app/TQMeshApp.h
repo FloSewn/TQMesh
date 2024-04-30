@@ -28,7 +28,6 @@
 namespace TQMesh {
 
 using namespace CppUtils;
-using namespace TQAlgorithm;
 
 /*********************************************************************
 * The actual class to handle the generation of meshes 

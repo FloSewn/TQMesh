@@ -21,7 +21,6 @@
 #include "MeshCleanup.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -970,6 +969,7 @@ private:
   // Meshing constants
   double angle_factor_ = 1.0;
   double range_factor_ = 1.1;
+  //double range_factor_ = 0.9;
 
   // Attributes that change during the layer generation
   Vec2d  xy_start_     {};
@@ -982,5 +982,4 @@ private:
 
 }; // QuadLayerStrategy
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

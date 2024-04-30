@@ -15,7 +15,6 @@
 #include "Mesh.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -663,5 +662,4 @@ protected:
 
 }; // MixedSmoothingStrategy
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

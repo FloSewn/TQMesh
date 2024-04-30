@@ -19,7 +19,7 @@
 #include "MeshGenerator.h"
 
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /*********************************************************************
 * This example involves the generation of the TQMesh banner

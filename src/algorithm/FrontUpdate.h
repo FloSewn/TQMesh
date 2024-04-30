@@ -18,7 +18,6 @@
 
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -427,5 +426,4 @@ private:
 }; // FrontUpdate
 
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

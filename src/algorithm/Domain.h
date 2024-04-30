@@ -16,7 +16,6 @@
 #include "Boundary.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -451,5 +450,4 @@ private:
 
 }; // Domain
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

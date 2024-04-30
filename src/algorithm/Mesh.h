@@ -20,7 +20,6 @@
 #include "Facet.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -487,5 +486,4 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
 
 
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

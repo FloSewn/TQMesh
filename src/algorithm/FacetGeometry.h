@@ -13,7 +13,6 @@
 #include "Vertex.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -715,5 +714,4 @@ private:
 
 }; // QuadGeometry
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

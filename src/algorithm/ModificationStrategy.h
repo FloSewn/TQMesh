@@ -19,7 +19,6 @@
 #include "Domain.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -215,5 +214,4 @@ private:
 }; // Tri2QuadStrategy
 
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

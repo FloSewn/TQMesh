@@ -16,7 +16,6 @@
 #include "Container.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -268,5 +267,4 @@ static bool operator==(const Vertex& v1, const Vertex& v2)
 static bool operator!=(const Vertex& v1, const Vertex& v2)
 { return !(v1 == v2); }
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

@@ -25,7 +25,7 @@
 namespace MeshSmootherTests 
 {
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /*********************************************************************
 * Test SmoothingStrategy::smooth() for a pure triangle mesh

@@ -17,7 +17,6 @@
 #include "FrontUpdate.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -132,5 +131,4 @@ protected:
 
 }; // MeshingStrategy
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

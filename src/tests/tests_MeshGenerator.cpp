@@ -32,7 +32,7 @@
 namespace MeshGeneratorTests 
 {
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /*********************************************************************
 * Test mesh initialization for two meshes of different colors and 

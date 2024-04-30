@@ -14,7 +14,6 @@
 #include "MeshCleanup.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -199,5 +198,4 @@ private:
 }; // MeshWriter
 
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

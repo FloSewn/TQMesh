@@ -26,7 +26,6 @@
 #include "QuadLayerStrategy.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -399,5 +398,4 @@ private:
 
 }; // MeshGenerator
 
-} // namespace TQAlgorithm
 } // namespace TQMesh
