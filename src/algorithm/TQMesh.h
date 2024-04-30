@@ -19,6 +19,8 @@
 #include "MathUtility.h"
 #include "Testing.h"
 #include "ParaReader.h"
+#include "ProgressBar.h"
+#include "VtkIO.h"
 
 #include "utils.h"
 #include "Error.h"

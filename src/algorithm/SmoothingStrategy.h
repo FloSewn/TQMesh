@@ -7,12 +7,7 @@
 */
 #pragma once
 
-#include "VecND.h"
-#include "ProgressBar.h"
-
-#include "Vertex.h"
-#include "MeshCleanup.h"
-#include "Mesh.h"
+#include "TQMesh.h"
 
 namespace TQMesh {
 

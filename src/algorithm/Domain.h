@@ -7,8 +7,7 @@
 */
 #pragma once
 
-#include "STLHeaders.h"
-#include "Boundary.h"
+#include "TQMesh.h"
 
 namespace TQMesh {
 

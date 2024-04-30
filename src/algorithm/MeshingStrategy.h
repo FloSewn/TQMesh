@@ -7,14 +7,7 @@
 */
 #pragma once
 
-#include "ProgressBar.h"
-
-#include "Vertex.h"
-#include "Edge.h"
-#include "Front.h"
-#include "Domain.h"
-#include "Mesh.h"
-#include "FrontUpdate.h"
+#include "TQMesh.h"
 
 namespace TQMesh {
 

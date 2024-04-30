@@ -7,12 +7,10 @@
 */
 #pragma once
 
-#include "VecND.h"
-#include "Vertex.h"
+#include "TQMesh.h"
 
 namespace TQMesh {
 
-class Vertex;
 class Mesh;
 
 /*********************************************************************

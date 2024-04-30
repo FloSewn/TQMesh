@@ -7,11 +7,7 @@
 */
 #pragma once
 
-#include "VecND.h"
-#include "VtkIO.h"
-
-#include "Mesh.h"
-#include "MeshCleanup.h"
+#include "TQMesh.h"
 
 namespace TQMesh {
 

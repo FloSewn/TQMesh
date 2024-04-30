@@ -7,15 +7,7 @@
 */
 #pragma once
 
-#include "STLHeaders.h"   
-
-#include "Geometry.h"
-#include "VecND.h"
-#include "Container.h"
-
-#include "utils.h"
-#include "Vertex.h"
-#include "Facet.h"
+#include "TQMesh.h"   
 
 namespace TQMesh {
 
