@@ -93,6 +93,11 @@ int run_tests(const std::string& test_case)
     LOG(INFO) << "  Running tests for \"ParaReader\" class...";
     run_tests_ParaReader();
   }
+  else if ( !test_case.compare("MeshChecker") )
+  {
+    LOG(INFO) << "  Running tests for \"MeshChecker\" class...";
+    run_tests_MeshChecker();
+  }
   else
   {
     LOG(INFO) << "";

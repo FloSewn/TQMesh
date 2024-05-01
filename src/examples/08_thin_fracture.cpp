@@ -23,7 +23,7 @@ using namespace TQMesh;
 /*********************************************************************
 * 
 *********************************************************************/
-void thin_fracture()
+bool thin_fracture()
 {
   UserSizeFunction f = [](const Vec2d& p) { return 4.0; };
 
@@ -65,7 +65,6 @@ void thin_fracture()
     .ending_position(v4.xy())
     .generate_elements();
 
-
   generator.triangulation(mesh).generate_elements();
   generator.tri2quad_modification(mesh).modify();
   generator.quad_refinement(mesh).refine();
@@ -73,6 +72,16 @@ void thin_fracture()
   generator.mixed_smoothing(mesh)
     .epsilon(0.7)                
     .smooth(3);  
+
+  /*------------------------------------------------------------------
+  | Check if the meshing generation process succeeded
+  ------------------------------------------------------------------*/
+  MeshChecker checker { mesh, domain };
+  if ( !checker.check_completeness() )
+  {
+    LOG(ERROR) << "Mesh generation failed";
+    return false;
+  }
 
   /*------------------------------------------------------------------
   | Finally, we export the mesh to a file in VTU / TXT format.
@@ -87,5 +96,6 @@ void thin_fracture()
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
   generator.write_mesh(mesh, file_name, MeshExportType::TXT );
 
+  return true;
 
 } // thin_fracture()

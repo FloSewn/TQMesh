@@ -29,7 +29,7 @@ using namespace TQMesh;
 * dedicated quad layers and we will utilize a method to obtain an
 * all-quad mesh.
 *********************************************************************/
-void square_in_channel()
+bool square_in_channel()
 {
   /*------------------------------------------------------------------
   | Define the size function and the domain structure
@@ -162,6 +162,16 @@ void square_in_channel()
     .smooth(3);                 // Smooth for three iterations
 
   /*------------------------------------------------------------------
+  | Check if the meshing generation process succeeded
+  ------------------------------------------------------------------*/
+  MeshChecker checker { mesh, domain };
+  if ( !checker.check_completeness() )
+  {
+    LOG(ERROR) << "Mesh generation failed";
+    return false;
+  }
+
+  /*------------------------------------------------------------------
   | Finally, we export the mesh to a file in VTU / TXT format.
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
@@ -173,5 +183,7 @@ void square_in_channel()
 
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
   generator.write_mesh(mesh, file_name, MeshExportType::TXT );
+
+  return true;
 
 } // square_in_channel()

@@ -24,7 +24,7 @@ using namespace TQMesh;
 /*********************************************************************
 * This example covers the boundary definition via CSV files
 *********************************************************************/
-void airfoil_from_csv()
+bool airfoil_from_csv()
 {
   std::string csv_file { TQMESH_SOURCE_DIR };
   csv_file += "/auxiliary/test_data/Airfoil.csv";
@@ -76,6 +76,16 @@ void airfoil_from_csv()
   generator.mixed_smoothing(outer_mesh).smooth(2);   
 
   /*------------------------------------------------------------------
+  | Check if the meshing generation process succeeded
+  ------------------------------------------------------------------*/
+  MeshChecker outer_checker { outer_mesh, outer_domain };
+  if ( !outer_checker.check_completeness() )
+  {
+    LOG(ERROR) << "Mesh generation failed";
+    return false;
+  }
+
+  /*------------------------------------------------------------------
   | Initialize the inner mesh
   ------------------------------------------------------------------*/
   UserSizeFunction f_inner = [](const Vec2d& p) { return 0.003; };
@@ -95,6 +105,16 @@ void airfoil_from_csv()
   | Generate the inner mesh
   ------------------------------------------------------------------*/
   generator.triangulation(inner_mesh).generate_elements();
+
+  /*------------------------------------------------------------------
+  | Check if the meshing generation process succeeded
+  ------------------------------------------------------------------*/
+  MeshChecker inner_checker { inner_mesh, inner_domain };
+  if ( !inner_checker.check_completeness() )
+  {
+    LOG(ERROR) << "Mesh generation failed";
+    return false;
+  }
 
   /*------------------------------------------------------------------
   | Finally, merge both meshes. In this way, the outer mesh's 
@@ -123,5 +143,6 @@ void airfoil_from_csv()
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
   generator.write_mesh(inner_mesh, file_name, MeshExportType::TXT);
 
+  return true;
 
 } // airfoil_from_csv()

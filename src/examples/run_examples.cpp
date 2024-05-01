@@ -37,88 +37,71 @@ int run_examples(const std::string& example)
   /*------------------------------------------------------------------
   | Run all examples
   ------------------------------------------------------------------*/
+  bool success = true;
+
   if ( !example.compare("1") || !example.compare("01") || 
        !example.compare("simple_triangular_mesh") )
   {
     LOG(INFO) << "Running example \"simple_triangular_mesh\"...";
     LOG(INFO) << "";
-    simple_triangular_mesh();
+    success &= simple_triangular_mesh();
   } 
   else if ( !example.compare("2") || !example.compare("02") ||
             !example.compare("square_in_channel") )
   {
     LOG(INFO) << "Running example \"square_in_channel\"...";
     LOG(INFO) << "";
-    square_in_channel();
+    success &= square_in_channel();
   } 
   else if ( !example.compare("3") || !example.compare("03") ||
             !example.compare("boundary_shapes") )
   {
     LOG(INFO) << "Running example \"boundary_shapes\"...";
     LOG(INFO) << "";
-    boundary_shapes();
+    success &= boundary_shapes();
   }  
   else if ( !example.compare("4") || !example.compare("04") ||
             !example.compare("fixed_vertices") )
   {
     LOG(INFO) << "Running example \"fixed_vertices\"...";
     LOG(INFO) << "";
-    fixed_vertices();
+    success &= fixed_vertices();
   } 
   else if ( !example.compare("5") || !example.compare("05") ||
             !example.compare("merge_meshes") )
   {
     LOG(INFO) << "Running example \"merge_meshes\"...";
     LOG(INFO) << "";
-    merge_meshes();
+    success &= merge_meshes();
   } 
   else if ( !example.compare("6") || !example.compare("06") ||
             !example.compare("airfoil_from_csv") )
   {
     LOG(INFO) << "Running example \"airfoil_from_csv\"...";
     LOG(INFO) << "";
-    airfoil_from_csv();
+    success &= airfoil_from_csv();
   } 
   else if ( !example.compare("7") || !example.compare("07") ||
             !example.compare("multiple_meshes") )
   {
     LOG(INFO) << "Running example \"multiple_meshes\"...";
     LOG(INFO) << "";
-    multiple_meshes();
+    success &= multiple_meshes();
   } 
   else if ( !example.compare("8") || !example.compare("08") ||
             !example.compare("thin_fracture") )
   {
     LOG(INFO) << "Running example \"thin_fracture\"...";
     LOG(INFO) << "";
-    thin_fracture();
+    success &= thin_fracture();
   } 
   else if ( !example.compare("9") || !example.compare("09") ||
             !example.compare("tqmesh_banner") )
   {
     LOG(INFO) << "Running example \"tqmesh_banner\"...";
     LOG(INFO) << "";
-    tqmesh_banner();
+    success &= tqmesh_banner();
   } 
-  /*
-  else if ( !example.compare("7") )
-  {
-    LOG(INFO) << "Running example 7...";
-    LOG(INFO) << "";
-    run_example_7();
-  }
-  else if ( !example.compare("8") )
-  {
-    LOG(INFO) << "Running example 8...";
-    LOG(INFO) << "";
-    run_example_8();
-  }
-  else if ( !example.compare("9") )
-  {
-    LOG(INFO) << "Running example 9...";
-    LOG(INFO) << "";
-    run_example_9();
-  }*/
   else
   {
     LOG(INFO) << "";
@@ -127,6 +110,6 @@ int run_examples(const std::string& example)
     return EXIT_FAILURE;
   }
 
-  return EXIT_SUCCESS;
+  return (success ? EXIT_SUCCESS : EXIT_FAILURE);
 
 } // run_examples()

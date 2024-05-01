@@ -25,7 +25,7 @@ using namespace TQMesh;
 * This example covers the mesh generation where the domain boundaries 
 * are specified by predefined boundary shapes
 *********************************************************************/
-void boundary_shapes()
+bool boundary_shapes()
 {
   /*------------------------------------------------------------------
   | Define the size function and the domain structure
@@ -117,6 +117,16 @@ void boundary_shapes()
   generator.mixed_smoothing(mesh).smooth(2); 
 
   /*------------------------------------------------------------------
+  | Check if the meshing generation process succeeded
+  ------------------------------------------------------------------*/
+  MeshChecker checker { mesh, domain };
+  if ( !checker.check_completeness() )
+  {
+    LOG(ERROR) << "Mesh generation failed";
+    return false;
+  }
+
+  /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in TXT format.
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
@@ -128,5 +138,7 @@ void boundary_shapes()
 
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
   generator.write_mesh(mesh, file_name, MeshExportType::TXT);
+
+  return true;
 
 } // boundary_shapes()

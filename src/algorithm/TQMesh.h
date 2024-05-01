@@ -34,18 +34,22 @@
 #include "Triangle.h"
 #include "Quad.h"
 #include "EntityChecks.h"
+
 #include "Mesh.h"
 #include "Front.h"
 #include "FrontUpdate.h"
-#include "MeshBuilder.h"
 #include "MeshCleanup.h"
+#include "MeshBuilder.h"
 #include "MeshMerger.h"
 #include "MeshWriter.h"
 #include "MeshingStrategy.h"
+#include "MeshChecker.h"
+
 #include "ModificationStrategy.h"
 #include "SmoothingStrategy.h"
 #include "QuadLayerStrategy.h"
 #include "RefinementStrategy.h"
 #include "TriangulationStrategy.h"
+
 #include "MeshGenerator.h"
 
