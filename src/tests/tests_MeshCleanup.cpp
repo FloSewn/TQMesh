@@ -5,10 +5,18 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 #include "tests.h"
 #include "TestBuilder.h"
-#include "TQMesh.h"
+
+#include "Vertex.h"
+#include "Edge.h"
+#include "Domain.h"
+#include "Mesh.h"
+#include "MeshCleanup.h"
+#include "EntityChecks.h"
 
 namespace CleanupTests 
 {

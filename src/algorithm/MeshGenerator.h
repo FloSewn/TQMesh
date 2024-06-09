@@ -7,7 +7,21 @@
 */
 #pragma once
 
-#include "TQMesh.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
+
+#include "Domain.h"
+#include "Mesh.h"
+#include "MeshBuilder.h"
+#include "MeshWriter.h"
+#include "MeshMerger.h"
+#include "MeshingStrategy.h"
+#include "SmoothingStrategy.h"
+#include "RefinementStrategy.h"
+#include "ModificationStrategy.h"
+#include "TriangulationStrategy.h"
+#include "QuadLayerStrategy.h"
 
 namespace TQMesh {
 

@@ -7,7 +7,14 @@
 */
 #pragma once
 
-#include "TQMesh.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
+
+#include "Domain.h"
+#include "Mesh.h"
+#include "MeshCleanup.h"
+#include "EntityChecks.h"
 
 namespace TQMesh {
 

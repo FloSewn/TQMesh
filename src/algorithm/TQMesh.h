@@ -8,19 +8,8 @@
 #pragma once
 
 #include <TQMeshConfig.h>
-
 #include "STLHeaders.h"
-
-#include "VecND.h"
-#include "Timer.h"
-#include "Geometry.h"
-#include "Container.h"
-#include "Helpers.h"
-#include "MathUtility.h"
-#include "Testing.h"
-#include "ParaReader.h"
-#include "ProgressBar.h"
-#include "VtkIO.h"
+#include "CppUtils.h"
 
 #include "utils.h"
 #include "Error.h"

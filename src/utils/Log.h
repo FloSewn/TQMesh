@@ -216,7 +216,7 @@ private:
 
 };
 
-inline LogProperties LOG_PROPERTIES;
+static inline LogProperties LOG_PROPERTIES;
 
 /*********************************************************************
 * The interface for the actual SimpleLogger

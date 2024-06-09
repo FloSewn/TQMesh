@@ -5,8 +5,11 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
+
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 #include "tests.h"
-#include "TQMesh.h"
 
 /*********************************************************************
 * Log utils

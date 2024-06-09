@@ -5,18 +5,11 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-
 #include <iostream>
 #include <cassert>
 
-#include <TQMeshConfig.h>
-
+#include "TQMesh.h"
 #include "run_examples.h"
-
-#include "VecND.h"
-#include "Log.h"
-
-#include "MeshGenerator.h"
 
 using namespace CppUtils;
 using namespace TQMesh;
