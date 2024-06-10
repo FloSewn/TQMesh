@@ -119,9 +119,7 @@ public:
 
     init_smoothing_parameters( mesh_reader );
 
-    generate_mesh();
-
-    return true;
+    return generate_mesh();
 
   } // MeshConstruction::construct_mesh()
 
@@ -130,7 +128,7 @@ private:
   /*------------------------------------------------------------------
   | Generate the mesh
   ------------------------------------------------------------------*/
-  void generate_mesh()
+  bool generate_mesh()
   {
     ASSERT( domain_.get(), "MeshConstruction::generate_mesh: "
       "Domain has not been properly initialized." );
@@ -221,6 +219,17 @@ private:
     {
       mesh_generator_.write_mesh(mesh, "DUMMY", MeshExportType::COUT);
     }
+
+    // Check if meshing algorithm succeeded
+    MeshChecker mesh_check { mesh, domain };
+    if ( !mesh_check.check_completeness() )
+    {
+      LOG(ERROR) << "Failed to generate a valid mesh.";
+      return false;
+    }
+
+    // Mesh generation succeeded 
+    return true;
 
   } // MeshConstruction::generate_mesh()
 
@@ -886,6 +895,7 @@ public:
 
     MeshConstruction mesh_construction {};
     int mesh_id = 0; 
+    bool success = true;
 
     while( reader_.query( "mesh_reader" ) )
     {
@@ -895,12 +905,12 @@ public:
       LOG(INFO) << "============== " << "Create mesh " << mesh_id 
                 << " ==============";
 
-      mesh_construction.construct_mesh(mesh_id, mesh_reader);
+      success &= mesh_construction.construct_mesh(mesh_id, mesh_reader);
 
       ++mesh_id;
     }
 
-    return true;
+    return success;
 
   } // TQMeshApp::run()
 
