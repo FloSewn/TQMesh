@@ -5,25 +5,19 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-
-#include <iostream>
-#include <cassert>
-
 #include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "tests.h"
 #include "TestBuilder.h"
-
-#include "VecND.h"
-#include "Testing.h"
-#include "Timer.h"
-#include "Container.h"
 
 #include "Vertex.h"
 #include "Edge.h"
 #include "Domain.h"
 #include "Mesh.h"
 #include "MeshBuilder.h"
+#include "MeshChecker.h"
 #include "RefinementStrategy.h"
 #include "MeshCleanup.h"
 #include "TriangulationStrategy.h"
@@ -33,7 +27,7 @@
 namespace MeshTests 
 {
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /*********************************************************************
 * Test mesh initialization
@@ -99,7 +93,8 @@ void triangulate()
   CHECK( triangulation.generate_elements() );
 
   // Assertions
-  CHECK( EQ(mesh.area(), domain.area(), 1E-08) );
+  MeshChecker checker {mesh, domain};
+  CHECK( checker.check_completeness() );
 
   // Export mesh
   MeshCleanup::assign_size_function_to_vertices(mesh, domain);
@@ -386,7 +381,9 @@ void small_refinement()
   TriangulationStrategy triangulation {mesh, domain};
 
   CHECK( triangulation.generate_elements() );
-  CHECK( EQ(mesh.area(), domain.area(), 1E-07) );
+
+  MeshChecker checker {mesh, domain};
+  CHECK( checker.check_completeness() );
 
   // Export mesh
   MeshCleanup::assign_size_function_to_vertices(mesh, domain);
@@ -479,7 +476,8 @@ void triangulate_standard_tests(const std::string& test_name)
   MixedSmoothingStrategy smoother {mesh, domain};
   smoother.smooth(2);
 
-  success &= EQ(mesh.area(), domain.area(), 1E+16);
+  MeshChecker mesh_checker {mesh, domain};
+  success &= mesh_checker.check_completeness();
   CHECK( success );
 
   if ( !success )
@@ -538,7 +536,9 @@ void csv_import()
   TriangulationStrategy triangulation {mesh, domain};
 
   CHECK( triangulation.generate_elements() );
-  CHECK( EQ(mesh.area(), domain.area(), 1E-07) );
+
+  MeshChecker mesh_checker {mesh, domain};
+  CHECK( mesh_checker.check_completeness() );
 
   // Smooth grid
   MixedSmoothingStrategy smoother {mesh, domain};
@@ -582,8 +582,9 @@ void bad_csv_import()
 
   TriangulationStrategy triangulation_outer {mesh_outer, domain_outer};
   CHECK( triangulation_outer.generate_elements() );
-  CHECK( EQ(mesh_outer.area(), domain_outer.area(), 1E-07) );
 
+  MeshChecker outer_checker {mesh_outer, domain_outer};
+  CHECK( outer_checker.check_completeness() );
 
   // Create the inner mesh
   Mesh mesh_inner = mesh_builder.create_empty_mesh( domain_inner, 2 );
@@ -592,8 +593,9 @@ void bad_csv_import()
 
   TriangulationStrategy triangulation_inner {mesh_inner, domain_inner};
   CHECK( triangulation_inner.generate_elements() );
-  CHECK( EQ(mesh_inner.area(), domain_inner.area(), 1E-07) );
 
+  MeshChecker inner_checker {mesh_inner, domain_inner};
+  CHECK( inner_checker.check_completeness() );
 
   // Smooth grid
   MixedSmoothingStrategy smoother_outer {mesh_outer, domain_outer};

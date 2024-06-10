@@ -7,11 +7,11 @@
 */
 #pragma once
 
-#include <string>
-#include <exception>
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -29,5 +29,4 @@ private:
 
 static inline void throw_error(std::string msg) { throw Error { msg }; }
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

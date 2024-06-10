@@ -7,14 +7,9 @@
 */
 #pragma once
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <vector>
 #include <TQMeshConfig.h>
- 
-#include "Helpers.h"
-#include "MathUtility.h"
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "Vertex.h"
 #include "Edge.h"
@@ -22,7 +17,6 @@
 #include "Boundary.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -302,5 +296,4 @@ private:
 
 }; // TestBuilder
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

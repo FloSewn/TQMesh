@@ -5,13 +5,7 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-#include <string>
-
-#include "utils.h"
-#include "VecND.h"
-#include "Domain.h"
-
-#include "size_function.h"
+#include "TQMesh.h"
 
 #ifdef TQMESH_USE_EXPRTK
 #include "exprtk.h"
@@ -26,6 +20,9 @@ static exprtk::symbol_table<double> symbol_table;
 static exprtk::expression<double>   expression;
 static exprtk::parser<double>       parser;
 #endif
+
+using namespace CppUtils;
+using namespace TQMesh;
 
 /********************************************************************
 * Initialize the user defined size from a given input string

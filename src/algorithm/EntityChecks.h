@@ -7,7 +7,9 @@
 */
 #pragma once
 
-#include "VecND.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "Vertex.h"
 #include "Triangle.h"
@@ -15,7 +17,6 @@
 #include "Facet.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -193,5 +194,4 @@ private:
 
 }; // EntityChecks
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

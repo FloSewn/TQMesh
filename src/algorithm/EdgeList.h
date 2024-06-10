@@ -7,17 +7,13 @@
 */
 #pragma once
 
-#include <stdexcept>
-
-#include "Container.h"
-#include "utils.h"
-#include "VecND.h"
-#include "Geometry.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "Edge.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -602,5 +598,4 @@ static inline std::ostream& operator<<(std::ostream& os,
   return os;
 } 
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

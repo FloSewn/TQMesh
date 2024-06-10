@@ -5,21 +5,14 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-
 #include <iostream>
 #include <cassert>
 
-#include <TQMeshConfig.h>
-
+#include "TQMesh.h"
 #include "run_examples.h"
 
-#include "VecND.h"
-#include "Log.h"
-
-#include "MeshGenerator.h"
-
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /*********************************************************************
 * This example shows how to generate and merge several meshes with
@@ -38,7 +31,7 @@ using namespace TQMesh::TQAlgorithm;
 *   x-----------------------x
 *
 *********************************************************************/
-void merge_meshes()
+bool merge_meshes()
 {
   /*------------------------------------------------------------------
   | Define the size function and domain of the outer mesh
@@ -111,6 +104,16 @@ void merge_meshes()
   generator.mixed_smoothing(outer_mesh).smooth(2);   
 
   /*------------------------------------------------------------------
+  | Check if the meshing generation process succeeded
+  ------------------------------------------------------------------*/
+  MeshChecker outer_checker { outer_mesh, outer_domain };
+  if ( !outer_checker.check_completeness() )
+  {
+    LOG(ERROR) << "Mesh generation failed";
+    return false;
+  }
+
+  /*------------------------------------------------------------------
   | Define the size function of the inner mesh
   ------------------------------------------------------------------*/
   UserSizeFunction f_inner = [](const Vec2d& p) 
@@ -143,6 +146,16 @@ void merge_meshes()
   generator.triangulation(inner_mesh).generate_elements();
 
   /*------------------------------------------------------------------
+  | Check if the meshing generation process succeeded
+  ------------------------------------------------------------------*/
+  MeshChecker inner_checker { inner_mesh, inner_domain };
+  if ( !inner_checker.check_completeness() )
+  {
+    LOG(ERROR) << "Mesh generation failed";
+    return false;
+  }
+
+  /*------------------------------------------------------------------
   | Finally, merge both meshes. In this way, the outer mesh's 
   | elements will be added to the inner mesh. Be aware that the 
   | second argument of "merge_meshes()" (in this case the outer 
@@ -168,5 +181,7 @@ void merge_meshes()
 
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
   generator.write_mesh(inner_mesh, file_name, MeshExportType::TXT);
+
+  return true;
 
 } // merge_meshes()

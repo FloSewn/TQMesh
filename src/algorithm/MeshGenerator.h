@@ -7,11 +7,9 @@
 */
 #pragma once
 
-#include <algorithm>
-#include <memory>
-#include <limits.h>
-
-#include "VecND.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "Domain.h"
 #include "Mesh.h"
@@ -26,7 +24,6 @@
 #include "QuadLayerStrategy.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -399,5 +396,4 @@ private:
 
 }; // MeshGenerator
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

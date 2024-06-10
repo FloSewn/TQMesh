@@ -7,15 +7,9 @@
 */
 #pragma once
 
-#include <list>
-#include <stdexcept>
-#include <memory>
-#include <vector>
-#include <algorithm>
-#include <numeric>
-
-#include "VecND.h"
-#include "Geometry.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "EdgeList.h"
 #include "Vertex.h"
@@ -23,7 +17,6 @@
 #include "Mesh.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -677,5 +670,4 @@ private:
 
 }; // Front
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

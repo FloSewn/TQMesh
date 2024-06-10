@@ -7,8 +7,9 @@
 */
 #pragma once
 
-#include <vector>
-#include <string>
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 /*********************************************************************
 * Adjust logging output stream
@@ -36,3 +37,4 @@ void run_tests_MeshGenerator();
 void run_tests_MeshCleanup();
 void run_tests_SmoothingStrategy();
 void run_tests_ParaReader();
+void run_tests_MeshChecker();

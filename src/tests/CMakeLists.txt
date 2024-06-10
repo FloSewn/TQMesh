@@ -13,6 +13,7 @@ add_executable( ${TESTS}
   tests_MeshCleanup.cpp
   tests_SmoothingStrategy.cpp
   tests_ParaReader.cpp
+  tests_MeshChecker.cpp
   tests.cpp
   main.cpp
 )

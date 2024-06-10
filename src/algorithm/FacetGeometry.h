@@ -7,13 +7,13 @@
 */
 #pragma once
 
-#include "VecND.h"
-#include "Geometry.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "Vertex.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -715,5 +715,4 @@ private:
 
 }; // QuadGeometry
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

@@ -7,15 +7,15 @@
 */
 #pragma once
 
-#include "VecND.h"
-#include "ProgressBar.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "Vertex.h"
 #include "MeshCleanup.h"
 #include "Mesh.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -442,6 +442,8 @@ public:
   ------------------------------------------------------------------*/
   bool smooth(int iterations) override
   {
+    MeshCleanup::setup_facet_connectivity(*mesh_);
+
     init_vertex_connectivity();
 
     collect_dispalcement_directions();
@@ -525,6 +527,8 @@ public:
   ------------------------------------------------------------------*/
   bool smooth(int iterations) override
   {
+    MeshCleanup::setup_facet_connectivity(*mesh_);
+
     init_vertex_connectivity();
 
     collect_dispalcement_directions();
@@ -618,6 +622,8 @@ public:
   ------------------------------------------------------------------*/
   bool smooth(int iterations) override
   {
+    MeshCleanup::setup_facet_connectivity(*mesh_);
+
     LaplaceSmoothingStrategy laplace { *mesh_, *domain_ };
     laplace.epsilon( eps_ );
     laplace.decay( decay_ );
@@ -657,5 +663,4 @@ protected:
 
 }; // MixedSmoothingStrategy
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

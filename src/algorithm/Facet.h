@@ -7,13 +7,14 @@
 */
 #pragma once
 
-#include "VecND.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
+
 #include "Vertex.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
-class Vertex;
 class Mesh;
 
 /*********************************************************************
@@ -205,5 +206,4 @@ private:
 
 }; // NullFacet
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

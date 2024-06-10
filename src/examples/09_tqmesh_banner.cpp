@@ -5,26 +5,19 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-
 #include <iostream>
 #include <cassert>
 
-#include <TQMeshConfig.h>
-
+#include "TQMesh.h"
 #include "run_examples.h"
 
-#include "VecND.h"
-#include "Log.h"
-
-#include "MeshGenerator.h"
-
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /*********************************************************************
 * This example involves the generation of the TQMesh banner
 *********************************************************************/
-void tqmesh_banner()
+bool tqmesh_banner()
 {
   /*------------------------------------------------------------------
   | Define the size function
@@ -222,6 +215,16 @@ void tqmesh_banner()
     .smooth(3); // The number of smoothing iterations
 
   /*------------------------------------------------------------------
+  | Check if the meshing generation process succeeded
+  ------------------------------------------------------------------*/
+  MeshChecker checker { mesh, domain };
+  if ( !checker.check_completeness() )
+  {
+    LOG(ERROR) << "Mesh generation failed";
+    return false;
+  }
+
+  /*------------------------------------------------------------------
   | Finally, the mesh is exportet to a file in TXT format.
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
@@ -233,5 +236,7 @@ void tqmesh_banner()
 
   LOG(INFO) << "Writing mesh output to: " << file_name << ".vtu";
   generator.write_mesh(mesh, file_name, MeshExportType::VTU);
+
+  return true;
 
 } // tqmesh_banner()

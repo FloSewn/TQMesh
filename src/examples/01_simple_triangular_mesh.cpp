@@ -5,26 +5,19 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-
 #include <iostream>
 #include <cassert>
 
-#include <TQMeshConfig.h>
-
+#include "TQMesh.h"
 #include "run_examples.h"
 
-#include "VecND.h"
-#include "Log.h"
-
-#include "MeshGenerator.h"
-
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /*********************************************************************
 * This example covers the generation of a simple triangular mesh
 *********************************************************************/
-void simple_triangular_mesh()
+bool simple_triangular_mesh()
 {
   /*------------------------------------------------------------------
   | First, we define the size function. This function describes
@@ -144,6 +137,17 @@ void simple_triangular_mesh()
   generator.mixed_smoothing(mesh).smooth(2);
 
   /*------------------------------------------------------------------
+  | We can use a "MeshChecker" to verify if the triangulation 
+  | succeeded
+  ------------------------------------------------------------------*/
+  MeshChecker checker { mesh, domain };
+  if ( !checker.check_completeness() )
+  {
+    LOG(ERROR) << "Mesh generation failed";
+    return false;
+  }
+
+  /*------------------------------------------------------------------
   | Finally, we export the mesh to a file in VTU / TXT format.
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
@@ -155,5 +159,7 @@ void simple_triangular_mesh()
 
   LOG(INFO) << "Writing mesh output to: " << filename << ".txt";
   generator.write_mesh(mesh, filename, MeshExportType::TXT);
+
+  return true;
 
 } // simple_triangular_mesh()

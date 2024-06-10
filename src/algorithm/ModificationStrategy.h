@@ -7,9 +7,9 @@
 */
 #pragma once
 
-#include <vector>
-
-#include "VecND.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "Vertex.h"
 #include "Edge.h"
@@ -19,7 +19,6 @@
 #include "Domain.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -215,5 +214,4 @@ private:
 }; // Tri2QuadStrategy
 
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

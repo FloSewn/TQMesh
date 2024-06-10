@@ -7,19 +7,15 @@
 */
 #pragma once
 
-#include <iomanip>   
-#include <algorithm>   
-
-#include "Geometry.h"
-#include "VecND.h"
-#include "Container.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "utils.h"
 #include "Vertex.h"
 #include "Facet.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -249,5 +245,4 @@ static bool operator==(const Edge& e1, const Edge& e2)
 static bool operator!=(const Edge& e1, const Edge& e2)
 { return !(e1 == e2); }
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

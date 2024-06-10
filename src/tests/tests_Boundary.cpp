@@ -6,15 +6,11 @@
 * on usage and license.
 */
 
-#include <iostream>
-#include <cassert>
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "tests.h"
-
-#include "VecND.h"
-#include "Timer.h"
-#include "Container.h"
-#include "Testing.h"
 
 #include "Vertex.h"
 #include "Edge.h"
@@ -24,7 +20,7 @@
 namespace BoundaryTests 
 {
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /*********************************************************************
 * Test Domain:is_inside()
@@ -62,6 +58,11 @@ void is_inside()
   b_ext.add_edge( v6, v7, 1 );
   b_ext.add_edge( v7, v1, 1 );
 
+  auto extent = domain.extent();
+  CHECK( EQ(extent.first[0],   0.0 ) ); // x-minimum 
+  CHECK( EQ(extent.first[1],  16.0 ) ); // x-maximum
+  CHECK( EQ(extent.second[0],  0.0 ) ); // y-minimum 
+  CHECK( EQ(extent.second[1], 12.0 ) ); // y-maximum
 
   // Built interior boundary
   Vertex& v8  = domain.add_vertex(  6.0,  4.0 );
@@ -79,6 +80,12 @@ void is_inside()
   Vertex& v_in    = domain.add_vertex( 3.0, 2.0 );
   Vertex& v_out_1 = domain.add_vertex( 8.0, 6.0 );
   Vertex& v_out_2 = domain.add_vertex(-8.0, 6.0 );
+
+  extent = domain.extent();
+  CHECK( EQ(extent.first[0],  -8.0 ) ); // x-minimum 
+  CHECK( EQ(extent.first[1],  16.0 ) ); // x-maximum
+  CHECK( EQ(extent.second[0],  0.0 ) ); // y-minimum 
+  CHECK( EQ(extent.second[1], 12.0 ) ); // y-maximum
 
   CHECK( domain.is_inside( v_in ) );
 

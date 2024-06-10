@@ -7,7 +7,9 @@
 */
 #pragma once
 
-#include "ProgressBar.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "Vertex.h"
 #include "Edge.h"
@@ -17,7 +19,6 @@
 #include "FrontUpdate.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -132,5 +133,4 @@ protected:
 
 }; // MeshingStrategy
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

@@ -7,14 +7,14 @@
 */
 #pragma once
 
-#include "VecND.h"
-#include "VtkIO.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "Mesh.h"
 #include "MeshCleanup.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -199,5 +199,4 @@ private:
 }; // MeshWriter
 
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

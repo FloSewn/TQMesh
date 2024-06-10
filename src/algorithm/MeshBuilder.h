@@ -7,17 +7,17 @@
 */
 #pragma once
 
-#include <vector>
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "utils.h"
-
 #include "Domain.h"
 #include "Mesh.h"
 #include "Front.h"
 #include "EntityChecks.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -89,7 +89,7 @@ public:
       }
 
       // Double extent and enlarge slightly
-      domain_extent *= 2.1;
+      domain_extent *= domain_enlargement_;
     }
 
     return { mesh_id, element_color, domain_extent,
@@ -240,9 +240,11 @@ private:
   MeshVector   meshes_  {};
   DomainVector domains_ {};
 
+  // Constant factor to double the domain extent and to slightly 
+  // enlarge it
+  static constexpr double domain_enlargement_ { 2.1 };
 
 }; // MeshBuilder
  
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

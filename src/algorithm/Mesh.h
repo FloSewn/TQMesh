@@ -7,11 +7,9 @@
 */
 #pragma once
 
-#include <algorithm>
-#include <limits.h>
-
-#include "VecND.h"
-//#include "VtkIO.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "utils.h"
 #include "Vertex.h"
@@ -20,7 +18,6 @@
 #include "Facet.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -487,5 +484,4 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
 
 
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

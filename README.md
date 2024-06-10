@@ -98,17 +98,18 @@ results in the *input/* and *src/examples* directories.
 
 
 <details>
-<summary>Example 1: Local mesh refinement</summary>
+<summary>Local mesh refinement</summary>
 
-This example shows a triangular mesh which features local element refinement. 
-The element size is determined either by the domain's edge segments, 
-through sizing factors that are attributed to boundary vertices or through a size function which is defined by the user.
+**TQMesh** combines a simple definition of mesh domain boundaries with a versatile specification of the 
+element size. The latter is either determined by the domain's edge segments, 
+through sizing factors that are attributed to boundary vertices or via user-defined size functions.
 
 <img src="doc/simple_triangular_mesh.png" alt="TQMesh-simple-triangular-mesh" width="300"/>
+<img src="doc/thin_fracture.png" alt="TQMesh-thin-fracture" width="338"/>
 </details>
 
 <details>
-<summary>Example 2: Quad layers and subdivision</summary>
+<summary>Quad layers and subdivision</summary>
 
 **TQMesh** also features the generation of quadrilateral elements, as well as layers of quad elements in the vicinity of boundaries.
 This example mesh was created by using the paving algorithm (which generates mixed-element meshes that are dominated by quads) and a subsequent quad-refinement of all elements.
@@ -120,7 +121,7 @@ In this way, it is possile to generate elements that consist only of quadrilater
 </details>
 
 <details>
-<summary>Example 3: Boundary shapes</summary>
+<summary>Boundary shapes</summary>
 
 It is possible to create meshes through predefined boundary shapes, such as rectangles, circles or triangles.
 
@@ -130,7 +131,7 @@ It is possible to create meshes through predefined boundary shapes, such as rect
 </details>
 
 <details>
-<summary>Example 4: Local mesh refinement and element coloring</summary>
+<summary>Local mesh refinement and element coloring</summary>
 
 During the meshing process, each element gets an associated color value. 
 These colors can be adjusted during the meshing process, as indicated in this example.
@@ -140,25 +141,24 @@ It also possible to define interior mesh vertices, in order to influence the loc
 </details>
 
 <details>
-<summary>Example 5: Merge meshes</summary>
+<summary>Merge meshes</summary>
 
 **TQMesh** gives the possibility to create and merge several meshes, preserving the conformity of their boundary edges.
 This makes it even easier to assign different color values to different element areas in the domain.
 This example shows the output from a successive mesh generation.
 
 <img src="doc/merge_meshes.png" alt="TQMesh-merge-meshes" width="250"/>
+<img src="doc/multiple_meshes.png" alt="TQMesh-multiple-meshes" width="250"/>
 </details>
 
 <details>
-<summary>Example 6: Import boundaries from CSV files</summary>
+<summary>Import boundaries from CSV files</summary>
 
 In case you want to automate the meshing process, **TQMesh** offers the possibility to import boundary definitions
 via CSV files. This example shows an airfoil that has been meshed in this way.
 
 <img src="doc/airfoil.png" alt="TQMesh-airfoil" width="350"/>
 </details>
-
-
 
 ## Output format
 Currently, **TQMesh** features the VTU output format (which can be read for example by Paraview) or alternatively a simple text output format.
@@ -232,13 +232,23 @@ The last entry of the mesh output refers to the size function values at every ve
 
 </details>
 
+## Convert meshes for OpenFOAM
+<img src="doc/banner_3d.jpeg" alt="TQMesh-OpenFOAM-support" width="300"/>
+
+To convert meshes from **TQMesh** to a format that is supported by OpenFOAM
+you can use a script that is provided in `scripts/convert2foam.py`.
+```sh
+python scripts/convert2foam.py [-e EXTRUSION] Mesh.txt export-prefix
+```
+This script simply extrudes the provided mesh into the z-direction and 
+generates the required files which can be used as input for OpenFOAM.
 
 ## Plot your meshes
 A simple python script to plot your mesh is provided under `scripts/plot_mesh.py`.
 It requires the mesh given in the format described above.
 Simply run it with
 ```sh
-python scipts/plot_mesh.py Mesh.txt (-s -v -e -b -f)
+python scripts/plot_mesh.py Mesh.txt (-s -v -e -b -f)
 ```
 Optional flags: 
 * `-s`: Add a contour plot of the underlying size-function
@@ -258,8 +268,9 @@ The following plots show some performance statistics.
 <img src="doc/BenchmarkPlot_QTree.png" alt="TQMesh-QTree-Benchmark" width="400"/> <img src="doc/BenchmarkPlot_Mesh.png" alt="TQMesh-Mesh-Benchmark" width="400"/>
 
 ## To Do's
-* Boundary definition via splines
+* Fixed edges within domains
 * Enhanced quad triangle-to-quad morphing
+* Boundary definition via splines
 * Improved documentation / testing
 
 Feel free to contribute!

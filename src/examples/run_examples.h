@@ -18,14 +18,15 @@ int run_examples(const std::string& library);
 /*********************************************************************
 * Test functions
 *********************************************************************/
-void simple_triangular_mesh();
-void square_in_channel();
-void boundary_shapes();
-void fixed_vertices();
-void merge_meshes();
-void airfoil_from_csv();
-void tqmesh_banner();
-void multiple_meshes();
-void run_example_7();
-void run_example_8();
-void run_example_9();
+bool simple_triangular_mesh();
+bool square_in_channel();
+bool boundary_shapes();
+bool fixed_vertices();
+bool merge_meshes();
+bool airfoil_from_csv();
+bool multiple_meshes();
+bool thin_fracture();
+bool tqmesh_banner();
+bool run_example_7();
+bool run_example_8();
+bool run_example_9();

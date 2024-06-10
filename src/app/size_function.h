@@ -7,12 +7,10 @@
 */
 #pragma once
 
-#include "utils.h"
-#include "VecND.h"
-#include "Domain.h"
+#include "TQMesh.h"
 
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /********************************************************************
 * Initialize the user defined size from a given input string

@@ -5,21 +5,14 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-
 #include <iostream>
 #include <cassert>
 
-#include <TQMeshConfig.h>
-
+#include "TQMesh.h"
 #include "run_examples.h"
 
-#include "VecND.h"
-#include "Log.h"
-
-#include "MeshGenerator.h"
-
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /*********************************************************************
 * This example shows how to generate and merge multiple meshes 
@@ -44,7 +37,7 @@ using namespace TQMesh::TQAlgorithm;
 *     x--------------------------------x
 *
 *********************************************************************/
-void multiple_meshes()
+bool multiple_meshes()
 {
   MeshGenerator generator {};
 
@@ -111,6 +104,8 @@ void multiple_meshes()
   /*------------------------------------------------------------------
   | Create meshes
   ------------------------------------------------------------------*/
+  bool success = true;
+
   int mesh_id_1    = 0;
   int mesh_id_2    = 1;
   int mesh_id_3    = 2;
@@ -124,18 +119,35 @@ void multiple_meshes()
   Mesh& mesh_1 = generator.new_mesh(domain_1, mesh_id_1,  mesh_color_1);
   generator.triangulation(mesh_1).generate_elements();
   generator.mixed_smoothing(mesh_1).smooth(2);   
+  MeshChecker checker_1 { mesh_1, domain_1 };
+  success &= checker_1.check_completeness();
 
   Mesh& mesh_2 = generator.new_mesh(domain_2, mesh_id_2,  mesh_color_2);
   generator.triangulation(mesh_2).generate_elements();
   generator.mixed_smoothing(mesh_2).smooth(2);   
+  MeshChecker checker_2 { mesh_2, domain_2 };
+  success &= checker_2.check_completeness();
 
   Mesh& mesh_3 = generator.new_mesh(domain_3, mesh_id_3,  mesh_color_3);
   generator.triangulation(mesh_3).generate_elements();
   generator.mixed_smoothing(mesh_3).smooth(2);   
+  MeshChecker checker_3 { mesh_3, domain_3 };
+  success &= checker_3.check_completeness();
 
   Mesh& mesh_4 = generator.new_mesh(domain_4, mesh_id_4,  mesh_color_4);
   generator.triangulation(mesh_4).generate_elements();
   generator.mixed_smoothing(mesh_4).smooth(5);   
+  MeshChecker checker_4 { mesh_4, domain_4 };
+  success &= checker_4.check_completeness();
+
+  /*------------------------------------------------------------------
+  | Check if the meshing generation process succeeded
+  ------------------------------------------------------------------*/
+  if ( !success )
+  {
+    LOG(ERROR) << "Mesh generation failed";
+    return false;
+  }
 
   /*------------------------------------------------------------------
   | Merge meshes
@@ -156,5 +168,7 @@ void multiple_meshes()
 
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
   generator.write_mesh(mesh_1, file_name, MeshExportType::TXT);
+
+  return true;
 
 } /* multiple_meshes() */

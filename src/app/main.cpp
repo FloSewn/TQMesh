@@ -5,16 +5,8 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-#include <iostream>
-#include <cstdlib>
-#include <sstream>
-
-#include <TQMeshConfig.h>
-
-#include "Log.h"
-
+#include "TQMesh.h"
 #include "TQMeshApp.h"
-
 
 using CppUtils::LOG_PROPERTIES;
 using CppUtils::LOG;

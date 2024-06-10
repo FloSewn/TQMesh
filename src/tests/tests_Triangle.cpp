@@ -5,17 +5,11 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-
-#include <iostream>
-#include <cassert>
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "tests.h"
-
-#include "utils.h"
-#include "VecND.h"
-#include "Timer.h"
-#include "Container.h"
-#include "Testing.h"
 
 #include "Vertex.h"
 #include "Edge.h"
@@ -26,7 +20,7 @@
 namespace TriangleTests 
 {
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /*********************************************************************
 * Test initialization

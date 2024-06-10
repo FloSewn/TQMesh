@@ -29,6 +29,8 @@ public:
   // Getter
   const Timevector& times() const { return tv_; }
   const Msgvector& messages() const { return msg_; }
+  const std::string& message(std::size_t i) const { return msg_[i]; }
+  std::size_t size() const { return tv_.size(); }
 
   // Measure time
   void count(const std::string& msg="") 

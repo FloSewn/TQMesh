@@ -5,19 +5,11 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-
-#include <iostream>
-#include <fstream>
-#include <cassert>
-
 #include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "tests.h"
-
-#include "VecND.h"
-#include "Testing.h"
-#include "Timer.h"
-#include "Container.h"
 
 #include "utils.h"
 #include "Vertex.h"
@@ -27,7 +19,7 @@
 namespace SizeFunctionTests 
 {
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /*********************************************************************
 * Test SizeFunction evaluation

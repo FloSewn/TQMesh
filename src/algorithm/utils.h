@@ -7,16 +7,11 @@
 */
 #pragma once
 
-#include <functional>
-#include <cassert>
-#include <float.h>
-#include <limits.h>
-#include <cmath>
-
-#include "Helpers.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 /*********************************************************************
 * CONSTANTS
@@ -28,5 +23,4 @@ constexpr double TQ_SMALL              = 1.0E-13;
 constexpr double TQ_MAX                = DBL_MAX;
 constexpr double TQ_MIN                = DBL_MIN;
 
-} // namespace TQAlgorithm
 } // namespace TQMesh 

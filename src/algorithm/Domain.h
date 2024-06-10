@@ -7,16 +7,13 @@
 */
 #pragma once
 
-#include <vector>         // std::vector
-#include <memory>         // std::shared_ptr
-#include <utility>        // std::move
-#include <array>          // std::array
-#include <functional>     // std::function
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "Boundary.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -216,6 +213,26 @@ public:
   | Get the current number of all boundaries in the domain
   ------------------------------------------------------------------*/
   size_type size() const { return boundaries_.size(); }
+
+  /*------------------------------------------------------------------
+  | Get the maximum x-/y-extent of all vertices of this domain
+  ------------------------------------------------------------------*/
+  std::pair<Vec2d,Vec2d> extent() const 
+  {
+    Vec2d x_extent { 0.0, 0.0 };
+    Vec2d y_extent { 0.0, 0.0 };
+
+    for ( const auto& v : verts_ )
+    {
+      x_extent[0] = MIN( x_extent[0], v->x() );
+      x_extent[1] = MAX( x_extent[1], v->x() );
+      
+      y_extent[0] = MIN( y_extent[0], v->y() );
+      y_extent[1] = MAX( y_extent[1], v->y() );
+    }
+
+    return {x_extent, y_extent};
+  }
 
   /*------------------------------------------------------------------
   | Get edges within a given point and radius
@@ -451,5 +468,4 @@ private:
 
 }; // Domain
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

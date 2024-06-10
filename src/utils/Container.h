@@ -311,6 +311,8 @@ public:
 
   // Getters
   const Vec2d& xy() const { return xy_; }
+  const double x() const { return xy_.x; }
+  const double y() const { return xy_.y; }
   const Iterator& pos() const { return pos_; }
   bool in_container() const { return in_container_; }
 

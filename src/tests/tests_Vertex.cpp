@@ -5,15 +5,11 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-
-#include <iostream>
-#include <cassert>
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "tests.h"
-
-#include "VecND.h"
-#include "MathUtility.h"
-#include "Testing.h"
 
 #include "Vertex.h"
 #include "Triangle.h"
@@ -22,7 +18,7 @@
 namespace VertexTests 
 {
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /*********************************************************************
 * Test vertex constructor

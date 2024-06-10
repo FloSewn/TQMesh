@@ -7,14 +7,14 @@
 */
 #pragma once
 
-#include <vector>
-#include <utility>
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "Mesh.h"
 #include "MeshCleanup.h"
 
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -323,5 +323,4 @@ private:
 
 }; // MeshMerger
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

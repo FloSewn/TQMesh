@@ -5,21 +5,14 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-
 #include <iostream>
 #include <cassert>
 
-#include <TQMeshConfig.h>
-
+#include "TQMesh.h"
 #include "run_examples.h"
 
-#include "VecND.h"
-#include "Log.h"
-
-#include "MeshGenerator.h"
-
 using namespace CppUtils;
-using namespace TQMesh::TQAlgorithm;
+using namespace TQMesh;
 
 /*********************************************************************
 * This example covers the generation of a mesh for a square within 
@@ -29,7 +22,7 @@ using namespace TQMesh::TQAlgorithm;
 * dedicated quad layers and we will utilize a method to obtain an
 * all-quad mesh.
 *********************************************************************/
-void square_in_channel()
+bool square_in_channel()
 {
   /*------------------------------------------------------------------
   | Define the size function and the domain structure
@@ -83,10 +76,10 @@ void square_in_channel()
 
   // Apply a refinement at the interior boundary vertices to a local
   // mesh size of 0.05 - within a range of 0.2:
-  Vertex& v4 = domain.add_vertex( 0.35, 0.35, 0.05, 0.2 );
-  Vertex& v5 = domain.add_vertex( 0.35, 0.65, 0.05, 0.2 );
-  Vertex& v6 = domain.add_vertex( 0.65, 0.65, 0.05, 0.2 );
-  Vertex& v7 = domain.add_vertex( 0.65, 0.35, 0.05, 0.2 );
+  Vertex& v4 = domain.add_vertex( 0.35, 0.35, 0.03, 0.25 );
+  Vertex& v5 = domain.add_vertex( 0.35, 0.65, 0.03, 0.25 );
+  Vertex& v6 = domain.add_vertex( 0.65, 0.65, 0.03, 0.25 );
+  Vertex& v7 = domain.add_vertex( 0.65, 0.35, 0.03, 0.25 );
 
   b_int.add_edge( v4, v5, 4 ); // Use marker 4 for all interior edges
   b_int.add_edge( v5, v6, 4 ); // ...
@@ -162,6 +155,16 @@ void square_in_channel()
     .smooth(3);                 // Smooth for three iterations
 
   /*------------------------------------------------------------------
+  | Check if the meshing generation process succeeded
+  ------------------------------------------------------------------*/
+  MeshChecker checker { mesh, domain };
+  if ( !checker.check_completeness() )
+  {
+    LOG(ERROR) << "Mesh generation failed";
+    return false;
+  }
+
+  /*------------------------------------------------------------------
   | Finally, we export the mesh to a file in VTU / TXT format.
   ------------------------------------------------------------------*/
   std::string source_dir { TQMESH_SOURCE_DIR };
@@ -173,5 +176,7 @@ void square_in_channel()
 
   LOG(INFO) << "Writing mesh output to: " << file_name << ".txt";
   generator.write_mesh(mesh, file_name, MeshExportType::TXT );
+
+  return true;
 
 } // square_in_channel()

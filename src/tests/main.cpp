@@ -5,15 +5,11 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-#include <iostream>
-#include <vector>
-#include <string>
-#include <cstdlib>
-
-#include "Log.h"
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "tests.h"
-
 
 using CppUtils::LOG_PROPERTIES;
 using CppUtils::LOG;

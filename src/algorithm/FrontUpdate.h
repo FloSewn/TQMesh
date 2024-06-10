@@ -7,7 +7,9 @@
 */
 #pragma once
 
-#include <vector>
+#include <TQMeshConfig.h>
+#include "STLHeaders.h"
+#include "CppUtils.h"
 
 #include "Vertex.h"
 #include "Edge.h"
@@ -16,9 +18,7 @@
 #include "Domain.h"
 #include "Mesh.h"
 
-
 namespace TQMesh {
-namespace TQAlgorithm {
 
 using namespace CppUtils;
 
@@ -386,9 +386,6 @@ private:
     if ( v.intersects_facet(quads, range) )
     { DEBUG_LOG("  > QUAD INTERSECTION"); return false; }
 
-    if ( v.intersects_mesh_edges(mesh_, range, ve_intersection_ * rho) )
-    { DEBUG_LOG("  > EDGE INTERSECTION"); return false; }
-
     DEBUG_LOG("  > VALID");
     return true;
 
@@ -426,10 +423,8 @@ private:
 
   double          min_cell_quality_ = 0.0;
   double          max_cell_angle_   = M_PI;
-  double          ve_intersection_  = 0.01;
 
 }; // FrontUpdate
 
 
-} // namespace TQAlgorithm
 } // namespace TQMesh

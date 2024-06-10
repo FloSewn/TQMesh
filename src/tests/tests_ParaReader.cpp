@@ -5,15 +5,10 @@
 * Refer to the accompanying documentation for details
 * on usage and license.
 */
-
-#include <iostream>
-#include <cassert>
 #include <TQMeshConfig.h>
-
+#include "STLHeaders.h"
+#include "CppUtils.h"
 #include "tests.h"
-
-#include "ParaReader.h"
-#include "Log.h"
  
 namespace ParaReaderTests 
 {

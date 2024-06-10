@@ -1,0 +1,91 @@
+
+# ----------------
+# Mesh 1
+# ----------------
+Define mesh: 
+
+  Define exterior boundary:
+      0.0,   0.0, 1
+    100.0,   0.0, 1
+    100.0, 100.0, 1
+      0.0, 100.0, 1
+  End exterior boundary
+
+  Define interior boundary:
+     10.0,  10.0, 2
+     90.0,  10.0, 2
+     90.0,  90.0, 2
+     10.0,  90.0, 2
+  End interior boundary
+
+End mesh
+
+# ----------------
+# Mesh 2
+# ----------------
+Define mesh:
+
+  Define exterior boundary:
+     10.0,  10.0, 2
+     90.0,  10.0, 2
+     90.0,  90.0, 2
+     10.0,  90.0, 2
+  End exterior boundary
+
+  Define interior boundary:
+     20.0,  20.0, 3
+     80.0,  20.0, 3
+     80.0,  80.0, 3
+     20.0,  80.0, 3
+  End interior boundary
+
+  Define interior boundary:
+     20.0,  20.0, 3
+     80.0,  20.0, 3
+     80.0,  80.0, 3
+     20.0,  80.0, 3
+  End interior boundary
+
+  Define interior boundary:
+     20.0,  20.0, 3
+     80.0,  20.0, 3
+     80.0,  80.0, 3
+     20.0,  80.0, 3
+  End interior boundary
+
+End mesh
+
+# ----------------
+# Mesh 3
+# ----------------
+Define mesh:
+
+  Define exterior boundary:
+     20.0,  20.0, 3
+     80.0,  20.0, 3
+     80.0,  80.0, 3
+     20.0,  80.0, 3
+  End exterior boundary
+
+  Define interior boundary:
+     40.0,  40.0, 4
+     60.0,  40.0, 4
+     60.0,  60.0, 4
+     40.0,  60.0, 4
+  End interior boundary
+
+End mesh
+
+# ----------------
+# Mesh 4
+# ----------------
+Define mesh:
+
+  Define exterior boundary:
+     40.0,  40.0, 4
+     60.0,  40.0, 4
+     60.0,  60.0, 4
+     40.0,  60.0, 4
+  End exterior boundary
+
+End mesh
