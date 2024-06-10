@@ -100,9 +100,9 @@ results in the *input/* and *src/examples* directories.
 <details>
 <summary>Local mesh refinement</summary>
 
-This example shows a triangular mesh which features local element refinement. 
-The element size is determined either by the domain's edge segments, 
-through sizing factors that are attributed to boundary vertices or through a size function which is defined by the user.
+**TQMesh** combines a simple definition of mesh domain boundaries with a versatile specification of the 
+element size. The latter is either determined by the domain's edge segments, 
+through sizing factors that are attributed to boundary vertices or via user-defined size functions.
 
 <img src="doc/simple_triangular_mesh.png" alt="TQMesh-simple-triangular-mesh" width="300"/>
 <img src="doc/thin_fracture.png" alt="TQMesh-thin-fracture" width="338"/>
@@ -138,7 +138,6 @@ These colors can be adjusted during the meshing process, as indicated in this ex
 It also possible to define interior mesh vertices, in order to influence the local element refinement, as shown below.
 
 <img src="doc/fixed_vertices.png" alt="TQMesh-fixed-vertices" width="250"/>
-<img src="doc/multiple_meshes.png" alt="TQMesh-multiple-meshes" width="250"/>
 </details>
 
 <details>
@@ -149,6 +148,7 @@ This makes it even easier to assign different color values to different element 
 This example shows the output from a successive mesh generation.
 
 <img src="doc/merge_meshes.png" alt="TQMesh-merge-meshes" width="250"/>
+<img src="doc/multiple_meshes.png" alt="TQMesh-multiple-meshes" width="250"/>
 </details>
 
 <details>
@@ -268,8 +268,9 @@ The following plots show some performance statistics.
 <img src="doc/BenchmarkPlot_QTree.png" alt="TQMesh-QTree-Benchmark" width="400"/> <img src="doc/BenchmarkPlot_Mesh.png" alt="TQMesh-Mesh-Benchmark" width="400"/>
 
 ## To Do's
-* Boundary definition via splines
+* Fixed edges within domains
 * Enhanced quad triangle-to-quad morphing
+* Boundary definition via splines
 * Improved documentation / testing
 
 Feel free to contribute!
