@@ -24,6 +24,46 @@ using namespace CppUtils;
 *********************************************************************/
 class EdgeList;
 
+/*********************************************************************
+* Different properties for mesh edges 
+*********************************************************************/
+enum class EdgeProperty : uint8_t {
+  no_property    = 0b00000000,
+  on_front       = 0b00000001,
+  on_boundary    = 0b00000010,
+  is_interior    = 0b00000100,
+  is_ghost       = 0b00001000,
+};
+
+// Overloaded bitwise NOT operator
+static inline EdgeProperty operator~(EdgeProperty prop) 
+{ return static_cast<EdgeProperty>(~static_cast<uint8_t>(prop)); }
+
+// Overloaded compound bitwise OR operator for adding properties
+static inline EdgeProperty&
+operator|=(EdgeProperty& lhs, EdgeProperty rhs) 
+{ 
+  lhs = static_cast<EdgeProperty>(
+    static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs)
+  );
+  return lhs;
+}
+
+// Overloaded compound bitwise AND operator for removing properties
+static inline EdgeProperty& 
+operator&=(EdgeProperty& lhs, EdgeProperty rhs) 
+{
+  lhs = static_cast<EdgeProperty>(
+    static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs)
+  );
+  return lhs;
+}
+
+// Overloaded bitwise AND operator for checking vertex properties
+static inline bool 
+operator&(EdgeProperty lhs, EdgeProperty rhs) 
+{ return (static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs)) != 0; }
+
 
 /*********************************************************************
 * A simple edge class that is stored in the Container
@@ -96,6 +136,22 @@ public:
 
   void sub_vertex(Vertex* v) { sub_vertex_ = v; }
   void twin_edge(Edge* e) { twin_edge_ = e; }
+
+  /*------------------------------------------------------------------
+  | Handle edge properties 
+  ------------------------------------------------------------------*/
+  const EdgeProperty& properties() const { return properties_; }
+  void add_property(EdgeProperty p) { properties_ |= p; }
+  void set_property(EdgeProperty p) { properties_ = p; }
+  void remove_property(EdgeProperty p) { properties_ &= ~p; }
+  bool has_property(EdgeProperty p) const { return (properties_ & p); }
+  bool has_no_property() const 
+  { return (properties_ == EdgeProperty::no_property); }
+
+  bool on_front() const { return has_property(EdgeProperty::on_front); }
+  //bool on_boundary() const { return has_property(EdgeProperty::on_boundary); }
+  //bool is_interior() const { return has_property(EdgeProperty::is_interior); }
+  bool is_ghost() const { return has_property(EdgeProperty::is_ghost); }
 
   /*------------------------------------------------------------------
   | Function returns, if edges is located on a boundary
@@ -222,6 +278,8 @@ private:
 
   // Twin edge of a neighbor mesh
   Edge*               twin_edge_ {nullptr};
+
+  EdgeProperty        properties_ { EdgeProperty::no_property};
 
 }; // Edge 
 
