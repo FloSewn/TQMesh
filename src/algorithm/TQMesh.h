@@ -36,9 +36,9 @@
 
 #include "ModificationStrategy.h"
 #include "SmoothingStrategy.h"
-#include "QuadLayerStrategy.h"
+#include "QuadLayering.h"
 #include "RefinementStrategy.h"
-#include "TriangulationStrategy.h"
+#include "Triangulation.h"
 
 #include "MeshGenerator.h"
 

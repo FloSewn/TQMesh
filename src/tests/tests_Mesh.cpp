@@ -20,8 +20,8 @@
 #include "MeshChecker.h"
 #include "RefinementStrategy.h"
 #include "MeshCleanup.h"
-#include "TriangulationStrategy.h"
-#include "QuadLayerStrategy.h"
+#include "Triangulation.h"
+#include "QuadLayering.h"
 #include "SmoothingStrategy.h"
 
 namespace MeshTests 
@@ -79,7 +79,7 @@ void triangulate()
   Mesh mesh = mesh_builder.create_empty_mesh(domain);
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
-  TriangulationStrategy triangulation {mesh, domain};
+  Triangulation triangulation {mesh, domain};
 
   //CHECK( triangulation.generate_elements() );
     
@@ -195,7 +195,7 @@ void quad_layer()
   Mesh mesh = mesh_builder.create_empty_mesh(domain);
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
-  QuadLayerStrategy quad_layer {mesh, domain};
+  QuadLayering quad_layer {mesh, domain};
   quad_layer.n_layers( 4 );
   quad_layer.first_height( 0.15 );
   quad_layer.growth_rate( 1.0 );
@@ -204,11 +204,11 @@ void quad_layer()
 
   CHECK( quad_layer.generate_elements() );
 
-  TriangulationStrategy triangulation {mesh, domain};
+  Triangulation triangulation {mesh, domain};
   triangulation.n_elements(0);
   CHECK( triangulation.generate_elements() );
 
-  MixedSmoothingStrategy smoother {mesh, domain};
+  MixedSmoothing smoother {mesh, domain};
   smoother.smooth(2);
 
   // Export mesh
@@ -237,7 +237,7 @@ void exhaustive_search_triangulation()
   Mesh mesh = mesh_builder.create_empty_mesh(domain);
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
-  TriangulationStrategy triangulation {mesh, domain};
+  Triangulation triangulation {mesh, domain};
   triangulation.n_elements();
   CHECK( triangulation.generate_elements_exhaustive() );
 
@@ -286,7 +286,7 @@ void refine_to_quads()
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
   // Create quad layers
-  QuadLayerStrategy quad_layer {mesh, domain};
+  QuadLayering quad_layer {mesh, domain};
   quad_layer.n_layers( 3 );
   quad_layer.first_height( 0.35 );
   quad_layer.growth_rate( 1.0 );
@@ -296,11 +296,11 @@ void refine_to_quads()
   CHECK( quad_layer.generate_elements() );
 
   // Refinement
-  QuadRefinementStrategy refinement{mesh, domain};
+  QuadRefinement refinement{mesh, domain};
   CHECK( refinement.refine() );
 
   // Create triangulation
-  TriangulationStrategy triangulation {mesh, domain};
+  Triangulation triangulation {mesh, domain};
   triangulation.n_elements(0);
 
   CHECK( triangulation.generate_elements() );
@@ -313,7 +313,7 @@ void refine_to_quads()
   CHECK( refinement.refine() );
 
   // Smooth grid
-  MixedSmoothingStrategy smoother {mesh, domain};
+  MixedSmoothing smoother {mesh, domain};
   smoother.smooth(2);
 
   // Export mesh
@@ -341,14 +341,14 @@ void merge_triangles_to_quads()
   Mesh mesh = mesh_builder.create_empty_mesh( domain );
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
-  TriangulationStrategy triangulation {mesh, domain};
+  Triangulation triangulation {mesh, domain};
 
   CHECK( triangulation.generate_elements() );
   
   MeshCleanup::merge_triangles_to_quads(mesh);
 
   // Smooth grid
-  MixedSmoothingStrategy smoother {mesh, domain};
+  MixedSmoothing smoother {mesh, domain};
   smoother.smooth(2);
 
   // Export mesh
@@ -378,7 +378,7 @@ void small_refinement()
   Mesh mesh = mesh_builder.create_empty_mesh( domain );
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
-  TriangulationStrategy triangulation {mesh, domain};
+  Triangulation triangulation {mesh, domain};
 
   CHECK( triangulation.generate_elements() );
 
@@ -468,12 +468,12 @@ void triangulate_standard_tests(const std::string& test_name)
   if ( !success )
     return;
 
-  TriangulationStrategy triangulation {mesh, domain};
+  Triangulation triangulation {mesh, domain};
 
   success &= triangulation.generate_elements();
   CHECK( success );
 
-  MixedSmoothingStrategy smoother {mesh, domain};
+  MixedSmoothing smoother {mesh, domain};
   smoother.smooth(2);
 
   MeshChecker mesh_checker {mesh, domain};
@@ -533,7 +533,7 @@ void csv_import()
 
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
-  TriangulationStrategy triangulation {mesh, domain};
+  Triangulation triangulation {mesh, domain};
 
   CHECK( triangulation.generate_elements() );
 
@@ -541,7 +541,7 @@ void csv_import()
   CHECK( mesh_checker.check_completeness() );
 
   // Smooth grid
-  MixedSmoothingStrategy smoother {mesh, domain};
+  MixedSmoothing smoother {mesh, domain};
   smoother.smooth(2);
 
   // Export mesh
@@ -580,7 +580,7 @@ void bad_csv_import()
   CHECK( mesh_builder.prepare_mesh(mesh_outer, domain_outer) );
 
 
-  TriangulationStrategy triangulation_outer {mesh_outer, domain_outer};
+  Triangulation triangulation_outer {mesh_outer, domain_outer};
   CHECK( triangulation_outer.generate_elements() );
 
   MeshChecker outer_checker {mesh_outer, domain_outer};
@@ -591,14 +591,14 @@ void bad_csv_import()
 
   CHECK( mesh_builder.prepare_mesh(mesh_inner, domain_inner) );
 
-  TriangulationStrategy triangulation_inner {mesh_inner, domain_inner};
+  Triangulation triangulation_inner {mesh_inner, domain_inner};
   CHECK( triangulation_inner.generate_elements() );
 
   MeshChecker inner_checker {mesh_inner, domain_inner};
   CHECK( inner_checker.check_completeness() );
 
   // Smooth grid
-  MixedSmoothingStrategy smoother_outer {mesh_outer, domain_outer};
+  MixedSmoothing smoother_outer {mesh_outer, domain_outer};
   smoother_outer.smooth(2);
 
   // Export mesh

@@ -79,7 +79,7 @@ protected:
 *  (v1)                (v2)                 (v3)   (v1)        (v2)       (v3)
 *
 *********************************************************************/
-class QuadRefinementStrategy : public RefinementStrategy
+class QuadRefinement : public RefinementStrategy
 {
 public:
 
@@ -90,11 +90,11 @@ public:
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  QuadRefinementStrategy(Mesh& mesh, const Domain& domain)
+  QuadRefinement(Mesh& mesh, const Domain& domain)
   : RefinementStrategy(mesh, domain) 
   {}
 
-  ~QuadRefinementStrategy() {}
+  ~QuadRefinement() {}
 
   /*------------------------------------------------------------------
   | The actual mesh refinement

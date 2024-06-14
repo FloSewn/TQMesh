@@ -15,7 +15,7 @@
 #include "MeshChecker.h"
 #include "MeshBuilder.h"
 #include "MeshCleanup.h"
-#include "TriangulationStrategy.h"
+#include "Triangulation.h"
 #include "SmoothingStrategy.h"
 
 namespace CheckerTests 
@@ -43,12 +43,12 @@ void final_check()
   success &= mesh_builder.prepare_mesh(mesh, domain);
   CHECK( success );
 
-  TriangulationStrategy triangulation {mesh, domain};
+  Triangulation triangulation {mesh, domain};
 
   success &= triangulation.generate_elements();
   CHECK( success );
 
-  MixedSmoothingStrategy smoother {mesh, domain};
+  MixedSmoothing smoother {mesh, domain};
   smoother.smooth(2);
 
   MeshChecker mesh_checker {mesh, domain};

@@ -26,7 +26,7 @@ using namespace CppUtils;
 /*********************************************************************
 * 
 *********************************************************************/
-class TriangulationStrategy : public MeshingStrategy
+class Triangulation : public MeshingStrategy
 {
 public:
   using VertexVector   = std::vector<Vertex*>;
@@ -35,10 +35,10 @@ public:
   /*------------------------------------------------------------------
   | Constructor / Destructor 
   ------------------------------------------------------------------*/
-  TriangulationStrategy(Mesh& mesh, const Domain& domain)
+  Triangulation(Mesh& mesh, const Domain& domain)
   : MeshingStrategy(mesh, domain) {}
 
-  ~TriangulationStrategy() {}
+  ~Triangulation() {}
 
   /*------------------------------------------------------------------
   | Getters 
@@ -53,19 +53,19 @@ public:
   /*------------------------------------------------------------------
   | Setters 
   ------------------------------------------------------------------*/
-  TriangulationStrategy& show_progress(bool s) 
+  Triangulation& show_progress(bool s) 
   { show_progress_ = s; return *this; }
-  TriangulationStrategy& n_elements(size_t n) 
+  Triangulation& n_elements(size_t n) 
   { n_elements_ = n; return *this; }
-  TriangulationStrategy& mesh_range_factor(double v) 
+  Triangulation& mesh_range_factor(double v) 
   { mesh_range_factor_ = v; return *this; }
-  TriangulationStrategy& wide_search_factor(double v) 
+  Triangulation& wide_search_factor(double v) 
   { wide_search_factor_ = v; return *this; }
-  TriangulationStrategy& min_cell_quality(double v) 
+  Triangulation& min_cell_quality(double v) 
   { front_update_.min_cell_quality(v); return *this; }
-  TriangulationStrategy& max_cell_angle(double v) 
+  Triangulation& max_cell_angle(double v) 
   { front_update_.max_cell_angle(v); return *this; }
-  TriangulationStrategy& base_vertex_factor(double v) 
+  Triangulation& base_vertex_factor(double v) 
   { base_vertex_factor_ = v; return *this; }
 
   /*------------------------------------------------------------------
@@ -115,7 +115,7 @@ public:
 
     return success;
 
-  } // TriangulationStrategy::generate_elements()
+  } // Triangulation::generate_elements()
 
 
   /*------------------------------------------------------------------
@@ -150,7 +150,7 @@ public:
 
     return success;
 
-  } // TriangulationStrategy::generate_elements_exhaustive()
+  } // Triangulation::generate_elements_exhaustive()
 
 private:
 
@@ -176,7 +176,7 @@ private:
 
     return front_update_.update_front(base_edge, v_xy, v_xy, range);
 
-  } // TriangulationStrategy::advance_front_triangle() */
+  } // Triangulation::advance_front_triangle() */
 
   /*------------------------------------------------------------------
   | The actual main loop for the advancing front mesh generation
@@ -239,7 +239,7 @@ private:
         return false;
     }
 
-  } // TriangulationStrategy::advancing_front_loop()
+  } // Triangulation::advancing_front_loop()
 
 
   /*------------------------------------------------------------------
@@ -288,7 +288,7 @@ private:
 
     return true;
 
-  } // TriangulationStrategy::exhaustive_search_loop()
+  } // Triangulation::exhaustive_search_loop()
 
 
   /*------------------------------------------------------------------
@@ -314,7 +314,7 @@ private:
 
     return false;
 
-  } // TriangulationStrategy::exhaustive_search_triangle()
+  } // Triangulation::exhaustive_search_triangle()
 
   /*------------------------------------------------------------------
   | Attributes
@@ -325,6 +325,6 @@ private:
   double wide_search_factor_ = 10.0;
   int    n_generated_        = 0;
 
-}; // TriangulationStrategy
+}; // Triangulation
 
 } // namespace TQMesh

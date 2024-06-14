@@ -58,7 +58,7 @@ protected:
 /*********************************************************************
 * Turn triangular elements to quads 
 *********************************************************************/
-class Tri2QuadStrategy : public ModificationStrategy
+class Tri2QuadModification : public ModificationStrategy
 {
 public:
 
@@ -67,10 +67,10 @@ public:
   /*------------------------------------------------------------------
   |
   ------------------------------------------------------------------*/
-  Tri2QuadStrategy(Mesh& mesh, const Domain& domain)
+  Tri2QuadModification(Mesh& mesh, const Domain& domain)
   : ModificationStrategy(mesh, domain) {}
 
-  ~Tri2QuadStrategy() {}
+  ~Tri2QuadModification() {}
 
   /*------------------------------------------------------------------
   |
@@ -93,7 +93,7 @@ public:
 
     return true;
 
-  } // Tri2QuadStrategy::modify()
+  } // Tri2QuadModification::modify()
 
 private:
 
@@ -131,7 +131,7 @@ private:
       return a_ang < b_ang;
     });
 
-  } // Tri2QuadStrategy::collect_triangle_edges()
+  } // Tri2QuadModification::collect_triangle_edges()
 
   /*------------------------------------------------------------------
   |                                  v2               q_r
@@ -204,14 +204,14 @@ private:
       mesh_->remove_triangle( *(static_cast<Triangle*>(f_r)) );
     }
 
-  } // Tri2QuadStrategy::merge_triangles_to_quads() 
+  } // Tri2QuadModification::merge_triangles_to_quads() 
 
   /*------------------------------------------------------------------
   |
   ------------------------------------------------------------------*/
   EdgeList tri_edges_ {};
 
-}; // Tri2QuadStrategy
+}; // Tri2QuadModification
 
 
 } // namespace TQMesh

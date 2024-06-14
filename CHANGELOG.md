@@ -1,5 +1,24 @@
 # Changelog
 
+## Planned changes for upcoming release
+
+- Fix quad layer bug described in issue [#??]
+
+### Changed
+
+- Change name of `TriangulationStrategy` to `Triangulation`
+- Change name of `QuadLayerStrategy` to `QuadLayering`
+- Change name of `QuadRefinementStrategy` to `QuadRefinement`
+- Change name of `Tri2QuadStrategy` to `Tri2QuadModification`
+- Change name of `LaplaceSmoothingStrategy` to `LaplaceSmoothing`
+- Change name of `TorsionSmoothingStrategy` to `TorsionSmoothing`
+- Change name of `MixedSmoothingStrategy` to `MixedSmoothing`
+
+### Added
+
+- Implement fixed interior edges
+
+
 ## [1.3.2] - 2024-06-10
 
 ### Fixed
