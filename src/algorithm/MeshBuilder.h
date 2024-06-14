@@ -207,8 +207,8 @@ public:
     {
       Vertex& v1 = e->v1();
       Vertex& v2 = e->v2();
-      int marker = e->marker();
-      Edge& e_new = mesh.boundary_edges().add_edge( v1, v2, marker );
+      int color = e->color();
+      Edge& e_new = mesh.boundary_edges().add_edge( v1, v2, color );
 
       ASSERT( v1.has_property( VertexProperty::on_boundary ),
         "MeshBuilder::prepare_mesh(): Missing "

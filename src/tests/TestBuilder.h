@@ -88,7 +88,7 @@ private:
   {
     domain_.quad_tree_scale( 2.5 );
 
-    int marker        = 1;
+    int color         = 1;
     Vec2d center      = { 0.0, 0.0 };
     double radius     = 1.0;
     size_t n_segments = 40; 
@@ -97,7 +97,7 @@ private:
 
     Boundary& b_ext = domain_.add_exterior_boundary();
 
-    b_ext.set_shape_circle(marker, center, radius, n_segments, 
+    b_ext.set_shape_circle(color, center, radius, n_segments, 
                            mesh_size, size_range );
 
   } // TestBuilder::init_UnitCircle()

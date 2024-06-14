@@ -72,20 +72,20 @@ bool multiple_meshes()
     { 70.0, 90.0 }, { 60.0, 60.0 }, { 40.0, 60.0 }, { 30.0, 90.0 },
   };
 
-  std::vector<int> ext_markers_1 ( ext_coords_1.size(), 1 );
-  std::vector<int> ext_markers_2 ( ext_coords_2.size(), 2 );
-  std::vector<int> ext_markers_3 ( ext_coords_3.size(), 3 );
-  std::vector<int> ext_markers_4 ( ext_coords_4.size(), 4 );
+  std::vector<int> ext_colors_1 ( ext_coords_1.size(), 1 );
+  std::vector<int> ext_colors_2 ( ext_coords_2.size(), 2 );
+  std::vector<int> ext_colors_3 ( ext_coords_3.size(), 3 );
+  std::vector<int> ext_colors_4 ( ext_coords_4.size(), 4 );
 
   Boundary& bdry_ext_1 = domain_1.add_exterior_boundary();
   Boundary& bdry_ext_2 = domain_2.add_exterior_boundary();
   Boundary& bdry_ext_3 = domain_3.add_exterior_boundary();
   Boundary& bdry_ext_4 = domain_4.add_exterior_boundary();
 
-  bdry_ext_1.set_shape_from_coordinates(ext_coords_1, ext_markers_1);
-  bdry_ext_2.set_shape_from_coordinates(ext_coords_2, ext_markers_2);
-  bdry_ext_3.set_shape_from_coordinates(ext_coords_3, ext_markers_3);
-  bdry_ext_4.set_shape_from_coordinates(ext_coords_4, ext_markers_4);
+  bdry_ext_1.set_shape_from_coordinates(ext_coords_1, ext_colors_1);
+  bdry_ext_2.set_shape_from_coordinates(ext_coords_2, ext_colors_2);
+  bdry_ext_3.set_shape_from_coordinates(ext_coords_3, ext_colors_3);
+  bdry_ext_4.set_shape_from_coordinates(ext_coords_4, ext_colors_4);
 
   /*------------------------------------------------------------------
   | Interior boundary of mesh 1
@@ -95,11 +95,11 @@ bool multiple_meshes()
     { 90.0, 90.0 }, { 70.0, 90.0 }, { 30.0, 90.0 }, { 10.0, 90.0 },
   };
 
-  std::vector<int> int_markers_1 ( int_coords_1.size(), 2 );
+  std::vector<int> int_colors_1 ( int_coords_1.size(), 2 );
 
   Boundary& bdry_int_1 = domain_1.add_interior_boundary();
 
-  bdry_int_1.set_shape_from_coordinates(int_coords_1, int_markers_1);
+  bdry_int_1.set_shape_from_coordinates(int_coords_1, int_colors_1);
 
   /*------------------------------------------------------------------
   | Create meshes

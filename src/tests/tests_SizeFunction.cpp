@@ -83,14 +83,14 @@ void evaluation()
       << std::setprecision(0) << std::fixed 
       << std::setw(4) << e->v1().index() << "," 
       << std::setw(4) << e->v2().index() << ","
-      << std::setw(4) << e->marker() << "\n";
+      << std::setw(4) << e->color() << "\n";
 
   for ( const auto& e : b_int )
     outfile 
       << std::setprecision(0) << std::fixed 
       << std::setw(4) << e->v1().index() << "," 
       << std::setw(4) << e->v2().index() << ","
-      << std::setw(4) << e->marker() << "\n";
+      << std::setw(4) << e->color() << "\n";
 
   domain.export_size_function(outfile, {0.0,0.0}, {5.0,5.0}, 100, 100);
 

@@ -327,9 +327,9 @@ private:
         Edge* e1 = new_edges.first;
         Edge* e2 = new_edges.second;
         mesh_bdry_edges.insert_edge(e_bdry_rem->pos(),
-                                    e1->v1(), e1->v2(), e1->marker());
+                                    e1->v1(), e1->v2(), e1->color());
         mesh_bdry_edges.insert_edge(e_bdry_rem->pos(),
-                                    e2->v1(), e2->v2(), e2->marker());
+                                    e2->v1(), e2->v2(), e2->color());
       }
 
       // Add new vertex to quad layer structure
@@ -444,9 +444,9 @@ private:
         Edge* e1 = new_edges.first;
         Edge* e2 = new_edges.second;
         bdry_edges.insert_edge( e_bdry_rem->pos(),
-                                e1->v1(), e1->v2(), e1->marker() );
+                                e1->v1(), e1->v2(), e1->color() );
         bdry_edges.insert_edge( e_bdry_rem->pos(),
-                                e2->v1(), e2->v2(), e2->marker() );
+                                e2->v1(), e2->v2(), e2->color() );
       }
 
       // Add new vertex to quad layer structure

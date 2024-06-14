@@ -48,14 +48,14 @@ public:
   ------------------------------------------------------------------*/
   FrontInitData(FrontInitData&& f)
   : edges_ { std::move(f.edges_) }
-  , markers_ { std::move(f.markers_) }
+  , colors_ { std::move(f.colors_) }
   , is_twin_edge_ { std::move(f.is_twin_edge_) }
   {}
   
   FrontInitData& operator=(FrontInitData&& f)
   {
     edges_ = std::move(f.edges_);
-    markers_ = std::move(f.markers_);
+    colors_ = std::move(f.colors_);
     is_twin_edge_ = std::move(f.is_twin_edge_);
     return *this;
   }
@@ -69,13 +69,13 @@ public:
   std::vector<BoolVector>& is_twin_edge() { return is_twin_edge_; }
   const std::vector<BoolVector>& is_twin_edge() const { return is_twin_edge_; }
 
-  std::vector<IntVector>& markers() { return markers_; }
-  const std::vector<IntVector>& markers() const { return markers_; }
+  std::vector<IntVector>& colors() { return colors_; }
+  const std::vector<IntVector>& colors() const { return colors_; }
 
 private:
   /*------------------------------------------------------------------
   | Traverses all boundaries of a given domain and collects the 
-  | respective boundary edges, as well as their marker and orientation.
+  | respective boundary edges, as well as their color and orientation.
   | Additionally, the boundary edges of given meshes are also 
   | considered, if they overlap with the domain boundary. This 
   | is required to construct conformal grids.
@@ -90,7 +90,7 @@ private:
     for ( const auto& boundary : domain )
     {
       EdgeVector edges {};
-      IntVector  markers {};
+      IntVector  colors {};
       BoolVector is_twin_edge {};
 
       for ( const auto& e : boundary->edges() )
@@ -104,7 +104,7 @@ private:
           {
             edges.push_back( nbr_e );
             is_twin_edge.push_back( true );
-            markers.push_back( nbr_e->marker() );
+            colors.push_back( nbr_e->color() );
           }
         }
         // Add edges from domain boundary
@@ -112,14 +112,62 @@ private:
         {
           edges.push_back( e.get() ) ;
           is_twin_edge.push_back( false );
-          markers.push_back( e->marker() );
+          colors.push_back( e->color() );
         }
       }
 
       edges_.push_back( edges );
       is_twin_edge_.push_back( is_twin_edge );
-      markers_.push_back( markers );
+      colors_.push_back( colors );
     }
+
+    // **** ----------------------------------------------------------
+    // **** Feature implementation: Fixed interior edges 
+    // **** ----------------------------------------------------------
+    // - Here we could add additional fixed interor edges that have been
+    //   defined by the user
+    //
+    // - These edges must be added twice - in forward and backward 
+    //   direction
+    //
+    // - The problem with the former is, that this will cause these two 
+    //   interior edges to be added in the mesh structure 
+    //   -> FrontUpdate.advance_front() - FrontUpdate.h, line 126
+    //   although it should only be one single edge
+    //
+    // - Possible approaches to overcome this:
+    //   > Track these double-edges and include only one of them.
+    //     However, this will cause major changes in 
+    //     FrontUpdate.advance_front()
+    //   > How to do this? Add further if-statement in 
+    //     FrontUpdate.h, line 126, where it is checked if the base 
+    //     is interior
+    //   > We could add another function, that checks if the base is 
+    //     doubly defined 
+    //   > This would result in the definition of a new edge color,
+    //     Additionally to INTERIOR_EDGE_COLOR, we could use 
+    //     INTERIOR_TWIN_EDGE, or something
+    //   > Thus, when adding a fixed interior edge here,
+    //     we should already give it a special color that can later
+    //     on be used to indicate it (maybe the first one is a default
+    //     interior front edge and the second one is a special 
+    //     INTERIOR_TWIN_EDGE
+    //
+    //  - It is important, that we also use some kind of closed edgelist 
+    //    for these interior fixed edges, so that the upcoming methods 
+    //    of Front for adding vertices and edges can be used
+    //  - Maybe the user passes a list of interior edges and these 
+    //    will be converted into some kind of an interior boundary 
+    //  - However, this would require some more thoughts about the
+    //    user interface for interior fixed edges, in order to define
+    //    multiple line segements
+    //    > Instead of an "add_fixed_edge()" function, we should provide
+    //      something like "add_fixed_edge_semgents()", where multiple
+    //      fixed edges are passed at once by a list of vertices
+    //    > Similar to boundaries, the Domain then requires an additional
+    //      list of "interior_edge_segments_"
+    //
+    //     
 
   } // FrontInitData::collect_front_edges()
 
@@ -185,7 +233,7 @@ private:
   | Attributes
   ------------------------------------------------------------------*/
   std::vector<EdgeVector> edges_        {};
-  std::vector<IntVector>  markers_      {};
+  std::vector<IntVector>  colors_       {};
   std::vector<BoolVector> is_twin_edge_ {};
 
   double edge_overlap_range_ { 1.5 };
@@ -243,13 +291,13 @@ public:
     {
       const EdgeVector& front_edges  = front_init_data.edges()[i_bdry];
       const BoolVector& is_twin_edge = front_init_data.is_twin_edge()[i_bdry];
-      const IntVector&  markers      = front_init_data.markers()[i_bdry];
+      const IntVector&  colors       = front_init_data.colors()[i_bdry];
 
       VertexVector new_vertices 
         = this->init_mesh_vertices(front_edges, is_twin_edge, mesh_vertices);
 
       EdgeVector new_edges 
-        = this->init_front_edges(front_edges, markers, new_vertices);
+        = this->init_front_edges(front_edges, colors, new_vertices);
 
       this->mark_twin_edges(front_edges, is_twin_edge, new_edges);
     }
@@ -276,7 +324,7 @@ public:
       Vertex& v2 = e_ptr->v2();
       v1.add_property(VertexProperty::on_front);
       v2.add_property(VertexProperty::on_front);
-      this->add_edge( v1, v2, e_ptr->marker() );
+      this->add_edge( v1, v2, e_ptr->color() );
     }
 
   } // Front::init_front()
@@ -434,7 +482,7 @@ private:
   | Returns a vector of pointers to the generated edges
   ------------------------------------------------------------------*/
   EdgeVector init_front_edges(const EdgeVector&   front_edges,
-                              const IntVector&    markers,
+                              const IntVector&    colors,
                               const VertexVector& new_vertices)
   {
     EdgeVector new_edges {};
@@ -449,7 +497,7 @@ private:
       Vertex* v1 = new_vertices[i1];
       Vertex* v2 = new_vertices[i2];
 
-      Edge& e_new = this->add_edge( *v1, *v2, markers[i_edge] );
+      Edge& e_new = this->add_edge( *v1, *v2, colors[i_edge] );
 
       new_edges.push_back(&e_new);
     }
@@ -654,12 +702,12 @@ private:
       v_n.add_property( VertexProperty::on_front );
       v_n.add_property( VertexProperty::on_boundary );
 
-      this->insert_edge(e.pos(), *v_cur, v_n, e.marker());
+      this->insert_edge(e.pos(), *v_cur, v_n, e.color());
 
       v_cur = &v_n;
     }
 
-    this->insert_edge( e.pos(), *v_cur, e.v2(), e.marker() );
+    this->insert_edge( e.pos(), *v_cur, e.v2(), e.color() );
 
   } // create_sub_edges()
 

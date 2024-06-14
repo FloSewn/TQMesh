@@ -421,7 +421,7 @@ private:
 
       std::vector<Vec2d> vertex_coords {};
       std::vector<Vec2d> vertex_props {};
-      std::vector<int>   edge_markers {};
+      std::vector<int>   edge_colors {};
 
       for ( size_t i = 0; i < para_intr_bdry.rows(); ++i )
       {
@@ -436,10 +436,10 @@ private:
 
         vertex_coords.push_back( {x,y} );
         vertex_props.push_back( {s,r} );
-        edge_markers.push_back( m );
+        edge_colors.push_back( m );
       }
 
-      b_int.set_shape_from_coordinates(vertex_coords, edge_markers,
+      b_int.set_shape_from_coordinates(vertex_coords, edge_colors,
                                        vertex_props); 
     }
 
@@ -590,7 +590,7 @@ private:
 
       std::vector<Vec2d> vertex_coords {};
       std::vector<Vec2d> vertex_props {};
-      std::vector<int>   edge_markers {};
+      std::vector<int>   edge_colors {};
 
       for ( size_t i = 0; i < para_extr_bdry.rows(); ++i )
       {
@@ -605,10 +605,10 @@ private:
 
         vertex_coords.push_back( {x,y} );
         vertex_props.push_back( {s,r} );
-        edge_markers.push_back( m );
+        edge_colors.push_back( m );
       }
 
-      b_ext.set_shape_from_coordinates(vertex_coords, edge_markers,
+      b_ext.set_shape_from_coordinates(vertex_coords, edge_colors,
                                        vertex_props);
 
       print_parameter<double>(mesh_reader, "extr_bdry_coords");

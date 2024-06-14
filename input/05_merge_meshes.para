@@ -22,7 +22,7 @@ Define mesh:
   # Arguments:
   #   1) X-coordinate
   #   2) Y-coordinate
-  #   3) Edge marker
+  #   3) Edge color
   #---------------------------------------------------------
   Define exterior boundary:
     0.0, 0.0, 1

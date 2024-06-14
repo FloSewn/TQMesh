@@ -89,7 +89,7 @@ public:
   , v1_       {&v1}
   , v2_       {&v2}
   , edgelist_ {&edgelist} 
-  , marker_   {m}
+  , color_   {m}
   {
     ASSERT((v1_ && v2_),
         "Failed to create edge structure due to given nullptr." );
@@ -106,7 +106,7 @@ public:
   /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
-  int marker() const { return marker_; }
+  int color() const { return color_; }
 
   EdgeList& edgelist() { return *edgelist_; }
   const EdgeList& edgelist() const { return *edgelist_; }
@@ -158,13 +158,13 @@ public:
   | or if it is in the interior of the domain
   ------------------------------------------------------------------*/
   bool on_boundary() const 
-  { return ( marker_ != INTERIOR_EDGE_MARKER ); }
+  { return ( color_ != INTERIOR_EDGE_COLOR ); }
   bool is_interior() const
   { return !on_boundary(); }
 
   /*------------------------------------------------------------------
   | Get the next edge, that is connected to the ending vertex of  
-  | this edge. The next edge must also have the same marker
+  | this edge. The next edge must also have the same color
   | as this edge.
   | The first vertex of the next edge must be the last vertex of the 
   | current edge.
@@ -192,7 +192,7 @@ public:
 
   /*------------------------------------------------------------------
   | Get the previous edge, that is connected to the starting vertex of  
-  | this edge. The previous edge must also have the same marker
+  | this edge. The previous edge must also have the same color
   | as this edge.
   | The last vertex of the found edge must be the first vertex of the
   | current edge.
@@ -262,7 +262,7 @@ private:
   Vertex*             v1_       { nullptr };
   Vertex*             v2_       { nullptr };
   EdgeList*           edgelist_ { nullptr };
-  int                 marker_   { -1 };
+  int                 color_    { -1 };
 
   // Edge properties
   double              length_      { 0.0 };

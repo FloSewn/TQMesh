@@ -55,7 +55,7 @@ public:
   EdgeList(const EdgeList& el) : orient_ { el.orient_ }
   {
     for ( auto& e : el.edges_ )
-      add_edge( e->v1(), e->v2(), e->marker() );
+      add_edge( e->v1(), e->v2(), e->color() );
   }
 
   /*------------------------------------------------------------------
@@ -107,14 +107,14 @@ public:
 
   /*------------------------------------------------------------------
   | Insert a new edge to the list at a specified position
-  | By default, edges get the TQ_INTR_EDGE_MARKER, which is used to 
+  | By default, edges get the TQ_INTR_EDGE_COLOR, which is used to 
   | identify interior edges of the mesh. 
-  | Boundary edges are assumed to be defined with a marker > 0
+  | Boundary edges are assumed to be defined with a color > 0
   ------------------------------------------------------------------*/
   virtual Edge& insert_edge(const_iterator pos, Vertex& v1, Vertex& v2, 
-                            int marker=INTERIOR_EDGE_MARKER)
+                            int color=INTERIOR_EDGE_COLOR)
   {
-    Edge& e = edges_.insert(pos, v1, v2, *this, marker);
+    Edge& e = edges_.insert(pos, v1, v2, *this, color);
     if ( orient_ != Orientation::NONE )
       compute_area();
     
@@ -127,7 +127,7 @@ public:
 
   /*------------------------------------------------------------------
   | Push a new edge back to the edge list
-  | By default, all edges get colored by the interior edge marker.
+  | By default, all edges get colored by the interior edge color.
   |
   | > EdgeLists with clockwise / counter-clockwise orientation must 
   |   be closed and must be made up of a single edge path (each 
@@ -137,10 +137,10 @@ public:
   |   connected to more than two edges of this list type
   ------------------------------------------------------------------*/
   virtual Edge& add_edge(Vertex& v1, Vertex& v2, 
-                         int marker=INTERIOR_EDGE_MARKER)
+                         int color=INTERIOR_EDGE_COLOR)
   { 
     if ( orient_ == Orientation::NONE || edges_.size() < 1 )
-      return insert_edge( edges_.end(), v1, v2, marker ); 
+      return insert_edge( edges_.end(), v1, v2, color ); 
 
     // Check that the new edge is connected to the last edge
     const Vertex& v_last = edges_.back().v2();
@@ -150,7 +150,7 @@ public:
           "Failed to add an Edge to EdgeList. The new edge to add "
           "is not connected to the last Edge in the EdgeList.");
 
-    return insert_edge( edges_.end(), v1, v2, marker ); 
+    return insert_edge( edges_.end(), v1, v2, color ); 
   } 
 
   /*------------------------------------------------------------------
@@ -208,10 +208,10 @@ public:
     if ( !edge.on_boundary() )
       v_new.remove_property( VertexProperty::on_boundary );
 
-    int marker       = edge.marker();
+    int color = edge.color();
 
-    Edge& e1_new = this->insert_edge(edge.pos(), v1, v_new, marker);
-    Edge& e2_new = this->insert_edge(edge.pos(), v_new, v2, marker);
+    Edge& e1_new = this->insert_edge(edge.pos(), v1, v_new, color);
+    Edge& e2_new = this->insert_edge(edge.pos(), v_new, v2, color);
 
 
     // Remove old edge
@@ -330,7 +330,7 @@ public:
   {
     Edge* found = nullptr;
 
-    // Return the first edge with the prescribed marker, irregarding
+    // Return the first edge with the prescribed color, irregarding
     // of the vertex position in the found edge
     if ( pos == 0 )
     {
@@ -338,7 +338,7 @@ public:
         if (  &e->edgelist() == this )
         { found = e; break; }
     }
-    // Return the first edge with the prescribed marker, where the 
+    // Return the first edge with the prescribed color, where the 
     // vertex must be defined as the first vertex v1 of the edge
     else if ( pos == 1 )
     {
@@ -346,7 +346,7 @@ public:
         if (  &e->edgelist() == this && e->v1() == v )
         { found = e; break; }
     }
-    // Return the first edge with the prescribed marker, where the 
+    // Return the first edge with the prescribed color, where the 
     // vertex must be defined as the second vertex v2 of the edge
     else if ( pos == 2 )
     {

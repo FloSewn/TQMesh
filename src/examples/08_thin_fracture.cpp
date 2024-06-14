@@ -34,13 +34,13 @@ bool thin_fracture()
   Vertex& v7 = domain.add_vertex( 68.48208, -119.4611, 0.1, 0.035 );
 
   Boundary&  b_ext = domain.add_exterior_boundary();
-  b_ext.add_edge( v0, v1, 1 ); // 1: Marker for bottom edge
-  b_ext.add_edge( v1, v2, 2 ); // 2: Marker for right edge
-  b_ext.add_edge( v2, v3, 3 ); // 3: Marker for top edge
-  b_ext.add_edge( v3, v0, 4 ); // 4: Marker for left edge
+  b_ext.add_edge( v0, v1, 1 ); // 1: Color for bottom edge
+  b_ext.add_edge( v1, v2, 2 ); // 2: Color for right edge
+  b_ext.add_edge( v2, v3, 3 ); // 3: Color for top edge
+  b_ext.add_edge( v3, v0, 4 ); // 4: Color for left edge
 
   Boundary&  b_int = domain.add_interior_boundary();
-  b_int.add_edge( v4, v7, 5 ); // Use marker 5 for all interior edges
+  b_int.add_edge( v4, v7, 5 ); // Use color 5 for all interior edges
   b_int.add_edge( v7, v6, 5 ); // ...
   b_int.add_edge( v6, v5, 5 );
   b_int.add_edge( v5, v4, 5 );

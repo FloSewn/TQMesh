@@ -20,6 +20,7 @@
 #include "MeshMerger.h"
 #include "RefinementStrategy.h"
 #include "MeshCleanup.h"
+#include "MeshChecker.h"
 #include "SmoothingStrategy.h"
 #include "EntityChecks.h"
 
@@ -70,20 +71,20 @@ void initialization()
   Vertex& v8 = outer_domain.add_vertex(  3.0,  2.0 );
 
   // Build exterior boundary
-  int exterior_edge_marker = 1;
+  int exterior_edge_color = 1;
   Boundary& outer_exterior_bdry = outer_domain.add_exterior_boundary();
-  outer_exterior_bdry.add_edge( v1, v2, exterior_edge_marker );
-  outer_exterior_bdry.add_edge( v2, v3, exterior_edge_marker );
-  outer_exterior_bdry.add_edge( v3, v4, exterior_edge_marker );
-  outer_exterior_bdry.add_edge( v4, v1, exterior_edge_marker );
+  outer_exterior_bdry.add_edge( v1, v2, exterior_edge_color );
+  outer_exterior_bdry.add_edge( v2, v3, exterior_edge_color );
+  outer_exterior_bdry.add_edge( v3, v4, exterior_edge_color );
+  outer_exterior_bdry.add_edge( v4, v1, exterior_edge_color );
 
   // Build interior boundary
-  int interior_edge_marker = 2;
+  int interior_edge_color = 2;
   Boundary& outer_interior_bdry = outer_domain.add_interior_boundary();
-  outer_interior_bdry.add_edge( v5, v6, interior_edge_marker );
-  outer_interior_bdry.add_edge( v6, v7, interior_edge_marker );
-  outer_interior_bdry.add_edge( v7, v8, interior_edge_marker );
-  outer_interior_bdry.add_edge( v8, v5, interior_edge_marker );
+  outer_interior_bdry.add_edge( v5, v6, interior_edge_color );
+  outer_interior_bdry.add_edge( v6, v7, interior_edge_color );
+  outer_interior_bdry.add_edge( v7, v8, interior_edge_color );
+  outer_interior_bdry.add_edge( v8, v5, interior_edge_color );
 
   // Setup the generator
   MeshGenerator generator {};
@@ -121,19 +122,19 @@ void mesh_initializer()
   Vertex& v4_2 = domain_2.add_vertex(  5.0,  5.0 );
 
   // Build domain boundaries
-  int edge_marker = 1;
+  int edge_color = 1;
   Boundary& bdry_1 = domain_1.add_exterior_boundary();
   Boundary& bdry_2 = domain_2.add_exterior_boundary();
   
-  bdry_1.add_edge( v1_1, v2_1, edge_marker );
-  bdry_1.add_edge( v2_1, v3_1, edge_marker );
-  bdry_1.add_edge( v3_1, v4_1, edge_marker );
-  bdry_1.add_edge( v4_1, v1_1, edge_marker );
+  bdry_1.add_edge( v1_1, v2_1, edge_color );
+  bdry_1.add_edge( v2_1, v3_1, edge_color );
+  bdry_1.add_edge( v3_1, v4_1, edge_color );
+  bdry_1.add_edge( v4_1, v1_1, edge_color );
 
-  bdry_2.add_edge( v1_2, v2_2, edge_marker );
-  bdry_2.add_edge( v2_2, v3_2, edge_marker );
-  bdry_2.add_edge( v3_2, v4_2, edge_marker );
-  bdry_2.add_edge( v4_2, v1_2, edge_marker );
+  bdry_2.add_edge( v1_2, v2_2, edge_color );
+  bdry_2.add_edge( v2_2, v3_2, edge_color );
+  bdry_2.add_edge( v3_2, v4_2, edge_color );
+  bdry_2.add_edge( v4_2, v1_2, edge_color );
 
   // Generate mesh 1
   MeshGenerator generator {};
@@ -338,12 +339,12 @@ void quad_layer_near_mesh_size()
     { 0.0, 2.0 } 
   };
 
-  std::vector<int> exterior_edge_markers ( 4, 1 );
+  std::vector<int> exterior_edge_colors ( 4, 1 );
 
   Domain domain { f, 8.0 };
   Boundary& b_ext = domain.add_exterior_boundary();
   b_ext.set_shape_from_coordinates( exterior_vertex_coordinates, 
-                                    exterior_edge_markers );
+                                    exterior_edge_colors );
 
   MeshGenerator generator {};
   Mesh& mesh = generator.new_mesh( domain );
@@ -389,10 +390,10 @@ void quad_refinement()
   Vertex& v2 = domain.add_vertex(  4.0,  1.0 );
   Vertex& v3 = domain.add_vertex(  0.0,  1.0 );
 
-  b_ext.add_edge( v0, v1, 2 ); // 2: Marker for bottom edge
-  b_ext.add_edge( v1, v2, 3 ); // 3: Marker for right edge
-  b_ext.add_edge( v2, v3, 2 ); // 2: Marker for top edge
-  b_ext.add_edge( v3, v0, 1 ); // 1: Marker for left edge
+  b_ext.add_edge( v0, v1, 2 ); // 2: color for bottom edge
+  b_ext.add_edge( v1, v2, 3 ); // 3: color for right edge
+  b_ext.add_edge( v2, v3, 2 ); // 2: color for top edge
+  b_ext.add_edge( v3, v0, 1 ); // 1: color for left edge
 
 
   Boundary&  b_int = domain.add_interior_boundary();
@@ -405,7 +406,7 @@ void quad_refinement()
   Vertex& v6 = domain.add_vertex( 0.65, 0.65, 0.05, 0.2 );
   Vertex& v7 = domain.add_vertex( 0.65, 0.35, 0.05, 0.2 );
 
-  b_int.add_edge( v4, v5, 4 ); // Use marker 4 for all interior edges
+  b_int.add_edge( v4, v5, 4 ); // Use color 4 for all interior edges
   b_int.add_edge( v5, v6, 4 ); // ...
   b_int.add_edge( v6, v7, 4 );
   b_int.add_edge( v7, v4, 4 );
@@ -470,6 +471,59 @@ void quad_refinement()
 
 } // quad_refinement()
 
+/*********************************************************************
+* Test fixed interior edges 
+*********************************************************************
+void fixed_interior_edges()
+{
+  // Define a variable size function
+  UserSizeFunction f = [](const Vec2d& p) 
+  { return 0.5; };
+
+  double quadtree_scale = 10.0;
+
+  // Define the domain
+  Domain domain { f, quadtree_scale };
+
+  // Define vertices of the exterior boundary
+  Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
+  Vertex& v2 = domain.add_vertex(  5.0,  0.0 );
+  Vertex& v3 = domain.add_vertex(  5.0,  5.0 );
+  Vertex& v4 = domain.add_vertex(  0.0,  5.0 );
+
+  // Build exterior boundary
+  int exterior_edge_color = 1;
+  Boundary& exterior_bdry = domain.add_exterior_boundary();
+  exterior_bdry.add_edge( v1, v2, exterior_edge_color );
+  exterior_bdry.add_edge( v2, v3, exterior_edge_color );
+  exterior_bdry.add_edge( v3, v4, exterior_edge_color );
+  exterior_bdry.add_edge( v4, v1, exterior_edge_color );
+
+  // Add fixed vertices
+  Vertex& v1_f = domain.add_fixed_vertex(2.5, 1.5, 0.05, 1.5);
+  Vertex& v2_f = domain.add_fixed_vertex(2.5, 3.5, 0.05, 1.5);
+
+  // Add fixed edges 
+  //domain.add_fixed_edge( v1_f, v2_f );
+
+  // Setup the generator
+  MeshGenerator generator {};
+  Mesh& mesh = generator.new_mesh( domain );
+  generator.triangulation(mesh).generate_elements();
+
+  // Check mesh 
+  MeshChecker mesh_checker {mesh, domain};
+  CHECK( mesh_checker.check_completeness() );
+
+  // Export mesh
+  std::string source_dir { TQMESH_SOURCE_DIR };
+  std::string filename 
+  { source_dir + "/auxiliary/test_data/MeshGeneratorTests.fixed_interior_edges" };
+
+  generator.write_mesh(mesh, filename, MeshExportType::TXT);
+
+} // fixed_interior_edges() */
+
 } // namespace MeshGeneratorTests
 
 /*********************************************************************
@@ -491,6 +545,11 @@ void run_tests_MeshGenerator()
 
   adjust_logging_output_stream("MeshGeneratorTests.quad_refinement.log");
   MeshGeneratorTests::quad_refinement();
+
+  /*
+  adjust_logging_output_stream("MeshGeneratorTests.fixed_interior_edges.log");
+  MeshGeneratorTests::fixed_interior_edges();
+  */
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");

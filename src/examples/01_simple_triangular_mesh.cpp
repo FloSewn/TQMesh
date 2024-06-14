@@ -38,9 +38,9 @@ bool simple_triangular_mesh()
   | define the boundary in terms of a closed polygonal chain.
   |
   | Additionally, each boundary edge is associated to an integer, 
-  | which we refer to as "markers". 
+  | which we refer to as "colors". 
   | We provide them throgh an additional sequence of integers, that
-  | correspond to the markers of the edges in the given polygonal 
+  | correspond to the colors of the edges in the given polygonal 
   | chain.
   |
   | Our final exterior boundary will look like this:
@@ -58,7 +58,7 @@ bool simple_triangular_mesh()
   |           (0.0, 0.0)                 (5.0, 0.0)
   | 
   | The tuples denote boundary vertex coordinates and the numbers in 
-  | brackets denote the corresponding edge markers.
+  | brackets denote the corresponding edge colors.
   ------------------------------------------------------------------*/
   Boundary& b_ext = domain.add_exterior_boundary();
 
@@ -69,10 +69,10 @@ bool simple_triangular_mesh()
     { 0.0, 5.0 } 
   };
 
-  std::vector<int> exterior_edge_markers { 1, 1, 2, 2 };
+  std::vector<int> exterior_edge_colors { 1, 1, 2, 2 };
 
   b_ext.set_shape_from_coordinates( exterior_vertex_coordinates, 
-                                    exterior_edge_markers );
+                                    exterior_edge_colors );
 
   /*------------------------------------------------------------------
   | In the next step, we will define an interior boundary of  
@@ -89,7 +89,7 @@ bool simple_triangular_mesh()
   |
   | This boundary is made up from the vertex sequence: 
   |       [(1.5,1.5), (1.5,3.5), (3.5,3.5)] 
-  | All edges will obtain the marker number "3". 
+  | All edges will obtain the color number "3". 
   | 
   | At vertex (1.5,1.5), we will refine the mesh locally. To do 
   | this, we provide an additional sequence of refinement properties,
@@ -106,7 +106,7 @@ bool simple_triangular_mesh()
     { 3.5, 3.5 } 
   };
 
-  std::vector<int> interior_edge_markers { 3, 3, 3 };
+  std::vector<int> interior_edge_colors { 3, 3, 3 };
 
   std::vector<Vec2d> interior_vertex_properties { 
     { 0.05, 0.2 },
@@ -115,7 +115,7 @@ bool simple_triangular_mesh()
   };
 
   b_int.set_shape_from_coordinates( interior_vertex_coordinates, 
-                                    interior_edge_markers,
+                                    interior_edge_colors,
                                     interior_vertex_properties );
 
   /*------------------------------------------------------------------

@@ -253,7 +253,7 @@ private:
       ASSERT(v1, "MeshBuilder::merge_meshes(): Invalid data structure.");
       ASSERT(v2, "MeshBuilder::merge_meshes(): Invalid data structure.");
 
-      Edge& e_new = boundary_edges.add_edge(*v1, *v2, e_ptr->marker());
+      Edge& e_new = boundary_edges.add_edge(*v1, *v2, e_ptr->color());
 
       // Add interface to possible other receiver meshes
       if ( e_twin )
