@@ -324,7 +324,9 @@ public:
       Vertex& v2 = e_ptr->v2();
       v1.add_property(VertexProperty::on_front);
       v2.add_property(VertexProperty::on_front);
-      this->add_edge( v1, v2, e_ptr->color() );
+
+      Edge& e_new = this->add_edge( v1, v2, e_ptr->color() );
+      e_new.set_property( e_ptr->properties() );
     }
 
   } // Front::init_front()
@@ -498,6 +500,7 @@ private:
       Vertex* v2 = new_vertices[i2];
 
       Edge& e_new = this->add_edge( *v1, *v2, colors[i_edge] );
+      e_new.add_property( EdgeProperty::on_boundary );
 
       new_edges.push_back(&e_new);
     }
@@ -702,12 +705,16 @@ private:
       v_n.add_property( VertexProperty::on_front );
       v_n.add_property( VertexProperty::on_boundary );
 
-      this->insert_edge(e.pos(), *v_cur, v_n, e.color());
+      // Add new edge and set its properties
+      Edge& e_new = this->insert_edge(e.pos(), *v_cur, v_n, e.color());
+      e_new.add_property( EdgeProperty::on_boundary );
 
       v_cur = &v_n;
     }
 
-    this->insert_edge( e.pos(), *v_cur, e.v2(), e.color() );
+    // Add final edge and set its properties
+    Edge& e_new = this->insert_edge( e.pos(), *v_cur, e.v2(), e.color() );
+    e_new.add_property( EdgeProperty::on_boundary );
 
   } // create_sub_edges()
 

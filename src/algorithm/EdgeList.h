@@ -213,6 +213,8 @@ public:
     Edge& e1_new = this->insert_edge(edge.pos(), v1, v_new, color);
     Edge& e2_new = this->insert_edge(edge.pos(), v_new, v2, color);
 
+    e1_new.set_property( edge.properties() );
+    e2_new.set_property( edge.properties() );
 
     // Remove old edge
     this->remove(edge);

@@ -209,6 +209,7 @@ public:
       Vertex& v2 = e->v2();
       int color = e->color();
       Edge& e_new = mesh.boundary_edges().add_edge( v1, v2, color );
+      e_new.set_property( e->properties() );
 
       ASSERT( v1.has_property( VertexProperty::on_boundary ),
         "MeshBuilder::prepare_mesh(): Missing "

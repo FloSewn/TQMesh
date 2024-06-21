@@ -301,13 +301,20 @@ public:
   | Add new interior mesh edge   
   ------------------------------------------------------------------*/
   Edge& add_interior_edge(Vertex& v1, Vertex& v2)
-  { return intr_edges_.add_edge(v1, v2, INTERIOR_EDGE_COLOR); }
+  { 
+    Edge& new_edge = intr_edges_.add_edge(v1, v2, INTERIOR_EDGE_COLOR);
+    return new_edge;
+  }
 
   /*------------------------------------------------------------------
   | Add new boundary mesh edge   
   ------------------------------------------------------------------*/
   Edge& add_boundary_edge(Vertex& v1, Vertex& v2, int color)
-  { return bdry_edges_.add_edge(v1, v2, color); }
+  { 
+    Edge& new_edge = bdry_edges_.add_edge(v1, v2, color); 
+    new_edge.add_property(EdgeProperty::on_boundary);
+    return new_edge;
+  }
 
   /*------------------------------------------------------------------
   | These functions remove mesh entities and makes sure, that the 

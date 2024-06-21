@@ -26,13 +26,18 @@ class EdgeList;
 
 /*********************************************************************
 * Different properties for mesh edges 
+* Edges can be classified as: 
+* - Being located on the domain boundary ("on_boundary")
+*   If they are not located on the boundary, they are classified as 
+*   internal edges (which is also the default condition)
+* - Being "ghost"-edges ("is_ghost") - these are special internal 
+*   edges, that are required for the placement of interior edges 
+*   by the user
 *********************************************************************/
 enum class EdgeProperty : uint8_t {
   no_property    = 0b00000000,
-  on_front       = 0b00000001,
-  on_boundary    = 0b00000010,
-  is_interior    = 0b00000100,
-  is_ghost       = 0b00001000,
+  on_boundary    = 0b00000001,
+  is_ghost       = 0b00000010,
 };
 
 // Overloaded bitwise NOT operator
@@ -59,10 +64,15 @@ operator&=(EdgeProperty& lhs, EdgeProperty rhs)
   return lhs;
 }
 
-// Overloaded bitwise AND operator for checking vertex properties
+// Overloaded bitwise AND operator for checking edge properties
 static inline bool 
 operator&(EdgeProperty lhs, EdgeProperty rhs) 
 { return (static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs)) != 0; }
+
+// Overloaded bitwise OR operator for checking edge properties
+static inline bool 
+operator|(EdgeProperty lhs, EdgeProperty rhs) 
+{ return (static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs)) != 0; }
 
 
 /*********************************************************************
@@ -84,12 +94,12 @@ public:
   /*------------------------------------------------------------------
   | Constructor 
   ------------------------------------------------------------------*/
-  Edge(Vertex& v1, Vertex& v2, EdgeList& edgelist, int m) 
+  Edge(Vertex& v1, Vertex& v2, EdgeList& edgelist, int color) 
   : ContainerEntry<Edge>( 0.5 * ( v1.xy()+v2.xy() ) )
   , v1_       {&v1}
   , v2_       {&v2}
   , edgelist_ {&edgelist} 
-  , color_   {m}
+  , color_    {color}
   {
     ASSERT((v1_ && v2_),
         "Failed to create edge structure due to given nullptr." );
@@ -148,19 +158,9 @@ public:
   bool has_no_property() const 
   { return (properties_ == EdgeProperty::no_property); }
 
-  bool on_front() const { return has_property(EdgeProperty::on_front); }
-  //bool on_boundary() const { return has_property(EdgeProperty::on_boundary); }
-  //bool is_interior() const { return has_property(EdgeProperty::is_interior); }
+  bool on_boundary() const { return has_property(EdgeProperty::on_boundary); }
+  bool is_interior() const { return !on_boundary(); }
   bool is_ghost() const { return has_property(EdgeProperty::is_ghost); }
-
-  /*------------------------------------------------------------------
-  | Function returns, if edges is located on a boundary
-  | or if it is in the interior of the domain
-  ------------------------------------------------------------------*/
-  bool on_boundary() const 
-  { return ( color_ != INTERIOR_EDGE_COLOR ); }
-  bool is_interior() const
-  { return !on_boundary(); }
 
   /*------------------------------------------------------------------
   | Get the next edge, that is connected to the ending vertex of  

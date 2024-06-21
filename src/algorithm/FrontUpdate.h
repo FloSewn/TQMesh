@@ -113,8 +113,8 @@ public:
     //     -> Vertex now part of the advancing front
     else
     {
-      front_.add_edge(base.v1(), v_new);
-      front_.add_edge(v_new, base.v2());
+      front_.add_edge( base.v1(), v_new );
+      front_.add_edge( v_new, base.v2() );
     }
 
     update_front_state(base.v1());

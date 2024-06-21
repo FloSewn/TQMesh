@@ -143,6 +143,9 @@ public:
       ASSERT( v2.has_property( VertexProperty::on_boundary ),
         "EntityChecks::check_mesh_validity(): Missing "
         "vertex property \"on_boundary\".");
+      ASSERT( e_ptr->has_property( EdgeProperty::on_boundary ),
+        "EntityChecks::check_mesh_validity(): Missing "
+        "edge property \"on_boundary\".");
 
       bool check_1 = false; bool check_2 = false;
 

@@ -17,6 +17,7 @@ namespace TQMesh {
 * CONSTANTS
 *********************************************************************/
 constexpr int    INTERIOR_EDGE_COLOR   = -1;
+constexpr int    DEFAULT_EDGE_COLOR    =  0;
 constexpr int    DEFAULT_ELEMENT_COLOR =  0;
 constexpr int    DEFAULT_MESH_ID       =  0;
 constexpr double TQ_SMALL              = 1.0E-13;

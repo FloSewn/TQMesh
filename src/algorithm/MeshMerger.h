@@ -223,7 +223,8 @@ private:
       ASSERT(v1, "MeshMerger::copy_donor_interior_edges(): Invalid data structure.");
       ASSERT(v2, "MeshMerger::copy_donor_interior_edges(): Invalid data structure.");
 
-      receiver_->interior_edges().add_edge( *v1, *v2 );
+      Edge& new_edge = receiver_->interior_edges().add_edge( *v1, *v2 );
+      new_edge.set_property( e_ptr->properties() );
     }
   } // copy_donor_interior_edges()
 
@@ -254,6 +255,7 @@ private:
       ASSERT(v2, "MeshBuilder::merge_meshes(): Invalid data structure.");
 
       Edge& e_new = boundary_edges.add_edge(*v1, *v2, e_ptr->color());
+      e_new.set_property( e_ptr->properties() );
 
       // Add interface to possible other receiver meshes
       if ( e_twin )
