@@ -194,7 +194,7 @@ public:
     const Vec2d& t2 = tri.v2().xy();
     const Vec2d& t3 = tri.v3().xy();
 
-    for ( const auto& e_ptr : domain.get_edges(xy, r) )
+    for ( const auto& e_ptr : domain.get_boundary_edges(xy, r) )
     {
       const Vec2d& e1 = e_ptr->v1().xy();
       const Vec2d& e2 = e_ptr->v2().xy();

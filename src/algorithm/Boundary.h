@@ -176,7 +176,7 @@ public:
                     int color)
   { 
     ASSERT( (color >= 0), 
-            "Boundary colors must be greater than zero");
+            "Edge colors must be greater than zero");
 
     Edge& new_edge = EdgeList::insert_edge(pos, v1, v2, 
                                            color); 

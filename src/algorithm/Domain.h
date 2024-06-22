@@ -238,7 +238,7 @@ public:
   | Get edges within a given point and radius
   ------------------------------------------------------------------*/
   std::vector<Edge*> 
-  get_edges (const Vec2d& center, double radius) const 
+  get_boundary_edges (const Vec2d& center, double radius) const 
   {
     std::vector<Edge*> found {};
 
@@ -264,6 +264,9 @@ public:
 
   const VertexVector& fixed_vertices() const { return fixed_verts_; }
   VertexVector& fixed_vertices() { return fixed_verts_; }
+
+  const EdgeList& fixed_edges() const { return fixed_edges_; }
+  EdgeList& fixed_edges() { return fixed_edges_; }
 
   /*------------------------------------------------------------------
   | Setter 
@@ -369,7 +372,8 @@ public:
         const Vec2d c  = e->xy();
         double radius  = edge_overlap_range_ * e->length();
 
-        std::vector<Edge*> nbr_edges = nbr_domain.get_edges(c, radius);
+        std::vector<Edge*> nbr_edges 
+          = nbr_domain.get_boundary_edges(c, radius);
 
         for ( Edge* e_nbr : nbr_edges )
         {
@@ -405,8 +409,7 @@ public:
   { verts_.remove( v ); } 
 
   /*------------------------------------------------------------------
-  | Add a fixed vertex, which will be incorporated in the meshing
-  | process
+  | Add a fixed vertex, which will be used in the meshing process
   ------------------------------------------------------------------*/
   template <typename... Args>
   Vertex& add_fixed_vertex( Args&&... args )
@@ -437,6 +440,22 @@ public:
   } // Domain::remove_fixed_vertex()
 
   /*------------------------------------------------------------------
+  | Add a fixed edge, which will be used in the meshing process
+  ------------------------------------------------------------------*/
+  template <typename... Args>
+  Edge& add_fixed_edge( Vertex& v1, Vertex& v2 )
+  {
+    Edge& new_edge = fixed_edges_.add_edge(v1, v2, INTERIOR_EDGE_COLOR);
+    return new_edge;
+
+  } // Domain::add_fixed_edge()
+
+  /*------------------------------------------------------------------
+  | Remove a fixed edge
+  ------------------------------------------------------------------*/
+  void remove_fixed_edge(Edge& e) { fixed_edges_.remove(e); }
+
+  /*------------------------------------------------------------------
   | This function prints out the size function of the domain onto
   | a cartesian grid 
   ------------------------------------------------------------------*/
@@ -463,6 +482,7 @@ private:
   SizeFunction     size_fun_;
   Vertices         verts_;
   VertexVector     fixed_verts_ {};
+  EdgeList         fixed_edges_ { Orientation::NONE };
 
   double           edge_overlap_range_ { 1.5 };
 
