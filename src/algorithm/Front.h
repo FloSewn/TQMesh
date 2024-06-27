@@ -72,6 +72,8 @@ public:
   std::vector<IntVector>& colors() { return colors_; }
   const std::vector<IntVector>& colors() const { return colors_; }
 
+  std::size_t size() const { return edges_.size(); }
+
 private:
   /*------------------------------------------------------------------
   | Traverses all boundaries of a given domain and collects the 
@@ -287,11 +289,11 @@ public:
                   const FrontInitDataImpl& front_init_data,
                   Vertices&                mesh_vertices)
   {
-    for ( size_t i_bdry = 0; i_bdry < domain.size(); ++i_bdry )
+    for ( size_t i = 0; i < front_init_data.size(); ++i )
     {
-      const EdgeVector& front_edges  = front_init_data.edges()[i_bdry];
-      const BoolVector& is_twin_edge = front_init_data.is_twin_edge()[i_bdry];
-      const IntVector&  colors       = front_init_data.colors()[i_bdry];
+      const EdgeVector& front_edges  = front_init_data.edges()[i];
+      const BoolVector& is_twin_edge = front_init_data.is_twin_edge()[i];
+      const IntVector&  colors       = front_init_data.colors()[i];
 
       VertexVector new_vertices 
         = this->init_mesh_vertices(front_edges, is_twin_edge, mesh_vertices);

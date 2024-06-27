@@ -473,7 +473,7 @@ void quad_refinement()
 
 /*********************************************************************
 * Test fixed interior edges 
-*********************************************************************
+*********************************************************************/
 void fixed_interior_edges()
 {
   // Define a variable size function
@@ -504,7 +504,7 @@ void fixed_interior_edges()
   Vertex& v2_f = domain.add_fixed_vertex(2.5, 3.5, 0.05, 1.5);
 
   // Add fixed edges 
-  //domain.add_fixed_edge( v1_f, v2_f );
+  domain.add_fixed_edge( v1_f, v2_f );
 
   // Setup the generator
   MeshGenerator generator {};
@@ -546,10 +546,8 @@ void run_tests_MeshGenerator()
   adjust_logging_output_stream("MeshGeneratorTests.quad_refinement.log");
   MeshGeneratorTests::quad_refinement();
 
-  /*
   adjust_logging_output_stream("MeshGeneratorTests.fixed_interior_edges.log");
   MeshGeneratorTests::fixed_interior_edges();
-  */
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");

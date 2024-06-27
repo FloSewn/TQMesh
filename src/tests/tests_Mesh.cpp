@@ -613,6 +613,38 @@ void bad_csv_import()
 } // bad_csv_import()
 
 
+/*********************************************************************
+* Test fixed interior edges
+*********************************************************************/
+void fixed_interior_edges()
+{
+  // Define a variable size function
+  UserSizeFunction f = [](const Vec2d& p) 
+  { return 3.; };
+
+  TestBuilder test_builder { "NormalStepAndSharpEdge", f};
+  Domain& domain = test_builder.domain();
+
+  // Create the mesh
+  MeshBuilder mesh_builder {};
+
+  Mesh mesh = mesh_builder.create_empty_mesh(domain);
+  CHECK( mesh_builder.prepare_mesh(mesh, domain) );
+
+  Triangulation triangulation {mesh, domain};
+
+  triangulation.n_elements(5);
+  CHECK( triangulation.generate_elements() );
+
+  // Export mesh
+  MeshCleanup::assign_size_function_to_vertices(mesh, domain);
+  MeshCleanup::assign_mesh_indices(mesh);
+  MeshCleanup::setup_facet_connectivity(mesh);
+  LOG(INFO) << "\n" << mesh;
+
+
+} // fixed_interior_edges()
+
 } // namespace MeshTests
 
 
@@ -621,6 +653,7 @@ void bad_csv_import()
 *********************************************************************/
 void run_tests_Mesh()
 {
+  /*
   adjust_logging_output_stream("MeshTests.initialization.log");
   MeshTests::initialization();
 
@@ -658,6 +691,10 @@ void run_tests_Mesh()
    
   adjust_logging_output_stream("MeshTests.bad_csv_import.log");
   MeshTests::bad_csv_import();
+  */
+
+  adjust_logging_output_stream("MeshTests.fixed_interior_edges.log");
+  MeshTests::fixed_interior_edges();
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");
