@@ -37,7 +37,8 @@ class EdgeList;
 enum class EdgeProperty : uint8_t {
   no_property    = 0b00000000,
   on_boundary    = 0b00000001,
-  is_ghost       = 0b00000010,
+  is_fixed       = 0b00000010,
+  is_ghost       = 0b00000100,
 };
 
 // Overloaded bitwise NOT operator

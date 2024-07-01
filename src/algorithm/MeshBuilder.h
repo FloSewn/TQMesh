@@ -14,6 +14,7 @@
 #include "utils.h"
 #include "Domain.h"
 #include "Mesh.h"
+#include "FrontInitData.h"
 #include "Front.h"
 #include "EntityChecks.h"
 

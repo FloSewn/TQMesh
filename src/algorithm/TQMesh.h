@@ -25,6 +25,7 @@
 #include "EntityChecks.h"
 
 #include "Mesh.h"
+#include "FrontInitData.h"
 #include "Front.h"
 #include "FrontUpdate.h"
 #include "MeshCleanup.h"

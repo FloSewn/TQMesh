@@ -123,7 +123,7 @@ public:
 
     // If current base is not at the boundary, add it to the 
     // interior edge list
-    if ( base.is_interior() )
+    if ( base.is_interior() && !base.is_ghost() )
       mesh_.add_interior_edge(base.v1(), base.v2());
 
     // Remove base edge
