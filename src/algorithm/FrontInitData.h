@@ -22,9 +22,12 @@ using namespace CppUtils;
 
 /*********************************************************************
 * This class is used to initialize a new advancing front structure
-* from an already existing mesh 
+* from mesh boundary edges of a given domain.
+* If a bunch of additional meshes is provided, which might be 
+* adjacent to the given domain, FrontInitData takes their boundary
+* edges into account, in order to preserve mesh adjacency.
 *********************************************************************/
-class FrontInitData
+class FrontInitData__OLD
 {
 public:
   using IntVector    = std::vector<int>;
@@ -35,24 +38,29 @@ public:
   /*------------------------------------------------------------------
   | Constructor / Destructor
   ------------------------------------------------------------------*/
-  FrontInitData(const Domain& domain, const MeshVector& meshes) 
-  { collect_front_edges(domain, meshes); }
+  FrontInitData__OLD(const Domain& domain, const MeshVector& meshes) 
+  { 
+    collect_front_edges(domain, meshes); 
+  }
 
-  FrontInitData(const Domain& domain) 
-  { MeshVector dummy {};  collect_front_edges(domain, dummy); }
+  FrontInitData__OLD(const Domain& domain) 
+  { 
+    MeshVector dummy {};  
+    collect_front_edges(domain, dummy); 
+  }
 
-  ~FrontInitData() {};
+  ~FrontInitData__OLD() {};
 
   /*------------------------------------------------------------------
   | Move operator
   ------------------------------------------------------------------*/
-  FrontInitData(FrontInitData&& f)
+  FrontInitData__OLD(FrontInitData__OLD&& f)
   : edges_ { std::move(f.edges_) }
   , colors_ { std::move(f.colors_) }
   , is_twin_edge_ { std::move(f.is_twin_edge_) }
   {}
   
-  FrontInitData& operator=(FrontInitData&& f)
+  FrontInitData__OLD& operator=(FrontInitData__OLD&& f)
   {
     edges_ = std::move(f.edges_);
     colors_ = std::move(f.colors_);
@@ -195,7 +203,7 @@ private:
     //
     //     
 
-  } // FrontInitData::collect_front_edges()
+  } // FrontInitData__OLD::collect_front_edges()
 
   /*------------------------------------------------------------------
   | For a given domain boundary edge <e>, 
@@ -243,16 +251,11 @@ private:
         double delta_2 = (e2->xy() - v).norm_sqr();
         return (delta_1 < delta_2);
       });
-
-      // If edges have been located, terminate the search
-      // --> First come, first serve
-      //if ( nbr_edges.size() > 0 )
-      //  break;
     }
 
     return std::move(nbr_edges);
 
-  } // FrontInitData::get_neighbor_mesh_edges()
+  } // FrontInitData__OLD::get_neighbor_mesh_edges()
 
 
   /*------------------------------------------------------------------
@@ -264,7 +267,219 @@ private:
 
   double edge_overlap_range_ { 1.5 };
 
-}; // FrontInitData
+}; // FrontInitData__OLD
 
+
+
+/*********************************************************************
+*
+*********************************************************************/
+class FrontInitData
+{
+public:
+  using IntVector     = std::vector<int>;
+  using BoolVector    = std::vector<bool>;
+  using IDPairVector  = std::vector<std::pair<std::size_t,std::size_t>>;
+  using VertexVector  = std::vector<Vertex*>;
+  using EdgeVector    = std::vector<Edge*>;
+  using MeshVector    = std::vector<Mesh*>;
+
+  /*------------------------------------------------------------------
+  | Constructor / Destructor
+  ------------------------------------------------------------------*/
+  FrontInitData(const Domain& domain, const MeshVector& meshes) 
+  { 
+    collect_front_edges(domain, meshes); 
+  }
+
+  FrontInitData(const Domain& domain) 
+  { 
+    MeshVector dummy {};  
+    collect_front_edges(domain, dummy); 
+  }
+
+  ~FrontInitData() {};
+
+  /*------------------------------------------------------------------
+  | Move operator
+  ------------------------------------------------------------------*/
+  FrontInitData(FrontInitData&& f)
+  : edges_ { std::move(f.edges_) }
+  , colors_ { std::move(f.colors_) }
+  , is_twin_edge_ { std::move(f.is_twin_edge_) }
+  {}
+  
+  FrontInitData& operator=(FrontInitData&& f)
+  {
+    edges_ = std::move(f.edges_);
+    colors_ = std::move(f.colors_);
+    is_twin_edge_ = std::move(f.is_twin_edge_);
+    return *this;
+  }
+
+  /*------------------------------------------------------------------
+  | Getter
+  ------------------------------------------------------------------*/
+  EdgeVector& edges() { return edges_; }
+  const EdgeVector& edges() const { return edges_; }
+
+  VertexVector& vertices() { return vertices_; }
+  const VertexVector& vertices() const { return vertices_; }
+
+  IDPairVector& vertex_ids() { return vertex_ids_; }
+  const IDPairVector& vertex_ids() const { return vertex_ids_; }
+
+  BoolVector& is_twin_edge() { return is_twin_edge_; }
+  const BoolVector& is_twin_edge() const { return is_twin_edge_; }
+
+  IntVector& colors() { return colors_; }
+  const IntVector& colors() const { return colors_; }
+
+  std::size_t size() const { return edges_.size(); }
+
+private:
+  /*------------------------------------------------------------------
+  | For a given domain boundary edge <e>, 
+  | search all boundary edges of a 
+  | neighboring mesh, that are contained within <e>.
+  | This function is used upon the initialization of the advancing
+  | front.
+  ------------------------------------------------------------------*/
+  EdgeVector get_neighbor_mesh_edges(const Edge& e, 
+                                     const MeshVector& meshes) 
+  const
+  {
+    EdgeVector   nbr_edges {};
+
+    const Vec2d& c = e.xy();
+    double       r = edge_overlap_range_ * e.length();
+
+    const Vec2d& v = e.v1().xy();
+    const Vec2d& w = e.v2().xy();
+
+    for ( Mesh* m : meshes )
+    {
+      ASSERT( m, "Neighbor mesh data structure is invalid." );
+
+      // Get edges in the vicinity of the given edge
+      EdgeVector edges_in_vicinity = m->get_bdry_edges(c, r);
+
+      // Get all edges, that are actually located on the segment
+      // of the current domain boundary edge 
+      for ( Edge* e_vicinity : edges_in_vicinity )
+      {
+        const Vec2d& p = e_vicinity->v1().xy();
+        const Vec2d& q = e_vicinity->v2().xy();
+
+        if ( in_on_segment(v,w,p) && in_on_segment(v,w,q) )
+          nbr_edges.push_back( e_vicinity );
+      }
+
+      // In case edges have been found, sort them in 
+      // ascending direction to the stating vertex
+      std::sort(nbr_edges.begin(), nbr_edges.end(), 
+      [v](Edge* e1, Edge* e2)
+      {
+        double delta_1 = (e1->xy() - v).norm_sqr();
+        double delta_2 = (e2->xy() - v).norm_sqr();
+        return (delta_1 < delta_2);
+      });
+    }
+
+    return std::move(nbr_edges);
+
+  } // FrontInitData::get_neighbor_mesh_edges()
+
+
+  /*------------------------------------------------------------------
+  | Traverses all boundaries of a given domain and collects the 
+  | respective boundary edges, as well as their color and orientation.
+  | Additionally, the boundary edges of given meshes are also 
+  | considered, if they overlap with the domain boundary. This 
+  | is required to construct conformal grids.
+  | Edges which result from adjacent meshes are oriented in the 
+  | opposite direction. This can be used to identify these edges
+  | from "normal" boundary edges (e.g. for the advancing front 
+  | refinement).
+  ------------------------------------------------------------------*/
+  void collect_front_edges(const Domain& domain,
+                           const MeshVector& meshes)
+  {
+    // Collect advancing front edges that stem from exterior & interior
+    // domain boundary edges.
+    // If an exterior domain edge is adjacent to a neighbouring mesh,
+    // take that neighbor mesh edges to preserve mesh adjacency 
+    for ( const auto& boundary : domain )
+    {
+      for ( const auto& e : boundary->edges() )
+      {
+        EdgeVector nbr_edges = get_neighbor_mesh_edges(*e, meshes);
+
+        // Add edges from adjacent mesh
+        if ( nbr_edges.size() > 0 )
+          for ( Edge* nbr_e : nbr_edges )
+            add_edge_data( *nbr_e, true );
+        // Add edges from domain boundary
+        else
+          add_edge_data( *e, false );
+      }
+    }
+
+    // Collect advancing front edges that stem from fixed interior
+    // edges of the given domain
+    // For every fixed edge, we a also create an additional ghost
+    // edge that is oriented in the opposite direction
+    for ( const auto& e : domain.fixed_edges() )
+      add_edge_data( *e, false );
+
+
+  } // FrontInitData::collect_front_edges()
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  void add_edge_data(const Edge& e, bool is_twin)
+  {
+    const std::size_t i1 = add_edge_vertex( e.v1() );
+    const std::size_t i2 = add_edge_vertex( e.v2() );
+
+    vertex_ids_.push_back( {i1, i2} );
+    edges_.push_back( const_cast<Edge*>( &e ) );
+    is_twin_edge_.push_back( is_twin );
+    colors_.push_back( e.color() );
+  }
+
+  /*------------------------------------------------------------------
+  | 
+  ------------------------------------------------------------------*/
+  std::size_t add_edge_vertex(const Vertex& v)
+  {
+    std::size_t vertex_location = 0;
+
+    for ( Vertex* v_ptr : vertices_ )
+    {
+      if ( &v == v_ptr )
+        return vertex_location;
+
+      ++vertex_location;
+    }
+
+    vertices_.push_back( const_cast<Vertex*>( &v ) );
+
+    return vertex_location;
+  }
+
+  /*------------------------------------------------------------------
+  | Attributes
+  ------------------------------------------------------------------*/
+  VertexVector  vertices_     {};
+  IDPairVector  vertex_ids_   {};
+  EdgeVector    edges_        {};
+  IntVector     colors_       {};
+  BoolVector    is_twin_edge_ {};
+
+  double edge_overlap_range_ { 1.5 };
+
+}; // FrontInitData
 
 } // namespace TQMesh

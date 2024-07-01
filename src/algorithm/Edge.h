@@ -162,6 +162,7 @@ public:
   bool on_boundary() const { return has_property(EdgeProperty::on_boundary); }
   bool is_interior() const { return !on_boundary(); }
   bool is_ghost() const { return has_property(EdgeProperty::is_ghost); }
+  bool is_fixed() const { return has_property(EdgeProperty::is_fixed); }
 
   /*------------------------------------------------------------------
   | Get the next edge, that is connected to the ending vertex of  

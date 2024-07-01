@@ -27,8 +27,9 @@ using namespace CppUtils;
 *********************************************************************/
 class Front : public EdgeList
 {
-  using BoolVector   = std::vector<bool>;
   using IntVector    = std::vector<int>;
+  using BoolVector   = std::vector<bool>;
+  using IDPairVector = std::vector<std::pair<std::size_t,std::size_t>>;
   using VertexVector = std::vector<Vertex*>;
   using EdgeVector   = std::vector<Edge*>;
   using BdryEdgeConn = std::vector<std::vector<EdgeVector>>;
@@ -61,7 +62,7 @@ public:
   /*------------------------------------------------------------------
   | Initialize the advancing front structure according to a given 
   | domain and its size function
-  ------------------------------------------------------------------*/
+  ------------------------------------------------------------------*
   template <typename FrontInitDataImpl>
   void init_front(const Domain&            domain, 
                   const FrontInitDataImpl& front_init_data,
@@ -85,7 +86,93 @@ public:
     // Refine the front edges, but do not refine sub-edges!
     this->refine_front_edges(domain, mesh_vertices);
 
+    // Add additional ghost edges that are opposed to
+    // interior fixed edges
+    // -------------------------------------------
+    // for ( const auto& e_ptr : edges_ )
+    // {
+    //   if ( !e_ptr->is_fixed() )
+    //     continue;
 
+    //   Vertex& v1 = e_ptr->v1();
+    //   Vertex& v2 = e_ptr->v2();
+    //   Edge& e_new = this->insert_edge( e_ptr->pos(), 
+    //                                    v2, v1, 
+    //                                    e_ptr->color() );
+
+    //   e_new.add_property( EdgeProperty::is_fixed );
+    //   e_new.add_property( EdgeProperty::is_ghost );
+    // }
+
+    // Re-compute area of domain
+    compute_area();
+    
+  } // Front::init_front() */
+
+  /*------------------------------------------------------------------
+  | Initialize the advancing front structure according to a given 
+  | domain and its size function
+  ------------------------------------------------------------------*/
+  template <typename FrontInitDataImpl>
+  void init_front(const Domain&            domain, 
+                  const FrontInitDataImpl& front_init_data,
+                  Vertices&                mesh_vertices)
+  {
+    const EdgeVector&   front_edges      = front_init_data.edges();
+    const VertexVector& front_vertices   = front_init_data.vertices();
+    const IDPairVector& front_vertex_ids = front_init_data.vertex_ids();
+    const BoolVector&   is_twin_edge     = front_init_data.is_twin_edge();
+    const IntVector&    colors           = front_init_data.colors();
+
+    VertexVector new_vertices {};
+    EdgeVector new_edges {};
+
+    // Init mesh vertices
+    for ( Vertex* v : front_vertices )
+    {
+      Vertex& v_new = mesh_vertices.push_back( v->xy() ); 
+      v_new.add_property( VertexProperty::on_front );
+      v_new.add_property( VertexProperty::on_boundary );
+
+      new_vertices.push_back( &v_new );
+    }
+
+    for ( size_t i_edge = 0; i_edge < front_edges.size(); ++i_edge )
+    {
+      const std::size_t i1 = front_vertex_ids[i_edge].first;
+      const std::size_t i2 = front_vertex_ids[i_edge].second;
+
+      Vertex* v1 = new_vertices[i1];
+      Vertex* v2 = new_vertices[i2];
+
+      ASSERT( v1 != nullptr, "Invalid vertex v1.");
+      ASSERT( v2 != nullptr, "Invalid vertex v2.");
+
+      Edge& e_new = this->add_edge( *v1, *v2, colors[i_edge] );
+
+      if ( !front_edges[i_edge]->is_fixed() )
+        e_new.add_property( EdgeProperty::on_boundary );
+      else
+        e_new.add_property( EdgeProperty::is_fixed );
+
+      new_edges.push_back(&e_new);
+    }
+
+    for ( size_t i_edge = 0; i_edge < front_edges.size(); ++i_edge )
+    {
+      if ( is_twin_edge[i_edge] )
+      {
+        Edge* twin_edge = front_edges[i_edge];
+        new_edges[i_edge]->twin_edge( twin_edge );
+        twin_edge->twin_edge( new_edges[i_edge] );
+      }
+      else
+        ASSERT( new_edges[i_edge]->twin_edge() == nullptr,
+          "Front::mark_twin_edges(): Invalid edge.");
+    }
+
+    // Refine the front edges, but do not refine sub-edges!
+    this->refine_front_edges(domain, mesh_vertices);
 
     // Add additional ghost edges that are opposed to
     // interior fixed edges
@@ -104,12 +191,10 @@ public:
       e_new.add_property( EdgeProperty::is_ghost );
     }
 
-
-
     // Re-compute area of domain
     compute_area();
-    
-  } // Front::init_front()
+
+  } // Front::init_front() 
 
   /*------------------------------------------------------------------
   | Initialize the advancing front structure from a given mesh
@@ -506,18 +591,28 @@ private:
 
       // Set vertex properties
       v_n.add_property( VertexProperty::on_front );
-      v_n.add_property( VertexProperty::on_boundary );
+
+      if ( !e.is_fixed() ) 
+        v_n.add_property( VertexProperty::on_boundary );
 
       // Add new edge and set its properties
       Edge& e_new = this->insert_edge(e.pos(), *v_cur, v_n, e.color());
-      e_new.add_property( EdgeProperty::on_boundary );
+
+      if ( !e.is_fixed() ) 
+        e_new.add_property( EdgeProperty::on_boundary );
+      else
+        e_new.add_property( EdgeProperty::is_fixed );
 
       v_cur = &v_n;
     }
 
     // Add final edge and set its properties
     Edge& e_new = this->insert_edge( e.pos(), *v_cur, e.v2(), e.color() );
-    e_new.add_property( EdgeProperty::on_boundary );
+
+    if ( !e.is_fixed() ) 
+      e_new.add_property( EdgeProperty::on_boundary );
+    else
+      e_new.add_property( EdgeProperty::is_fixed );
 
   } // create_sub_edges()
 

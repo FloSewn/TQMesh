@@ -620,10 +620,20 @@ void fixed_interior_edges()
 {
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) 
-  { return 3.; };
+  { return 1.; };
 
   TestBuilder test_builder { "NormalStepAndSharpEdge", f};
   Domain& domain = test_builder.domain();
+
+  // Add fixed vertices
+  Vertex& v1_f = domain.add_fixed_vertex(2.5, 1.5, 0.05, 2.5);
+  Vertex& v2_f = domain.add_fixed_vertex(2.5, 3.5, 0.05, 2.5);
+  Vertex& v3_f = domain.add_fixed_vertex(1.5, 2.5, 0.05, 2.5);
+
+  // Add fixed edges 
+  domain.add_fixed_edge( v1_f, v2_f );
+  domain.add_fixed_edge( v2_f, v3_f );
+  domain.add_fixed_edge( v3_f, v1_f );
 
   // Create the mesh
   MeshBuilder mesh_builder {};
@@ -632,15 +642,14 @@ void fixed_interior_edges()
   CHECK( mesh_builder.prepare_mesh(mesh, domain) );
 
   Triangulation triangulation {mesh, domain};
-
-  triangulation.n_elements(5);
+  triangulation.n_elements();
   CHECK( triangulation.generate_elements() );
 
   // Export mesh
   MeshCleanup::assign_size_function_to_vertices(mesh, domain);
   MeshCleanup::assign_mesh_indices(mesh);
   MeshCleanup::setup_facet_connectivity(mesh);
-  LOG(INFO) << "\n" << mesh;
+  LOG(DEBUG) << "\n" << mesh;
 
 
 } // fixed_interior_edges()

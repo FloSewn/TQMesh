@@ -209,6 +209,10 @@ public:
       Vertex& v1 = e->v1();
       Vertex& v2 = e->v2();
       int color = e->color();
+
+      if ( e->is_fixed() )
+        continue;
+
       Edge& e_new = mesh.boundary_edges().add_edge( v1, v2, color );
       e_new.set_property( e->properties() );
 
