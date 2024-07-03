@@ -230,43 +230,18 @@ private:
   ------------------------------------------------------------------*/
   std::size_t add_edge_vertex(const Vertex& v)
   {
-    // Vertex included
-    if ( vcoords_map_.count(v.xy()) )
-      return vcoords_map_.at( v.xy() );
+    // If vertex is already included, return its index
+    if ( vertex_map_.count(v.xy()) )
+      return vertex_map_.at( v.xy() );
 
+    // Add new vertex and store its index to the vertex-map
     const auto i = vertices_.size();
 
-    vcoords_map_[v.xy()] = i;
+    vertex_map_[v.xy()] = i;
 
     vertices_.push_back( const_cast<Vertex*>( &v ) );
 
     return i;
-
-    /* --- Slow approach ---
-     
-    std::size_t vertex_location = 0;
-
-    for ( Vertex* v_ptr : vertices_ )
-    {
-      if ( &v == v_ptr )
-        return vertex_location;
-
-      // For adjacent meshes, we might encounter two vertices with
-      // the same location. We store these vertices only to obtain 
-      // their coordinates at a later stage during the construction of 
-      // the advancing front. Thus, we check here for existing vertex
-      // locations (not for existing vertex objects)
-      if ( ( v.xy() - v_ptr->xy() ).is_zero() )
-        return vertex_location;
-
-      ++vertex_location;
-    }
-
-    vertices_.push_back( const_cast<Vertex*>( &v ) );
-
-    return vertex_location;
-    */
-
   }
 
   /*------------------------------------------------------------------
@@ -274,7 +249,7 @@ private:
   ------------------------------------------------------------------*/
   VertexVector  vertices_     {};
   IDPairVector  vertex_ids_   {};
-  Vec2dMap      vcoords_map_  {};
+  Vec2dMap      vertex_map_   {};
 
   EdgeVector    edges_        {};
   IntVector     colors_       {};

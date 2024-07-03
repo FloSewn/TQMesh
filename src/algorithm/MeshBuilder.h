@@ -204,6 +204,21 @@ public:
       return false;
     }
 
+    // Place fixed vertices that are not connected to 
+    // interior fixed edges
+    for ( const auto& v : domain.fixed_vertices() )
+    {
+      if ( !v->is_fixed() )
+        continue;
+
+      if ( v->edges().size() > 0 )
+        continue;
+
+      Vertex& v_new = mesh.add_vertex( v->xy() );
+      v_new.add_property( VertexProperty::is_fixed );
+      v_new.add_property( VertexProperty::on_front );
+    }
+
     // Setup the mesh's boundary edges from the initial advancing front
     for ( auto& e : tmp_front )
     {
