@@ -5,7 +5,7 @@
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
 ABS	utils/MathUtility.h	/^static inline T ABS(T a)$/;"	f	namespace:CppUtils
-ASSERT	utils/Helpers.h	/^static inline void ASSERT(bool cond, const std::string& msg)$/;"	f	namespace:CppUtils
+ASSERT	utils/Helpers.h	39;"	d
 BLUE	utils/Log.h	/^  BLUE     = 34,$/;"	e	enum:CppUtils::LogColor
 BdryType	algorithm/Boundary.h	/^enum class BdryType$/;"	c	namespace:TQMesh
 Boundary	algorithm/Boundary.h	/^  Boundary(Vertices& domain_vertices, BdryType btype)$/;"	f	class:TQMesh::Boundary
@@ -54,9 +54,10 @@ CppUtils	utils/Timer.h	/^namespace CppUtils {$/;"	n
 CppUtils	utils/VecND.h	/^namespace CppUtils {$/;"	n
 CppUtils	utils/VtkIO.h	/^namespace CppUtils {$/;"	n
 DEBUG	utils/Log.h	/^{ ERROR, WARNING, INFO, DEBUG };$/;"	e	enum:CppUtils::LogLevel
-DEBUG_LOG	utils/Log.h	316;"	d
-DEBUG_LOG	utils/Log.h	319;"	d
+DEBUG_LOG	utils/Log.h	330;"	d
+DEBUG_LOG	utils/Log.h	333;"	d
 DEFAULT	utils/Log.h	/^  DEFAULT  = 39,$/;"	e	enum:CppUtils::LogColor
+DEFAULT_EDGE_COLOR	algorithm/utils.h	/^constexpr int    DEFAULT_EDGE_COLOR    =  0;$/;"	m	namespace:TQMesh
 DEFAULT_ELEMENT_COLOR	algorithm/utils.h	/^constexpr int    DEFAULT_ELEMENT_COLOR =  0;$/;"	m	namespace:TQMesh
 DEFAULT_MESH_ID	algorithm/utils.h	/^constexpr int    DEFAULT_MESH_ID       =  0;$/;"	m	namespace:TQMesh
 Domain	algorithm/Domain.h	/^  Domain( UserSizeFunction f = [](const Vec2d& p){return 1.0;},$/;"	f	class:TQMesh::Domain
@@ -65,7 +66,7 @@ EQ	utils/MathUtility.h	/^static inline bool EQ(T a, T b, $/;"	f	namespace:CppUti
 EQ0	utils/MathUtility.h	/^static inline bool EQ0(T a,$/;"	f	namespace:CppUtils
 ERROR	utils/Log.h	/^{ ERROR, WARNING, INFO, DEBUG };$/;"	e	enum:CppUtils::LogLevel
 EXTERIOR	algorithm/Boundary.h	/^  EXTERIOR,$/;"	m	class:TQMesh::BdryType
-Edge	algorithm/Edge.h	/^  Edge(Vertex& v1, Vertex& v2, EdgeList& edgelist, int m) $/;"	f	class:TQMesh::Edge
+Edge	algorithm/Edge.h	/^  Edge(Vertex& v1, Vertex& v2, EdgeList& edgelist, int color) $/;"	f	class:TQMesh::Edge
 Edge	algorithm/Edge.h	/^class Edge : public ContainerEntry<Edge>$/;"	c	namespace:TQMesh
 EdgeList	algorithm/EdgeList.h	/^  EdgeList( Orientation orient ) : orient_ { orient }$/;"	f	class:TQMesh::EdgeList
 EdgeList	algorithm/EdgeList.h	/^  EdgeList(EdgeList&& el) $/;"	f	class:TQMesh::EdgeList
@@ -80,10 +81,10 @@ F	extern_libs/exprtk.h	/^      typedef ifunction<T>                             
 Facet	algorithm/Facet.h	/^class Facet$/;"	c	namespace:TQMesh
 Front	algorithm/Front.h	/^  Front() : EdgeList( Orientation::NONE ) {}$/;"	f	class:TQMesh::Front
 Front	algorithm/Front.h	/^class Front : public EdgeList$/;"	c	namespace:TQMesh
-FrontInitData	algorithm/Front.h	/^  FrontInitData(FrontInitData&& f)$/;"	f	class:TQMesh::FrontInitData
-FrontInitData	algorithm/Front.h	/^  FrontInitData(const Domain& domain) $/;"	f	class:TQMesh::FrontInitData
-FrontInitData	algorithm/Front.h	/^  FrontInitData(const Domain& domain, const MeshVector& meshes) $/;"	f	class:TQMesh::FrontInitData
-FrontInitData	algorithm/Front.h	/^class FrontInitData$/;"	c	namespace:TQMesh
+FrontInitData	algorithm/FrontInitData.h	/^  FrontInitData(FrontInitData&& f)$/;"	f	class:TQMesh::FrontInitData
+FrontInitData	algorithm/FrontInitData.h	/^  FrontInitData(const Domain& domain) $/;"	f	class:TQMesh::FrontInitData
+FrontInitData	algorithm/FrontInitData.h	/^  FrontInitData(const Domain& domain, const MeshVector& meshes) $/;"	f	class:TQMesh::FrontInitData
+FrontInitData	algorithm/FrontInitData.h	/^class FrontInitData$/;"	c	namespace:TQMesh
 FrontTests	tests/tests_Front.cpp	/^namespace FrontTests $/;"	n	file:
 FrontUpdate	algorithm/FrontUpdate.h	/^  FrontUpdate(Mesh& mesh, const Domain& domain, Front& front)$/;"	f	class:TQMesh::FrontUpdate
 FrontUpdate	algorithm/FrontUpdate.h	/^class FrontUpdate$/;"	c	namespace:TQMesh
@@ -98,10 +99,11 @@ LOG	utils/Log.h	/^  LOG() {}$/;"	f	class:CppUtils::LOG
 LOG	utils/Log.h	/^  LOG(LogLevel level)$/;"	f	class:CppUtils::LOG
 LOG	utils/Log.h	/^  LOG(LogLevel level, LogColor c)$/;"	f	class:CppUtils::LOG
 LOG	utils/Log.h	/^class LOG$/;"	c	namespace:CppUtils
-LOG_PROPERTIES	utils/Log.h	/^static inline LogProperties LOG_PROPERTIES;$/;"	m	namespace:CppUtils
+LOG_PROPERTIES	utils/Log.h	/^LogProperties& LOG_PROPERTIES = LogProperties::get_instance();$/;"	m	namespace:CppUtils
 Laplace	algorithm/MeshGenerator.h	/^  Laplace,$/;"	m	class:TQMesh::SmoothingAlgorithm
 LaplaceSmoothing	algorithm/SmoothingStrategy.h	/^  LaplaceSmoothing(Mesh& mesh, const Domain& domain) $/;"	f	class:TQMesh::LaplaceSmoothing
 LaplaceSmoothing	algorithm/SmoothingStrategy.h	/^class LaplaceSmoothing : public SmoothingStrategy$/;"	c	namespace:TQMesh
+LexicographicLess	algorithm/FrontInitData.h	/^struct LexicographicLess $/;"	s	namespace:TQMesh
 LogColor	utils/Log.h	/^enum LogColor {$/;"	g	namespace:CppUtils
 LogLevel	utils/Log.h	/^enum LogLevel $/;"	g	namespace:CppUtils
 LogProperties	utils/Log.h	/^  LogProperties() $/;"	f	class:CppUtils::LogProperties
@@ -415,6 +417,7 @@ TQMesh	algorithm/Error.h	/^namespace TQMesh {$/;"	n
 TQMesh	algorithm/Facet.h	/^namespace TQMesh {$/;"	n
 TQMesh	algorithm/FacetGeometry.h	/^namespace TQMesh {$/;"	n
 TQMesh	algorithm/Front.h	/^namespace TQMesh {$/;"	n
+TQMesh	algorithm/FrontInitData.h	/^namespace TQMesh {$/;"	n
 TQMesh	algorithm/FrontUpdate.h	/^namespace TQMesh {$/;"	n
 TQMesh	algorithm/Mesh.h	/^namespace TQMesh {$/;"	n
 TQMesh	algorithm/MeshBuilder.h	/^namespace TQMesh {$/;"	n
@@ -560,10 +563,13 @@ add_constants	extern_libs/exprtk.h	/^      inline bool add_constants()$/;"	f	cla
 add_edge	algorithm/Boundary.h	/^  Edge& add_edge(Vertex& v1, Vertex& v2, int color)$/;"	f	class:TQMesh::Boundary
 add_edge	algorithm/EdgeList.h	/^  virtual Edge& add_edge(Vertex& v1, Vertex& v2, $/;"	f	class:TQMesh::EdgeList
 add_edge	algorithm/Vertex.h	/^  void add_edge(Edge& e) { edges_.push_back(&e); }$/;"	f	class:TQMesh::Vertex
+add_edge_data	algorithm/FrontInitData.h	/^  void add_edge_data(const Edge& e, bool is_twin)$/;"	f	class:TQMesh::FrontInitData
+add_edge_vertex	algorithm/FrontInitData.h	/^  std::size_t add_edge_vertex(const Vertex& v)$/;"	f	class:TQMesh::FrontInitData
 add_element	extern_libs/exprtk.h	/^         inline bool add_element(const scope_element& se)$/;"	f	class:exprtk::parser::scope_element_manager
 add_epsilon	extern_libs/exprtk.h	/^      inline bool add_epsilon()$/;"	f	class:exprtk::symbol_table
 add_exterior_boundary	algorithm/Domain.h	/^  Boundary& add_exterior_boundary()$/;"	f	class:TQMesh::Domain
 add_facet	algorithm/Vertex.h	/^  void add_facet(Facet& t) { facets_.push_back(&t); }$/;"	f	class:TQMesh::Vertex
+add_fixed_edge	algorithm/Domain.h	/^  Edge& add_fixed_edge( Vertex& v1, Vertex& v2 )$/;"	f	class:TQMesh::Domain
 add_fixed_vertex	algorithm/Domain.h	/^  Vertex& add_fixed_vertex( Args&&... args )$/;"	f	class:TQMesh::Domain
 add_function	extern_libs/exprtk.h	/^      inline bool add_function(const std::string& function_name, function_t& function)$/;"	f	class:exprtk::symbol_table
 add_function	extern_libs/exprtk.h	/^      inline bool add_function(const std::string& function_name, generic_function_t& function)$/;"	f	class:exprtk::symbol_table
@@ -699,6 +705,7 @@ asinh_impl	extern_libs/exprtk.h	/^            template <typename T> inline T asi
 asinh_impl	extern_libs/exprtk.h	/^            template <typename T> inline T asinh_impl(const T v, real_type_tag) { return std::log(v + std::sqrt((v * v) + T(1))); }$/;"	f	namespace:exprtk::details::numeric::details
 asn_addassignment	extern_libs/exprtk.h	/^      struct asn_addassignment$/;"	s	namespace:exprtk::details
 asn_assignment	extern_libs/exprtk.h	/^      struct asn_assignment$/;"	s	namespace:exprtk::details
+assert_msg	utils/Helpers.h	/^static inline void assert_msg(bool cond, const std::string& msg, $/;"	f	namespace:CppUtils
 assign	extern_libs/exprtk.h	/^         static inline void assign(RefType t1, Type t2) { t1 *= t2; }$/;"	f	struct:exprtk::details::mul_op
 assign	extern_libs/exprtk.h	/^         static inline void assign(RefType t1, Type t2) { t1 += t2; }$/;"	f	struct:exprtk::details::add_op
 assign	extern_libs/exprtk.h	/^         static inline void assign(RefType t1, Type t2) { t1 -= t2; }$/;"	f	struct:exprtk::details::sub_op
@@ -1136,7 +1143,8 @@ collect_assignments	extern_libs/exprtk.h	/^         bool& collect_assignments()$
 collect_assignments_	extern_libs/exprtk.h	/^         bool collect_assignments_;$/;"	m	class:exprtk::parser::dependent_entity_collector
 collect_assignments_enabled	extern_libs/exprtk.h	/^         bool collect_assignments_enabled() const { return enable_collect_assings_;    }$/;"	f	class:exprtk::parser::settings_store
 collect_dispalcement_directions	algorithm/SmoothingStrategy.h	/^  void collect_dispalcement_directions() $/;"	f	class:TQMesh::SmoothingStrategy
-collect_front_edges	algorithm/Front.h	/^  void collect_front_edges(const Domain& domain,$/;"	f	class:TQMesh::FrontInitData
+collect_front_edges	algorithm/FrontInitData.h	/^  void collect_front_edges(const Domain& domain,$/;"	f	class:TQMesh::FrontInitData
+collect_front_vertices	algorithm/FrontInitData.h	/^  void collect_front_vertices(const Domain& domain,$/;"	f	class:TQMesh::FrontInitData
 collect_functions	extern_libs/exprtk.h	/^         bool& collect_functions()$/;"	f	class:exprtk::parser::dependent_entity_collector
 collect_functions	extern_libs/exprtk.h	/^   inline bool collect_functions(const std::string& expression,$/;"	f	namespace:exprtk
 collect_functions_	extern_libs/exprtk.h	/^         bool collect_functions_;$/;"	m	class:exprtk::parser::dependent_entity_collector
@@ -1153,8 +1161,8 @@ collect_variables_enabled	extern_libs/exprtk.h	/^         bool collect_variables
 collection_pass	extern_libs/exprtk.h	/^         static inline bool collection_pass(const std::string& expression_string,$/;"	f	struct:exprtk::details::collector_helper
 collector_helper	extern_libs/exprtk.h	/^      struct collector_helper$/;"	s	namespace:exprtk::details
 color	algorithm/Edge.h	/^  int color() const { return color_; }$/;"	f	class:TQMesh::Edge
-colors	algorithm/Front.h	/^  const std::vector<IntVector>& colors() const { return colors_; }$/;"	f	class:TQMesh::FrontInitData
-colors	algorithm/Front.h	/^  std::vector<IntVector>& colors() { return colors_; }$/;"	f	class:TQMesh::FrontInitData
+colors	algorithm/FrontInitData.h	/^  IntVector& colors() { return colors_; }$/;"	f	class:TQMesh::FrontInitData
+colors	algorithm/FrontInitData.h	/^  const IntVector& colors() const { return colors_; }$/;"	f	class:TQMesh::FrontInitData
 column_no	extern_libs/exprtk.h	/^         std::size_t column_no;$/;"	m	struct:exprtk::parser_error::type
 columns	utils/Matrix.h	/^  inline int columns() const { return cols_; }$/;"	f	class:CppUtils::Matrix
 columns	utils/Matrix.h	/^  inline int columns() { return cols_; }$/;"	f	class:CppUtils::Matrix
@@ -2084,8 +2092,8 @@ edgelist	algorithm/Edge.h	/^  EdgeList& edgelist() { return *edgelist_; }$/;"	f	
 edgelist	algorithm/Edge.h	/^  const EdgeList& edgelist() const { return *edgelist_; }$/;"	f	class:TQMesh::Edge
 edges	algorithm/EdgeList.h	/^  auto& edges() { return edges_; }$/;"	f	class:TQMesh::EdgeList
 edges	algorithm/EdgeList.h	/^  const auto& edges() const { return edges_; }$/;"	f	class:TQMesh::EdgeList
-edges	algorithm/Front.h	/^  const std::vector<EdgeVector>& edges() const { return edges_; }$/;"	f	class:TQMesh::FrontInitData
-edges	algorithm/Front.h	/^  std::vector<EdgeVector>& edges() { return edges_; }$/;"	f	class:TQMesh::FrontInitData
+edges	algorithm/FrontInitData.h	/^  EdgeVector& edges() { return edges_; }$/;"	f	class:TQMesh::FrontInitData
+edges	algorithm/FrontInitData.h	/^  const EdgeVector& edges() const { return edges_; }$/;"	f	class:TQMesh::FrontInitData
 edges	algorithm/Vertex.h	/^  EdgeList& edges() { return edges_;}$/;"	f	class:TQMesh::Vertex
 edges	algorithm/Vertex.h	/^  const Edge& edges(size_t i) const $/;"	f	class:TQMesh::Vertex
 edges	algorithm/Vertex.h	/^  const EdgeList& edges() const { return edges_;}$/;"	f	class:TQMesh::Vertex
@@ -2541,6 +2549,10 @@ finish_quad_layer	algorithm/QuadLayering.h	/^  void finish_quad_layer(QuadLayerV
 finished	extern_libs/exprtk.h	/^         inline bool finished() const$/;"	f	class:exprtk::lexer::generator
 first_height	algorithm/QuadLayering.h	/^  QuadLayering& first_height(double h) $/;"	f	class:TQMesh::QuadLayering
 first_height	algorithm/QuadLayering.h	/^  double first_height() const { return first_height_; }$/;"	f	class:TQMesh::QuadLayering
+fixed_edges	algorithm/Domain.h	/^  EdgeList& fixed_edges() { return fixed_edges_; }$/;"	f	class:TQMesh::Domain
+fixed_edges	algorithm/Domain.h	/^  const EdgeList& fixed_edges() const { return fixed_edges_; }$/;"	f	class:TQMesh::Domain
+fixed_interior_edges	tests/tests_Mesh.cpp	/^void fixed_interior_edges()$/;"	f	namespace:MeshTests
+fixed_interior_edges	tests/tests_MeshGenerator.cpp	/^void fixed_interior_edges()$/;"	f	namespace:MeshGeneratorTests
 fixed_vertices	algorithm/Domain.h	/^  VertexVector& fixed_vertices() { return fixed_verts_; }$/;"	f	class:TQMesh::Domain
 fixed_vertices	algorithm/Domain.h	/^  const VertexVector& fixed_vertices() const { return fixed_verts_; }$/;"	f	class:TQMesh::Domain
 fixed_vertices	examples/04_fixed_vertices.cpp	/^bool fixed_vertices()$/;"	f
@@ -2714,6 +2726,7 @@ get_active_element	extern_libs/exprtk.h	/^         inline scope_element& get_act
 get_bdry_edges	algorithm/Mesh.h	/^  get_bdry_edges(const Vec2d& center, double radius) const$/;"	f	class:TQMesh::Mesh
 get_block	utils/ParaReader.h	/^  ParaBlock& get_block(const string& name)$/;"	f	class:CppUtils::ParaBlock
 get_boundary_edge	algorithm/Mesh.h	/^  get_boundary_edge(const Vertex& v1, const Vertex& v2, bool dir=false) $/;"	f	class:TQMesh::Mesh
+get_boundary_edges	algorithm/Domain.h	/^  get_boundary_edges (const Vec2d& center, double radius) const $/;"	f	class:TQMesh::Domain
 get_closest_vertex	algorithm/EdgeList.h	/^  Vertex& get_closest_vertex(const Vec2d& xy)$/;"	f	class:TQMesh::EdgeList
 get_color	utils/Log.h	/^  std::string get_color(LogLevel level)$/;"	f	class:CppUtils::LogProperties
 get_conststr_stringvar_name	extern_libs/exprtk.h	/^         inline std::string get_conststr_stringvar_name(const expression_node_ptr& ptr) const$/;"	f	struct:exprtk::parser::symtab_store
@@ -2724,7 +2737,6 @@ get_edge	algorithm/EdgeList.h	/^  get_edge(const Vertex& v1, const Vertex& v2, b
 get_edge	algorithm/Mesh.h	/^  Edge* get_edge(const Vertex& v1, const Vertex& v2, bool dir=false)$/;"	f	class:TQMesh::Mesh
 get_edge_dir	algorithm/EdgeList.h	/^  Edge* get_edge_dir(const Vertex& v1, const Vertex& v2) const$/;"	f	class:TQMesh::EdgeList
 get_edge_nodir	algorithm/EdgeList.h	/^  Edge* get_edge_nodir(const Vertex& v1, const Vertex& v2) const$/;"	f	class:TQMesh::EdgeList
-get_edges	algorithm/Domain.h	/^  get_edges (const Vec2d& center, double radius) const $/;"	f	class:TQMesh::Domain
 get_edges	algorithm/EdgeList.h	/^  EdgeVector get_edges(const Vec2d& center, const double radius) const$/;"	f	class:TQMesh::EdgeList
 get_edges_to_refine	algorithm/Front.h	/^  EdgeVector get_edges_to_refine() const $/;"	f	class:TQMesh::Front
 get_element	extern_libs/exprtk.h	/^         inline scope_element& get_element(const std::size_t& index)$/;"	f	class:exprtk::parser::scope_element_manager
@@ -2739,6 +2751,7 @@ get_generic_function	extern_libs/exprtk.h	/^         inline generic_function_ptr
 get_generic_function	extern_libs/exprtk.h	/^      inline generic_function_ptr get_generic_function(const std::string& function_name) const$/;"	f	class:exprtk::symbol_table
 get_header	utils/Log.h	/^  const std::string& get_header(LogLevel level) const $/;"	f	class:CppUtils::LogProperties
 get_instance	algorithm/Facet.h	/^  static NullFacet& get_instance() $/;"	f	class:TQMesh::NullFacet
+get_instance	utils/Log.h	/^  static LogProperties& get_instance() $/;"	f	class:CppUtils::LogProperties
 get_interface_edges	algorithm/Mesh.h	/^  EdgeVector get_interface_edges() const$/;"	f	class:TQMesh::Mesh
 get_interior_edge	algorithm/Mesh.h	/^  get_interior_edge(const Vertex& v1, const Vertex& v2, bool dir=false) $/;"	f	class:TQMesh::Mesh
 get_intr_edges	algorithm/Mesh.h	/^  get_intr_edges(const Vec2d& center, double radius) const$/;"	f	class:TQMesh::Mesh
@@ -2753,7 +2766,7 @@ get_loop_runtime_check	extern_libs/exprtk.h	/^         inline loop_runtime_check
 get_nearest	utils/Container.h	/^  T* get_nearest(const Vec2d& location) const$/;"	f	class:CppUtils::Container
 get_nearest	utils/QuadTree.h	/^  T* get_nearest(const Vec2<V>& query,$/;"	f	class:CppUtils::QuadTree
 get_nearest_edge	algorithm/EdgeList.h	/^  Edge* get_nearest_edge(const Vec2d& location) const$/;"	f	class:TQMesh::EdgeList
-get_neighbor_mesh_edges	algorithm/Front.h	/^  EdgeVector get_neighbor_mesh_edges(const Edge& e, $/;"	f	class:TQMesh::FrontInitData
+get_neighbor_mesh_edges	algorithm/FrontInitData.h	/^  EdgeVector get_neighbor_mesh_edges(const Edge& e, $/;"	f	class:TQMesh::FrontInitData
 get_next_edge	algorithm/Edge.h	/^  Edge* get_next_edge() const$/;"	f	class:TQMesh::Edge
 get_operator	extern_libs/exprtk.h	/^         inline details::operator_type get_operator(const binary_functor_t& bop) const$/;"	f	class:exprtk::parser::expression_generator
 get_ostream	utils/Log.h	/^  std::ostream& get_ostream(LogLevel level)$/;"	f	class:CppUtils::LogProperties
@@ -2992,10 +3005,10 @@ init_exterior_boundary	app/TQMeshApp.h	/^  void init_exterior_boundary(ParaReade
 init_fixed_vertices	app/TQMeshApp.h	/^  void init_fixed_vertices(ParaReader& mesh_reader)$/;"	f	class:TQMesh::MeshConstruction
 init_front	algorithm/Front.h	/^  void init_front(const Domain&            domain, $/;"	f	class:TQMesh::Front
 init_front	algorithm/Front.h	/^  void init_front(const Mesh& mesh)$/;"	f	class:TQMesh::Front
-init_front_edges	algorithm/Front.h	/^  EdgeVector init_front_edges(const EdgeVector&   front_edges,$/;"	f	class:TQMesh::Front
+init_front_edges	algorithm/Front.h	/^  EdgeVector init_front_edges(const FrontInitDataImpl& front_init_data,$/;"	f	class:TQMesh::Front
 init_interior_boundaries	app/TQMeshApp.h	/^  void init_interior_boundaries(ParaReader& mesh_reader)$/;"	f	class:TQMesh::MeshConstruction
 init_mesh_domain	app/TQMeshApp.h	/^  void init_mesh_domain(ParaReader& mesh_reader)$/;"	f	class:TQMesh::MeshConstruction
-init_mesh_vertices	algorithm/Front.h	/^  VertexVector init_mesh_vertices(const EdgeVector& front_edges,$/;"	f	class:TQMesh::Front
+init_mesh_vertices	algorithm/Front.h	/^  VertexVector init_mesh_vertices(const FID_Imp& front_init_data,$/;"	f	class:TQMesh::Front
 init_mesh_vertices	app/TQMeshApp.h	/^  void init_mesh_vertices(ParaReader& mesh_reader)$/;"	f	class:TQMesh::MeshConstruction
 init_meshing_algorithm	app/TQMeshApp.h	/^  void init_meshing_algorithm(ParaReader& mesh_reader)$/;"	f	class:TQMesh::MeshConstruction
 init_parameter_file_reader	app/TQMeshApp.h	/^  void init_parameter_file_reader()$/;"	f	class:TQMesh::TQMeshApp
@@ -3140,6 +3153,8 @@ is_exterior	algorithm/Boundary.h	/^  bool is_exterior() const $/;"	f	class:TQMes
 is_false	extern_libs/exprtk.h	/^      inline bool is_false(const expression_node<T>* node)$/;"	f	namespace:exprtk::details
 is_false	extern_libs/exprtk.h	/^      inline bool is_false(const std::pair<expression_node<T>*,bool>& node)$/;"	f	namespace:exprtk::details
 is_false_impl	extern_libs/exprtk.h	/^            inline bool is_false_impl(const T v)$/;"	f	namespace:exprtk::details::numeric::details
+is_fixed	algorithm/Edge.h	/^  bool is_fixed() const { return has_property(EdgeProperty::is_fixed); }$/;"	f	class:TQMesh::Edge
+is_fixed	algorithm/Edge.h	/^  is_fixed       = 0b00000010,$/;"	m	class:TQMesh::EdgeProperty
 is_fixed	algorithm/Vertex.h	/^  bool is_fixed() const { return has_property(VertexProperty::is_fixed); }$/;"	f	class:TQMesh::Vertex
 is_fixed	algorithm/Vertex.h	/^  is_fixed      = 0b00000100,$/;"	m	class:TQMesh::VertexProperty
 is_function	extern_libs/exprtk.h	/^         inline bool is_function(const std::string& function_name) const$/;"	f	struct:exprtk::parser::symtab_store
@@ -3149,7 +3164,7 @@ is_function	extern_libs/exprtk.h	/^      static inline bool is_function(const ex
 is_generally_string_node	extern_libs/exprtk.h	/^      inline bool is_generally_string_node(const expression_node<T>* node)$/;"	f	namespace:exprtk::details
 is_genricstring_range_node	extern_libs/exprtk.h	/^      inline bool is_genricstring_range_node(const expression_node<T>* node)$/;"	f	namespace:exprtk::details
 is_ghost	algorithm/Edge.h	/^  bool is_ghost() const { return has_property(EdgeProperty::is_ghost); }$/;"	f	class:TQMesh::Edge
-is_ghost	algorithm/Edge.h	/^  is_ghost       = 0b00001000,$/;"	m	class:TQMesh::EdgeProperty
+is_ghost	algorithm/Edge.h	/^  is_ghost       = 0b00000100,$/;"	m	class:TQMesh::EdgeProperty
 is_hex_digit	extern_libs/exprtk.h	/^      inline bool is_hex_digit(const uchar_t digit)$/;"	f	namespace:exprtk::details
 is_inside	algorithm/Domain.h	/^  bool is_inside(const T& s) const $/;"	f	class:TQMesh::Domain
 is_inside	algorithm/EdgeList.h	/^  bool is_inside(const T& s) const $/;"	f	class:TQMesh::EdgeList
@@ -3160,8 +3175,7 @@ is_integer	extern_libs/exprtk.h	/^         inline bool is_integer(const T v)$/;"
 is_integer_impl	extern_libs/exprtk.h	/^            inline bool is_integer_impl(const T& v, real_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 is_integer_impl	extern_libs/exprtk.h	/^            inline bool is_integer_impl(const T&, int_type_tag)$/;"	f	namespace:exprtk::details::numeric::details
 is_interior	algorithm/Boundary.h	/^  bool is_interior() const$/;"	f	class:TQMesh::Boundary
-is_interior	algorithm/Edge.h	/^  bool is_interior() const$/;"	f	class:TQMesh::Edge
-is_interior	algorithm/Edge.h	/^  is_interior    = 0b00000100,$/;"	m	class:TQMesh::EdgeProperty
+is_interior	algorithm/Edge.h	/^  bool is_interior() const { return !on_boundary(); }$/;"	f	class:TQMesh::Edge
 is_invalid	extern_libs/exprtk.h	/^      inline bool is_invalid(const char_t c)$/;"	f	namespace:exprtk::details
 is_invalid_arithmetic_operation	extern_libs/exprtk.h	/^      bool is_invalid_arithmetic_operation(const details::operator_type operation) const$/;"	f	class:exprtk::parser
 is_invalid_assignment_op	extern_libs/exprtk.h	/^         inline bool is_invalid_assignment_op(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const$/;"	f	class:exprtk::parser::expression_generator
@@ -3226,8 +3240,8 @@ is_true	extern_libs/exprtk.h	/^      inline bool is_true(const long double v)$/;
 is_true	extern_libs/exprtk.h	/^      inline bool is_true(const std::complex<T>& v)$/;"	f	namespace:exprtk::details
 is_true	extern_libs/exprtk.h	/^      inline bool is_true(const std::pair<expression_node<T>*,bool>& node)$/;"	f	namespace:exprtk::details
 is_true_impl	extern_libs/exprtk.h	/^            inline bool is_true_impl(const T v)$/;"	f	namespace:exprtk::details::numeric::details
-is_twin_edge	algorithm/Front.h	/^  const std::vector<BoolVector>& is_twin_edge() const { return is_twin_edge_; }$/;"	f	class:TQMesh::FrontInitData
-is_twin_edge	algorithm/Front.h	/^  std::vector<BoolVector>& is_twin_edge() { return is_twin_edge_; }$/;"	f	class:TQMesh::FrontInitData
+is_twin_edge	algorithm/FrontInitData.h	/^  BoolVector& is_twin_edge() { return is_twin_edge_; }$/;"	f	class:TQMesh::FrontInitData
+is_twin_edge	algorithm/FrontInitData.h	/^  const BoolVector& is_twin_edge() const { return is_twin_edge_; }$/;"	f	class:TQMesh::FrontInitData
 is_unary	extern_libs/exprtk.h	/^      static inline bool is_unary(const expression<T>& expr)$/;"	f	class:exprtk::expression_helper
 is_unary_node	extern_libs/exprtk.h	/^      inline bool is_unary_node(const expression_node<T>* node)$/;"	f	namespace:exprtk::details
 is_uv_node	extern_libs/exprtk.h	/^      inline bool is_uv_node(const expression_node<T>* node)$/;"	f	namespace:exprtk::details
@@ -3701,12 +3715,10 @@ numeric_info	extern_libs/exprtk.h	/^         template <> struct numeric_info<int
 numeric_info	extern_libs/exprtk.h	/^         template <> struct numeric_info<long double> { enum { min_exp = -308, max_exp = +308 }; };$/;"	s	namespace:exprtk::details::numeric
 o	extern_libs/exprtk.h	/^      open   <T> o;$/;"	m	struct:exprtk::rtl::io::file::package
 offsets_	utils/VtkIO.h	/^  std::vector<size_t> offsets_;$/;"	m	class:CppUtils::VtuWriter
-on_boundary	algorithm/Edge.h	/^  bool on_boundary() const $/;"	f	class:TQMesh::Edge
-on_boundary	algorithm/Edge.h	/^  on_boundary    = 0b00000010,$/;"	m	class:TQMesh::EdgeProperty
+on_boundary	algorithm/Edge.h	/^  bool on_boundary() const { return has_property(EdgeProperty::on_boundary); }$/;"	f	class:TQMesh::Edge
+on_boundary	algorithm/Edge.h	/^  on_boundary    = 0b00000001,$/;"	m	class:TQMesh::EdgeProperty
 on_boundary	algorithm/Vertex.h	/^  bool on_boundary() const { return has_property(VertexProperty::on_boundary); }$/;"	f	class:TQMesh::Vertex
 on_boundary	algorithm/Vertex.h	/^  on_boundary   = 0b00001000,$/;"	m	class:TQMesh::VertexProperty
-on_front	algorithm/Edge.h	/^  bool on_front() const { return has_property(EdgeProperty::on_front); }$/;"	f	class:TQMesh::Edge
-on_front	algorithm/Edge.h	/^  on_front       = 0b00000001,$/;"	m	class:TQMesh::EdgeProperty
 on_front	algorithm/Vertex.h	/^  bool on_front() const { return has_property(VertexProperty::on_front); }$/;"	f	class:TQMesh::Vertex
 on_front	algorithm/Vertex.h	/^  on_front      = 0b00000001,$/;"	m	class:TQMesh::VertexProperty
 open	extern_libs/exprtk.h	/^         bool open()$/;"	f	struct:exprtk::rtl::io::file::details::file_descriptor
@@ -3767,6 +3779,7 @@ operator &	algorithm/Edge.h	/^operator&(EdgeProperty lhs, EdgeProperty rhs) $/;"
 operator &	algorithm/Vertex.h	/^operator&(VertexProperty lhs, VertexProperty rhs) $/;"	f	namespace:TQMesh
 operator &=	algorithm/Edge.h	/^operator&=(EdgeProperty& lhs, EdgeProperty rhs) $/;"	f	namespace:TQMesh
 operator &=	algorithm/Vertex.h	/^operator&=(VertexProperty& lhs, VertexProperty rhs) $/;"	f	namespace:TQMesh
+operator ()	algorithm/FrontInitData.h	/^  bool operator()(T const& lhs, T const& rhs) const $/;"	f	struct:TQMesh::LexicographicLess
 operator ()	extern_libs/exprtk.h	/^            bool operator() (const lexer::token& t)$/;"	f	class:exprtk::lexer::helper::bracket_checker
 operator ()	extern_libs/exprtk.h	/^            bool operator() (const lexer::token& t)$/;"	f	class:exprtk::lexer::helper::numeric_checker
 operator ()	extern_libs/exprtk.h	/^            bool operator() (const lexer::token& t0, const lexer::token& t1)$/;"	f	class:exprtk::lexer::helper::sequence_validator
@@ -3904,7 +3917,7 @@ operator <<	utils/ProgressBar.h	/^static inline std::ostream& operator<<(std::os
 operator <<	utils/QuadTree.h	/^std::ostream& operator<<(std::ostream& os, $/;"	f	namespace:CppUtils
 operator <<	utils/Testing.h	/^static std::ostream& operator<<(std::ostream& os, $/;"	f	namespace:CppUtils
 operator <<	utils/VecND.h	/^inline std::ostream& operator<<(std::ostream &os, const VecND<T,N> &v)$/;"	f	namespace:CppUtils
-operator =	algorithm/Front.h	/^  FrontInitData& operator=(FrontInitData&& f)$/;"	f	class:TQMesh::FrontInitData
+operator =	algorithm/FrontInitData.h	/^  FrontInitData& operator=(FrontInitData&& f)$/;"	f	class:TQMesh::FrontInitData
 operator =	extern_libs/exprtk.h	/^         T0oT1<T,T0,T1>& operator=(T0oT1<T,T0,T1>&) { return (*this); }$/;"	f	class:exprtk::details::exprtk_final
 operator =	extern_libs/exprtk.h	/^         literal_node<T>& operator=(literal_node<T>&) { return (*this); }$/;"	f	class:exprtk::details::exprtk_final
 operator =	extern_libs/exprtk.h	/^         node_type& operator=(node_type&) { return (*this); }$/;"	f	class:exprtk::details::exprtk_final
@@ -3949,6 +3962,7 @@ operator double	utils/StringOps.h	/^template <> converter::operator double() { r
 operator float	utils/StringOps.h	/^template <> converter::operator float() { return std::stof(x); }$/;"	f	class:CppUtils::converter
 operator int	utils/StringOps.h	/^template <> converter::operator int() { return std::stoi(x); }$/;"	f	class:CppUtils::converter
 operator std::string	extern_libs/exprtk.h	/^         inline operator std::string () const$/;"	f	class:exprtk::details::build_string
+operator |	algorithm/Edge.h	/^operator|(EdgeProperty lhs, EdgeProperty rhs) $/;"	f	namespace:TQMesh
 operator |=	algorithm/Edge.h	/^operator|=(EdgeProperty& lhs, EdgeProperty rhs) $/;"	f	namespace:TQMesh
 operator |=	algorithm/Vertex.h	/^operator|=(VertexProperty& lhs, VertexProperty rhs) $/;"	f	namespace:TQMesh
 operator ~	algorithm/Edge.h	/^static inline EdgeProperty operator~(EdgeProperty prop) $/;"	f	namespace:TQMesh
@@ -4536,6 +4550,7 @@ remove_boundary	algorithm/Domain.h	/^  void remove_boundary(size_t pos) $/;"	f	c
 remove_boundary_edge	algorithm/Mesh.h	/^  void remove_boundary_edge(Edge& e)$/;"	f	class:TQMesh::Mesh
 remove_edge	algorithm/Vertex.h	/^  void remove_edge(Edge& e) { edges_.remove(&e); }$/;"	f	class:TQMesh::Vertex
 remove_facet	algorithm/Vertex.h	/^  void remove_facet(Facet& t) { facets_.remove(&t); }$/;"	f	class:TQMesh::Vertex
+remove_fixed_edge	algorithm/Domain.h	/^  void remove_fixed_edge(Edge& e) { fixed_edges_.remove(e); }$/;"	f	class:TQMesh::Domain
 remove_fixed_vertex	algorithm/Domain.h	/^  void remove_fixed_vertex(Vertex& v) $/;"	f	class:TQMesh::Domain
 remove_from_mesh_if_invalid	algorithm/FrontUpdate.h	/^  bool remove_from_mesh_if_invalid(Triangle& t)$/;"	f	class:TQMesh::FrontUpdate
 remove_from_mesh_if_invalid	algorithm/FrontUpdate.h	/^  bool remove_from_mesh_if_invalid(Vertex& v)$/;"	f	class:TQMesh::FrontUpdate
@@ -4975,6 +4990,7 @@ sinh_impl	extern_libs/exprtk.h	/^            template <typename T> inline T  sin
 sinh_impl	extern_libs/exprtk.h	/^            template <typename T> inline T  sinh_impl(const T v, real_type_tag) { return std::sinh (v); }$/;"	f	namespace:exprtk::details::numeric::details
 size	algorithm/Domain.h	/^  size_type size() const { return boundaries_.size(); }$/;"	f	class:TQMesh::Domain
 size	algorithm/EdgeList.h	/^  size_t size() const { return edges_.size(); }$/;"	f	class:TQMesh::EdgeList
+size	algorithm/FrontInitData.h	/^  std::size_t size() const { return edges_.size(); }$/;"	f	class:TQMesh::FrontInitData
 size	algorithm/MeshGenerator.h	/^  std::size_t size() const { return meshes_.size(); }$/;"	f	class:TQMesh::MeshGenerator
 size	extern_libs/exprtk.h	/^            inline std::size_t size() const$/;"	f	class:exprtk::details::vector_holder::vector_holder_base
 size	extern_libs/exprtk.h	/^            std::size_t size;$/;"	m	struct:exprtk::details::vec_data_store::control_block
@@ -5831,6 +5847,8 @@ version	extern_libs/exprtk.h	/^      static const char* version = "2.71828182845
 vertex_coords	algorithm/Boundary.h	/^  const std::vector<Vec2d>& vertex_coords() const { return vertex_coords_; }$/;"	f	class:TQMesh::CSVBoundaryReader
 vertex_coords	algorithm/Boundary.h	/^  std::vector<Vec2d>& vertex_coords() { return vertex_coords_; }$/;"	f	class:TQMesh::CSVBoundaryReader
 vertex_coords_	algorithm/Boundary.h	/^  std::vector<Vec2d> vertex_coords_;$/;"	m	class:TQMesh::CSVBoundaryReader
+vertex_ids	algorithm/FrontInitData.h	/^  IDPairVector& vertex_ids() { return vertex_ids_; }$/;"	f	class:TQMesh::FrontInitData
+vertex_ids	algorithm/FrontInitData.h	/^  const IDPairVector& vertex_ids() const { return vertex_ids_; }$/;"	f	class:TQMesh::FrontInitData
 vertex_is_valid	algorithm/FrontUpdate.h	/^  bool vertex_is_valid(const Vertex& v)$/;"	f	class:TQMesh::FrontUpdate
 vertex_pos_	app/TQMeshApp.h	/^  std::vector<Vec2d>      vertex_pos_;$/;"	m	class:TQMesh::MeshConstruction
 vertex_props	algorithm/Boundary.h	/^  const std::vector<Vec2d>& vertex_props() const { return vertex_props_; }$/;"	f	class:TQMesh::CSVBoundaryReader
@@ -5839,6 +5857,8 @@ vertex_props_	algorithm/Boundary.h	/^  std::vector<Vec2d> vertex_props_;$/;"	m	c
 vertex_props_	app/TQMeshApp.h	/^  std::vector<Vec2d>      vertex_props_;$/;"	m	class:TQMesh::MeshConstruction
 vertices	algorithm/Domain.h	/^  Vertices& vertices() { return verts_; }$/;"	f	class:TQMesh::Domain
 vertices	algorithm/Domain.h	/^  const Vertices& vertices() const { return verts_; }$/;"	f	class:TQMesh::Domain
+vertices	algorithm/FrontInitData.h	/^  VertexVector& vertices() { return vertices_; }$/;"	f	class:TQMesh::FrontInitData
+vertices	algorithm/FrontInitData.h	/^  const VertexVector& vertices() const { return vertices_; }$/;"	f	class:TQMesh::FrontInitData
 vertices	algorithm/Mesh.h	/^  Vertices& vertices() { return verts_; }$/;"	f	class:TQMesh::Mesh
 vertices	algorithm/Mesh.h	/^  const Vertices& vertices() const { return verts_; }$/;"	f	class:TQMesh::Mesh
 vertices_	algorithm/Quad.h	/^  VertexArray          vertices_;$/;"	m	class:TQMesh::Quad
@@ -5932,7 +5952,7 @@ zero_return_disabled	extern_libs/exprtk.h	/^         bool zero_return_disabled  
 ~EntityChecks	algorithm/EntityChecks.h	/^  ~EntityChecks() {};$/;"	f	class:TQMesh::EntityChecks
 ~Facet	algorithm/Facet.h	/^  virtual ~Facet() {};$/;"	f	class:TQMesh::Facet
 ~Front	algorithm/Front.h	/^  ~Front() { clear_edges(); }$/;"	f	class:TQMesh::Front
-~FrontInitData	algorithm/Front.h	/^  ~FrontInitData() {};$/;"	f	class:TQMesh::FrontInitData
+~FrontInitData	algorithm/FrontInitData.h	/^  ~FrontInitData() {};$/;"	f	class:TQMesh::FrontInitData
 ~FrontUpdate	algorithm/FrontUpdate.h	/^  ~FrontUpdate() {}$/;"	f	class:TQMesh::FrontUpdate
 ~LOG	utils/Log.h	/^  ~LOG() $/;"	f	class:CppUtils::LOG
 ~LaplaceSmoothing	algorithm/SmoothingStrategy.h	/^  ~LaplaceSmoothing() {}$/;"	f	class:TQMesh::LaplaceSmoothing

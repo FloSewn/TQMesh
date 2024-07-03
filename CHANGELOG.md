@@ -4,8 +4,17 @@
 
 - Fix quad layer bug described in issue [#??]
 
+### Fixed
+- Fixed bug in `Log.h` which resulted from the additional `static` declaration on `LOG_PROPERTIES` in commit [`5c2cebc`](https://github.com/FloSewn/TQMesh/commit/5c2cebc).
+  Due to this declaration, `LOG_PROPERTIES` was no longer treated as singleton and thus the logging properties were no longer used by `LOG`.
+  The singleton approach for `LogProperties` and `LOG_PROPERTIES` is now implemented in a different way.
+- Fixed vertices are now actually placed into the domain. Before, they were only considered in the mesh size function.
+
 ### Changed
 
+- Put `FrontInitData` into separate file
+- Change initialization of `FrontInitData` structure for handling fixed interior edges
+- Change name of `Edge` attribute `marker` to `color`
 - Change name of `TriangulationStrategy` to `Triangulation`
 - Change name of `QuadLayerStrategy` to `QuadLayering`
 - Change name of `QuadRefinementStrategy` to `QuadRefinement`
@@ -16,7 +25,8 @@
 
 ### Added
 
-- Implement fixed interior edges
+- Implement `EdgeProperty` - similarly to `VertexProperty`
+- Implement fixed interior edges. 
 
 
 ## [1.3.2] - 2024-06-10
