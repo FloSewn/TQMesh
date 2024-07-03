@@ -630,10 +630,18 @@ void fixed_interior_edges()
   Vertex& v2_f = domain.add_fixed_vertex(2.5, 3.5, 0.05, 2.5);
   Vertex& v3_f = domain.add_fixed_vertex(1.5, 2.5, 0.05, 2.5);
 
+  CHECK( v1_f.is_fixed() );
+  CHECK( v2_f.is_fixed() );
+  CHECK( v3_f.is_fixed() );
+
   // Add fixed edges 
-  domain.add_fixed_edge( v1_f, v2_f );
-  domain.add_fixed_edge( v2_f, v3_f );
-  domain.add_fixed_edge( v3_f, v1_f );
+  Edge& e1 = domain.add_fixed_edge( v1_f, v2_f );
+  Edge& e2 = domain.add_fixed_edge( v2_f, v3_f );
+  Edge& e3 = domain.add_fixed_edge( v3_f, v1_f );
+
+  CHECK( e1.is_fixed() );
+  CHECK( e2.is_fixed() );
+  CHECK( e3.is_fixed() );
 
   // Create the mesh
   MeshBuilder mesh_builder {};
@@ -662,7 +670,6 @@ void fixed_interior_edges()
 *********************************************************************/
 void run_tests_Mesh()
 {
-  /*
   adjust_logging_output_stream("MeshTests.initialization.log");
   MeshTests::initialization();
 
@@ -700,7 +707,6 @@ void run_tests_Mesh()
    
   adjust_logging_output_stream("MeshTests.bad_csv_import.log");
   MeshTests::bad_csv_import();
-  */
 
   adjust_logging_output_stream("MeshTests.fixed_interior_edges.log");
   MeshTests::fixed_interior_edges();

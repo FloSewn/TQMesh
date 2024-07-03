@@ -397,6 +397,7 @@ public:
   Vertex& add_vertex( Args&&... args )
   {
     Vertex& v_new = verts_.push_back( args... );
+    v_new.add_property(VertexProperty::on_boundary);
 
     return v_new;
 

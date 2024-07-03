@@ -198,6 +198,7 @@ public:
       mesh.clear_waste();
       
       ASSERT( mesh.is_empty(), 
+        "MeshBuilder::prepare_mesh(): "
         "Failed to get mesh back into initial state.");
 
       return false;
@@ -211,17 +212,25 @@ public:
       int color = e->color();
 
       if ( e->is_fixed() )
+      {
+        ASSERT( v1.has_property( VertexProperty::is_fixed ),
+          "MeshBuilder::prepare_mesh(): "
+          "Missing vertex property \"is_fixed\".");
+        ASSERT( v2.has_property( VertexProperty::is_fixed ),
+          "MeshBuilder::prepare_mesh():  "
+          "Missing vertex property \"is_fixed\".");
         continue;
+      }
 
       Edge& e_new = mesh.boundary_edges().add_edge( v1, v2, color );
       e_new.set_property( e->properties() );
 
       ASSERT( v1.has_property( VertexProperty::on_boundary ),
-        "MeshBuilder::prepare_mesh(): Missing "
-        "vertex property \"on_boundary\".");
+        "MeshBuilder::prepare_mesh(): "
+        "Missing vertex property \"on_boundary\".");
       ASSERT( v2.has_property( VertexProperty::on_boundary ),
-        "MeshBuilder::prepare_mesh(): Missing "
-        "vertex property \"on_boundary\".");
+        "MeshBuilder::prepare_mesh(): "
+        "Missing vertex property \"on_boundary\".");
 
       // Connect boundary edges of this mesh and its parner mesh
       Edge* e_twin = e->twin_edge();
