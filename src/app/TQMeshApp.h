@@ -99,6 +99,8 @@ public:
 
     init_mesh_vertices( mesh_reader );
 
+    init_fixed_vertices( mesh_reader );
+
     init_mesh_domain( mesh_reader );
 
     init_domain_vertices( mesh_reader );
@@ -107,7 +109,7 @@ public:
 
     init_interior_boundaries( mesh_reader );
 
-    init_fixed_vertices( mesh_reader );
+    init_fixed_edges( mesh_reader );
 
     init_quad_layers( mesh_reader );
 
@@ -343,15 +345,11 @@ private:
   ------------------------------------------------------------------*/
   void init_fixed_vertices(ParaReader& mesh_reader)
   {
-    ASSERT( domain_.get(), "MeshConstruction::init_fixed_vertices: "
-      "Domain has not been properly initialized." );
-
-    Domain&   domain   = *( domain_.get() );
-
-    if ( mesh_reader.query<double>("fixed_vertices") )
+    if ( mesh_reader.query<double>("fixed_vertices", true, -1.0) )
     {
       auto para_fixed_vertices 
         = mesh_reader.get_parameter<double>("fixed_vertices");
+
       print_parameter<double>(mesh_reader, "fixed_vertices");
 
       for ( size_t i = 0; i < para_fixed_vertices.rows(); ++i )
@@ -361,11 +359,51 @@ private:
         const double s = para_fixed_vertices.get_value(2, i);
         const double r = para_fixed_vertices.get_value(3, i);
 
-        domain.add_fixed_vertex(x,y,s,r);
+        vertex_pos_.push_back( {x,y} );
+        vertex_props_.push_back( {s, r} );
+        vertex_fixed_.push_back( true );
       }
     }
 
   } // MeshConstruction::init_fixed_vertices()
+
+  /*------------------------------------------------------------------
+  | Initialize the domain's fixed edges
+  ------------------------------------------------------------------*/
+  void init_fixed_edges(ParaReader& mesh_reader)
+  {
+    Domain&   domain   = *( domain_.get() );
+    Vertices& vertices = domain.vertices();
+
+    // Fixed edge definition via direct edge placement
+    while( mesh_reader.query<int>("fixed_edges") )
+    {
+      size_t n_vertices = vertices.size();
+
+      auto para_fixed_edge 
+        = mesh_reader.get_parameter<int>("fixed_edges");
+
+      print_parameter<int>(mesh_reader, "fixed_edges");
+
+      for ( size_t i = 0; i < para_fixed_edge.rows(); ++i )
+      {
+        size_t i1 = para_fixed_edge.get_value(0, i);
+        size_t i2 = para_fixed_edge.get_value(1, i);
+
+        // Throw error if indices are larger than number of vertices
+        if ( i1 >= n_vertices || i2 >= n_vertices )
+          throw_error("Invalid fixed edge definition: " 
+            "Some vertex index is larger that the number of "
+            "provided input vertices.");
+
+        Vertex& v1 = vertices[i1];
+        Vertex& v2 = vertices[i2];
+
+        domain.add_fixed_edge( v1, v2 );
+      }
+    }
+
+  } // MeshConstruction::init_fixed_edges() 
 
   /*------------------------------------------------------------------
   | Initialize the domain's interior boundaries
@@ -734,7 +772,10 @@ private:
       const Vec2d& pos   = vertex_pos_[i];
       const Vec2d& props = vertex_props_[i];
 
-      domain.add_vertex( pos.x, pos.y, props.x, props.y );
+      if ( vertex_fixed_[i] )
+        domain.add_fixed_vertex( pos.x, pos.y, props.x, props.y );
+      else
+        domain.add_vertex( pos.x, pos.y, props.x, props.y );
     }
 
   } // MeshConstruction::init_domain_vertices()
@@ -764,6 +805,7 @@ private:
     // Initialize values
     vertex_pos_.clear();
     vertex_props_.clear();
+    vertex_fixed_.clear();
     domain_extent_ = 0.0;
 
     // Vertices are given in the input file
@@ -773,6 +815,8 @@ private:
     {
       auto para_vertices 
         = mesh_reader.get_parameter<double>("vertices");
+
+      print_parameter<double>(mesh_reader, "vertices");
 
       Vec2d xy_min {  DBL_MAX,  DBL_MAX };
       Vec2d xy_max { -DBL_MAX, -DBL_MAX };
@@ -786,6 +830,7 @@ private:
 
         vertex_pos_.push_back( {x,y} );
         vertex_props_.push_back( {s, r} );
+        vertex_fixed_.push_back( false );
 
         // Estimate domain extents
         domain_extent_ = MAX(domain_extent_, ABS(x));
@@ -794,8 +839,6 @@ private:
 
       // Double extent and enlarge slightly
       domain_extent_ *= 2.1;
-
-      print_parameter<double>(mesh_reader, "vertices");
     }
     // No input vertices given 
     // -> Set domain extent to large value
@@ -842,6 +885,7 @@ private:
 
   std::vector<Vec2d>      vertex_pos_;
   std::vector<Vec2d>      vertex_props_;
+  std::vector<bool>       vertex_fixed_;
 
   double                  domain_extent_;
   std::unique_ptr<Domain> domain_;
@@ -943,7 +987,8 @@ private:
         "output_format", "Output file format:");
 
     mesh_reader.new_matrix_parameter<double>(
-        "vertices", "Define boundary vertices:", "End boundary vertices", 4);
+        "vertices", "Define boundary vertices:", 
+        "End boundary vertices", 4);
 
     mesh_reader.new_scalar_parameter<std::string>(
         "size_function", "Element size:");
@@ -967,7 +1012,12 @@ private:
         "quad_layers", "Add quad layers:", 7);
 
     mesh_reader.new_matrix_parameter<double>(
-        "fixed_vertices", "Define fixed vertices:", "End fixed vertices", 4);
+        "fixed_vertices", "Define fixed vertices:", 
+        "End fixed vertices", 4);
+
+    mesh_reader.new_matrix_parameter<int>(
+        "fixed_edges", "Define fixed edges:", 
+        "End fixed edges", 2);
 
 
     mesh_reader.new_scalar_parameter<std::string>(

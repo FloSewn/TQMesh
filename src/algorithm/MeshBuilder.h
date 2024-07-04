@@ -204,7 +204,7 @@ public:
       return false;
     }
 
-    // Place fixed vertices that are not connected to 
+    // Add remaining fixed vertices that are not connected to 
     // interior fixed edges
     for ( const auto& v : domain.fixed_vertices() )
     {
