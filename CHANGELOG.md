@@ -3,6 +3,7 @@
 ## Planned changes for upcoming release
 
 - Fix quad layer bug described in issue [#??]
+- Implement fixed number of segments on boundary edges / periodic edges?
 
 ### Fixed
 - Fixed bug in `Log.h` which resulted from the additional `static` declaration on `LOG_PROPERTIES` in commit [`5c2cebc`](https://github.com/FloSewn/TQMesh/commit/5c2cebc).
@@ -25,8 +26,9 @@
 
 ### Added
 
-- Implement `EdgeProperty` - similarly to `VertexProperty`
-- Implement fixed interior edges. 
+- `EdgeProperty` - similarly to `VertexProperty`, but for edges
+- Implementation of fixed interior edges
+- New example file `input/09_fixed_edges.para`
 
 
 ## [1.3.2] - 2024-06-10

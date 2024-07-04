@@ -1,0 +1,66 @@
+#===========================================================
+#                         TQMESH     
+#===========================================================
+ 
+#-----------------------------------------------------------
+#                     MESH DEFINITION
+#
+# First, we provide some general meshing properties,
+# such as the overall element size, element color and 
+# the applied meshing algorithm:
+#-----------------------------------------------------------
+Define mesh:
+  Element size: 0.35 
+  Element color: 1
+  Meshing algorithm: Triangulation
+  Number of quad refinements: 1
+  Number of smoothing iterations: 3
+
+  # Output formats: COUT, TXT, VTU
+  Output file format: TXT
+  Output file prefix: ./fixed_edges
+
+  #---------------------------------------------------------
+  #
+  #---------------------------------------------------------
+  Define boundary vertices:
+   1.0, 0.0
+   6.0, 0.5
+   4.0, 5.0
+  -1.0, 4.5
+  End boundary vertices
+   
+  #---------------------------------------------------------
+  #
+  #---------------------------------------------------------
+  Define exterior boundary edges:
+    0, 1,    2                 # 2: Color for bottom edge
+    1, 2,    3                 # 3: Color for right edge
+    2, 3,    2                 # 2: Color for top edge
+    3, 0,    1                 # 1: Color for left edge
+  End exterior boundary edges
+
+  #---------------------------------------------------------
+  #
+  #---------------------------------------------------------
+  Define fixed vertices:
+     2.5, 2.5, 0.05, 1.0               # 4
+     1.5, 1.5, 0.05, 1.0
+     3.5, 1.5, 0.05, 1.0
+     3.5, 3.5, 0.05, 1.0
+     1.5, 3.5, 0.05, 1.0
+  End fixed vertices
+
+  Define fixed edges:
+   4, 5
+   4, 6
+   4, 7
+   4, 8
+   5, 6
+   6, 7
+   7, 8
+   8, 5
+  End fixed edges
+
+End mesh
+
