@@ -160,6 +160,15 @@ via CSV files. This example shows an airfoil that has been meshed in this way.
 <img src="doc/airfoil.png" alt="TQMesh-airfoil" width="350"/>
 </details>
 
+
+<details>
+<summary>Fixed interior edges</summary>
+
+Fixed edges can be defined within the domain to guide the meshing process.
+
+<img src="doc/fixed_edges.png" alt="TQMesh-fixed-edges" width="350"/>
+</details>
+
 ## Output format
 Currently, **TQMesh** features the VTU output format (which can be read for example by Paraview) or alternatively a simple text output format.
 

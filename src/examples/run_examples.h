@@ -26,6 +26,7 @@ bool merge_meshes();
 bool airfoil_from_csv();
 bool multiple_meshes();
 bool thin_fracture();
+bool fixed_edges();
 bool tqmesh_banner();
 bool run_example_7();
 bool run_example_8();
