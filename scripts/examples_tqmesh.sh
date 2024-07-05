@@ -11,6 +11,7 @@ set -e
 ./bin/run_examples 07
 ./bin/run_examples 08
 ./bin/run_examples 09
+./bin/run_examples 10
 
 if [ $? -eq 0 ]; then
   echo ALL TESTS PASSED

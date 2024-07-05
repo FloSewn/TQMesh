@@ -166,7 +166,7 @@ via CSV files. This example shows an airfoil that has been meshed in this way.
 
 Fixed edges can be defined within the domain to guide the meshing process.
 
-<img src="doc/fixed_edges.png" alt="TQMesh-fixed-edges" width="350"/>
+<img src="doc/fixed_edges.png" alt="TQMesh-fixed-edges" width="500"/>
 </details>
 
 ## Output format
@@ -277,7 +277,6 @@ The following plots show some performance statistics.
 <img src="doc/BenchmarkPlot_QTree.png" alt="TQMesh-QTree-Benchmark" width="400"/> <img src="doc/BenchmarkPlot_Mesh.png" alt="TQMesh-Mesh-Benchmark" width="400"/>
 
 ## To Do's
-* Fixed edges within domains
 * Enhanced quad triangle-to-quad morphing
 * Boundary definition via splines
 * Improved documentation / testing

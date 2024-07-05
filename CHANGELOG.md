@@ -4,6 +4,7 @@
 
 - Fix quad layer bug described in issue [#??]
 - Implement fixed number of segments on boundary edges / periodic edges?
+- Enhance interface for definition of fixed edges (similar to boundary edge definition) and add interface to define fixed edges through CSV files
 
 ### Fixed
 - Fixed bug in `Log.h` which resulted from the additional `static` declaration on `LOG_PROPERTIES` in commit [`5c2cebc`](https://github.com/FloSewn/TQMesh/commit/5c2cebc).
