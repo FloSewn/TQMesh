@@ -19,7 +19,7 @@ namespace TQMesh {
 
 using namespace CppUtils;
 
-class MixedSmoothingStrategy;
+class MixedSmoothing;
 
 /*********************************************************************
 * This class is used to implement smoothing algorithms for a 
@@ -408,19 +408,19 @@ protected:
 /*********************************************************************
 * This class implements a simple Laplacian smoothing  
 *********************************************************************/
-class LaplaceSmoothingStrategy : public SmoothingStrategy
+class LaplaceSmoothing : public SmoothingStrategy
 {
-  friend class MixedSmoothingStrategy;
+  friend class MixedSmoothing;
 
 public:
 
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  LaplaceSmoothingStrategy(Mesh& mesh, const Domain& domain) 
+  LaplaceSmoothing(Mesh& mesh, const Domain& domain) 
   : SmoothingStrategy(mesh, domain) {}
 
-  ~LaplaceSmoothingStrategy() {}
+  ~LaplaceSmoothing() {}
 
   /*------------------------------------------------------------------
   | Getters
@@ -432,9 +432,9 @@ public:
   /*------------------------------------------------------------------
   | Setters
   ------------------------------------------------------------------*/
-  LaplaceSmoothingStrategy& epsilon(double e) { eps_ = e; return *this;} 
-  LaplaceSmoothingStrategy& decay(double d) { decay_ = d; return *this;} 
-  LaplaceSmoothingStrategy& quad_layer_smoothing(bool b) 
+  LaplaceSmoothing& epsilon(double e) { eps_ = e; return *this;} 
+  LaplaceSmoothing& decay(double d) { decay_ = d; return *this;} 
+  LaplaceSmoothing& quad_layer_smoothing(bool b) 
   { quad_layer_smoothing_ = b; return *this;} 
 
   /*------------------------------------------------------------------
@@ -452,7 +452,7 @@ public:
     
     return true;
 
-  } // LaplaceSmoothingStrategy::smooth()
+  } // LaplaceSmoothing::smooth()
 
 
 protected:
@@ -474,9 +474,9 @@ protected:
 
     return xy_m - v->xy();
 
-  } // LaplaceSmoothingStrategy::compute_displacement()
+  } // LaplaceSmoothing::compute_displacement()
 
-}; // LaplaceSmoothingStrategy
+}; // LaplaceSmoothing
 
 
 /*********************************************************************
@@ -490,19 +490,19 @@ protected:
 *   IMR 2000 (2000), 373-384
 *
 *********************************************************************/
-class TorsionSmoothingStrategy : public SmoothingStrategy
+class TorsionSmoothing : public SmoothingStrategy
 {
-  friend class MixedSmoothingStrategy;
+  friend class MixedSmoothing;
 
 public:
 
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  TorsionSmoothingStrategy(Mesh& mesh, const Domain& domain) 
+  TorsionSmoothing(Mesh& mesh, const Domain& domain) 
   : SmoothingStrategy(mesh, domain) {}
 
-  ~TorsionSmoothingStrategy() {}
+  ~TorsionSmoothing() {}
 
   /*------------------------------------------------------------------
   | Getters
@@ -515,11 +515,11 @@ public:
   /*------------------------------------------------------------------
   | Setters
   ------------------------------------------------------------------*/
-  TorsionSmoothingStrategy& epsilon(double e) { eps_ = e; return *this;} 
-  TorsionSmoothingStrategy& decay(double d) { decay_ = d; return *this;} 
-  TorsionSmoothingStrategy& angle_factor(double a) 
+  TorsionSmoothing& epsilon(double e) { eps_ = e; return *this;} 
+  TorsionSmoothing& decay(double d) { decay_ = d; return *this;} 
+  TorsionSmoothing& angle_factor(double a) 
   { angle_factor_ = a; return *this; } 
-  TorsionSmoothingStrategy& quad_layer_smoothing(bool b) 
+  TorsionSmoothing& quad_layer_smoothing(bool b) 
   { quad_layer_smoothing_ = b; return *this;} 
 
   /*------------------------------------------------------------------
@@ -537,7 +537,7 @@ public:
     
     return true;
 
-  } // TorsionSmoothingStrategy::smooth()
+  } // TorsionSmoothing::smooth()
 
 protected:
   /*------------------------------------------------------------------
@@ -579,25 +579,25 @@ protected:
 
     return xy_m - v->xy();
 
-  } // TorsionSmoothingStrategy::compute_displacement()
+  } // TorsionSmoothing::compute_displacement()
 
-}; // TorsionSmoothingStrategy
+}; // TorsionSmoothing
 
 
 /*********************************************************************
 * This class implements a mixed smoothing approach that utilized
 * both laplacian and torsion smoothing 
 *********************************************************************/
-class MixedSmoothingStrategy : public SmoothingStrategy
+class MixedSmoothing : public SmoothingStrategy
 {
 public:
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  MixedSmoothingStrategy(Mesh& mesh, const Domain& domain) 
+  MixedSmoothing(Mesh& mesh, const Domain& domain) 
   : SmoothingStrategy(mesh, domain) {}
 
-  ~MixedSmoothingStrategy() {}
+  ~MixedSmoothing() {}
 
   /*------------------------------------------------------------------
   | Getters
@@ -610,11 +610,11 @@ public:
   /*------------------------------------------------------------------
   | Setters
   ------------------------------------------------------------------*/
-  MixedSmoothingStrategy& epsilon(double e) { eps_ = e; return *this;} 
-  MixedSmoothingStrategy& decay(double d) { decay_ = d; return *this;} 
-  MixedSmoothingStrategy& angle_factor(double a) 
+  MixedSmoothing& epsilon(double e) { eps_ = e; return *this;} 
+  MixedSmoothing& decay(double d) { decay_ = d; return *this;} 
+  MixedSmoothing& angle_factor(double a) 
   { angle_factor_ = a; return *this; } 
-  MixedSmoothingStrategy& quad_layer_smoothing(bool b) 
+  MixedSmoothing& quad_layer_smoothing(bool b) 
   { quad_layer_smoothing_ = b; return *this;} 
 
   /*------------------------------------------------------------------
@@ -624,14 +624,14 @@ public:
   {
     MeshCleanup::setup_facet_connectivity(*mesh_);
 
-    LaplaceSmoothingStrategy laplace { *mesh_, *domain_ };
+    LaplaceSmoothing laplace { *mesh_, *domain_ };
     laplace.epsilon( eps_ );
     laplace.decay( decay_ );
     laplace.quad_layer_smoothing( quad_layer_smoothing_ );
     laplace.init_vertex_connectivity();
     laplace.collect_dispalcement_directions();
 
-    TorsionSmoothingStrategy torsion { *mesh_, *domain_ };
+    TorsionSmoothing torsion { *mesh_, *domain_ };
     torsion.epsilon( eps_ );
     torsion.decay( decay_ );
     torsion.angle_factor( angle_factor_ );
@@ -652,7 +652,7 @@ public:
     
     return true;
 
-  } // MixedSmoothingStrategy::smooth()
+  } // MixedSmoothing::smooth()
 
 protected:
   /*------------------------------------------------------------------
@@ -661,6 +661,6 @@ protected:
   Vec2d compute_displacement(const VConn& v_conn) const override
   { return {0.0, 0.0}; }
 
-}; // MixedSmoothingStrategy
+}; // MixedSmoothing
 
 } // namespace TQMesh

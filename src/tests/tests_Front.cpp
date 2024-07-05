@@ -50,7 +50,7 @@ static inline void export_mesh_file(const Vertices& vertices,
       << std::setw(4) << e->v1().index() << "," 
       << std::setw(4) << e->v2().index() << ","
       << std::setw(4) << -1 << ","
-      << std::setw(4) << e->marker();
+      << std::setw(4) << e->color();
 
   LOG(INFO) << "INTERFACEEDGES 0";
   LOG(INFO) << "FRONT 0";

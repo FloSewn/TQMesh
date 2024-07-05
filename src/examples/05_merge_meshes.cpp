@@ -47,10 +47,10 @@ bool merge_meshes()
     { 0.0, 0.0 }, { 5.0, 0.0 }, { 5.0, 5.0 }, { 0.0, 5.0 },
   };
 
-  std::vector<int> outer_markers ( outer_coords.size(), 1 );
+  std::vector<int> outer_colors ( outer_coords.size(), 1 );
 
   Boundary& bdry_outer_ext = outer_domain.add_exterior_boundary();
-  bdry_outer_ext.set_shape_from_coordinates(outer_coords, outer_markers);
+  bdry_outer_ext.set_shape_from_coordinates(outer_coords, outer_colors);
 
   /*------------------------------------------------------------------
   | Interior boundary of the outer mesh
@@ -59,10 +59,10 @@ bool merge_meshes()
     { 1.5, 1.5 }, { 3.5, 1.5 }, { 3.5, 3.5 }, { 1.5, 3.5 },
   };
 
-  std::vector<int> inner_markers ( inner_coords.size(), 2 );
+  std::vector<int> inner_colors ( inner_coords.size(), 2 );
 
   Boundary& bdry_outer_int = outer_domain.add_interior_boundary();
-  bdry_outer_int.set_shape_from_coordinates(inner_coords, inner_markers);
+  bdry_outer_int.set_shape_from_coordinates(inner_coords, inner_colors);
 
   /*------------------------------------------------------------------
   | Initialize the outer mesh
@@ -130,7 +130,7 @@ bool merge_meshes()
   | edges and vertex coordinates.
   ------------------------------------------------------------------*/
   Boundary& bdry_inner = inner_domain.add_exterior_boundary();
-  bdry_inner.set_shape_from_coordinates(inner_coords, inner_markers);
+  bdry_inner.set_shape_from_coordinates(inner_coords, inner_colors);
 
   /*------------------------------------------------------------------
   | Initialize the inner mesh

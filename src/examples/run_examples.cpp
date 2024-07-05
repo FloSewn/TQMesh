@@ -96,6 +96,13 @@ int run_examples(const std::string& example)
     success &= thin_fracture();
   } 
   else if ( !example.compare("9") || !example.compare("09") ||
+            !example.compare("fixed_edges") )
+  {
+    LOG(INFO) << "Running example \"fixed_edges\"...";
+    LOG(INFO) << "";
+    success &= fixed_edges();
+  } 
+  else if ( !example.compare("10") ||
             !example.compare("tqmesh_banner") )
   {
     LOG(INFO) << "Running example \"tqmesh_banner\"...";

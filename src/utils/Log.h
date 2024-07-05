@@ -78,14 +78,12 @@ class LogProperties
 {
 public:
   /*------------------------------------------------------------------
-  | Default constructor
+  | 
   ------------------------------------------------------------------*/
-  LogProperties() 
+  static LogProperties& get_instance() 
   {
-    error_os_ = create_stream( TO_COUT );
-    warn_os_  = create_stream( TO_COUT );
-    info_os_  = create_stream( TO_COUT );
-    debug_os_ = create_stream( TO_COUT );
+    static LogProperties instance;
+    return instance;
   }
 
   /*------------------------------------------------------------------
@@ -189,6 +187,21 @@ public:
 
 private:
 
+  /*------------------------------------------------------------------
+  | Default constructor
+  ------------------------------------------------------------------*/
+  LogProperties() 
+  {
+    error_os_ = create_stream( TO_COUT );
+    warn_os_  = create_stream( TO_COUT );
+    info_os_  = create_stream( TO_COUT );
+    debug_os_ = create_stream( TO_COUT );
+  }
+
+  LogProperties(const LogProperties&) = delete;
+  LogProperties& operator=(const LogProperties&) = delete;
+
+
   LogLevel    level_         = INFO;
   bool        show_header_   = true;
   bool        use_newline_   = true;
@@ -216,7 +229,8 @@ private:
 
 };
 
-static inline LogProperties LOG_PROPERTIES;
+static inline 
+LogProperties& LOG_PROPERTIES = LogProperties::get_instance();
 
 /*********************************************************************
 * The interface for the actual SimpleLogger

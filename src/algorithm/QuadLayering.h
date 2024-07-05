@@ -325,11 +325,16 @@ private:
         e_bdry_rem = tmp;
 
         Edge* e1 = new_edges.first;
+        Edge& e1_new = mesh_bdry_edges.insert_edge(e_bdry_rem->pos(),
+                                                   e1->v1(), e1->v2(), 
+                                                   e1->color());
+        e1_new.set_property( e1->properties() );
+
         Edge* e2 = new_edges.second;
-        mesh_bdry_edges.insert_edge(e_bdry_rem->pos(),
-                                    e1->v1(), e1->v2(), e1->marker());
-        mesh_bdry_edges.insert_edge(e_bdry_rem->pos(),
-                                    e2->v1(), e2->v2(), e2->marker());
+        Edge& e2_new = mesh_bdry_edges.insert_edge(e_bdry_rem->pos(),
+                                                   e2->v1(), e2->v2(), 
+                                                   e2->color());
+        e2_new.set_property( e2->properties() );
       }
 
       // Add new vertex to quad layer structure
@@ -442,11 +447,16 @@ private:
         e_bdry_rem = tmp;
 
         Edge* e1 = new_edges.first;
+        Edge& e1_new = bdry_edges.insert_edge(e_bdry_rem->pos(), 
+                                              e1->v1(), e1->v2(), 
+                                              e1->color());
+        e1_new.set_property( e1->properties() );
+
         Edge* e2 = new_edges.second;
-        bdry_edges.insert_edge( e_bdry_rem->pos(),
-                                e1->v1(), e1->v2(), e1->marker() );
-        bdry_edges.insert_edge( e_bdry_rem->pos(),
-                                e2->v1(), e2->v2(), e2->marker() );
+        Edge& e2_new = bdry_edges.insert_edge(e_bdry_rem->pos(), 
+                                              e2->v1(), e2->v2(), 
+                                              e2->color());
+        e2_new.set_property( e2->properties() );
       }
 
       // Add new vertex to quad layer structure
@@ -521,7 +531,7 @@ private:
 /*********************************************************************
 * 
 *********************************************************************/
-class QuadLayerStrategy : public MeshingStrategy
+class QuadLayering : public MeshingStrategy
 {
 public:
   using VertexVector   = std::vector<Vertex*>;
@@ -530,10 +540,10 @@ public:
   /*------------------------------------------------------------------
   | Constructor / Destructor 
   ------------------------------------------------------------------*/
-  QuadLayerStrategy(Mesh& mesh, const Domain& domain)
+  QuadLayering(Mesh& mesh, const Domain& domain)
   : MeshingStrategy(mesh, domain) {}
 
-  ~QuadLayerStrategy() {}
+  ~QuadLayering() {}
 
   /*------------------------------------------------------------------
   | Getters 
@@ -548,23 +558,23 @@ public:
   /*------------------------------------------------------------------
   | Setters 
   ------------------------------------------------------------------*/
-  QuadLayerStrategy& show_progress(bool s)
+  QuadLayering& show_progress(bool s)
   { show_progress_ = s; return *this; }
-  QuadLayerStrategy& n_layers(size_t n) 
+  QuadLayering& n_layers(size_t n) 
   { n_layers_ = n; return *this; }
-  QuadLayerStrategy& first_height(double h) 
+  QuadLayering& first_height(double h) 
   { first_height_ = h; return *this; }
-  QuadLayerStrategy& growth_rate(double r) 
+  QuadLayering& growth_rate(double r) 
   { growth_rate_ = r; return *this; }
-  QuadLayerStrategy& starting_position(const Vec2d& v) 
+  QuadLayering& starting_position(const Vec2d& v) 
   { xy_start_ = v; return *this; }
-  QuadLayerStrategy& starting_position(double x, double y) 
+  QuadLayering& starting_position(double x, double y) 
   { xy_start_ = {x,y}; return *this; }
-  QuadLayerStrategy& ending_position(const Vec2d& v) 
+  QuadLayering& ending_position(const Vec2d& v) 
   { xy_end_ = v; return *this; }
-  QuadLayerStrategy& ending_position(double x, double y) 
+  QuadLayering& ending_position(double x, double y) 
   { xy_end_ = {x,y}; return *this; }
-  QuadLayerStrategy& angle_factor(double a) 
+  QuadLayering& angle_factor(double a) 
   { angle_factor_ = a; return *this; }
 
 
@@ -682,7 +692,7 @@ private:
 
     return true;
 
-  } // QuadLayerStrategy::find_next_layer_endings()
+  } // QuadLayering::find_next_layer_endings()
 
   /*------------------------------------------------------------------
   | This function creates a new layer of quad elements   
@@ -721,7 +731,7 @@ private:
       v2_proj[i] = v_proj.second;
     }
 
-  } // QuadLayerStrategy::create_quad_layer() 
+  } // QuadLayering::create_quad_layer() 
 
 
   /*------------------------------------------------------------------
@@ -796,7 +806,7 @@ private:
 
     return v_proj;
 
-  } // QuadLayerStrategy::create_quad_layer_element()
+  } // QuadLayering::create_quad_layer_element()
 
 
   /*------------------------------------------------------------------
@@ -832,7 +842,7 @@ private:
         v2_proj[i]->add_property(VertexProperty::in_quad_layer);
     }
 
-  } // QuadLayerStrategy::finish_quad_layer()
+  } // QuadLayering::finish_quad_layer()
 
   /*------------------------------------------------------------------
   | In some cases, gaps might be formed during the initial quad layer
@@ -890,12 +900,12 @@ private:
     Edge* base = nullptr;
 
     base = front_.get_edge( v_a, v_b );
-    ASSERT( base, "QuadLayerStrategy::close_quad_layer_gabs(): "
+    ASSERT( base, "QuadLayering::close_quad_layer_gabs(): "
       "Front data structure seems to be corrupted.");
     front_update_.advance_front( *base, v_new, t1_new );
 
     base = front_.get_edge( v_b, v_c );
-    ASSERT( base, "QuadLayerStrategy::close_quad_layer_gabs(): "
+    ASSERT( base, "QuadLayering::close_quad_layer_gabs(): "
       "Front data structure seems to be corrupted.");
     front_update_.advance_front( *base, v_new, t2_new );
 
@@ -922,7 +932,7 @@ private:
     Edge* e_end   = front_.get_edge(v_end, 2); 
 
     ASSERT((e_start && e_end), 
-      "QuadLayerStrategy::find_start_and_ending_edges(): "
+      "QuadLayering::find_start_and_ending_edges(): "
       "Vertex-edge-connectivity seems to be corrupted.");
 
     if ( !front_.is_traversable(*e_start, *e_end) )
@@ -982,6 +992,6 @@ private:
 
 
 
-}; // QuadLayerStrategy
+}; // QuadLayering
 
 } // namespace TQMesh

@@ -79,7 +79,7 @@ protected:
 *  (v1)                (v2)                 (v3)   (v1)        (v2)       (v3)
 *
 *********************************************************************/
-class QuadRefinementStrategy : public RefinementStrategy
+class QuadRefinement : public RefinementStrategy
 {
 public:
 
@@ -90,11 +90,11 @@ public:
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  QuadRefinementStrategy(Mesh& mesh, const Domain& domain)
+  QuadRefinement(Mesh& mesh, const Domain& domain)
   : RefinementStrategy(mesh, domain) 
   {}
 
-  ~QuadRefinementStrategy() {}
+  ~QuadRefinement() {}
 
   /*------------------------------------------------------------------
   | The actual mesh refinement
@@ -180,8 +180,10 @@ private:
     for ( auto e : coarse_bdry_edges_ )
     {
       Vertex& v = mesh_->add_vertex( e->xy() );
-      mesh_->boundary_edges().add_edge( e->v1(), v, e->marker() );
-      mesh_->boundary_edges().add_edge( v, e->v2(), e->marker() );
+      mesh_->boundary_edges().add_edge( e->v1(), v, e->color() )
+                             .add_property( EdgeProperty::on_boundary );
+      mesh_->boundary_edges().add_edge( v, e->v2(), e->color() ) 
+                             .add_property( EdgeProperty::on_boundary );
       e->sub_vertex( &v );
 
       v.add_property( e->v1().properties() );

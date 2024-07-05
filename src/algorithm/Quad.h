@@ -145,7 +145,6 @@ public:
   int           color() const override { return color_; }
   int           index() const override { return index_; }
   bool          is_active() const { return active_; }
-  //bool          marker() const { return marker_; }
   double        area() const override { return area_; }
   double        circumradius() const { return circumradius_; }
   double        min_angle() const override { return min_angle_; }
@@ -169,7 +168,6 @@ public:
   void color(int i) override { color_ = i; }
   void index(int i) override { index_ = i; }
   void is_active(bool a) { active_ = a; }
-  //void marker(bool c){ marker_ = c; }
 
   /*------------------------------------------------------------------
   | Returns the index of a quad vertex for a given input vertex

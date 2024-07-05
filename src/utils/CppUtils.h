@@ -17,3 +17,4 @@
 #include "ParaReader.h"
 #include "ProgressBar.h"
 #include "VtkIO.h"
+#include "Log.h"

@@ -66,14 +66,14 @@ Define mesh:
   End boundary vertices
 
   Define exterior boundary edges:
-    0, 1,    2                 # 2: Marker for bottom edge
-    1, 2,    3                 # 3: Marker for right edge
-    2, 3,    2                 # 2: Marker for top edge
-    3, 0,    1                 # 1: Marker for left edge
+    0, 1,    2                 # 2: Color for bottom edge
+    1, 2,    3                 # 3: Color for right edge
+    2, 3,    2                 # 2: Color for top edge
+    3, 0,    1                 # 1: Color for left edge
   End exterior boundary edges
 
   Define interior boundary edges:
-    4, 5,    4                 # Marker 4 for all interior edges
+    4, 5,    4                 # Color 4 for all interior edges
     5, 6,    4                 # ...
     6, 7,    4
     7, 4,    4

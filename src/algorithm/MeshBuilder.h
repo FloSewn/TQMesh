@@ -14,6 +14,7 @@
 #include "utils.h"
 #include "Domain.h"
 #include "Mesh.h"
+#include "FrontInitData.h"
 #include "Front.h"
 #include "EntityChecks.h"
 
@@ -197,9 +198,25 @@ public:
       mesh.clear_waste();
       
       ASSERT( mesh.is_empty(), 
+        "MeshBuilder::prepare_mesh(): "
         "Failed to get mesh back into initial state.");
 
       return false;
+    }
+
+    // Add remaining fixed vertices that are not connected to 
+    // interior fixed edges
+    for ( const auto& v : domain.fixed_vertices() )
+    {
+      if ( !v->is_fixed() )
+        continue;
+
+      if ( v->edges().size() > 0 )
+        continue;
+
+      Vertex& v_new = mesh.add_vertex( v->xy() );
+      v_new.add_property( VertexProperty::is_fixed );
+      v_new.add_property( VertexProperty::on_front );
     }
 
     // Setup the mesh's boundary edges from the initial advancing front
@@ -207,15 +224,28 @@ public:
     {
       Vertex& v1 = e->v1();
       Vertex& v2 = e->v2();
-      int marker = e->marker();
-      Edge& e_new = mesh.boundary_edges().add_edge( v1, v2, marker );
+      int color = e->color();
+
+      if ( e->is_fixed() )
+      {
+        ASSERT( v1.has_property( VertexProperty::is_fixed ),
+          "MeshBuilder::prepare_mesh(): "
+          "Missing vertex property \"is_fixed\".");
+        ASSERT( v2.has_property( VertexProperty::is_fixed ),
+          "MeshBuilder::prepare_mesh():  "
+          "Missing vertex property \"is_fixed\".");
+        continue;
+      }
+
+      Edge& e_new = mesh.boundary_edges().add_edge( v1, v2, color );
+      e_new.set_property( e->properties() );
 
       ASSERT( v1.has_property( VertexProperty::on_boundary ),
-        "MeshBuilder::prepare_mesh(): Missing "
-        "vertex property \"on_boundary\".");
+        "MeshBuilder::prepare_mesh(): "
+        "Missing vertex property \"on_boundary\".");
       ASSERT( v2.has_property( VertexProperty::on_boundary ),
-        "MeshBuilder::prepare_mesh(): Missing "
-        "vertex property \"on_boundary\".");
+        "MeshBuilder::prepare_mesh(): "
+        "Missing vertex property \"on_boundary\".");
 
       // Connect boundary edges of this mesh and its parner mesh
       Edge* e_twin = e->twin_edge();

@@ -20,18 +20,23 @@ namespace CppUtils {
 * Asserts messages
 *********************************************************************/
 #ifndef NDEBUG
-static inline void ASSERT(bool cond, const std::string& msg)
+static inline void assert_msg(bool cond, const std::string& msg, 
+                              const std::string& filename, int line)
 {
   if (!cond)
   {
-    std::cerr << "[ERROR] " << msg << std::endl;
+    std::cerr << "[ERROR] " << msg << " (" << filename 
+              << " - Line " << line << ")" << std::endl;
     assert(cond);
   }
 }
 #else
-static inline void ASSERT(bool cond, const std::string& msg)
+static inline void assert_msg(bool cond, const std::string& msg,
+                              const std::string& filename, int line)
 {}
 #endif
+
+#define ASSERT(cond, msg) assert_msg(cond, msg, __FILE__, __LINE__)
 
 /*********************************************************************
 * Terminate 

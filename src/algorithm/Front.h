@@ -15,183 +15,11 @@
 #include "Vertex.h"
 #include "Domain.h"
 #include "Mesh.h"
+#include "FrontInitData.h"
 
 namespace TQMesh {
 
 using namespace CppUtils;
-
-/*********************************************************************
-* This class is used to initialize a new advancing front structure
-* from an already existing mesh 
-*********************************************************************/
-class FrontInitData
-{
-public:
-  using IntVector    = std::vector<int>;
-  using BoolVector   = std::vector<bool>;
-  using EdgeVector   = std::vector<Edge*>;
-  using MeshVector   = std::vector<Mesh*>;
-
-  /*------------------------------------------------------------------
-  | Constructor / Destructor
-  ------------------------------------------------------------------*/
-  FrontInitData(const Domain& domain, const MeshVector& meshes) 
-  { collect_front_edges(domain, meshes); }
-
-  FrontInitData(const Domain& domain) 
-  { MeshVector dummy {};  collect_front_edges(domain, dummy); }
-
-  ~FrontInitData() {};
-
-  /*------------------------------------------------------------------
-  | Move operator
-  ------------------------------------------------------------------*/
-  FrontInitData(FrontInitData&& f)
-  : edges_ { std::move(f.edges_) }
-  , markers_ { std::move(f.markers_) }
-  , is_twin_edge_ { std::move(f.is_twin_edge_) }
-  {}
-  
-  FrontInitData& operator=(FrontInitData&& f)
-  {
-    edges_ = std::move(f.edges_);
-    markers_ = std::move(f.markers_);
-    is_twin_edge_ = std::move(f.is_twin_edge_);
-    return *this;
-  }
-
-  /*------------------------------------------------------------------
-  | Getter
-  ------------------------------------------------------------------*/
-  std::vector<EdgeVector>& edges() { return edges_; }
-  const std::vector<EdgeVector>& edges() const { return edges_; }
-
-  std::vector<BoolVector>& is_twin_edge() { return is_twin_edge_; }
-  const std::vector<BoolVector>& is_twin_edge() const { return is_twin_edge_; }
-
-  std::vector<IntVector>& markers() { return markers_; }
-  const std::vector<IntVector>& markers() const { return markers_; }
-
-private:
-  /*------------------------------------------------------------------
-  | Traverses all boundaries of a given domain and collects the 
-  | respective boundary edges, as well as their marker and orientation.
-  | Additionally, the boundary edges of given meshes are also 
-  | considered, if they overlap with the domain boundary. This 
-  | is required to construct conformal grids.
-  | Edges which result from adjacent meshes are oriented in the 
-  | opposite direction. This can be used to identify these edges
-  | from "normal" boundary edges (e.g. for the advancing front 
-  | refinement).
-  ------------------------------------------------------------------*/
-  void collect_front_edges(const Domain& domain,
-                           const MeshVector& meshes)
-  {
-    for ( const auto& boundary : domain )
-    {
-      EdgeVector edges {};
-      IntVector  markers {};
-      BoolVector is_twin_edge {};
-
-      for ( const auto& e : boundary->edges() )
-      {
-        EdgeVector nbr_edges = get_neighbor_mesh_edges(*e, meshes);
-
-        // Add edges from adjacent mesh
-        if ( nbr_edges.size() > 0 )
-        {
-          for ( Edge* nbr_e : nbr_edges )
-          {
-            edges.push_back( nbr_e );
-            is_twin_edge.push_back( true );
-            markers.push_back( nbr_e->marker() );
-          }
-        }
-        // Add edges from domain boundary
-        else
-        {
-          edges.push_back( e.get() ) ;
-          is_twin_edge.push_back( false );
-          markers.push_back( e->marker() );
-        }
-      }
-
-      edges_.push_back( edges );
-      is_twin_edge_.push_back( is_twin_edge );
-      markers_.push_back( markers );
-    }
-
-  } // FrontInitData::collect_front_edges()
-
-  /*------------------------------------------------------------------
-  | For a given domain boundary edge <e>, 
-  | search all boundary edges of a 
-  | neighboring mesh, that are contained within <e>.
-  | This function is used upon the initialization of the advancing
-  | front.
-  ------------------------------------------------------------------*/
-  EdgeVector get_neighbor_mesh_edges(const Edge& e, 
-                                     const MeshVector& meshes) 
-  const
-  {
-    EdgeVector   nbr_edges {};
-
-    const Vec2d& c = e.xy();
-    double       r = edge_overlap_range_ * e.length();
-
-    const Vec2d& v = e.v1().xy();
-    const Vec2d& w = e.v2().xy();
-
-    for ( Mesh* m : meshes )
-    {
-      ASSERT( m, "Neighbor mesh data structure is invalid." );
-
-      // Get edges in the vicinity of the given edge
-      EdgeVector edges_in_vicinity = m->get_bdry_edges(c, r);
-
-      // Get all edges, that are actually located on the segment
-      // of the current domain boundary edge 
-      for ( Edge* e_vicinity : edges_in_vicinity )
-      {
-        const Vec2d& p = e_vicinity->v1().xy();
-        const Vec2d& q = e_vicinity->v2().xy();
-
-        if ( in_on_segment(v,w,p) && in_on_segment(v,w,q) )
-          nbr_edges.push_back( e_vicinity );
-      }
-
-      // In case edges have been found, sort them in 
-      // ascending direction to the stating vertex
-      std::sort(nbr_edges.begin(), nbr_edges.end(), 
-      [v](Edge* e1, Edge* e2)
-      {
-        double delta_1 = (e1->xy() - v).norm_sqr();
-        double delta_2 = (e2->xy() - v).norm_sqr();
-        return (delta_1 < delta_2);
-      });
-
-      // If edges have been located, terminate the search
-      // --> First come, first serve
-      //if ( nbr_edges.size() > 0 )
-      //  break;
-    }
-
-    return std::move(nbr_edges);
-
-  } // FrontInitData::get_neighbor_mesh_edges()
-
-
-  /*------------------------------------------------------------------
-  | Attributes
-  ------------------------------------------------------------------*/
-  std::vector<EdgeVector> edges_        {};
-  std::vector<IntVector>  markers_      {};
-  std::vector<BoolVector> is_twin_edge_ {};
-
-  double edge_overlap_range_ { 1.5 };
-
-}; // FrontInitData
-
 
 /*********************************************************************
 * The advancing front - defined by a list of edges
@@ -199,8 +27,9 @@ private:
 *********************************************************************/
 class Front : public EdgeList
 {
-  using BoolVector   = std::vector<bool>;
   using IntVector    = std::vector<int>;
+  using BoolVector   = std::vector<bool>;
+  using IDPairVector = std::vector<std::pair<std::size_t,std::size_t>>;
   using VertexVector = std::vector<Vertex*>;
   using EdgeVector   = std::vector<Edge*>;
   using BdryEdgeConn = std::vector<std::vector<EdgeVector>>;
@@ -239,25 +68,50 @@ public:
                   const FrontInitDataImpl& front_init_data,
                   Vertices&                mesh_vertices)
   {
-    for ( size_t i_bdry = 0; i_bdry < domain.size(); ++i_bdry )
+    const EdgeVector& front_edges  = front_init_data.edges();
+    const BoolVector& is_twin_edge = front_init_data.is_twin_edge();
+
+    // Init mesh vertices that are located on the advancing front
+    VertexVector new_vertices 
+      = this->init_mesh_vertices(front_init_data, mesh_vertices);
+
+    // Init advancing front edges
+    EdgeVector new_edges 
+      = this->init_front_edges(front_init_data, new_vertices);
+
+    // Connect advancing front edges to boundary edges of neighboring
+    // meshes
+    this->mark_twin_edges(front_edges, is_twin_edge, new_edges);
+
+    // Refine advancing front edges, but do not refine edges that 
+    // are adjacent to neighboring meshes
+    this->refine_front_edges(domain, mesh_vertices);
+
+    // For all fixed interior edges, add additional ghost edges 
+    // that are pointing in opposed direction, in order to maintain 
+    // closed advancing front edge lists
+    for ( const auto& e_ptr : edges_ )
     {
-      const EdgeVector& front_edges  = front_init_data.edges()[i_bdry];
-      const BoolVector& is_twin_edge = front_init_data.is_twin_edge()[i_bdry];
-      const IntVector&  markers      = front_init_data.markers()[i_bdry];
+      if ( !e_ptr->is_fixed() )
+        continue;
 
-      VertexVector new_vertices 
-        = this->init_mesh_vertices(front_edges, is_twin_edge, mesh_vertices);
+      Vertex& v1 = e_ptr->v1();
+      Vertex& v2 = e_ptr->v2();
+      Edge& e_new = this->insert_edge( e_ptr->pos(), 
+                                       v2, v1, 
+                                       e_ptr->color() );
 
-      EdgeVector new_edges 
-        = this->init_front_edges(front_edges, markers, new_vertices);
+      ASSERT( !e_ptr->on_boundary(), 
+          "Front::init_front(): Invalid fixed edge.");
 
-      this->mark_twin_edges(front_edges, is_twin_edge, new_edges);
+      e_new.add_property( EdgeProperty::is_fixed );
+      e_new.add_property( EdgeProperty::is_ghost );
     }
 
-    // Refine the front edges, but do not refine sub-edges!
-    this->refine_front_edges(domain, mesh_vertices);
-    
-  } // Front::init_front()
+    // Re-compute area of domain
+    compute_area();
+
+  } // Front::init_front() 
 
   /*------------------------------------------------------------------
   | Initialize the advancing front structure from a given mesh
@@ -276,7 +130,9 @@ public:
       Vertex& v2 = e_ptr->v2();
       v1.add_property(VertexProperty::on_front);
       v2.add_property(VertexProperty::on_front);
-      this->add_edge( v1, v2, e_ptr->marker() );
+
+      Edge& e_new = this->add_edge( v1, v2, e_ptr->color() );
+      e_new.set_property( e_ptr->properties() );
     }
 
   } // Front::init_front()
@@ -394,9 +250,6 @@ private:
     for ( auto cur_edge : edges_to_remove )
       edges_.remove( *cur_edge );
 
-    // Re-compute area of domain
-    compute_area();
-
     return ( edges_.size() - n_before );
 
   } // Front::refine_front_edges()
@@ -405,22 +258,22 @@ private:
   | Initialize the vertices of the advancing front.
   | Returns a vector of pointers to the generated vertices
   ------------------------------------------------------------------*/
-  VertexVector init_mesh_vertices(const EdgeVector& front_edges,
-                                  const BoolVector& is_twin_edge,
-                                  Vertices&         mesh_vertices)
-  const
+  template <typename FID_Imp>
+  VertexVector init_mesh_vertices(const FID_Imp& front_init_data,
+                                  Vertices& mesh_vertices) const
   {
+    const VertexVector& front_vertices = front_init_data.vertices();
+
     VertexVector new_vertices {};
 
-    for ( size_t i = 0; i < front_edges.size(); ++i )
+    for ( Vertex* v : front_vertices )
     {
-      Edge* e = front_edges[i];
-
-      Vertex& v1 = ( !is_twin_edge[i] ) ? e->v1() : e->v2();
-
-      Vertex& v_new = mesh_vertices.push_back( v1.xy() ); 
+      Vertex& v_new = mesh_vertices.push_back( v->xy() ); 
       v_new.add_property( VertexProperty::on_front );
       v_new.add_property( VertexProperty::on_boundary );
+
+      if ( v->is_fixed() )
+        v_new.add_property( VertexProperty::is_fixed );
 
       new_vertices.push_back( &v_new );
     }
@@ -433,23 +286,33 @@ private:
   | Initialize the edges of the advancing front.
   | Returns a vector of pointers to the generated edges
   ------------------------------------------------------------------*/
-  EdgeVector init_front_edges(const EdgeVector&   front_edges,
-                              const IntVector&    markers,
+  template <typename FrontInitDataImpl>
+  EdgeVector init_front_edges(const FrontInitDataImpl& front_init_data,
                               const VertexVector& new_vertices)
   {
-    EdgeVector new_edges {};
+    const EdgeVector&   front_edges      = front_init_data.edges();
+    const IDPairVector& front_vertex_ids = front_init_data.vertex_ids();
+    const IntVector&    colors           = front_init_data.colors();
 
-    int n_verts = static_cast<int>( new_vertices.size() );
+    EdgeVector new_edges {};
 
     for ( size_t i_edge = 0; i_edge < front_edges.size(); ++i_edge )
     {
-      int i1 = static_cast<int>( i_edge );
-      int i2 = MOD( i1+1, n_verts );
+      const std::size_t i1 = front_vertex_ids[i_edge].first;
+      const std::size_t i2 = front_vertex_ids[i_edge].second;
 
       Vertex* v1 = new_vertices[i1];
       Vertex* v2 = new_vertices[i2];
 
-      Edge& e_new = this->add_edge( *v1, *v2, markers[i_edge] );
+      ASSERT( v1 != nullptr, "Invalid vertex v1.");
+      ASSERT( v2 != nullptr, "Invalid vertex v2.");
+
+      Edge& e_new = this->add_edge( *v1, *v2, colors[i_edge] );
+
+      if ( !front_edges[i_edge]->is_fixed() )
+        e_new.add_property( EdgeProperty::on_boundary );
+      else
+        e_new.add_property( EdgeProperty::is_fixed );
 
       new_edges.push_back(&e_new);
     }
@@ -478,6 +341,7 @@ private:
         ASSERT( new_edges[i_edge]->twin_edge() == nullptr,
           "Front::mark_twin_edges(): Invalid edge.");
     }
+
   } // mark_twin_edges()
 
   /*------------------------------------------------------------------
@@ -652,14 +516,30 @@ private:
 
       // Set vertex properties
       v_n.add_property( VertexProperty::on_front );
-      v_n.add_property( VertexProperty::on_boundary );
 
-      this->insert_edge(e.pos(), *v_cur, v_n, e.marker());
+      if ( !e.is_fixed() ) 
+        v_n.add_property( VertexProperty::on_boundary );
+      else
+        v_n.add_property( VertexProperty::is_fixed );
+
+      // Add new edge and set its properties
+      Edge& e_new = this->insert_edge(e.pos(), *v_cur, v_n, e.color());
+
+      if ( !e.is_fixed() ) 
+        e_new.add_property( EdgeProperty::on_boundary );
+      else
+        e_new.add_property( EdgeProperty::is_fixed );
 
       v_cur = &v_n;
     }
 
-    this->insert_edge( e.pos(), *v_cur, e.v2(), e.marker() );
+    // Add final edge and set its properties
+    Edge& e_new = this->insert_edge( e.pos(), *v_cur, e.v2(), e.color() );
+
+    if ( !e.is_fixed() ) 
+      e_new.add_property( EdgeProperty::on_boundary );
+    else
+      e_new.add_property( EdgeProperty::is_fixed );
 
   } // create_sub_edges()
 

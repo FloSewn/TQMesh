@@ -113,8 +113,8 @@ public:
     //     -> Vertex now part of the advancing front
     else
     {
-      front_.add_edge(base.v1(), v_new);
-      front_.add_edge(v_new, base.v2());
+      front_.add_edge( base.v1(), v_new );
+      front_.add_edge( v_new, base.v2() );
     }
 
     update_front_state(base.v1());
@@ -123,7 +123,7 @@ public:
 
     // If current base is not at the boundary, add it to the 
     // interior edge list
-    if ( base.is_interior() )
+    if ( base.is_interior() && !base.is_ghost() )
       mesh_.add_interior_edge(base.v1(), base.v2());
 
     // Remove base edge

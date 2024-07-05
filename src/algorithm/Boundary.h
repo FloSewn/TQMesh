@@ -49,10 +49,10 @@ public:
   ------------------------------------------------------------------*/
   std::vector<Vec2d>& vertex_coords() { return vertex_coords_; }
   std::vector<Vec2d>& vertex_props() { return vertex_props_; }
-  std::vector<int>& edge_markers() { return edge_markers_; }
+  std::vector<int>& edge_colors() { return edge_colors_; }
   const std::vector<Vec2d>& vertex_coords() const { return vertex_coords_; }
   const std::vector<Vec2d>& vertex_props() const { return vertex_props_; }
-  const std::vector<int>& edge_markers() const { return edge_markers_; }
+  const std::vector<int>& edge_colors() const { return edge_colors_; }
 
 private:
   /*------------------------------------------------------------------
@@ -62,7 +62,7 @@ private:
   {
     vertex_coords_.clear();
     vertex_props_.clear();
-    edge_markers_.clear();
+    edge_colors_.clear();
 
     std::ifstream file { filename };
 
@@ -77,7 +77,7 @@ private:
     {
       Vec2d coords { 0.0, 0.0 };
       Vec2d props { 0.0, 0.0 };
-      int marker { -1 };
+      int color { -1 };
 
       std::istringstream line_stream( line );
       std::string cell;
@@ -93,7 +93,7 @@ private:
           if ( i_cell == 1 )
             coords.y = std::stod(cell);
           if ( i_cell == 2 )
-            marker = std::stoi(cell);
+            color = std::stoi(cell);
           if ( i_cell == 3 )
             props.x = std::stod(cell);
           if ( i_cell == 4 )
@@ -117,13 +117,13 @@ private:
         throw_error("Failed to read CSV file " + filename 
             + ": Missing input data in in line " + std::to_string(i_line));
 
-      if ( marker < 0 )
+      if ( color < 0 )
         throw_error("Failed to read CSV file " + filename 
-            + ": Invalid boundary marker definition in line " + std::to_string(i_line));
+            + ": Invalid boundary color definition in line " + std::to_string(i_line));
 
       vertex_coords_.push_back( coords );
       vertex_props_.push_back( props );
-      edge_markers_.push_back( marker );
+      edge_colors_.push_back( color );
       ++i_line;
     }
 
@@ -134,7 +134,7 @@ private:
   ------------------------------------------------------------------*/
   std::vector<Vec2d> vertex_coords_;
   std::vector<Vec2d> vertex_props_;
-  std::vector<int>   edge_markers_;
+  std::vector<int>   edge_colors_;
 
 }; // CSVBoundaryReader
 
@@ -170,15 +170,18 @@ public:
   /*------------------------------------------------------------------
   | Override insert_edge() method of parent EdgeList, since all 
   | boundary edges must be defined with an appropriate boundary 
-  | marker (integers > 0)
+  | color (integers > 0)
   ------------------------------------------------------------------*/
   Edge& insert_edge(const_iterator pos, Vertex& v1, Vertex& v2, 
-                    int marker)
+                    int color)
   { 
-    ASSERT( (marker >= 0), 
-            "Boundary markers must be greater than zero");
+    ASSERT( (color >= 0), 
+            "Edge colors must be greater than zero");
 
-    Edge& new_edge = EdgeList::insert_edge(pos, v1, v2, marker); 
+    Edge& new_edge = EdgeList::insert_edge(pos, v1, v2, 
+                                           color); 
+
+    new_edge.add_property( EdgeProperty::on_boundary);
 
     return new_edge;
   }
@@ -186,25 +189,25 @@ public:
   /*------------------------------------------------------------------
   | Override add_edge() method of parent EdgeList, since all 
   | boundary edges must be defined with an appropriate boundary 
-  | marker (integers > 0)
+  | color (integers > 0)
   ------------------------------------------------------------------*/
-  Edge& add_edge(Vertex& v1, Vertex& v2, int marker)
-  { return this->insert_edge( edges_.end(), v1, v2, marker ); }
+  Edge& add_edge(Vertex& v1, Vertex& v2, int color)
+  { return this->insert_edge( edges_.end(), v1, v2, color ); }
 
   /*------------------------------------------------------------------
   | Set the boundary to a shape that is defined from a list of 
   | connected vertices
   ------------------------------------------------------------------*/
   void set_shape_from_coordinates(const std::vector<Vec2d>& v_coords,
-                                  const std::vector<int>& markers, 
+                                  const std::vector<int>& colors, 
                                   const std::vector<Vec2d>& v_props)
-  { create_boundary_shape(v_coords, v_props, markers); }
+  { create_boundary_shape(v_coords, v_props, colors); }
 
   void set_shape_from_coordinates(const std::vector<Vec2d>& v_coords,
-                                  const std::vector<int>& markers) 
+                                  const std::vector<int>& colors) 
   { 
     std::vector<Vec2d> v_props ( v_coords.size(), {-1.0, -1.0} );
-    create_boundary_shape(v_coords, v_props, markers); 
+    create_boundary_shape(v_coords, v_props, colors); 
   }
 
   /*------------------------------------------------------------------
@@ -217,36 +220,36 @@ public:
 
     create_boundary_shape(reader.vertex_coords(), 
                           reader.vertex_props(), 
-                          reader.edge_markers());
+                          reader.edge_colors());
 
   } // Boundary::set_shape_from_csv()
 
   /*------------------------------------------------------------------
   | Set the boundary to square shape
   ------------------------------------------------------------------*/
-  void set_shape_square(int marker, 
+  void set_shape_square(int color, 
                         const Vec2d& xy, double w,
                         double mesh_size=0.0, double mesh_range=0.0)
   {
-    set_shape_rectangle(marker, xy, w, w, mesh_size, mesh_range);
+    set_shape_rectangle(color, xy, w, w, mesh_size, mesh_range);
 
   } // Boundary::set_shape_square()
 
   /*------------------------------------------------------------------
   | Set the boundary to equilateral triangle
   ------------------------------------------------------------------*/
-  void set_shape_triangle(int marker,
+  void set_shape_triangle(int color,
                           const Vec2d& xy, double a,
                           double mesh_size=0.0, double mesh_range=0.0)
   {
-    set_shape_circle(marker, xy, a/sqrt(3), 3, mesh_size, mesh_range);
+    set_shape_circle(color, xy, a/sqrt(3), 3, mesh_size, mesh_range);
 
   } // Boundary::set_shape_square()
 
   /*------------------------------------------------------------------
   | Set the boundary to rectangular shape
   ------------------------------------------------------------------*/
-  void set_shape_rectangle(int marker,
+  void set_shape_rectangle(int color,
                            const Vec2d& xy, double w, double h,
                            double mesh_size=0.0, double mesh_range=0.0)
   {
@@ -267,16 +270,16 @@ public:
       {mesh_size, mesh_range},
     };
 
-    std::vector<int> e_markers(4, marker);
+    std::vector<int> e_colors(4, color);
 
-    create_boundary_shape(v_shape, v_properties, e_markers);
+    create_boundary_shape(v_shape, v_properties, e_colors);
 
   } // Boundary::set_shape_rectangle()
 
   /*------------------------------------------------------------------
   | Set the boundary to circular shape
   ------------------------------------------------------------------*/
-  void set_shape_circle(int marker,
+  void set_shape_circle(int color,
                         const Vec2d& xy, double r, size_t n=30,
                         double mesh_size=0.0, double mesh_range=0.0)
   {
@@ -285,7 +288,7 @@ public:
 
     std::vector<Vec2d> v_shape;
     std::vector<Vec2d> v_properties;
-    std::vector<int>   e_markers;
+    std::vector<int>   e_colors;
 
     double delta_a = 2.0 * M_PI / static_cast<double>(n);
 
@@ -296,10 +299,10 @@ public:
 
       v_shape.push_back( xy + r * d_xy );
       v_properties.push_back( {mesh_size, mesh_range} );
-      e_markers.push_back( marker );
+      e_colors.push_back( color );
     }
 
-    create_boundary_shape(v_shape, v_properties, e_markers);
+    create_boundary_shape(v_shape, v_properties, e_colors);
 
   } // Boundary::set_shape_Circle()
 
@@ -311,7 +314,7 @@ private:
   ------------------------------------------------------------------*/
   void create_boundary_shape(const std::vector<Vec2d>& v_shape,
                              const std::vector<Vec2d>& v_properties,
-                             const std::vector<int>& e_markers)
+                             const std::vector<int>& e_colors)
   {
     // Do nothinng if the boundary contains no edges
     if ( edges_.size() > 0 )
@@ -352,7 +355,7 @@ private:
       for (int i = 0; i < N; ++i)
       {
         int j = MOD(i+1, N);
-        add_edge( *new_verts[i], *new_verts[j], e_markers[i] );
+        add_edge( *new_verts[i], *new_verts[j], e_colors[i] );
       }
     }
     else 
@@ -360,7 +363,7 @@ private:
       for (int i = N-1; i >= 0; --i)
       {
         int j = MOD(i+1, N);
-        add_edge( *new_verts[j], *new_verts[i], e_markers[j] );
+        add_edge( *new_verts[j], *new_verts[i], e_colors[j] );
       }
     }
   };

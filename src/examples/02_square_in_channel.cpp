@@ -54,10 +54,10 @@ bool square_in_channel()
   Vertex& v2 = domain.add_vertex(  4.0,  1.0 );
   Vertex& v3 = domain.add_vertex(  0.0,  1.0 );
 
-  b_ext.add_edge( v0, v1, 2 ); // 2: Marker for bottom edge
-  b_ext.add_edge( v1, v2, 3 ); // 3: Marker for right edge
-  b_ext.add_edge( v2, v3, 2 ); // 2: Marker for top edge
-  b_ext.add_edge( v3, v0, 1 ); // 1: Marker for left edge
+  b_ext.add_edge( v0, v1, 2 ); // 2: Color for bottom edge
+  b_ext.add_edge( v1, v2, 3 ); // 3: Color for right edge
+  b_ext.add_edge( v2, v3, 2 ); // 2: Color for top edge
+  b_ext.add_edge( v3, v0, 1 ); // 1: Color for left edge
 
   /*------------------------------------------------------------------
   | However, compared to providing the edges in terms of closed
@@ -81,7 +81,7 @@ bool square_in_channel()
   Vertex& v6 = domain.add_vertex( 0.65, 0.65, 0.03, 0.25 );
   Vertex& v7 = domain.add_vertex( 0.65, 0.35, 0.03, 0.25 );
 
-  b_int.add_edge( v4, v5, 4 ); // Use marker 4 for all interior edges
+  b_int.add_edge( v4, v5, 4 ); // Use color 4 for all interior edges
   b_int.add_edge( v5, v6, 4 ); // ...
   b_int.add_edge( v6, v7, 4 );
   b_int.add_edge( v7, v4, 4 );

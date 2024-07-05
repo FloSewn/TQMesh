@@ -20,8 +20,8 @@
 #include "SmoothingStrategy.h"
 #include "RefinementStrategy.h"
 #include "ModificationStrategy.h"
-#include "TriangulationStrategy.h"
-#include "QuadLayerStrategy.h"
+#include "Triangulation.h"
+#include "QuadLayering.h"
 
 namespace TQMesh {
 
@@ -157,92 +157,92 @@ public:
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  QuadLayerStrategy& quad_layer_generation(Mesh& mesh)
+  QuadLayering& quad_layer_generation(Mesh& mesh)
   {
     if ( meshing_algorithm_type_ != MeshingAlgorithm::QuadLayer ||
          &meshing_algorithm_->mesh() != &mesh )
       if ( !set_algorithm(mesh, MeshingAlgorithm::QuadLayer) )
         TERMINATE("MeshGenerator::quad_layer_generation(): Invalid mesh provided.");
 
-    return *dynamic_cast<QuadLayerStrategy*>(meshing_algorithm_.get());
+    return *dynamic_cast<QuadLayering*>(meshing_algorithm_.get());
   }
 
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  TriangulationStrategy& triangulation(Mesh& mesh)
+  Triangulation& triangulation(Mesh& mesh)
   {
     if ( meshing_algorithm_type_ != MeshingAlgorithm::Triangulation ||
          &meshing_algorithm_->mesh() != &mesh )
       if ( !set_algorithm(mesh, MeshingAlgorithm::Triangulation) )
         TERMINATE("MeshGenerator::triangulation(): Invalid mesh provided.");
 
-    return *dynamic_cast<TriangulationStrategy*>(meshing_algorithm_.get());
+    return *dynamic_cast<Triangulation*>(meshing_algorithm_.get());
   }
 
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  LaplaceSmoothingStrategy& laplace_smoothing(Mesh& mesh)
+  LaplaceSmoothing& laplace_smoothing(Mesh& mesh)
   {
     if ( smoothing_algorithm_type_ != SmoothingAlgorithm::Laplace ||
          &smoothing_algorithm_->mesh() != &mesh )
       if ( !set_algorithm(mesh, SmoothingAlgorithm::Laplace) )
         TERMINATE("MeshGenerator::laplace_smoothing(): Invalid mesh provided.");
 
-    return *dynamic_cast<LaplaceSmoothingStrategy*>(smoothing_algorithm_.get());
+    return *dynamic_cast<LaplaceSmoothing*>(smoothing_algorithm_.get());
   }
 
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  TorsionSmoothingStrategy& torsion_smoothing(Mesh& mesh)
+  TorsionSmoothing& torsion_smoothing(Mesh& mesh)
   {
     if ( smoothing_algorithm_type_ != SmoothingAlgorithm::Torsion ||
          &smoothing_algorithm_->mesh() != &mesh )
       if ( !set_algorithm(mesh, SmoothingAlgorithm::Torsion) )
         TERMINATE("MeshGenerator::torsion_smoothing(): Invalid mesh provided.");
 
-    return *dynamic_cast<TorsionSmoothingStrategy*>(smoothing_algorithm_.get());
+    return *dynamic_cast<TorsionSmoothing*>(smoothing_algorithm_.get());
   }
 
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  MixedSmoothingStrategy& mixed_smoothing(Mesh& mesh)
+  MixedSmoothing& mixed_smoothing(Mesh& mesh)
   {
     if ( smoothing_algorithm_type_ != SmoothingAlgorithm::Mixed ||
          &smoothing_algorithm_->mesh() != &mesh )
       if ( !set_algorithm(mesh, SmoothingAlgorithm::Mixed) )
         TERMINATE("MeshGenerator::mixed_smoothing(): Invalid mesh provided.");
 
-    return *dynamic_cast<MixedSmoothingStrategy*>(smoothing_algorithm_.get());
+    return *dynamic_cast<MixedSmoothing*>(smoothing_algorithm_.get());
   }
 
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  QuadRefinementStrategy& quad_refinement(Mesh& mesh)
+  QuadRefinement& quad_refinement(Mesh& mesh)
   {
     if ( refinement_algorithm_type_ != RefinementAlgorithm::Quad ||
          &refinement_algorithm_->mesh() != &mesh )
       if ( !set_algorithm(mesh, RefinementAlgorithm::Quad) )
         TERMINATE("MeshGenerator::quad_refinement(): Invalid mesh provided.");
 
-    return *dynamic_cast<QuadRefinementStrategy*>(refinement_algorithm_.get());
+    return *dynamic_cast<QuadRefinement*>(refinement_algorithm_.get());
   }
 
   /*------------------------------------------------------------------
   | 
   ------------------------------------------------------------------*/
-  Tri2QuadStrategy& tri2quad_modification(Mesh& mesh)
+  Tri2QuadModification& tri2quad_modification(Mesh& mesh)
   {
     if ( modification_algorithm_type_ != ModificationAlgorithm::Tri2Quad ||
          &modification_algorithm_->mesh() != &mesh )
       if ( !set_algorithm(mesh, ModificationAlgorithm::Tri2Quad) )
         TERMINATE("MeshGenerator::tri2quad_modification(): Invalid mesh provided.");
 
-    return *dynamic_cast<Tri2QuadStrategy*>(modification_algorithm_.get());
+    return *dynamic_cast<Tri2QuadModification*>(modification_algorithm_.get());
   }
 
 
@@ -264,13 +264,13 @@ private:
     {
       case MeshingAlgorithm::Triangulation:
         meshing_algorithm_ 
-          = std::make_unique<TriangulationStrategy>(mesh, *domain);
+          = std::make_unique<Triangulation>(mesh, *domain);
         meshing_algorithm_type_ = MeshingAlgorithm::Triangulation;
         break;
 
       case MeshingAlgorithm::QuadLayer:
         meshing_algorithm_ 
-          = std::make_unique<QuadLayerStrategy>(mesh, *domain);
+          = std::make_unique<QuadLayering>(mesh, *domain);
         meshing_algorithm_type_ = MeshingAlgorithm::QuadLayer;
         break;
 
@@ -297,19 +297,19 @@ private:
     {
       case SmoothingAlgorithm::Laplace:
         smoothing_algorithm_ 
-          = std::make_unique<LaplaceSmoothingStrategy>(mesh, *domain);
+          = std::make_unique<LaplaceSmoothing>(mesh, *domain);
         smoothing_algorithm_type_ = SmoothingAlgorithm::Laplace;
         break;
 
       case SmoothingAlgorithm::Torsion:
         smoothing_algorithm_ 
-          = std::make_unique<TorsionSmoothingStrategy>(mesh, *domain);
+          = std::make_unique<TorsionSmoothing>(mesh, *domain);
         smoothing_algorithm_type_ = SmoothingAlgorithm::Torsion;
         break;
 
       case SmoothingAlgorithm::Mixed:
         smoothing_algorithm_ 
-          = std::make_unique<MixedSmoothingStrategy>(mesh, *domain);
+          = std::make_unique<MixedSmoothing>(mesh, *domain);
         smoothing_algorithm_type_ = SmoothingAlgorithm::Mixed;
         break;
 
@@ -336,7 +336,7 @@ private:
     {
       case RefinementAlgorithm::Quad:
         refinement_algorithm_ 
-          = std::make_unique<QuadRefinementStrategy>(mesh, *domain);
+          = std::make_unique<QuadRefinement>(mesh, *domain);
         refinement_algorithm_type_ = RefinementAlgorithm::Quad;
         break;
 
@@ -363,7 +363,7 @@ private:
     {
       case ModificationAlgorithm::Tri2Quad:
         modification_algorithm_ 
-          = std::make_unique<Tri2QuadStrategy>(mesh, *domain);
+          = std::make_unique<Tri2QuadModification>(mesh, *domain);
         modification_algorithm_type_ = ModificationAlgorithm::Tri2Quad;
         break;
 

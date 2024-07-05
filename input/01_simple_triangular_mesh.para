@@ -25,7 +25,7 @@ Define mesh:
   # Boundaries are generally defined in terms of squeces of 
   # vertex coordinates that define a closed polygonal chain.
   # Additionally, each boundary edge is associated to an 
-  # integer which we refer to as "marker".
+  # integer which we refer to as "color".
   # We will define the exterior boundary of our mesh, that 
   # has the following shape:
   #     
@@ -42,7 +42,7 @@ Define mesh:
   #         (0.0, 0.0)                 (5.0, 0.0)
   #
   # The tuples denote boundary vertex coordinates and the 
-  # numbers in brackets denote corresponding edge markers.
+  # numbers in brackets denote corresponding edge colors.
   #---------------------------------------------------------
   Define exterior boundary:
    0.0, 0.0, 1
@@ -68,7 +68,7 @@ Define mesh:
   #
   # This boundary is made up from the vertex sequence: 
   #        [(1.5,1.5), (1.5,3.5), (3.5,3.5)] 
-  # All edges will obtain the marker number "3". 
+  # All edges will obtain the color number "3". 
   #
   # At vertex (1.5,1.5), we will refine the mesh locally by 
   # providing additional refinement properties to it.

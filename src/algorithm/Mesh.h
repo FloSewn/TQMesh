@@ -301,13 +301,20 @@ public:
   | Add new interior mesh edge   
   ------------------------------------------------------------------*/
   Edge& add_interior_edge(Vertex& v1, Vertex& v2)
-  { return intr_edges_.add_edge(v1, v2, INTERIOR_EDGE_MARKER); }
+  { 
+    Edge& new_edge = intr_edges_.add_edge(v1, v2, INTERIOR_EDGE_COLOR);
+    return new_edge;
+  }
 
   /*------------------------------------------------------------------
   | Add new boundary mesh edge   
   ------------------------------------------------------------------*/
-  Edge& add_boundary_edge(Vertex& v1, Vertex& v2, int marker)
-  { return bdry_edges_.add_edge(v1, v2, marker); }
+  Edge& add_boundary_edge(Vertex& v1, Vertex& v2, int color)
+  { 
+    Edge& new_edge = bdry_edges_.add_edge(v1, v2, color); 
+    new_edge.add_property(EdgeProperty::on_boundary);
+    return new_edge;
+  }
 
   /*------------------------------------------------------------------
   | These functions remove mesh entities and makes sure, that the 
@@ -403,7 +410,7 @@ inline std::ostream& operator<<(std::ostream& os, const Mesh& mesh)
       << std::setw(4) << e_ptr->v1().index() << "," 
       << std::setw(4) << e_ptr->v2().index() << ","
       << std::setw(4) << e_ptr->facet_l()->index() << ","
-      << std::setw(4) << e_ptr->marker() << "\n";
+      << std::setw(4) << e_ptr->color() << "\n";
 
   // Print out all interface edges to other meshes
   os << "INTERFACEEDGES " << interface_edges.size() << "\n";

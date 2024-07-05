@@ -1,5 +1,37 @@
 # Changelog
 
+## Planned changes for upcoming release
+
+- Fix quad layer bug described in issue [#??]
+- Implement fixed number of segments on boundary edges / periodic edges?
+- Enhance interface for definition of fixed edges (similar to boundary edge definition) and add interface to define fixed edges through CSV files
+
+### Fixed
+- Fixed bug in `Log.h` which resulted from the additional `static` declaration on `LOG_PROPERTIES` in commit [`5c2cebc`](https://github.com/FloSewn/TQMesh/commit/5c2cebc).
+  Due to this declaration, `LOG_PROPERTIES` was no longer treated as singleton and thus the logging properties were no longer used by `LOG`.
+  The singleton approach for `LogProperties` and `LOG_PROPERTIES` is now implemented in a different way.
+- Fixed vertices are now actually placed into the domain. Before, they were only considered in the mesh size function.
+
+### Changed
+
+- Put `FrontInitData` into separate file
+- Change initialization of `FrontInitData` structure for handling fixed interior edges
+- Change name of `Edge` attribute `marker` to `color`
+- Change name of `TriangulationStrategy` to `Triangulation`
+- Change name of `QuadLayerStrategy` to `QuadLayering`
+- Change name of `QuadRefinementStrategy` to `QuadRefinement`
+- Change name of `Tri2QuadStrategy` to `Tri2QuadModification`
+- Change name of `LaplaceSmoothingStrategy` to `LaplaceSmoothing`
+- Change name of `TorsionSmoothingStrategy` to `TorsionSmoothing`
+- Change name of `MixedSmoothingStrategy` to `MixedSmoothing`
+
+### Added
+
+- `EdgeProperty` - similarly to `VertexProperty`, but for edges
+- Implementation of fixed interior edges
+- New example file `input/09_fixed_edges.para`
+
+
 ## [1.3.2] - 2024-06-10
 
 ### Fixed

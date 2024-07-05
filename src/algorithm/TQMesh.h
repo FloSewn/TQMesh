@@ -25,6 +25,7 @@
 #include "EntityChecks.h"
 
 #include "Mesh.h"
+#include "FrontInitData.h"
 #include "Front.h"
 #include "FrontUpdate.h"
 #include "MeshCleanup.h"
@@ -36,9 +37,9 @@
 
 #include "ModificationStrategy.h"
 #include "SmoothingStrategy.h"
-#include "QuadLayerStrategy.h"
+#include "QuadLayering.h"
 #include "RefinementStrategy.h"
-#include "TriangulationStrategy.h"
+#include "Triangulation.h"
 
 #include "MeshGenerator.h"
 

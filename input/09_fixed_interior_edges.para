@@ -1,0 +1,67 @@
+#===========================================================
+#                         TQMESH     
+#===========================================================
+
+#-----------------------------------------------------------
+#                     MESH DEFINITION
+#-----------------------------------------------------------
+Define mesh:
+  Element size: 0.35 
+  Element color: 1
+  Meshing algorithm: Triangulation
+  Number of quad refinements: 1
+  Number of smoothing iterations: 3
+
+  # Output formats: COUT, TXT, VTU
+  Output file format: TXT
+  Output file prefix: ./fixed_edges
+
+  #---------------------------------------------------------
+  #                        BOUNDARIES
+  #---------------------------------------------------------
+  Define boundary vertices:
+   1.0, 0.0                 # Vertex 0
+   6.0, 0.5                 # Vertex 1
+   4.0, 5.0                 # Vertex 2
+  -1.0, 4.5                 # Vertex 3
+  End boundary vertices
+   
+  Define exterior boundary edges:
+    0, 1, 1 
+    1, 2, 2 
+    2, 3, 3 
+    3, 0, 4 
+  End exterior boundary edges
+
+  #---------------------------------------------------------
+  #               FIXED VERTICES & FIXED EDGES
+  #
+  # Similar to interior / exterior boundary edges, we define
+  # fixed edges by providing the IDs of the respective start
+  # and ending vertices. However, fixed vertices do not 
+  # require the additional color values. 
+  # Note, that the vertex ID count starts with boundary v
+  # vertices and proceeds with fixed vertices - as indicated 
+  # in the comments.
+  #---------------------------------------------------------
+  Define fixed vertices:
+     2.5, 2.5, 0.05, 1.0    # Vertex 5
+     1.5, 1.5, 0.05, 1.0    # Vertex 6
+     3.5, 1.5, 0.05, 1.0    # Vertex 7
+     3.5, 3.5, 0.05, 1.0    # Vertex 8
+     1.5, 3.5, 0.05, 1.0    # Vertex 9
+  End fixed vertices
+
+  Define fixed edges:
+   4, 5             # This edge connects vertex 4 and vertex 5,
+   4, 6             # this edge connects vertex 4 and vertex 6
+   4, 7             # and so on ...
+   4, 8
+   5, 6
+   6, 7
+   7, 8
+   8, 5
+  End fixed edges
+
+End mesh
+

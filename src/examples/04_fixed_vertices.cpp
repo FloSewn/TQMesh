@@ -58,10 +58,10 @@ bool fixed_vertices()
     { 0.0,  3.0 },
   };
 
-  std::vector<int> edge_markers ( vertex_coordinates.size(), 1 );
+  std::vector<int> edge_colors ( vertex_coordinates.size(), 1 );
 
   Boundary& boundary = domain.add_exterior_boundary();
-  boundary.set_shape_from_coordinates(vertex_coordinates, edge_markers);
+  boundary.set_shape_from_coordinates(vertex_coordinates, edge_colors);
 
   /*------------------------------------------------------------------
   | Here, we add two vertices in the interior of the domain,

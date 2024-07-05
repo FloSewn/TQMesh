@@ -24,6 +24,57 @@ using namespace CppUtils;
 *********************************************************************/
 class EdgeList;
 
+/*********************************************************************
+* Different properties for mesh edges 
+* Edges can be classified as: 
+* - Being located on the domain boundary ("on_boundary")
+*   If they are not located on the boundary, they are classified as 
+*   internal edges (which is also the default condition)
+* - Being "ghost"-edges ("is_ghost") - these are special internal 
+*   edges, that are required for the placement of interior edges 
+*   by the user
+*********************************************************************/
+enum class EdgeProperty : uint8_t {
+  no_property    = 0b00000000,
+  on_boundary    = 0b00000001,
+  is_fixed       = 0b00000010,
+  is_ghost       = 0b00000100,
+};
+
+// Overloaded bitwise NOT operator
+static inline EdgeProperty operator~(EdgeProperty prop) 
+{ return static_cast<EdgeProperty>(~static_cast<uint8_t>(prop)); }
+
+// Overloaded compound bitwise OR operator for adding properties
+static inline EdgeProperty&
+operator|=(EdgeProperty& lhs, EdgeProperty rhs) 
+{ 
+  lhs = static_cast<EdgeProperty>(
+    static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs)
+  );
+  return lhs;
+}
+
+// Overloaded compound bitwise AND operator for removing properties
+static inline EdgeProperty& 
+operator&=(EdgeProperty& lhs, EdgeProperty rhs) 
+{
+  lhs = static_cast<EdgeProperty>(
+    static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs)
+  );
+  return lhs;
+}
+
+// Overloaded bitwise AND operator for checking edge properties
+static inline bool 
+operator&(EdgeProperty lhs, EdgeProperty rhs) 
+{ return (static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs)) != 0; }
+
+// Overloaded bitwise OR operator for checking edge properties
+static inline bool 
+operator|(EdgeProperty lhs, EdgeProperty rhs) 
+{ return (static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs)) != 0; }
+
 
 /*********************************************************************
 * A simple edge class that is stored in the Container
@@ -44,12 +95,12 @@ public:
   /*------------------------------------------------------------------
   | Constructor 
   ------------------------------------------------------------------*/
-  Edge(Vertex& v1, Vertex& v2, EdgeList& edgelist, int m) 
+  Edge(Vertex& v1, Vertex& v2, EdgeList& edgelist, int color) 
   : ContainerEntry<Edge>( 0.5 * ( v1.xy()+v2.xy() ) )
   , v1_       {&v1}
   , v2_       {&v2}
   , edgelist_ {&edgelist} 
-  , marker_   {m}
+  , color_    {color}
   {
     ASSERT((v1_ && v2_),
         "Failed to create edge structure due to given nullptr." );
@@ -66,7 +117,7 @@ public:
   /*------------------------------------------------------------------
   | Getters 
   ------------------------------------------------------------------*/
-  int marker() const { return marker_; }
+  int color() const { return color_; }
 
   EdgeList& edgelist() { return *edgelist_; }
   const EdgeList& edgelist() const { return *edgelist_; }
@@ -98,17 +149,24 @@ public:
   void twin_edge(Edge* e) { twin_edge_ = e; }
 
   /*------------------------------------------------------------------
-  | Function returns, if edges is located on a boundary
-  | or if it is in the interior of the domain
+  | Handle edge properties 
   ------------------------------------------------------------------*/
-  bool on_boundary() const 
-  { return ( marker_ != INTERIOR_EDGE_MARKER ); }
-  bool is_interior() const
-  { return !on_boundary(); }
+  const EdgeProperty& properties() const { return properties_; }
+  void add_property(EdgeProperty p) { properties_ |= p; }
+  void set_property(EdgeProperty p) { properties_ = p; }
+  void remove_property(EdgeProperty p) { properties_ &= ~p; }
+  bool has_property(EdgeProperty p) const { return (properties_ & p); }
+  bool has_no_property() const 
+  { return (properties_ == EdgeProperty::no_property); }
+
+  bool on_boundary() const { return has_property(EdgeProperty::on_boundary); }
+  bool is_interior() const { return !on_boundary(); }
+  bool is_ghost() const { return has_property(EdgeProperty::is_ghost); }
+  bool is_fixed() const { return has_property(EdgeProperty::is_fixed); }
 
   /*------------------------------------------------------------------
   | Get the next edge, that is connected to the ending vertex of  
-  | this edge. The next edge must also have the same marker
+  | this edge. The next edge must also have the same color
   | as this edge.
   | The first vertex of the next edge must be the last vertex of the 
   | current edge.
@@ -136,7 +194,7 @@ public:
 
   /*------------------------------------------------------------------
   | Get the previous edge, that is connected to the starting vertex of  
-  | this edge. The previous edge must also have the same marker
+  | this edge. The previous edge must also have the same color
   | as this edge.
   | The last vertex of the found edge must be the first vertex of the
   | current edge.
@@ -206,7 +264,7 @@ private:
   Vertex*             v1_       { nullptr };
   Vertex*             v2_       { nullptr };
   EdgeList*           edgelist_ { nullptr };
-  int                 marker_   { -1 };
+  int                 color_    { -1 };
 
   // Edge properties
   double              length_      { 0.0 };
@@ -222,6 +280,8 @@ private:
 
   // Twin edge of a neighbor mesh
   Edge*               twin_edge_ {nullptr};
+
+  EdgeProperty        properties_ { EdgeProperty::no_property};
 
 }; // Edge 
 

@@ -25,16 +25,16 @@ Define mesh:
   # circles, squares and triangles.
   #
   # Arguments for circular interior boundary: 
-  #   (marker, x-center, y-center, radius, no. of vertices)
+  #   (color, x-center, y-center, radius, no. of vertices)
   #
   # Arguments for rectangular interior boundary:
-  #   (marker, x-center, y-center, width, height)
+  #   (color, x-center, y-center, width, height)
   #
   # Arguments for squared interior boundary: 
-  #   (marker, x-center, y-center, edge length)
+  #   (color, x-center, y-center, edge length)
   #
   # Arguments for triangular interior boundary: 
-  #   (marker, x-center, y-center, edge length)
+  #   (color, x-center, y-center, edge length)
   #
   #---------------------------------------------------------
   Define exterior rectangular boundary: 1, 1.0, 1.0, 8.00, 8.00
