@@ -227,15 +227,7 @@ public:
       int color = e->color();
 
       if ( e->is_fixed() )
-      {
-        ASSERT( v1.has_property( VertexProperty::is_fixed ),
-          "MeshBuilder::prepare_mesh(): "
-          "Missing vertex property \"is_fixed\".");
-        ASSERT( v2.has_property( VertexProperty::is_fixed ),
-          "MeshBuilder::prepare_mesh():  "
-          "Missing vertex property \"is_fixed\".");
         continue;
-      }
 
       Edge& e_new = mesh.boundary_edges().add_edge( v1, v2, color );
       e_new.set_property( e->properties() );
