@@ -23,10 +23,10 @@ bool fixed_edges()
   Domain domain { f };
 
   // Vertices
-  Vertex& v0 = domain.add_vertex( 1.0,  0.0 ); 
-  Vertex& v1 = domain.add_vertex( 6.0,  0.5 ); 
-  Vertex& v2 = domain.add_vertex( 4.0,  5.0 );
-  Vertex& v3 = domain.add_vertex(-1.0,  4.5 );
+  Vertex& v0 = domain.add_vertex( 1.0,  0.0, 0.05, 0.1 ); 
+  Vertex& v1 = domain.add_vertex( 6.0,  0.5, 0.05, 0.1 ); 
+  Vertex& v2 = domain.add_vertex( 4.0,  5.0, 0.05, 0.1 );
+  Vertex& v3 = domain.add_vertex(-1.0,  4.5, 0.05, 0.1 );
 
   Boundary&  b_ext = domain.add_exterior_boundary();
   b_ext.add_edge( v0, v1, 1 ); // 1: Color for bottom edge
@@ -52,6 +52,17 @@ bool fixed_edges()
   domain.add_fixed_edge( v7, v8 );
   domain.add_fixed_edge( v8, v5 );
 
+  // It is possible to generate fixed edges from normal vertices
+  // and fixed vertices
+  domain.add_fixed_edge( v0, v5 );
+  domain.add_fixed_edge( v0, v6 );
+  domain.add_fixed_edge( v1, v6 );
+  domain.add_fixed_edge( v1, v7 );
+  domain.add_fixed_edge( v2, v7 );
+  domain.add_fixed_edge( v2, v8 );
+  domain.add_fixed_edge( v3, v8 );
+  domain.add_fixed_edge( v3, v5 );
+
   /*------------------------------------------------------------------
   | Mesh generation 
   ------------------------------------------------------------------*/
@@ -60,7 +71,7 @@ bool fixed_edges()
 
   generator.triangulation(mesh).generate_elements();
 
-  generator.quad_refinement(mesh).refine();
+  //generator.quad_refinement(mesh).refine();
 
   generator.mixed_smoothing(mesh)
     .epsilon(0.7) 
