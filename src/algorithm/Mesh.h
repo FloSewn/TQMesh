@@ -37,15 +37,12 @@ public:
   | Constructor 
   ------------------------------------------------------------------*/
   Mesh(int       mesh_id=DEFAULT_MESH_ID,
-       int       element_color=DEFAULT_ELEMENT_COLOR,
-       double    qtree_scale=ContainerQuadTreeScale,
-       size_t    qtree_items=ContainerQuadTreeItems, 
-       size_t    qtree_depth=ContainerQuadTreeDepth)
+       int       element_color=DEFAULT_ELEMENT_COLOR)
   : mesh_id_    { ABS(mesh_id) }
   , elem_color_ { ABS(element_color) }
-  , verts_      { qtree_scale, qtree_items, qtree_depth }
-  , quads_      { qtree_scale, qtree_items, qtree_depth }
-  , tris_       { qtree_scale, qtree_items, qtree_depth }
+  , verts_      { ContainerFactory<Vertex>::build_container() }
+  , quads_      { ContainerFactory<Quad>::build_container() }
+  , tris_       { ContainerFactory<Triangle>::build_container() }
   { }
 
   /*------------------------------------------------------------------

@@ -45,13 +45,11 @@ public:
   const_iterator begin() const { return items_.begin(); }
   const_iterator end() const { return items_.end(); }
 
-  /*----------------------------------------------------------------------------
+  /*------------------------------------------------------------------
   | Constructor
-  ----------------------------------------------------------------------------*/
-  Container(double        qtree_scale = ContainerQuadTreeScale,
-            size_t        qtree_items = ContainerQuadTreeItems, 
-            size_t        qtree_depth = ContainerQuadTreeDepth)
-  : qtree_ { qtree_scale, qtree_items, qtree_depth }  
+  ------------------------------------------------------------------*/
+  Container()
+  : qtree_ { QuadTreeBuilder<T,double>::get_instance().build() }  
   {}
 
 
@@ -152,8 +150,8 @@ public:
     if (!in_qtree)
     {
       LOG(ERROR) << 
-        "Failed to add element at location " << ptr->xy() << 
-        " to the quad tree. "
+        "Failed to add element of type \"" << typeid(T).name() 
+        << "\" at location " << ptr->xy() << " to quad tree. "
         "Maybe the element is outside of the defined domain.";
     }
     

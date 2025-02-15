@@ -107,7 +107,7 @@ void is_inside()
 *********************************************************************/
 void interior_exterior()
 {
-  Container<Vertex> vertices { };
+  Container<Vertex> vertices { ContainerFactory<Vertex>::build_container() };
 
   Vertex& v1 = vertices.push_back( 1.0, 1.0 );
   Vertex& v2 = vertices.push_back( 2.0, 1.0 );
@@ -154,7 +154,7 @@ void interior_exterior()
 *********************************************************************/
 void clear_edges()
 {
-  Container<Vertex> vertices { };
+  Container<Vertex> vertices { ContainerFactory<Vertex>::build_container() };
 
   Vertex& v1 = vertices.push_back( 1.0, 1.0 );
   Vertex& v2 = vertices.push_back( 2.0, 1.0 );
@@ -198,7 +198,7 @@ void clear_edges()
 *********************************************************************/
 void shapes()
 {
-  Container<Vertex> vertices { };
+  Container<Vertex> vertices { ContainerFactory<Vertex>::build_container() };
 
   // Define exterior boundary with rectangular shape 
   Boundary extr_bdry { vertices, BdryType::EXTERIOR };

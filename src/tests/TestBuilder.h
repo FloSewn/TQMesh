@@ -15,10 +15,27 @@
 #include "Edge.h"
 #include "Domain.h"
 #include "Boundary.h"
+#include "TQMeshSetup.h"
 
 namespace TQMesh {
 
 using namespace CppUtils;
+
+/*********************************************************************
+* This class ensures that the quad tree scale is properyl set 
+* before initializing the domain of the TestBuilder, since some 
+* test require a dedicated value for the quadtree scale.
+*********************************************************************/
+class TestBuilderInitializer
+{
+public:
+  TestBuilderInitializer(double qtree_scale)
+  {
+    if (qtree_scale > 0)
+      TQMeshSetup::get_instance().set_quadtree_scale( qtree_scale );
+  }
+
+}; // TestBuilderInitializer
 
 /*********************************************************************
 * 
@@ -28,8 +45,10 @@ class TestBuilder
 public:
 
   TestBuilder(const std::string& testcase, 
-              UserSizeFunction f)
-  : domain_ { f }
+              UserSizeFunction f, 
+              double domain_scale=0.0)
+  : initializer_ { domain_scale }
+  , domain_ { f }
   {
     if      ( testcase == "UnitSquare" )
       init_UnitSquare();
@@ -65,7 +84,8 @@ private:
   ------------------------------------------------------------------*/
   void init_UnitSquare()
   {
-    domain_.quad_tree_scale( 1.5 );
+    TQMeshSetup::get_instance().set_quadtree_scale( 1.5 );
+    //domain_.quad_tree_scale( 1.5 );
 
     Boundary& b_ext = domain_.add_exterior_boundary();
 
@@ -86,7 +106,8 @@ private:
   ------------------------------------------------------------------*/
   void init_UnitCircle()
   {
-    domain_.quad_tree_scale( 2.5 );
+    TQMeshSetup::get_instance().set_quadtree_scale( 2.5 );
+    //domain_.quad_tree_scale( 2.5 );
 
     int color         = 1;
     Vec2d center      = { 0.0, 0.0 };
@@ -107,7 +128,8 @@ private:
   ------------------------------------------------------------------*/
   void init_TriangleSquareCircle()
   {
-    domain_.quad_tree_scale( 20.0 );
+    TQMeshSetup::get_instance().set_quadtree_scale( 20.0 );
+    //domain_.quad_tree_scale( 20.0 );
 
     // Exterior boundary
     Boundary& b_ext = domain_.add_exterior_boundary();
@@ -132,7 +154,8 @@ private:
   ------------------------------------------------------------------*/
   void init_RefinedTriangle()
   {
-    domain_.quad_tree_scale( 10.0 );
+    TQMeshSetup::get_instance().set_quadtree_scale( 10.0 );
+    //domain_.quad_tree_scale( 10.0 );
 
     // Exterior boundary
     Boundary&  b_ext = domain_.add_exterior_boundary();
@@ -156,7 +179,8 @@ private:
   ------------------------------------------------------------------*/
   void init_FixedVertices()
   {
-    domain_.quad_tree_scale( 10.0 );
+    TQMeshSetup::get_instance().set_quadtree_scale( 10.0 );
+    //domain_.quad_tree_scale( 10.0 );
 
     Boundary& b_ext = domain_.add_exterior_boundary();
 
@@ -189,7 +213,8 @@ private:
   ------------------------------------------------------------------*/
   void init_LakeSuperior()
   {
-    domain_.quad_tree_scale( 20.0 );
+    TQMeshSetup::get_instance().set_quadtree_scale( 20.0 );
+    //domain_.quad_tree_scale( 20.0 );
 
     std::string source_directory { TQMESH_SOURCE_DIR };
     std::string filepath { source_directory + "/auxiliary/test_data/LakeSuperior.txt" };
@@ -244,7 +269,8 @@ private:
   ------------------------------------------------------------------*/
   void init_SharpStepAndSharpEdge()
   {
-    domain_.quad_tree_scale( 30.0 );
+    TQMeshSetup::get_instance().set_quadtree_scale( 30.0 );
+    //domain_.quad_tree_scale( 30.0 );
 
     Boundary& b_ext = domain_.add_exterior_boundary();
 
@@ -269,7 +295,8 @@ private:
   ------------------------------------------------------------------*/
   void init_NormalStepAndSharpEdge()
   {
-    domain_.quad_tree_scale( 30.0 );
+    TQMeshSetup::get_instance().set_quadtree_scale( 30.0 );
+    //domain_.quad_tree_scale( 30.0 );
 
     Boundary& b_ext = domain_.add_exterior_boundary();
 
@@ -292,7 +319,8 @@ private:
   /*------------------------------------------------------------------
   | Attributes
   ------------------------------------------------------------------*/
-  Domain domain_;
+  TestBuilderInitializer initializer_;
+  Domain                 domain_;
 
 }; // TestBuilder
 

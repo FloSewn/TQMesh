@@ -20,7 +20,12 @@ using namespace TQMesh;
 bool simple_triangular_mesh()
 {
   /*------------------------------------------------------------------
-  | First, we define the size function. This function describes
+  | 
+  ------------------------------------------------------------------*/
+  TQMeshSetup::get_instance().set_quadtree_scale( 20.0 );
+
+  /*------------------------------------------------------------------
+  | Here, we define the size function. This function describes
   | the size of the mesh elements with respect to their location 
   | in the domain. In this case, we use a constant size of 0.35
   ------------------------------------------------------------------*/
@@ -30,7 +35,7 @@ bool simple_triangular_mesh()
   | Next, we need to define the domain. It requires the size function
   | as argument.
   ------------------------------------------------------------------*/
-  Domain domain { f, 20.0 };
+  Domain domain { f };
 
   /*------------------------------------------------------------------
   | Now we define the exteriour boundary of the domain. To do this, 

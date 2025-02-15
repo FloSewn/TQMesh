@@ -32,7 +32,7 @@ using namespace TQMesh;
 *********************************************************************/
 void add_remove()
 {
-  Container<Vertex> vertices { };
+  Container<Vertex> vertices { ContainerFactory<Vertex>::build_container() };
 
   Vertex& v1 = vertices.push_back( 1.0, 1.0 );
   Vertex& v2 = vertices.push_back( 2.0, 1.0 );
@@ -89,7 +89,7 @@ void add_remove()
 *********************************************************************/
 void is_inside()
 {
-  Container<Vertex> vertices { };
+  Container<Vertex> vertices { ContainerFactory<Vertex>::build_container() };
 
   Vertex& v1 = vertices.push_back( 1.0, 1.0 );
   Vertex& v2 = vertices.push_back( 2.0, 1.0 );
@@ -132,7 +132,7 @@ void is_inside()
 *********************************************************************/
 void split_edge()
 {
-  Container<Vertex> vertices { };
+  Container<Vertex> vertices { ContainerFactory<Vertex>::build_container() };
 
   Vertex& v1 = vertices.push_back( 1.0, 1.0 );
   Vertex& v2 = vertices.push_back( 2.0, 1.0 );

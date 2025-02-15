@@ -11,6 +11,7 @@
 #include "STLHeaders.h"
 #include "CppUtils.h"
 
+#include "TQMeshSetup.h"
 #include "Edge.h"
 
 namespace TQMesh {
@@ -26,8 +27,8 @@ public:
 
   using EdgeVector = std::vector<Edge*>;
 
-  using iterator       = Container<Edge>::iterator;
-  using const_iterator = Container<Edge>::const_iterator;
+  using iterator       = Edges::iterator;
+  using const_iterator = Edges::const_iterator;
 
   iterator begin() { return edges_.begin(); }
   iterator end() { return edges_.end(); }
@@ -38,7 +39,9 @@ public:
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  EdgeList( Orientation orient ) : orient_ { orient }
+  EdgeList( Orientation orient ) 
+  : orient_ { orient }
+  , edges_ { ContainerFactory<Edge>::build_container() }
   {
     ASSERT( ( orient != Orientation::CL ),
         "Invalid edge list orientation.");
@@ -581,7 +584,7 @@ protected:
   | EdgeList attributes
   ------------------------------------------------------------------*/
   Orientation         orient_;
-  Container<Edge>     edges_ {};
+  Edges               edges_;
   double              area_  {0.0};
 
 

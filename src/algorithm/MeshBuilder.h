@@ -93,9 +93,7 @@ public:
       domain_extent *= domain_enlargement_;
     }
 
-    return { mesh_id, element_color, domain_extent,
-             domain.vertices().quad_tree().max_items(),
-             domain.vertices().quad_tree().max_depth() }; 
+    return { mesh_id, element_color }; 
 
   } // create_empty_mesh()
 
@@ -109,10 +107,7 @@ public:
                         int element_color=DEFAULT_ELEMENT_COLOR)
   {
     return std::move(
-      std::make_unique<Mesh>(mesh_id, element_color,
-                             domain.vertices().quad_tree().scale(),
-                             domain.vertices().quad_tree().max_items(),
-                             domain.vertices().quad_tree().max_depth() )  
+      std::make_unique<Mesh>( mesh_id, element_color )  
     );
 
   } // create_empty_mesh_ptr()

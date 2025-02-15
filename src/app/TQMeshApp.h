@@ -785,13 +785,14 @@ private:
   ------------------------------------------------------------------*/
   void init_mesh_domain(ParaReader& mesh_reader)
   {
+    TQMeshSetup::get_instance().set_quadtree_scale( domain_extent_ );
     // Initialize element size function
     UserSizeFunction size_fun = init_size_function( 
         mesh_reader.get_value<std::string>("size_function") 
     );
 
     // Initialize domain
-    domain_ = std::make_unique<Domain>(size_fun, domain_extent_ );
+    domain_ = std::make_unique<Domain>(size_fun );
 
     print_parameter<std::string>(mesh_reader, "size_function");
 
