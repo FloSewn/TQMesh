@@ -27,8 +27,8 @@ using namespace TQMesh;
 *********************************************************************/
 void initialization()
 {
-  Vertices   vertices { };
-  Triangles  triangles { };
+  Vertices   vertices { ContainerFactory<Vertex>::build_container() };
+  Triangles  triangles { ContainerFactory<Triangle>::build_container() };
 
   Vertex& v1 = vertices.push_back(  0.0,  0.0 );
   Vertex& v2 = vertices.push_back(  2.0,  0.0 );
@@ -75,8 +75,8 @@ void initialization()
 *********************************************************************/
 void intersects_vertex()
 {
-  Vertices   vertices { };
-  Triangles  triangles { };
+  Vertices   vertices { ContainerFactory<Vertex>::build_container() };
+  Triangles  triangles { ContainerFactory<Triangle>::build_container() };
 
   Vertex& v1 = vertices.push_back(  0.0,  0.0 );
   Vertex& v2 = vertices.push_back(  2.0,  0.0 );
@@ -103,7 +103,7 @@ void intersects_vertex()
 *********************************************************************/
 void intersects_domain()
 {
-  Triangles  triangles {};
+  Triangles  triangles { ContainerFactory<Triangle>::build_container() };
   Domain     domain {};
 
   Boundary& b_ext = domain.add_exterior_boundary();
@@ -170,8 +170,8 @@ void intersects_domain()
 *********************************************************************/
 void intersects_triangle()
 {
-  Vertices   vertices { };
-  Triangles  triangles { };
+  Vertices   vertices { ContainerFactory<Vertex>::build_container() };
+  Triangles  triangles { ContainerFactory<Triangle>::build_container() };
 
   Vertex& v1 = vertices.push_back(  0.0,  0.0 );
   Vertex& v2 = vertices.push_back(  2.0,  0.0 );

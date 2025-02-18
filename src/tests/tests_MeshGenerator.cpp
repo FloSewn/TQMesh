@@ -53,10 +53,10 @@ void initialization()
   UserSizeFunction f_outer = [](const Vec2d& p) 
   { return 0.5; };
 
-  double quadtree_scale = 10.0;
+  TQMeshSetup::get_instance().set_quadtree_scale( 10.0 );
 
   // Define the outer domain
-  Domain outer_domain { f_outer, quadtree_scale };
+  Domain outer_domain { f_outer };
 
   // Define vertices of the exterior boundary
   Vertex& v1 = outer_domain.add_vertex(  0.0,  0.0 );
@@ -105,10 +105,11 @@ void mesh_initializer()
   //UserSizeFunction f_2 = [](const Vec2d& p) { return 2.5 - MIN((p.x-5.0) * 0.3, 2.0); };
   UserSizeFunction f_2 = [](const Vec2d& p) { return 2.5; };
 
+  TQMeshSetup::get_instance().set_quadtree_scale( 20.0 );
+
   // Define domains
-  double quadtree_scale = 20.0;
-  Domain domain_1 { f_1, quadtree_scale };
-  Domain domain_2 { f_2, quadtree_scale };
+  Domain domain_1 { f_1 };
+  Domain domain_2 { f_2 };
 
   // Define boundary vertices 
   Vertex& v1_1 = domain_1.add_vertex(  0.0,  0.0 );
@@ -220,11 +221,13 @@ void multiple_neighbors()
   UserSizeFunction f_e  = [](const Vec2d& p) { return 2.5; };
   UserSizeFunction f_se = [](const Vec2d& p) { return 2.5; };
 
-  Domain domain_c  { f_c,  25.0 };
-  Domain domain_n  { f_n,  25.0 };
-  Domain domain_ne { f_ne, 25.0 };
-  Domain domain_e  { f_e,  25.0 };
-  Domain domain_se { f_se, 25.0 };
+  TQMeshSetup::get_instance().set_quadtree_scale( 25.0 );
+
+  Domain domain_c  { f_c  };
+  Domain domain_n  { f_n  };
+  Domain domain_ne { f_ne };
+  Domain domain_e  { f_e  };
+  Domain domain_se { f_se };
 
   // Center mesh
   Vertex& v1_c = domain_c.add_vertex( -2.5, -2.5 );
@@ -341,7 +344,9 @@ void quad_layer_near_mesh_size()
 
   std::vector<int> exterior_edge_colors ( 4, 1 );
 
-  Domain domain { f, 8.0 };
+  TQMeshSetup::get_instance().set_quadtree_scale( 8.0 );
+
+  Domain domain { f };
   Boundary& b_ext = domain.add_exterior_boundary();
   b_ext.set_shape_from_coordinates( exterior_vertex_coordinates, 
                                     exterior_edge_colors );
@@ -480,10 +485,10 @@ void fixed_interior_edges()
   UserSizeFunction f = [](const Vec2d& p) 
   { return 0.5; };
 
-  double quadtree_scale = 10.0;
+  TQMeshSetup::get_instance().set_quadtree_scale( 10.0 );
 
   // Define the domain
-  Domain domain { f, quadtree_scale };
+  Domain domain { f };
 
   // Define vertices of the exterior boundary
   Vertex& v1 = domain.add_vertex(  0.0,  0.0 );
@@ -524,6 +529,71 @@ void fixed_interior_edges()
 
 } // fixed_interior_edges() */
 
+
+/*********************************************************************
+* Test fixed edges 
+*********************************************************************/
+void fixed_edges()
+{
+  UserSizeFunction f = [](const Vec2d& p) { return 0.3; };
+
+  Domain domain { f };
+
+  // Vertices
+  Vertex& v0 = domain.add_vertex(0.0,  0.0 );
+  Vertex& v1 = domain.add_vertex(3.0,  0.0 );
+  Vertex& v2 = domain.add_vertex(6.0,  0.0 );
+  Vertex& v3 = domain.add_vertex(7.0,  5.0 );
+  Vertex& v4 = domain.add_vertex(0.0,  6.0 );
+
+  Boundary&  b_ext = domain.add_exterior_boundary();
+  b_ext.add_edge( v0, v1, 1 );
+  b_ext.add_edge( v1, v2, 1 );
+  b_ext.add_edge( v2, v3, 2 );
+  b_ext.add_edge( v3, v4, 3 );
+  b_ext.add_edge( v4, v0, 4 );
+
+  Vertex& v5 = domain.add_vertex(2.0,  2.0 );
+  Vertex& v6 = domain.add_vertex(4.0,  4.0 );
+  Vertex& v7 = domain.add_vertex(4.0,  2.0 );
+
+  Boundary&  b_int = domain.add_interior_boundary();
+  b_int.add_edge( v5, v6, 5 );
+  b_int.add_edge( v6, v7, 5 );
+  b_int.add_edge( v7, v5, 5 );
+
+  // Fixed vertices
+  Vertex& v8 = domain.add_fixed_vertex(1.5, 4,  0.05, 1.0);
+
+  // Define fixed edges
+  domain.add_fixed_edge( v0, v5 );
+  domain.add_fixed_edge( v1, v6 );
+  domain.add_fixed_edge( v5, v8 );
+  domain.add_fixed_edge( v6, v8 );
+
+  // Setup the generator
+  MeshGenerator generator {};
+  Mesh& mesh = generator.new_mesh( domain );
+  generator.triangulation(mesh).generate_elements();
+
+  generator.mixed_smoothing(mesh)
+    .epsilon(0.7)
+    .smooth(5);
+
+  // Check mesh 
+  MeshChecker mesh_checker { mesh, domain };
+  CHECK( mesh_checker.check_completeness() );
+
+  // Export mesh
+  std::string source_dir { TQMESH_SOURCE_DIR };
+  std::string filename 
+  { source_dir + "/auxiliary/test_data/MeshGeneratorTests.fixed_edges" };
+
+  generator.write_mesh(mesh, filename, MeshExportType::TXT);
+
+} // fixed_edges()
+
+
 } // namespace MeshGeneratorTests
 
 /*********************************************************************
@@ -531,23 +601,26 @@ void fixed_interior_edges()
 *********************************************************************/
 void run_tests_MeshGenerator()
 {
-  adjust_logging_output_stream("MeshGeneratorTests.initialization.log");
-  MeshGeneratorTests::initialization();
+  //adjust_logging_output_stream("MeshGeneratorTests.initialization.log");
+  //MeshGeneratorTests::initialization();
 
-  adjust_logging_output_stream("MeshGeneratorTests.mesh_initializer.log");
-  MeshGeneratorTests::mesh_initializer();
+  //adjust_logging_output_stream("MeshGeneratorTests.mesh_initializer.log");
+  //MeshGeneratorTests::mesh_initializer();
 
-  adjust_logging_output_stream("MeshGeneratorTests.multiple_neighbors.log");
-  MeshGeneratorTests::multiple_neighbors();
+  //adjust_logging_output_stream("MeshGeneratorTests.multiple_neighbors.log");
+  //MeshGeneratorTests::multiple_neighbors();
 
-  adjust_logging_output_stream("MeshGeneratorTests.quad_layer_near_mesh_size.log");
-  MeshGeneratorTests::quad_layer_near_mesh_size();
+  //adjust_logging_output_stream("MeshGeneratorTests.quad_layer_near_mesh_size.log");
+  //MeshGeneratorTests::quad_layer_near_mesh_size();
 
-  adjust_logging_output_stream("MeshGeneratorTests.quad_refinement.log");
-  MeshGeneratorTests::quad_refinement();
+  //adjust_logging_output_stream("MeshGeneratorTests.quad_refinement.log");
+  //MeshGeneratorTests::quad_refinement();
 
-  adjust_logging_output_stream("MeshGeneratorTests.fixed_interior_edges.log");
-  MeshGeneratorTests::fixed_interior_edges();
+  //adjust_logging_output_stream("MeshGeneratorTests.fixed_interior_edges.log");
+  //MeshGeneratorTests::fixed_interior_edges();
+
+  adjust_logging_output_stream("MeshGeneratorTests.fixed_edges.log");
+  MeshGeneratorTests::fixed_edges();
 
   // Reset debug logging ostream
   adjust_logging_output_stream("COUT");

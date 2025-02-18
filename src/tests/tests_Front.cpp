@@ -12,7 +12,6 @@
 #include "tests.h"
 #include "TestBuilder.h"
 
-#include "utils.h"
 #include "Vertex.h"
 #include "Edge.h"
 #include "Domain.h"
@@ -74,13 +73,13 @@ void test_UnitSquare()
 {
   UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
 
-  TestBuilder test_builder { "UnitSquare", f};
+  TestBuilder test_builder { "UnitSquare", f, 1.5};
 
   // Collect data for the initialization of the advancing front
   FrontInitData front_init_data { test_builder.domain() };
 
   // Advancing front requires initialized vertex container
-  Vertices vertices { 1.5 };
+  Vertices vertices { ContainerFactory<Vertex>::build_container() };
     
   // Create advancing front
   Front front { }; 
@@ -104,13 +103,13 @@ void test_UnitCircle()
 {
   UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
 
-  TestBuilder test_builder { "UnitCircle", f };
+  TestBuilder test_builder { "UnitCircle", f, 2.5 };
 
   // Collect data for the initialization of the advancing front
   FrontInitData front_init_data { test_builder.domain() };
 
   // Advancing front requires initialized vertex container
-  Vertices vertices { 2.5 };
+  Vertices vertices { ContainerFactory<Vertex>::build_container() };
     
   // Create advancing front
   Front front { }; 
@@ -134,13 +133,13 @@ void test_RefinedTriangle()
 {
   UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
 
-  TestBuilder test_builder { "RefinedTriangle", f };
+  TestBuilder test_builder { "RefinedTriangle", f, 10.0 };
 
   // Collect data for the initialization of the advancing front
   FrontInitData front_init_data { test_builder.domain() };
 
   // Advancing front requires initialized vertex container
-  Vertices vertices { 10.0 };
+  Vertices vertices { ContainerFactory<Vertex>::build_container() };
     
   // Create advancing front
   Front front { }; 
@@ -165,13 +164,13 @@ void test_TriangleSquareCircle()
 {
   UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
 
-  TestBuilder test_builder { "TriangleSquareCircle", f };
+  TestBuilder test_builder { "TriangleSquareCircle", f, 20.0 };
 
   // Collect data for the initialization of the advancing front
   FrontInitData front_init_data { test_builder.domain() };
 
   // Advancing front requires initialized vertex container
-  Vertices vertices { 20.0 };
+  Vertices vertices { ContainerFactory<Vertex>::build_container() };
     
   // Create advancing front
   Front front { }; 
@@ -201,13 +200,13 @@ void test_FixedVertices()
 {
   UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
 
-  TestBuilder test_builder { "FixedVertices", f };
+  TestBuilder test_builder { "FixedVertices", f, 20.0 };
 
   // Collect data for the initialization of the advancing front
   FrontInitData front_init_data { test_builder.domain() };
 
   // Advancing front requires initialized vertex container
-  Vertices vertices { 20.0 };
+  Vertices vertices { ContainerFactory<Vertex>::build_container() };
     
   // Create advancing front
   Front front { }; 
@@ -229,13 +228,13 @@ void test_LakeSuperior()
 {
   UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
 
-  TestBuilder test_builder { "LakeSuperior", f };
+  TestBuilder test_builder { "LakeSuperior", f, 20.0 };
 
   // Collect data for the initialization of the advancing front
   FrontInitData front_init_data { test_builder.domain() };
 
   // Advancing front requires initialized vertex container
-  Vertices vertices { 20.0 };
+  Vertices vertices { ContainerFactory<Vertex>::build_container() };
     
   // Create advancing front
   Front front { }; 
@@ -261,7 +260,8 @@ void initialization()
   { return 5.0; };
   //{ return 1.0 + 0.15*sqrt(p.x*p.x); };
 
-  Domain domain { f, 10.0 };
+  TQMeshSetup::get_instance().set_quadtree_scale( 10.0 );
+  Domain domain { f };
 
   Boundary&  b_ext = domain.add_exterior_boundary();
   Boundary&  b_int = domain.add_interior_boundary();
@@ -293,7 +293,8 @@ void initialization()
   FrontInitData front_init_data { domain };
 
   // Advancing front requires initialized vertex container
-  Vertices vertices { 10.0 };
+  TQMeshSetup::get_instance().set_quadtree_scale( 10.0 );
+  Vertices vertices { ContainerFactory<Vertex>::build_container() };
     
   // Create advancing front
   Front front { }; 
@@ -314,7 +315,8 @@ void sort_edges()
   UserSizeFunction f = [](const Vec2d& p) 
   { return 1.0 + 0.15*sqrt(p.x*p.y); };
 
-  Domain           domain   { f, 10.0 };
+  TQMeshSetup::get_instance().set_quadtree_scale( 10.0 );
+  Domain           domain   { f };
 
   Boundary&  b_ext = domain.add_exterior_boundary();
   Boundary&  b_int = domain.add_interior_boundary();
@@ -347,7 +349,8 @@ void sort_edges()
   FrontInitData front_init_data { domain, dummy };
 
   // Advancing front requires initialized vertex container
-  Vertices vertices { 10.0 };
+  TQMeshSetup::get_instance().set_quadtree_scale( 10.0 );
+  Vertices vertices { ContainerFactory<Vertex>::build_container() };
 
   // Create advancing front
   Front front { };
@@ -389,7 +392,8 @@ void edge_size()
   UserSizeFunction f = [edge_size](const Vec2d& p) 
   { return edge_size; };
 
-  Domain           domain   { f, 10.0 };
+  TQMeshSetup::get_instance().set_quadtree_scale( 10.0 );
+  Domain           domain   { f };
 
   // Build exterior boundary
   Boundary&  b_ext = domain.add_exterior_boundary();
@@ -410,7 +414,7 @@ void edge_size()
   FrontInitData front_init_data { domain, dummy };
 
   // Advancing front requires initialized vertex container
-  Vertices vertices {};
+  Vertices vertices { ContainerFactory<Vertex>::build_container() };
 
   // Create advancing front
   Front front { };

@@ -585,6 +585,52 @@ private:
 
 }; // QuadTree
 
+
+/*********************************************************************
+* 
+*********************************************************************/
+template <typename T, typename V>
+class QuadTreeBuilder {
+
+public:
+
+  // Enforce singleton
+  QuadTreeBuilder<T,V>(const QuadTreeBuilder<T,V>&) = delete;
+  QuadTreeBuilder<T,V>& operator=(const QuadTreeBuilder<T,V>&) = delete;
+
+  // Set quadtree properties
+  QuadTreeBuilder<T,V>& set_scale(V s) { scale_ = s; return *this; }
+  QuadTreeBuilder<T,V>& set_max_items(size_t n) { max_items_ = n; return *this; }
+  QuadTreeBuilder<T,V>& set_max_depth(size_t n){ max_depth_ = n; return *this; }
+  QuadTreeBuilder<T,V>& set_center(const Vec2<V>& c) { center_ = c; return *this; }
+
+  // Get singleton instance
+  static QuadTreeBuilder<T,V>& get_instance() 
+  {
+    static QuadTreeBuilder<T,V> instance;
+    return instance;
+  }
+
+  // Built a new quad tree
+  QuadTree<T,V> build() const
+  {
+    return QuadTree<T,V> { scale_, max_items_, max_depth_, center_ };
+  }
+
+
+private:
+
+  // Enforce singleton
+  QuadTreeBuilder<T,V>() {}
+
+  V       scale_     { V{} };
+  size_t  max_items_ { 0 };
+  size_t  max_depth_ { 0 };
+  Vec2<V> center_    { V{}, V{} };
+
+}; // QuadTreeBuilder
+
+
 /*********************************************************************
 * Stream to std::cout
 *********************************************************************/

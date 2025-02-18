@@ -11,7 +11,6 @@
 #include "STLHeaders.h"
 #include "CppUtils.h"
 
-#include "utils.h"
 #include "Domain.h"
 #include "Mesh.h"
 #include "FrontInitData.h"
@@ -73,8 +72,8 @@ public:
   ------------------------------------------------------------------*/
   static inline Mesh
   create_empty_mesh(Domain& domain, 
-                    int mesh_id=DEFAULT_MESH_ID,
-                    int element_color=DEFAULT_ELEMENT_COLOR,
+                    int mesh_id=TQMeshSetup::default_mesh_id,
+                    int element_color=TQMeshSetup::default_element_color,
                     double domain_extent=0.0)
   { 
     // Obtain domain extents 
@@ -93,9 +92,7 @@ public:
       domain_extent *= domain_enlargement_;
     }
 
-    return { mesh_id, element_color, domain_extent,
-             domain.vertices().quad_tree().max_items(),
-             domain.vertices().quad_tree().max_depth() }; 
+    return { mesh_id, element_color }; 
 
   } // create_empty_mesh()
 
@@ -105,14 +102,11 @@ public:
   ------------------------------------------------------------------*/
   static inline std::unique_ptr<Mesh>
   create_empty_mesh_ptr(Domain& domain, 
-                        int mesh_id=DEFAULT_MESH_ID,
-                        int element_color=DEFAULT_ELEMENT_COLOR)
+                        int mesh_id=TQMeshSetup::default_mesh_id,
+                        int element_color=TQMeshSetup::default_element_color)
   {
     return std::move(
-      std::make_unique<Mesh>(mesh_id, element_color,
-                             domain.vertices().quad_tree().scale(),
-                             domain.vertices().quad_tree().max_items(),
-                             domain.vertices().quad_tree().max_depth() )  
+      std::make_unique<Mesh>( mesh_id, element_color )  
     );
 
   } // create_empty_mesh_ptr()
@@ -227,15 +221,7 @@ public:
       int color = e->color();
 
       if ( e->is_fixed() )
-      {
-        ASSERT( v1.has_property( VertexProperty::is_fixed ),
-          "MeshBuilder::prepare_mesh(): "
-          "Missing vertex property \"is_fixed\".");
-        ASSERT( v2.has_property( VertexProperty::is_fixed ),
-          "MeshBuilder::prepare_mesh():  "
-          "Missing vertex property \"is_fixed\".");
         continue;
-      }
 
       Edge& e_new = mesh.boundary_edges().add_edge( v1, v2, color );
       e_new.set_property( e->properties() );

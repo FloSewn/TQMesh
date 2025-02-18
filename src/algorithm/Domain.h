@@ -11,6 +11,7 @@
 #include "STLHeaders.h"
 #include "CppUtils.h"
 
+#include "TQMeshSetup.h"
 #include "Boundary.h"
 
 namespace TQMesh {
@@ -201,13 +202,10 @@ public:
   /*------------------------------------------------------------------
   | Constructor
   ------------------------------------------------------------------*/
-  Domain( UserSizeFunction f = [](const Vec2d& p){return 1.0;},
-          double qtree_scale = ContainerQuadTreeScale,
-          size_t qtree_items = ContainerQuadTreeItems, 
-          size_t qtree_depth = ContainerQuadTreeDepth )
+  Domain( UserSizeFunction f = [](const Vec2d& p){return 1.0;} )
   : size_fun_ { f }
-  , verts_ { qtree_scale, qtree_items, qtree_depth }
-  { }
+  , verts_ { ContainerFactory<Vertex>::build_container() }
+  {}
 
   /*------------------------------------------------------------------
   | Get the current number of all boundaries in the domain
@@ -267,14 +265,6 @@ public:
 
   const EdgeList& fixed_edges() const { return fixed_edges_; }
   EdgeList& fixed_edges() { return fixed_edges_; }
-
-  /*------------------------------------------------------------------
-  | Setter 
-  ------------------------------------------------------------------*/
-  void quad_tree_scale(double v) { verts_.quad_tree().scale(v); }
-  void quad_tree_max_item(size_t v) { verts_.quad_tree().max_item(v); }
-  void quad_tree_max_depth(size_t v) { verts_.quad_tree().max_depth(v); }
-  void quad_tree_center(const Vec2d& v) { verts_.quad_tree().center(v); }
 
   /*------------------------------------------------------------------
   | Evaluate the domain's size function at a given point
@@ -446,7 +436,8 @@ public:
   template <typename... Args>
   Edge& add_fixed_edge( Vertex& v1, Vertex& v2 )
   {
-    Edge& new_edge = fixed_edges_.add_edge(v1, v2, INTERIOR_EDGE_COLOR);
+    const int intr_edge_color = TQMeshSetup::interior_edge_color;
+    Edge& new_edge = fixed_edges_.add_edge(v1, v2, intr_edge_color);
     new_edge.add_property( EdgeProperty::is_fixed );
     return new_edge;
 
@@ -479,6 +470,7 @@ public:
 
 
 private:
+
   Vector           boundaries_;
 
   SizeFunction     size_fun_;

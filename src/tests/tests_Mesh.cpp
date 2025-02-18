@@ -35,8 +35,9 @@ using namespace TQMesh;
 void initialization()
 {
   // Define dummy domain & mesh builder
+  TQMeshSetup::get_instance().set_quadtree_scale( 5.0 );
   UserSizeFunction f = [](const Vec2d& p) { return 1.0; };
-  Domain domain { f, 5.0 };
+  Domain domain { f };
   MeshBuilder mesh_builder {};
   Mesh mesh = mesh_builder.create_empty_mesh(domain, 0, 0, 5.0);
 
@@ -70,7 +71,7 @@ void triangulate()
   UserSizeFunction f = [](const Vec2d& p) 
   { return 3.; };
 
-  TestBuilder test_builder { "NormalStepAndSharpEdge", f};
+  TestBuilder test_builder { "NormalStepAndSharpEdge", f, 30.0};
   Domain& domain = test_builder.domain();
 
   // Create the mesh
@@ -186,7 +187,7 @@ void quad_layer()
   UserSizeFunction f = [](const Vec2d& p) 
   { return 0.2; };
 
-  TestBuilder test_builder { "SharpStepAndSharpEdge", f};
+  TestBuilder test_builder { "SharpStepAndSharpEdge", f, 30};
   Domain& domain = test_builder.domain();
 
   // Create the mesh
@@ -228,7 +229,7 @@ void exhaustive_search_triangulation()
   UserSizeFunction f = [](const Vec2d& p) 
   { return 0.5; };
 
-  TestBuilder test_builder { "SharpStepAndSharpEdge", f};
+  TestBuilder test_builder { "SharpStepAndSharpEdge", f, 30};
   Domain& domain = test_builder.domain();
 
   // Create the mesh
@@ -259,8 +260,8 @@ void refine_to_quads()
   UserSizeFunction f = [](const Vec2d& p) 
   { return 0.3; };
 
-  double quadtree_scale = 50.0;
-  Domain domain   { f, quadtree_scale };
+  TQMeshSetup::get_instance().set_quadtree_scale( 50.0 );
+  Domain domain   { f };
 
   Boundary&  b_ext = domain.add_exterior_boundary();
 
@@ -332,7 +333,7 @@ void merge_triangles_to_quads()
   // Define a variable size function
   UserSizeFunction f = [](const Vec2d& p) { return 0.3; };
 
-  TestBuilder test_builder { "TriangleSquareCircle", f};
+  TestBuilder test_builder { "TriangleSquareCircle", f, 20.0 };
   Domain& domain = test_builder.domain();
 
   // Create the mesh
@@ -367,7 +368,7 @@ void small_refinement()
 {
   UserSizeFunction f = [](const Vec2d& p) { return 0.5; };
    
-  TestBuilder test_builder { "UnitCircle", f};
+  TestBuilder test_builder { "UnitCircle", f, 2.5};
   Domain& domain = test_builder.domain();
 
   domain.add_fixed_vertex(0.0, 0.0, 0.0005, 1.0);
@@ -455,7 +456,7 @@ void triangulate_standard_tests(const std::string& test_name)
 
   UserSizeFunction f = [](const Vec2d& p) { return 0.5; };
    
-  TestBuilder test_builder { test_name, f};
+  TestBuilder test_builder { test_name, f, 100.0 };
   Domain& domain = test_builder.domain();
 
   // Create the mesh

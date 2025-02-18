@@ -6,10 +6,10 @@
 #                     MESH DEFINITION
 #-----------------------------------------------------------
 Define mesh:
-  Element size: 0.35 
+  Element size: 0.35
   Element color: 1
   Meshing algorithm: Triangulation
-  Number of quad refinements: 1
+  Number of quad refinements: 0
   Number of smoothing iterations: 3
 
   # Output formats: COUT, TXT, VTU
@@ -20,10 +20,10 @@ Define mesh:
   #                        BOUNDARIES
   #---------------------------------------------------------
   Define boundary vertices:
-   1.0, 0.0                 # Vertex 0
-   6.0, 0.5                 # Vertex 1
-   4.0, 5.0                 # Vertex 2
-  -1.0, 4.5                 # Vertex 3
+   1.0, 0.0, 0.05, 0.1                 # Vertex 0
+   6.0, 0.5, 0.05, 0.1                 # Vertex 1
+   4.0, 5.0, 0.05, 0.1                 # Vertex 2
+  -1.0, 4.5, 0.05, 0.1                 # Vertex 3
   End boundary vertices
    
   Define exterior boundary edges:
@@ -61,6 +61,14 @@ Define mesh:
    6, 7
    7, 8
    8, 5
+   0, 5
+   0, 6
+   1, 6
+   1, 7
+   2, 7
+   2, 8
+   3, 8
+   3, 5
   End fixed edges
 
 End mesh

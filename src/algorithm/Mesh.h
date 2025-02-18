@@ -11,7 +11,6 @@
 #include "STLHeaders.h"
 #include "CppUtils.h"
 
-#include "utils.h"
 #include "Vertex.h"
 #include "Triangle.h"
 #include "Quad.h"
@@ -36,16 +35,13 @@ public:
   /*------------------------------------------------------------------
   | Constructor 
   ------------------------------------------------------------------*/
-  Mesh(int       mesh_id=DEFAULT_MESH_ID,
-       int       element_color=DEFAULT_ELEMENT_COLOR,
-       double    qtree_scale=ContainerQuadTreeScale,
-       size_t    qtree_items=ContainerQuadTreeItems, 
-       size_t    qtree_depth=ContainerQuadTreeDepth)
+  Mesh(int       mesh_id=TQMeshSetup::default_mesh_id,
+       int       element_color=TQMeshSetup::default_element_color)
   : mesh_id_    { ABS(mesh_id) }
   , elem_color_ { ABS(element_color) }
-  , verts_      { qtree_scale, qtree_items, qtree_depth }
-  , quads_      { qtree_scale, qtree_items, qtree_depth }
-  , tris_       { qtree_scale, qtree_items, qtree_depth }
+  , verts_      { ContainerFactory<Vertex>::build_container() }
+  , quads_      { ContainerFactory<Quad>::build_container() }
+  , tris_       { ContainerFactory<Triangle>::build_container() }
   { }
 
   /*------------------------------------------------------------------
@@ -302,7 +298,8 @@ public:
   ------------------------------------------------------------------*/
   Edge& add_interior_edge(Vertex& v1, Vertex& v2)
   { 
-    Edge& new_edge = intr_edges_.add_edge(v1, v2, INTERIOR_EDGE_COLOR);
+    const int intr_edge_color = TQMeshSetup::interior_edge_color;
+    Edge& new_edge = intr_edges_.add_edge(v1, v2, intr_edge_color);
     return new_edge;
   }
 
@@ -362,7 +359,7 @@ private:
   | Attributes
   ------------------------------------------------------------------*/
   int        mesh_id_        { 0 };
-  int        elem_color_     { DEFAULT_ELEMENT_COLOR };
+  int        elem_color_     { TQMeshSetup::default_element_color };
   double     mesh_area_      { 0.0 };
 
   Vertices   verts_;

@@ -11,7 +11,6 @@
 
 #include "tests.h"
 
-#include "utils.h"
 #include "Vertex.h"
 #include "Edge.h"
 #include "Domain.h"
@@ -28,8 +27,8 @@ using namespace TQMesh;
 *********************************************************************/
 void initialization()
 {
-  Vertices vertices { };
-  Quads    quads { };
+  Vertices vertices { ContainerFactory<Vertex>::build_container() };
+  Quads    quads { ContainerFactory<Quad>::build_container() };
 
   Vertex& v1 = vertices.push_back(  0.0,  0.0 );
   Vertex& v2 = vertices.push_back(  2.0,  0.0 );
