@@ -12,7 +12,6 @@
 #include "tests.h"
 #include "TestBuilder.h"
 
-#include "utils.h"
 #include "Vertex.h"
 #include "Edge.h"
 #include "Domain.h"

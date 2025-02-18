@@ -92,8 +92,8 @@ public:
   | Initialize a new mesh for a given domain
   ------------------------------------------------------------------*/
   Mesh& new_mesh(Domain& domain,
-                 int     mesh_id = DEFAULT_MESH_ID,
-                 int     element_color = DEFAULT_ELEMENT_COLOR)
+                 int     mesh_id = TQMeshSetup::default_mesh_id,
+                 int     element_color = TQMeshSetup::default_element_color)
   {
     meshes_.push_back( 
       mesh_builder_.create_empty_mesh_ptr(domain, mesh_id, element_color)

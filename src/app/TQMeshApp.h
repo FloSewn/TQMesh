@@ -845,7 +845,7 @@ private:
     // -> Set domain extent to large value
     else
     {
-      domain_extent_  = TQ_MAX;
+      domain_extent_  = TQMeshSetup::dbl_max;
     }
 
   } // MeshConstruction::init_mesh_vertices()

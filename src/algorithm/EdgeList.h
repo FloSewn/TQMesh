@@ -115,7 +115,7 @@ public:
   | Boundary edges are assumed to be defined with a color > 0
   ------------------------------------------------------------------*/
   virtual Edge& insert_edge(const_iterator pos, Vertex& v1, Vertex& v2, 
-                            int color=INTERIOR_EDGE_COLOR)
+                            int color=TQMeshSetup::interior_edge_color)
   {
     Edge& e = edges_.insert(pos, v1, v2, *this, color);
     if ( orient_ != Orientation::NONE )
@@ -140,7 +140,7 @@ public:
   |   connected to more than two edges of this list type
   ------------------------------------------------------------------*/
   virtual Edge& add_edge(Vertex& v1, Vertex& v2, 
-                         int color=INTERIOR_EDGE_COLOR)
+                         int color=TQMeshSetup::interior_edge_color)
   { 
     if ( orient_ == Orientation::NONE || edges_.size() < 1 )
       return insert_edge( edges_.end(), v1, v2, color ); 

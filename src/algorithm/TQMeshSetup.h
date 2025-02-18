@@ -20,6 +20,16 @@ class TQMeshSetup {
   public:
 
   /*------------------------------------------------------------------
+  | Constexprs 
+  ------------------------------------------------------------------*/
+  static constexpr int    interior_edge_color   { -1 };
+  static constexpr int    default_element_color {  0 };
+  static constexpr int    default_mesh_id       {  0 };
+  static constexpr double dbl_small           { 1.0E-13 };
+  static constexpr double dbl_min             { DBL_MIN };
+  static constexpr double dbl_max             { DBL_MAX };
+
+  /*------------------------------------------------------------------
   | Enforce singleton
   ------------------------------------------------------------------*/
   TQMeshSetup(const TQMeshSetup&) = delete;
@@ -28,7 +38,7 @@ class TQMeshSetup {
   /*------------------------------------------------------------------
   | Get singleton instance 
   ------------------------------------------------------------------*/
-  static TQMeshSetup& get_instance() 
+  static TQMeshSetup& get_instance(void) 
   {
     static TQMeshSetup instance;
     return instance;
@@ -47,9 +57,9 @@ class TQMeshSetup {
   /*------------------------------------------------------------------
   | Getters
   ------------------------------------------------------------------*/
-  double get_quadtree_scale() const { return quadtree_scale_; }
-  size_t get_quadtree_max_items() const { return quadtree_max_items_; }
-  size_t get_quadtree_max_depth() const { return quadtree_max_depth_; }
+  double get_quadtree_scale(void) const { return quadtree_scale_; }
+  size_t get_quadtree_max_items(void) const { return quadtree_max_items_; }
+  size_t get_quadtree_max_depth(void) const { return quadtree_max_depth_; }
 
   private:
 

@@ -11,7 +11,6 @@
 #include "STLHeaders.h"
 #include "CppUtils.h"
 
-#include "utils.h"
 #include "Vertex.h"
 #include "Facet.h"
 #include "Domain.h"
@@ -309,7 +308,7 @@ private:
   VertexArray          vertices_;
   FacetArray           facets_;
 
-  int                  color_           {DEFAULT_ELEMENT_COLOR};
+  int                  color_           {TQMeshSetup::default_element_color};
   int                  index_           {-1};
   bool                 active_          {false};
 

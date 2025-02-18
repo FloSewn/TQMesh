@@ -436,7 +436,8 @@ public:
   template <typename... Args>
   Edge& add_fixed_edge( Vertex& v1, Vertex& v2 )
   {
-    Edge& new_edge = fixed_edges_.add_edge(v1, v2, INTERIOR_EDGE_COLOR);
+    const int intr_edge_color = TQMeshSetup::interior_edge_color;
+    Edge& new_edge = fixed_edges_.add_edge(v1, v2, intr_edge_color);
     new_edge.add_property( EdgeProperty::is_fixed );
     return new_edge;
 
