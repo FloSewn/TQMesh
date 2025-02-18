@@ -19,22 +19,23 @@ using namespace TQMesh;
 *********************************************************************/
 bool simple_triangular_mesh()
 {
-  /*------------------------------------------------------------------
-  | 
-  ------------------------------------------------------------------*/
-  TQMeshSetup::get_instance().set_quadtree_scale( 20.0 );
 
   /*------------------------------------------------------------------
-  | Here, we define the size function. This function describes
+  | First, we define the size function. This function describes
   | the size of the mesh elements with respect to their location 
   | in the domain. In this case, we use a constant size of 0.35
   ------------------------------------------------------------------*/
   UserSizeFunction f = [](const Vec2d& p) { return 0.35; };
 
   /*------------------------------------------------------------------
-  | Next, we need to define the domain. It requires the size function
-  | as argument.
+  | Next, we define the domain. It requires the size function
+  | as argument. Before the domain gets instantinated, we set the 
+  | scale of the underlying quadtree data structure to a value of 20.0 
+  | This scale should generally be set slightly larger than the 
+  | extent of the mesh that is going to be generated. It also has
+  | to be done always prior to the generation of the domain. 
   ------------------------------------------------------------------*/
+  TQMeshSetup::get_instance().set_quadtree_scale( 20.0 );
   Domain domain { f };
 
   /*------------------------------------------------------------------
