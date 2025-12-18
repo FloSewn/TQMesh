@@ -857,10 +857,10 @@ private:
   void query_mandatory_parameters(ParaReader& mesh_reader)
   {
     if ( !mesh_reader.query<std::string>("output_prefix") )
-      throw_error("No output file prefix defined for mesh " + mesh_id_ );
+      throw_error("No output file prefix defined for mesh " + std::to_string(mesh_id_) );
 
     if ( !mesh_reader.query<std::string>("output_format") )
-      throw_error("No output format defined for mesh " + mesh_id_ ); 
+      throw_error("No output format defined for mesh " + std::to_string(mesh_id_) ); 
 
     output_prefix_ = mesh_reader.get_value<std::string>("output_prefix");
     output_format_ = mesh_reader.get_value<std::string>("output_format");
@@ -869,7 +869,7 @@ private:
     print_parameter<std::string>(mesh_reader, "output_format");
 
     if ( !mesh_reader.query<std::string>("size_function") )
-      throw_error("Invalid size function definition for mesh " + mesh_id_);
+      throw_error("Invalid size function definition for mesh " + std::to_string(mesh_id_));
 
   } // MeshConstruction::query_mandatory_parameters()
 
