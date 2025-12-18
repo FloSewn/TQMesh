@@ -6,6 +6,24 @@
 - Implement fixed number of segments on boundary edges / periodic edges?
 - Enhance interface for definition of fixed edges (similar to boundary edge definition) and add interface to define fixed edges through CSV files
 
+
+## [1.4.0] - 2025-02-18
+
+### Fixed
+- Fixed bug from issue #28 related to fixed edges
+- Fixed bug from issue #32 related to the generation of meshes in very large domains
+
+### Changed 
+- Put globals from `algorithm/utils.h` into new class `TQMeshSetup`
+- Update instantination of simplex containers through `QuadTreeBuilder`, `ContainerFactory` and `TQMeshSetup` classes and therefore removing dependencies on global constants
+
+### Added
+- `QuadTreeBuilder` class (`utils/QuadTree.h`): Handles the generation of quadtrees
+- `ContainerFactory` class (`algorithm/TQMeshSetup.h`): Handles the generation of containers
+- `TQMeshSetup` class (`algorithm/TQMeshSetup.h`): Puts all constants in one place and can be used to control quadtree parameters
+
+## [1.3.3] - 2024-07-05
+
 ### Fixed
 - Fixed bug in `Log.h` which resulted from the additional `static` declaration on `LOG_PROPERTIES` in commit [`5c2cebc`](https://github.com/FloSewn/TQMesh/commit/5c2cebc).
   Due to this declaration, `LOG_PROPERTIES` was no longer treated as singleton and thus the logging properties were no longer used by `LOG`.
