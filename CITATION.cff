@@ -1,0 +1,23 @@
+cff-version: 1.4.0
+message: "If you use this software in academic work, please cite it as follows."
+
+title: "TQMesh"
+abstract: >
+  A C++ library and standalone application for generating two-dimensional
+  meshes composed of triangular and quadrilateral elements using an
+  advancing-front approach.
+
+authors:
+  - family-names: "Setzwein"
+    given-names: "Florian"
+
+repository-code: "https://github.com/FloSewn/TQMesh"
+license: "MIT"
+
+keywords:
+  - mesh generation
+  - computational geometry
+  - finite element method
+  - quadrilateral meshes
+  - C++
+
