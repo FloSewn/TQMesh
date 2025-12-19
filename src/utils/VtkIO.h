@@ -76,6 +76,7 @@ inline const char* VtkIOTypeTraits<double>::name = "Float64";
 class VtkIODataInterface
 {
 public:
+  virtual ~VtkIODataInterface() = default; 
   virtual const std::string& name() const = 0;
   virtual size_t dim() const = 0;
   virtual const char* type() const = 0;
